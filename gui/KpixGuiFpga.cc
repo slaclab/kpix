@@ -14,6 +14,7 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 04/29/2009: Seperate methods for display update and data read.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -58,41 +59,62 @@ void KpixGuiFpga::setEnabled ( bool enable ) {
 
 
 // Read Settings From Asic/Fpga class
-void KpixGuiFpga::readConfig(bool readEn) {
+void KpixGuiFpga::readConfig() {
    if ( fpga != NULL ) {
-      bncSourceA->setCurrentItem(fpga->getBncSourceA(readEn));
-      bncSourceB->setCurrentItem(fpga->getBncSourceB(readEn));
-      acceptSource->setCurrentItem(fpga->getAcceptSource(readEn));
-      extRunSource->setCurrentItem(fpga->getExtRunSource(readEn));
-      extRunDelay->setValue(fpga->getExtRunDelay(readEn));
-      extRunType->setChecked(fpga->getExtRunType(readEn));
-      autoTrainEnable->setChecked(fpga->getAutoTrainEnable(readEn));
-      autoTrainType->setChecked(fpga->getAutoTrainType(readEn));
-      autoTrainSpacing->setValue(fpga->getAutoTrainSpacing(readEn));
-      calDelay->setValue(fpga->getCalDelay(readEn));
-      rawData->setChecked(fpga->getRawData(readEn));
-      dropData->setChecked(fpga->getDropData(readEn));
-      rxPolarity->setChecked(fpga->getRxPolarity(readEn));
+      fpga->getBncSourceA();
+      fpga->getBncSourceB();
+      fpga->getAcceptSource();
+      fpga->getExtRunSource();
+      fpga->getExtRunDelay();
+      fpga->getExtRunType();
+      fpga->getAutoTrainEnable();
+      fpga->getAutoTrainType();
+      fpga->getAutoTrainSpacing();
+      fpga->getCalDelay();
+      fpga->getRawData();
+      fpga->getDropData();
+      fpga->getRxPolarity();
    }
 }
 
 
-// Write Settings To Asic/Fpga class
-void KpixGuiFpga::writeConfig(bool writeEn) {
+// Update display values
+void KpixGuiFpga::updateDisplay() {
    if ( fpga != NULL ) {
-      fpga->setBncSourceA(bncSourceA->currentItem(),writeEn);
-      fpga->setBncSourceB(bncSourceB->currentItem(),writeEn);
-      fpga->setAcceptSource(acceptSource->currentItem(),writeEn);
-      fpga->setExtRunSource(extRunSource->currentItem(),writeEn);
-      fpga->setExtRunDelay(extRunDelay->value(),writeEn);
-      fpga->setExtRunType(extRunType->isChecked(),writeEn);
-      fpga->setAutoTrainEnable(autoTrainEnable->isChecked(),writeEn);
-      fpga->setAutoTrainType(autoTrainType->isChecked(),writeEn);
-      fpga->setAutoTrainSpacing(autoTrainSpacing->value(),writeEn);
-      fpga->setCalDelay(calDelay->value(),writeEn);
-      fpga->setRawData(rawData->isChecked(),writeEn);
-      fpga->setDropData(dropData->isChecked(),writeEn);
-      fpga->setRxPolarity(rxPolarity->isChecked(),writeEn);
+      bncSourceA->setCurrentItem(fpga->getBncSourceA(false));
+      bncSourceB->setCurrentItem(fpga->getBncSourceB(false));
+      acceptSource->setCurrentItem(fpga->getAcceptSource(false));
+      extRunSource->setCurrentItem(fpga->getExtRunSource(false));
+      extRunDelay->setValue(fpga->getExtRunDelay(false));
+      extRunType->setChecked(fpga->getExtRunType(false));
+      autoTrainEnable->setChecked(fpga->getAutoTrainEnable(false));
+      autoTrainType->setChecked(fpga->getAutoTrainType(false));
+      autoTrainSpacing->setValue(fpga->getAutoTrainSpacing(false));
+      calDelay->setValue(fpga->getCalDelay(false));
+      rawData->setChecked(fpga->getRawData(false));
+      dropData->setChecked(fpga->getDropData(false));
+      rxPolarity->setChecked(fpga->getRxPolarity(false));
+   }
+}
+
+
+
+// Write Settings To Asic/Fpga class
+void KpixGuiFpga::writeConfig() {
+   if ( fpga != NULL ) {
+      fpga->setBncSourceA(bncSourceA->currentItem());
+      fpga->setBncSourceB(bncSourceB->currentItem());
+      fpga->setAcceptSource(acceptSource->currentItem());
+      fpga->setExtRunSource(extRunSource->currentItem());
+      fpga->setExtRunDelay(extRunDelay->value());
+      fpga->setExtRunType(extRunType->isChecked());
+      fpga->setAutoTrainEnable(autoTrainEnable->isChecked());
+      fpga->setAutoTrainType(autoTrainType->isChecked());
+      fpga->setAutoTrainSpacing(autoTrainSpacing->value());
+      fpga->setCalDelay(calDelay->value());
+      fpga->setRawData(rawData->isChecked());
+      fpga->setDropData(dropData->isChecked());
+      fpga->setRxPolarity(rxPolarity->isChecked());
    }
 }
 

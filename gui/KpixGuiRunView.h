@@ -36,10 +36,11 @@
 #include <qcombobox.h>
 #include <qpushbutton.h>
 #include <qtable.h>
+#include <qthread.h>
 #include <TFile.h>
 
 
-class KpixGuiRunView : public KpixGuiRunViewForm {
+class KpixGuiRunView : public KpixGuiRunViewForm, public QThread {
 
       // Error Message
       KpixGuiError  *errorMsg;
@@ -58,6 +59,21 @@ class KpixGuiRunView : public KpixGuiRunViewForm {
       // Histogram plots
       TH1F *hist[4];
 
+      // Update active
+      bool readActive;
+
+      // List of KPIX serial numbers
+      unsigned int  asicCnt;
+      KpixAsic      **asic;
+
+      // Command type
+      unsigned int cmdType;
+
+      // Commands
+      static const unsigned int CmdReadFile  = 1;
+      static const unsigned int CmdReadPlot  = 2;
+      static const unsigned int CmdPrintPlot = 3;
+
    public:
 
       // Creation Class
@@ -72,9 +88,15 @@ class KpixGuiRunView : public KpixGuiRunViewForm {
       // Window was closed
       void closeEvent(QCloseEvent *e);
 
+   protected:
+
+      void run();
+
    public slots:
 
+      void customEvent ( QCustomEvent *event );
       void updateDisplay();
+      void readPlot();
       void inFileBrowse_pressed();
       void inFileOpen_pressed();
       void inFileClose_pressed();

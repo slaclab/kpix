@@ -14,6 +14,7 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 04/29/2009: Seperate methods for display update and data read.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -147,8 +148,8 @@ void KpixGuiMain::setEnabled ( bool enable, bool calEnable ) {
 }
 
 
-// Read Settings From Asic/Fpga class
-void KpixGuiMain::readConfig(bool readEn) {
+// Update display
+void KpixGuiMain::updateDisplay() {
 
    stringstream  temp;
    unsigned int  x;
@@ -157,7 +158,7 @@ void KpixGuiMain::readConfig(bool readEn) {
    for ( x=0; x < asicCnt; x++ ) {
 
       // Get Pos Pixel Mode
-      posPixel[x]->setCurrentItem(asic[x]->getCntrlPosPixel(readEn));
+      posPixel[x]->setCurrentItem(asic[x]->getCntrlPosPixel(false));
 
       // Serial
       temp.str("");
@@ -167,8 +168,18 @@ void KpixGuiMain::readConfig(bool readEn) {
 }
 
 
+// Read Settings From Asic/Fpga class
+void KpixGuiMain::readConfig() {
+
+   unsigned int  x;
+
+   // Table Entries
+   for ( x=0; x < asicCnt; x++ ) asic[x]->getCntrlPosPixel();
+}
+
+
 // Write Settings To Asic/Fpga class
-void KpixGuiMain::writeConfig(bool writeEn) {
+void KpixGuiMain::writeConfig() {
 
    unsigned int  x;
    bool          ok;
@@ -176,7 +187,7 @@ void KpixGuiMain::writeConfig(bool writeEn) {
    // Get Pos Pixel & Serial Numbers For Each ASICs
    if ( asicCnt != 0 ) for ( x=0; x < (asicCnt-1); x++ ) {
       asic[x]->setSerial(kpixList->text(x,1).toInt(&ok,10));
-      asic[x]->setCntrlPosPixel(posPixel[x]->currentItem(),writeEn);
+      asic[x]->setCntrlPosPixel(posPixel[x]->currentItem());
    }
 }
 

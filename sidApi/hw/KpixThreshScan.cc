@@ -415,6 +415,7 @@ void KpixThreshScan::runThreshold ( short channel ) {
                if ( kpixProgress != NULL ) kpixProgress->updateData(KPRG_TH2F,1,(void**)(&(hist[idx])));
                else delete hist[idx];
             }
+            sleep(2);
          }
          if ( calEnable == false ) break;
       }

@@ -80,6 +80,7 @@ void KpixGuiRegTest::setAsics ( KpixAsic **asic, unsigned int asicCnt ) {
 
 // Run Register Test
 void KpixGuiRegTest::runTest_pressed ( ) {
+   parent->setEnabled(false);
    QThread::start();
 }
 
@@ -178,7 +179,6 @@ void KpixGuiRegTest::customEvent ( QCustomEvent *event ) {
 
       // Run is starting
       if ( eventRun->runStart ) {
-         parent->setEnabled(false);
          isRunning = true;
 
          // Update Results Table
@@ -191,13 +191,7 @@ void KpixGuiRegTest::customEvent ( QCustomEvent *event ) {
 
       // Run is stopping
       if ( eventRun->runStop ) {
-         try {
-            parent->readConfig(true);
-            parent->readStatus();
-         } catch ( string error ) {
-            errorMsg->showMessage(error);
-         }
-         parent->setEnabled(true);
+         parent->readConfig_pressed();
          isRunning = false;
       }
             

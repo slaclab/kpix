@@ -304,12 +304,12 @@ void KpixCalDist::runDistribution ( short channel ) {
                   // Display error
                   cout << "KpixCalDist::runDistribution -> ";
                   cout << "Caught Error: " << error << "\n";
-
-                  // Count errors
-                  errCnt++;
-                  if ( errCnt == 5 )
-                     throw(string("KpixCalDist::runDistribution -> Too many errors. Giving Up"));
                }
+
+               // Count errors
+               errCnt++;
+               if ( errCnt == 5 )
+                  throw(string("KpixCalDist::runDistribution -> Too many errors. Giving Up"));
             }
          }
 
@@ -433,6 +433,7 @@ void KpixCalDist::runDistribution ( short channel ) {
                }
             }
          }
+         sleep(2);
       }
    }
 
@@ -594,12 +595,12 @@ void KpixCalDist::runCalibration ( short channel ) {
                   // Display error
                   cout << "KpixCalDist::runCalibration -> ";
                   cout << "Caught Error: " << error << "\n";
-
-                  // Count errors
-                  errCnt++;
-                  if ( errCnt == 5 )
-                     throw(string("KpixCalDist::runDistribution -> Too many errors. Giving Up"));
                }
+
+               // Count errors
+               errCnt++;
+               if ( errCnt == 5 )
+                  throw(string("KpixCalDist::runDistribution -> Too many errors. Giving Up"));
             }
          }
 
@@ -763,6 +764,7 @@ void KpixCalDist::runCalibration ( short channel ) {
                }
             }
          }
+         sleep(2);
       }
    }
 

@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 04/29/2009: Added new sample fields.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -171,6 +172,21 @@ void KpixGuiSampleView::updateDisplay() {
          temp.str("");
          temp << dec << kpixSample->getSampleValue();
          sampleValue->setText(temp.str());
+
+         // Sample empty
+         temp.str("");
+         temp << dec << kpixSample->getEmpty();
+         sampleEmpty->setText(temp.str());
+
+         // Sample Bad Count
+         temp.str("");
+         temp << dec << kpixSample->getBadCount();
+         sampleBadCnt->setText(temp.str());
+
+         // Sample Trigger Type
+         temp.str("");
+         temp << dec << kpixSample->getTrigType();
+         sampleTrigType->setText(temp.str());
 
          // Figure out the gain
          gain = 0;

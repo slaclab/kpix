@@ -21,9 +21,12 @@
 #include <unistd.h>
 #include <qlineedit.h>
 #include <qfiledialog.h>
+#include <qapplication.h>
 #include <TQtWidget.h>
 #include <TError.h>
 #include "KpixGuiRunView.h"
+#include "KpixGuiEventRun.h"
+#include "KpixGuiEventError.h"
 using namespace std;
 
 
@@ -35,6 +38,9 @@ KpixGuiRunView::KpixGuiRunView ( string baseDir, bool open ) : KpixGuiRunViewFor
    this->inFileRoot = NULL;
    inFileIsOpen     = false;
    this->baseDir    = baseDir;
+   this->asicCnt    = 0;
+   this->asic       = NULL;
+   this->readActive = false;
 
    // Create error window
    errorMsg = new KpixGuiError(this);
@@ -97,37 +103,9 @@ void KpixGuiRunView::inFileBrowse_pressed() {
 
 // Open the input file
 void KpixGuiRunView::inFileOpen_pressed() {
-   int          x;
-   stringstream temp;
-
-   if ( ! inFileIsOpen ) {
-      try {
-         inFileRoot = new KpixRunRead(inFile->text().ascii(),false);
-         inFileIsOpen = true;
-         gErrorIgnoreLevel = 5000; 
-
-         // Update Kpix selection
-         selSerial->clear();
-         for (x=0; x < (inFileRoot->getAsicCount()-1); x++) {
-            temp.str("");
-            temp << inFileRoot->getAsic(x)->getSerial();
-            selSerial->insertItem(temp.str(),x);
-         }
-         update();
-
-         // Update range on channel spin box
-         if ( inFileRoot->getAsicCount() > 0 ) 
-            selChannel->setMaxValue ( inFileRoot->getAsic(0)->getChCount()-1 );
-
-         // Update windows
-         kpixGuiViewConfig->setRunData(inFileRoot);
-         kpixGuiSampleView->setRunData(inFileRoot);
-      } catch (string error) {
-         errorMsg->showMessage(error);
-      }
-   }
-   setEnabled(true);
-   updateDisplay();
+   setEnabled(false);
+   cmdType = CmdReadFile;
+   QThread::start();
 }
 
 
@@ -148,10 +126,24 @@ void KpixGuiRunView::inFileClose_pressed() {
       delete inFileRoot;
    }
 
+   // Clear asics
+   asicCnt = 0;
+   if ( asic != NULL ) free(asic);
+
    // Set flags, update buttons and update display
    inFileIsOpen = false;
    setEnabled(true);
    updateDisplay();
+}
+
+
+void KpixGuiRunView::readPlot() {
+   if ( !readActive ) {
+      setEnabled(false);
+      cmdType = CmdReadPlot;
+      QThread::start();
+      readActive = true;
+   }
 }
 
 
@@ -179,71 +171,14 @@ void KpixGuiRunView::setEnabled(bool enable) {
    selChannel->setEnabled(inFileIsOpen?enable:false);
    selBucket->setEnabled(inFileIsOpen?enable:false);
    writePdf->setEnabled(inFileIsOpen?enable:false);
+   fitHistogram->setEnabled(inFileIsOpen?enable:false);
 }
 
 
 void KpixGuiRunView::updateDisplay() {
-   unsigned int serial,chan, bucket;
-   stringstream temp;
 
-   // Delete old histogram
-   if ( hist[0] != NULL ) { delete hist[0]; hist[0] = NULL; }
-   if ( hist[1] != NULL ) { delete hist[1]; hist[1] = NULL; }
-   if ( hist[2] != NULL ) { delete hist[2]; hist[2] = NULL; }
-   if ( hist[3] != NULL ) { delete hist[3]; hist[3] = NULL; }
-
-   // Only update if input file exists
-   if ( inFileIsOpen ) {
-
-      // Get current selection
-      serial = selSerial->currentItem();
-      chan   = selChannel->value();
-      bucket = selBucket->value();
-
-      // Figure out raw name, range = 0
-      temp.str("");
-      temp << "/RunPlots/hist_raw_s" << dec << setw(4) << setfill('0') << inFileRoot->getAsic(serial)->getSerial();
-      temp << "_c" << dec << setw(4) << setfill('0') << chan;
-      temp << "_b" << dec << setw(1) << setfill('0') << bucket;
-      temp << "_r0";
-
-      // attempt to get object
-      inFileRoot->treeFile->GetObject(temp.str().c_str(),hist[0]);
-      if ( hist[0] != NULL ) hist[0]->SetDirectory(0);
-
-      // Figure out raw name, range = 1
-      temp.str("");
-      temp << "/RunPlots/hist_raw_s" << dec << setw(4) << setfill('0') << inFileRoot->getAsic(serial)->getSerial();
-      temp << "_c" << dec << setw(4) << setfill('0') << chan;
-      temp << "_b" << dec << setw(1) << setfill('0') << bucket;
-      temp << "_r1";
-
-      // attempt to get object
-      inFileRoot->treeFile->GetObject(temp.str().c_str(),hist[1]);
-      if ( hist[1] != NULL ) hist[1]->SetDirectory(0);
-
-      // Figure out charge name, range = 0
-      temp.str("");
-      temp << "/RunPlots/hist_charge_s" << dec << setw(4) << setfill('0') << inFileRoot->getAsic(serial)->getSerial();
-      temp << "_c" << dec << setw(4) << setfill('0') << chan;
-      temp << "_b" << dec << setw(1) << setfill('0') << bucket;
-      temp << "_r0";
-
-      // attempt to get object
-      inFileRoot->treeFile->GetObject(temp.str().c_str(),hist[2]);
-      if ( hist[2] != NULL ) hist[2]->SetDirectory(0);
-
-      // Figure out charge name
-      temp.str("");
-      temp << "/RunPlots/hist_charge_s" << dec << setw(4) << setfill('0') << inFileRoot->getAsic(serial)->getSerial();
-      temp << "_c" << dec << setw(4) << setfill('0') << chan;
-      temp << "_b" << dec << setw(1) << setfill('0') << bucket;
-      temp << "_r1";
-
-      // attempt to get object, range = 1
-      inFileRoot->treeFile->GetObject(temp.str().c_str(),hist[3]);
-      if ( hist[3] != NULL ) hist[3]->SetDirectory(0);
-   }
+   // Set fit options
+   gStyle->SetOptFit(1111);
 
    // Draw Dist Histograms
    plotData->GetCanvas()->Clear();
@@ -272,24 +207,9 @@ void KpixGuiRunView::updateDisplay() {
 
 
 void KpixGuiRunView::writePdf_pressed() {
-   unsigned int serial,chan;
-   stringstream temp, cmd;
-
-   // Get current selection
-   serial = selSerial->currentItem();
-   chan   = selChannel->value();
-
-   // Generate Plot Name
-   temp.str("");
-   temp << "hist_raw_s" << dec << setw(4) << setfill('0') << inFileRoot->getAsic(serial)->getSerial();
-   temp << "_c" << dec << setw(4) << setfill('0') << chan;
-   temp << ".ps";
-
-   // Write Plot
-   cout << "KpixGuiRunView::writePdf_pressed -> Wrote canvas to file " << temp.str() << endl;
-   plotData->GetCanvas()->Print(temp.str().c_str());
-   cmd.str(""); cmd << "ps2pdf " << temp.str();
-   system(cmd.str().c_str());
+   setEnabled(false);
+   cmdType = CmdPrintPlot;
+   QThread::start();
 }
 
 
@@ -326,7 +246,7 @@ void KpixGuiRunView::prevChan_pressed() {
    selSerial ->setCurrentItem(serial);
    selChannel->setValue(channel);
    selBucket->setValue(bucket);
-   updateDisplay();
+   readPlot();
 }
 
 
@@ -354,7 +274,210 @@ void KpixGuiRunView::nextChan_pressed() {
    selSerial ->setCurrentItem(serial);
    selChannel->setValue(channel);
    selBucket->setValue(bucket);
-   updateDisplay();
+   readPlot();
+}
+
+
+// Thread for command run
+void KpixGuiRunView::run() {
+   KpixGuiEventRun   *event;
+   KpixGuiEventError *error;
+   unsigned int      x;
+   unsigned int      serial,chan, bucket;
+   stringstream      temp, cmd;
+
+   // Which command
+   try {
+      switch ( cmdType ) {
+
+         case CmdReadFile:
+            if ( ! inFileIsOpen ) {
+               inFileRoot = new KpixRunRead(inFile->text().ascii(),false);
+               inFileIsOpen = true;
+               gErrorIgnoreLevel = 5000;
+
+               // Update Kpix info
+               asicCnt = inFileRoot->getAsicCount();
+               asic = (KpixAsic **) malloc(sizeof(KpixAsic*)*asicCnt);
+               for (x=0; x < asicCnt-1; x++) asic[x] = inFileRoot->getAsic(x);
+            }
+            break;
+
+         case CmdReadPlot:
+
+            // Delete old histogram
+            if ( hist[0] != NULL ) { delete hist[0]; hist[0] = NULL; }
+            if ( hist[1] != NULL ) { delete hist[1]; hist[1] = NULL; }
+            if ( hist[2] != NULL ) { delete hist[2]; hist[2] = NULL; }
+            if ( hist[3] != NULL ) { delete hist[3]; hist[3] = NULL; }
+
+            // Only update if input file exists
+            if ( inFileIsOpen ) {
+
+               // Get current selection
+               serial = selSerial->currentItem();
+               chan   = selChannel->value();
+               bucket = selBucket->value();
+
+               // Figure out raw name, range = 0
+               temp.str("");
+               temp << "/RunPlots/hist_raw_s" << dec << setw(4) << setfill('0') << inFileRoot->getAsic(serial)->getSerial();
+               temp << "_c" << dec << setw(4) << setfill('0') << chan;
+               temp << "_b" << dec << setw(1) << setfill('0') << bucket;
+               temp << "_r0";
+
+               // attempt to get object
+               inFileRoot->treeFile->GetObject(temp.str().c_str(),hist[0]);
+               if ( hist[0] != NULL ) {
+                  hist[0]->SetDirectory(0);
+                  if ( fitHistogram->isChecked() ) {
+                     hist[0]->Fit("gaus","q");
+                     hist[0]->SetStats(true);
+                  }
+               }
+
+               // Figure out raw name, range = 1
+               temp.str("");
+               temp << "/RunPlots/hist_raw_s" << dec << setw(4) << setfill('0') << inFileRoot->getAsic(serial)->getSerial();
+               temp << "_c" << dec << setw(4) << setfill('0') << chan;
+               temp << "_b" << dec << setw(1) << setfill('0') << bucket;
+               temp << "_r1";
+
+               // attempt to get object
+               inFileRoot->treeFile->GetObject(temp.str().c_str(),hist[1]);
+               if ( hist[1] != NULL ) {
+                  hist[1]->SetDirectory(0);
+                  if ( fitHistogram->isChecked() ) {
+                     hist[1]->Fit("gaus","q");
+                     hist[1]->SetStats(true);
+                  }
+               }
+
+               // Figure out charge name, range = 0
+               temp.str("");
+               temp << "/RunPlots/hist_charge_s" << dec << setw(4) << setfill('0') << inFileRoot->getAsic(serial)->getSerial();
+               temp << "_c" << dec << setw(4) << setfill('0') << chan;
+               temp << "_b" << dec << setw(1) << setfill('0') << bucket;
+               temp << "_r0";
+
+               // attempt to get object
+               inFileRoot->treeFile->GetObject(temp.str().c_str(),hist[2]);
+               if ( hist[2] != NULL ) {
+                  hist[2]->SetDirectory(0);
+                  if ( fitHistogram->isChecked() ) {
+                     hist[2]->Fit("gaus","q");
+                     hist[2]->SetStats(true);
+                  }
+               }
+
+               // Figure out charge name
+               temp.str("");
+               temp << "/RunPlots/hist_charge_s" << dec << setw(4) << setfill('0') << inFileRoot->getAsic(serial)->getSerial();
+               temp << "_c" << dec << setw(4) << setfill('0') << chan;
+               temp << "_b" << dec << setw(1) << setfill('0') << bucket;
+               temp << "_r1";
+
+               // attempt to get object, range = 1
+               inFileRoot->treeFile->GetObject(temp.str().c_str(),hist[3]);
+               if ( hist[3] != NULL ) {
+                  hist[3]->SetDirectory(0);
+                  if ( fitHistogram->isChecked() ) {
+                     hist[3]->Fit("gaus","q");
+                     hist[3]->SetStats(true);
+                  }
+               }
+            }
+            break;
+
+         case CmdPrintPlot:
+
+            // Get current selection
+            serial = selSerial->currentItem();
+            chan   = selChannel->value();
+            bucket = selBucket->value();
+
+            // Generate Plot Name
+            temp.str("");
+            temp << "run_view_s" << dec << setw(4) << setfill('0') << inFileRoot->getAsic(serial)->getSerial();
+            temp << "_c" << dec << setw(4) << setfill('0') << chan;
+            temp << "_b" << dec << setw(1) << setfill('0') << bucket;
+            temp << ".ps";
+
+            // Write Plot
+            cout << "Wrote canvas to file " << temp.str() << endl;
+            plotData->GetCanvas()->Print(temp.str().c_str());
+            cmd.str(""); cmd << "ps2pdf " << temp.str();
+            system(cmd.str().c_str());
+            break;
+      }
+   }
+   catch ( string errorMsg ) {
+      error = new KpixGuiEventError(errorMsg);
+      QApplication::postEvent(this,error);
+   }
+
+   // Update status display
+   event = new KpixGuiEventRun(false,true,"",0,0,0,0);
+   QApplication::postEvent(this,event);
+}
+
+   
+// Receive Custom Events
+void KpixGuiRunView::customEvent ( QCustomEvent *event ) {
+
+   KpixGuiEventError *eventError;
+   KpixGuiEventRun   *eventRun;
+   stringstream      temp;
+   unsigned int      x;
+
+   // Run Event
+   if ( event->type() == KPIX_GUI_EVENT_RUN ) {
+      eventRun = (KpixGuiEventRun *)event;
+
+      // Run is stopping
+      if ( eventRun->runStop ) {
+
+         // Read file command
+         if ( cmdType == CmdReadFile ) {
+
+            // Update Kpix selection
+            for (x=0; x < asicCnt-1; x++) {
+               temp.str("");
+               temp << asic[x]->getSerial();
+               selSerial->insertItem(temp.str(),x);
+            }
+
+            // Update range on channel spin box
+            if ( asicCnt > 0 ) selChannel->setMaxValue ( asic[0]->getChCount()-1 );
+   
+            // Update windows
+            kpixGuiViewConfig->setRunData(inFileRoot);
+            kpixGuiSampleView->setRunData(inFileRoot);
+
+            // Set default values
+            selSerial ->setCurrentItem(0);
+            selChannel->setValue(0);
+            selBucket->setValue(0);
+
+            // Start thread with read plot command
+            cmdType = CmdReadPlot;
+            QThread::start();
+         }
+         else {
+            updateDisplay();
+            setEnabled(true);
+         }
+         readActive = false;
+      }
+      update();
+   }
+
+   // Error Event
+   if ( event->type() == KPIX_GUI_EVENT_ERROR ) {
+      eventError = (KpixGuiEventError *)event;
+      errorMsg->showMessage(eventError->errorMsg);
+      update();
+   }
 }
 
 

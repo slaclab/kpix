@@ -14,6 +14,7 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 04/29/2009: Seperate methods for display update and data read.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -83,8 +84,8 @@ void KpixGuiInject::dacValueChanged() {
 }
 
 
-// Read Settings From Asic/Fpga class
-void KpixGuiInject::readConfig(bool readEn) {
+// Update Display
+void KpixGuiInject::updateDisplay() {
 
    unsigned int  calCountVal;
    unsigned int  cal0DelayVal;
@@ -96,7 +97,7 @@ void KpixGuiInject::readConfig(bool readEn) {
 
       // Cal Data
       asic[0]->getCalibTime(&calCountVal,&cal0DelayVal,&cal1DelayVal,
-                                         &cal2DelayVal,&cal3DelayVal,readEn);
+                                         &cal2DelayVal,&cal3DelayVal,false);
       calCount->setValue(calCountVal);
       cal0Delay->setValue(cal0DelayVal);
       cal1Delay->setValue(cal1DelayVal);
@@ -104,26 +105,49 @@ void KpixGuiInject::readConfig(bool readEn) {
       cal3Delay->setValue(cal3DelayVal);
 
       // Other Settings
-      dacCalib->setValue(asic[0]->getDacCalib(readEn));
-      cntrlCalSrcCore->setChecked(asic[0]->getCntrlCalSrcCore(readEn));
-      cntrlCalibHigh->setChecked(asic[0]->getCntrlCalibHigh(readEn));
+      dacCalib->setValue(asic[0]->getDacCalib(false));
+      cntrlCalSrcCore->setChecked(asic[0]->getCntrlCalSrcCore(false));
+      cntrlCalibHigh->setChecked(asic[0]->getCntrlCalibHigh(false));
       dacValueChanged();
    }
 }
 
 
+// Read Settings From Asic/Fpga class
+void KpixGuiInject::readConfig() {
+
+   unsigned int  calCountVal;
+   unsigned int  cal0DelayVal;
+   unsigned int  cal1DelayVal;
+   unsigned int  cal2DelayVal;
+   unsigned int  cal3DelayVal;
+
+   if ( asicCnt != 0 ) {
+
+      // Cal Data
+      asic[0]->getCalibTime(&calCountVal,&cal0DelayVal,&cal1DelayVal,
+                                         &cal2DelayVal,&cal3DelayVal);
+
+      // Other Settings
+      asic[0]->getDacCalib();
+      asic[0]->getCntrlCalSrcCore();
+      asic[0]->getCntrlCalibHigh();
+   }
+}
+
+
 // Write Settings To Asic/Fpga class
-void KpixGuiInject::writeConfig(bool writeEn) {
+void KpixGuiInject::writeConfig() {
 
    unsigned int x;
 
    // Asic
    for (x=0; x < asicCnt; x++) {
       asic[x]->setCalibTime(calCount->value(), cal0Delay->value(), cal1Delay->value(),
-                            cal2Delay->value(), cal3Delay->value(), writeEn);
-      asic[x]->setDacCalib(dacCalib->value(),writeEn);
-      asic[x]->setCntrlCalSrcCore(cntrlCalSrcCore->isChecked(),writeEn);
-      asic[x]->setCntrlCalibHigh(cntrlCalibHigh->isChecked(),writeEn);
+                            cal2Delay->value(), cal3Delay->value());
+      asic[x]->setDacCalib(dacCalib->value());
+      asic[x]->setCntrlCalSrcCore(cntrlCalSrcCore->isChecked());
+      asic[x]->setCntrlCalibHigh(cntrlCalibHigh->isChecked());
    }
 }
 

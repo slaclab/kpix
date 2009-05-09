@@ -53,6 +53,7 @@
 // 02/06/2009: Added KPIX version 8 support
 // 02/23/2009: Changed default timing values.
 // 04/08/2009: Added flag in timing methods to set mode for trigger inhibit time
+// 04/29/2009: Added readEn flag to some read calls.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -897,10 +898,10 @@ bool KpixAsic::regGetWriteable ( unsigned char address ) {
 // Pass location pointers in which to store the following status flags:
 // cmdPerr  - Command parity error flag
 // dataPerr - Data parity error flag
-void KpixAsic::getStatus ( bool *cmdPerr, bool *dataPerr, bool *tempEn, unsigned char *tempValue ) {
+void KpixAsic::getStatus ( bool *cmdPerr, bool *dataPerr, bool *tempEn, unsigned char *tempValue, bool readEn ) {
 
    // Get values, read once only
-   *cmdPerr   = regGetBit(0x00,0,true);
+   *cmdPerr   = regGetBit(0x00,0,readEn);
    *dataPerr  = regGetBit(0x00,1,false);
    *tempEn    = regGetBit(0x00,2,false);
    *tempValue = (regGetValue(0x00,false) >> 24) & 0xFF;

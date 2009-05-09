@@ -15,6 +15,7 @@
 // Modification history :
 // 07/02/2008: created
 // 03/05/2009: Added rate limit function.
+// 04/29/2009: Seperate methods for display update and data read.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_TIMING_H__
 #define __KPIX_GUI_TIMING_H__
@@ -64,8 +65,9 @@ class KpixGuiTiming : public KpixGuiTimingForm {
 
    public slots:
 
-      void readConfig(bool readEn);
-      void writeConfig(bool writeEn);
+      void updateDisplay();
+      void readConfig();
+      void writeConfig();
       void rawTrigInh_stateChanged();
 
 };

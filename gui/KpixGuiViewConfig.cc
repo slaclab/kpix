@@ -72,10 +72,10 @@ void KpixGuiViewConfig::setRunData(KpixRunRead *kpixRunRead) {
       kpixGuiInject->setAsics(asic,asicCnt);
 
       // Update display
-      kpixGuiConfig->readConfig(false);
-      kpixGuiTiming->readConfig(false);
-      kpixGuiTrig->readConfig(false);
-      kpixGuiInject->readConfig(false);
+      kpixGuiConfig->updateDisplay();
+      kpixGuiTiming->updateDisplay();
+      kpixGuiTrig->updateDisplay();
+      kpixGuiInject->updateDisplay();
    }
 }
 

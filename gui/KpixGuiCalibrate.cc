@@ -175,6 +175,7 @@ void KpixGuiCalibrate::runTest_pressed ( ) {
    ::close(fd);
 
    // Start Thread
+   parent->setEnabled(false);
    enRun = true;
    QThread::start();
 }
@@ -443,26 +444,19 @@ void KpixGuiCalibrate::customEvent ( QCustomEvent *event ) {
       // Run is starting
       if ( eventRun->runStart ) {
          isRunning = true;
-         parent->setEnabled(false);
          liveDisplay->GetCanvas()->Clear();
          liveDisplay->GetCanvas()->Update();
       }
 
       // Run is stopping
       if ( eventRun->runStop ) {
-         try {
-            parent->readConfig(true);
-            parent->readStatus();
-         } catch ( string error ) {
-            errorMsg->showMessage(error);
-         }
 
          // Delete run variables
          for (x=0; x< runVarCount; x++) delete runVars[x];
          if ( runVarCount != 0 ) free(runVars);
 
-         // Enable buttons
-         parent->setEnabled(true);
+         // Update Config
+         parent->readConfig_pressed();
          isRunning = false;
       }
             

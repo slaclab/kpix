@@ -123,3 +123,9 @@ void KpixGuiRunViewForm::treeView_pressed()
 {
 
 }
+
+
+void KpixGuiRunViewForm::readPlot()
+{
+
+}

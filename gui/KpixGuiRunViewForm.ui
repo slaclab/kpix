@@ -139,22 +139,6 @@
     </widget>
     <widget class="QPushButton">
         <property name="name">
-            <cstring>writePdf</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>20</x>
-                <y>430</y>
-                <width>110</width>
-                <height>28</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Write PDF</string>
-        </property>
-    </widget>
-    <widget class="QPushButton">
-        <property name="name">
             <cstring>viewSamples</cstring>
         </property>
         <property name="geometry">
@@ -167,19 +151,6 @@
         </property>
         <property name="text">
             <string>View Samples</string>
-        </property>
-    </widget>
-    <widget class="QComboBox">
-        <property name="name">
-            <cstring>selSerial</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>30</x>
-                <y>160</y>
-                <width>100</width>
-                <height>23</height>
-            </rect>
         </property>
     </widget>
     <widget class="QLabel">
@@ -214,6 +185,38 @@
             <string>&lt;p align="center"&gt;KPIX Channel&lt;/p&gt;</string>
         </property>
     </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_2_2_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>250</y>
+                <width>100</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="center"&gt;KPIX Bucket&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>writePdf</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>20</x>
+                <y>440</y>
+                <width>110</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Write PDF</string>
+        </property>
+    </widget>
     <widget class="QPushButton">
         <property name="name">
             <cstring>prevChan</cstring>
@@ -221,7 +224,7 @@
         <property name="geometry">
             <rect>
                 <x>20</x>
-                <y>370</y>
+                <y>390</y>
                 <width>110</width>
                 <height>28</height>
             </rect>
@@ -237,7 +240,7 @@
         <property name="geometry">
             <rect>
                 <x>20</x>
-                <y>330</y>
+                <y>350</y>
                 <width>110</width>
                 <height>28</height>
             </rect>
@@ -246,20 +249,17 @@
             <string>Next</string>
         </property>
     </widget>
-    <widget class="QLabel">
+    <widget class="QComboBox">
         <property name="name">
-            <cstring>textLabel1_2_2_2_2</cstring>
+            <cstring>selSerial</cstring>
         </property>
         <property name="geometry">
             <rect>
                 <x>30</x>
-                <y>250</y>
+                <y>160</y>
                 <width>100</width>
-                <height>20</height>
+                <height>23</height>
             </rect>
-        </property>
-        <property name="text">
-            <string>&lt;p align="center"&gt;KPIX Bucket&lt;/p&gt;</string>
         </property>
     </widget>
     <widget class="QSpinBox">
@@ -292,6 +292,22 @@
         </property>
         <property name="maxValue">
             <number>3</number>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>fitHistogram</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>310</y>
+                <width>100</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Fit Histogram</string>
         </property>
     </widget>
 </widget>
@@ -362,12 +378,6 @@
         <slot>inFileClose_pressed()</slot>
     </connection>
     <connection>
-        <sender>selSerial</sender>
-        <signal>activated(int)</signal>
-        <receiver>KpixGuiRunViewForm</receiver>
-        <slot>updateDisplay()</slot>
-    </connection>
-    <connection>
         <sender>writePdf</sender>
         <signal>pressed()</signal>
         <receiver>KpixGuiRunViewForm</receiver>
@@ -386,12 +396,6 @@
         <slot>prevChan_pressed()</slot>
     </connection>
     <connection>
-        <sender>selChannel</sender>
-        <signal>valueChanged(int)</signal>
-        <receiver>KpixGuiRunViewForm</receiver>
-        <slot>updateDisplay()</slot>
-    </connection>
-    <connection>
         <sender>viewSamples</sender>
         <signal>pressed()</signal>
         <receiver>KpixGuiRunViewForm</receiver>
@@ -401,7 +405,25 @@
         <sender>selBucket</sender>
         <signal>valueChanged(int)</signal>
         <receiver>KpixGuiRunViewForm</receiver>
-        <slot>updateDisplay()</slot>
+        <slot>readPlot()</slot>
+    </connection>
+    <connection>
+        <sender>selChannel</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>KpixGuiRunViewForm</receiver>
+        <slot>readPlot()</slot>
+    </connection>
+    <connection>
+        <sender>selSerial</sender>
+        <signal>activated(int)</signal>
+        <receiver>KpixGuiRunViewForm</receiver>
+        <slot>readPlot()</slot>
+    </connection>
+    <connection>
+        <sender>fitHistogram</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>KpixGuiRunViewForm</receiver>
+        <slot>readPlot()</slot>
     </connection>
 </connections>
 <includes>
@@ -427,6 +449,7 @@
     <slot>prevChan_pressed()</slot>
     <slot>viewSamples_pressed()</slot>
     <slot>treeView_pressed()</slot>
+    <slot>readPlot()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

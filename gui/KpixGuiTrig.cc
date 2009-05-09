@@ -14,6 +14,7 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 04/29/2009: Seperate methods for display update and data read.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -145,8 +146,8 @@ void KpixGuiTrig::setEnabled ( bool enable ) {
 }
 
 
-// Read Settings From Asic/Fpga class
-void KpixGuiTrig::readConfig(bool readEn) {
+// Update Display
+void KpixGuiTrig::updateDisplay() {
 
    stringstream  temp;
    unsigned int  x, y, chModes[1024];
@@ -154,28 +155,28 @@ void KpixGuiTrig::readConfig(bool readEn) {
 
    // FPGA
    if ( fpga != NULL ) {
-      trigSource->setCurrentItem(fpga->getTrigSource(readEn));
-      trigExpand->setValue(fpga->getTrigExpand(readEn));
+      trigSource->setCurrentItem(fpga->getTrigSource(false));
+      trigExpand->setValue(fpga->getTrigExpand(false));
       temp.str("");
-      temp << "0x" << hex << setw(2) << setfill('0') << (int)fpga->getTrigEnable(readEn);
+      temp << "0x" << hex << setw(2) << setfill('0') << (int)fpga->getTrigEnable(false);
       trigMask->setText(temp.str());
    }
 
    if ( asicCnt > 0 ) {
 
       // Asic
-      cntrlNearNeighbor->setChecked(asic[0]->getCntrlNearNeighbor(readEn));
-      cntrlTrigSrcCore->setChecked(asic[0]->getCntrlTrigSrcCore(readEn));
+      cntrlNearNeighbor->setChecked(asic[0]->getCntrlNearNeighbor(false));
+      cntrlTrigSrcCore->setChecked(asic[0]->getCntrlTrigSrcCore(false));
 
       // Table Entries
       for ( x=0; x < (asicCnt-1); x++ ) {
 
          // Get Asic Data Modes
-         asic[x]->getChannelModeArray(chModes,readEn);
+         asic[x]->getChannelModeArray(chModes,false);
 
          // Get Threshold Values
-         asic[x]->getDacThreshRangeA(&tholdVal[0],&tholdVal[1],readEn);
-         asic[x]->getDacThreshRangeB(&tholdVal[2],&tholdVal[3],readEn);
+         asic[x]->getDacThreshRangeA(&tholdVal[0],&tholdVal[1],false);
+         asic[x]->getDacThreshRangeB(&tholdVal[2],&tholdVal[3],false);
 
          // Update tables
          for ( y=0; y <  4; y++ ) thold[x*4+y]->setCurrentItem(tholdVal[y]);
@@ -185,8 +186,42 @@ void KpixGuiTrig::readConfig(bool readEn) {
 }
 
 
+// Read Settings From Asic/Fpga class
+void KpixGuiTrig::readConfig() {
+
+   stringstream  temp;
+   unsigned int  x, chModes[1024];
+   unsigned char tholdVal[4];
+
+   // FPGA
+   if ( fpga != NULL ) {
+      fpga->getTrigSource();
+      fpga->getTrigExpand();
+      fpga->getTrigEnable();
+   }
+
+   if ( asicCnt > 0 ) {
+
+      // Asic
+      asic[0]->getCntrlNearNeighbor();
+      asic[0]->getCntrlTrigSrcCore();
+
+      // Table Entries
+      for ( x=0; x < (asicCnt-1); x++ ) {
+
+         // Get Asic Data Modes
+         asic[x]->getChannelModeArray(chModes);
+
+         // Get Threshold Values
+         asic[x]->getDacThreshRangeA(&tholdVal[0],&tholdVal[1]);
+         asic[x]->getDacThreshRangeB(&tholdVal[2],&tholdVal[3]);
+      }
+   }
+}
+
+
 // Write Settings To Asic/Fpga class
-void KpixGuiTrig::writeConfig(bool writeEn) {
+void KpixGuiTrig::writeConfig() {
 
    unsigned int  x, y;
    bool          ok;
@@ -195,15 +230,15 @@ void KpixGuiTrig::writeConfig(bool writeEn) {
 
    // FPGA
    if ( fpga != NULL ) {
-      fpga->setTrigSource(trigSource->currentItem(),writeEn);
-      fpga->setTrigExpand(trigExpand->value(),writeEn);
-      fpga->setTrigEnable(trigMask->text().toInt(&ok,16),writeEn);
+      fpga->setTrigSource(trigSource->currentItem());
+      fpga->setTrigExpand(trigExpand->value());
+      fpga->setTrigEnable(trigMask->text().toInt(&ok,16));
    }
 
    // Asic
    for (x=0; x < asicCnt; x++) {
-      asic[x]->setCntrlNearNeighbor(cntrlNearNeighbor->isChecked(),writeEn);
-      asic[x]->setCntrlTrigSrcCore(cntrlTrigSrcCore->isChecked(),writeEn);
+      asic[x]->setCntrlNearNeighbor(cntrlNearNeighbor->isChecked());
+      asic[x]->setCntrlTrigSrcCore(cntrlTrigSrcCore->isChecked());
    }
 
    // Table Entries
@@ -214,11 +249,11 @@ void KpixGuiTrig::writeConfig(bool writeEn) {
       for ( y=0; y < asic[x]->getChCount(); y++ ) chModes[y] = mode[x*1024+y]->currentItem();
 
       // Set Asic Data Modes
-      asic[x]->setChannelModeArray(chModes,writeEn);
+      asic[x]->setChannelModeArray(chModes);
 
       // Set Threshold Values
-      asic[x]->setDacThreshRangeA(tholdVal[0],tholdVal[1],writeEn);
-      asic[x]->setDacThreshRangeB(tholdVal[2],tholdVal[3],writeEn);
+      asic[x]->setDacThreshRangeA(tholdVal[0],tholdVal[1]);
+      asic[x]->setDacThreshRangeB(tholdVal[2],tholdVal[3]);
    }
 }
 

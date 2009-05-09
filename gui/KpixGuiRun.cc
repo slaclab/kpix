@@ -195,6 +195,7 @@ void KpixGuiRun::startRun_pressed ( ) {
    // Start Thread
    enRun = true;
    pRun = false;
+   parent->setEnabled(false);
    pauseRun->setDown(false);
    QThread::start();
 }
@@ -896,19 +897,12 @@ void KpixGuiRun::customEvent ( QCustomEvent *event ) {
       // Run is starting
       else if ( eventRun->runStart ) {
          isRunning = true;
-         parent->setEnabled(false);
          liveDisplay->GetCanvas()->Clear();
          liveDisplay->GetCanvas()->Update();
       }
 
       // Run is stopping
       else if ( eventRun->runStop ) {
-         try {
-            parent->readConfig(true);
-            parent->readStatus();
-         } catch ( string error ) {
-            errorMsg->showMessage(error);
-         }
 
          // Delete run variables
          for (x=0; x< runVarCount; x++) delete runVars[x];
@@ -916,8 +910,8 @@ void KpixGuiRun::customEvent ( QCustomEvent *event ) {
             free(runVars);
          }
 
-         // Enable buttons
-         parent->setEnabled(true);
+         // Update Config
+         parent->readConfig_pressed();
          isRunning = false;
       }
       else eventTable->setColumnReadOnly(1,true);

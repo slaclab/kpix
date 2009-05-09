@@ -14,6 +14,7 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 04/29/2009: Seperate methods for display update and data read.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -116,68 +117,94 @@ void KpixGuiConfig::dacValueChanged() {
 }
 
 
-// Read Settings From Asic/Fpga class
-void KpixGuiConfig::readConfig(bool readEn) {
+// Update Display
+void KpixGuiConfig::updateDisplay() {
    if ( asicCnt != 0 ) {
-      cfgAutoReadDis->setChecked(asic[0]->getCfgAutoReadDis(readEn));
-      cfgForceTemp->setChecked(asic[0]->getCfgForceTemp(readEn));
-      cfgDisableTemp->setChecked(asic[0]->getCfgDisableTemp(readEn));
-      cfgAutoStatus->setChecked(asic[0]->getCfgAutoStatus(readEn));
-      dacRampThresh->setValue(asic[0]->getDacRampThresh(readEn));
-      dacRangeThresh->setValue(asic[0]->getDacRangeThresh(readEn));
-      dacEventThreshRef->setValue(asic[0]->getDacEventThreshRef(readEn));
-      dacShaperBias->setValue(asic[0]->getDacShaperBias(readEn));
-      dacDefaultAnalog->setValue(asic[0]->getDacDefaultAnalog(readEn));
-      cntrlForceLowGain->setChecked(asic[0]->getCntrlForceLowGain(readEn));
-      cntrlLeakNullDis->setChecked(asic[0]->getCntrlLeakNullDis(readEn));
-      cntrlDoubleGain->setChecked(asic[0]->getCntrlDoubleGain(readEn));
-      cntrlDisPerRst->setChecked(asic[0]->getCntrlDisPerRst(readEn));
-      cntrlEnDcRst->setChecked(asic[0]->getCntrlEnDcRst(readEn));
-      cntrlShortIntEn->setChecked(asic[0]->getCntrlShortIntEn(readEn));
-      cntrlDisPwrCycle->setChecked(asic[0]->getCntrlDisPwrCycle(readEn));
-      cntrlFeCurr->setCurrentItem(asic[0]->getCntrlFeCurr(readEn));
-      cntrlDiffTime->setCurrentItem(asic[0]->getCntrlDiffTime(readEn));
+      cfgAutoReadDis->setChecked(asic[0]->getCfgAutoReadDis(false));
+      cfgForceTemp->setChecked(asic[0]->getCfgForceTemp(false));
+      cfgDisableTemp->setChecked(asic[0]->getCfgDisableTemp(false));
+      cfgAutoStatus->setChecked(asic[0]->getCfgAutoStatus(false));
+      dacRampThresh->setValue(asic[0]->getDacRampThresh(false));
+      dacRangeThresh->setValue(asic[0]->getDacRangeThresh(false));
+      dacEventThreshRef->setValue(asic[0]->getDacEventThreshRef(false));
+      dacShaperBias->setValue(asic[0]->getDacShaperBias(false));
+      dacDefaultAnalog->setValue(asic[0]->getDacDefaultAnalog(false));
+      cntrlForceLowGain->setChecked(asic[0]->getCntrlForceLowGain(false));
+      cntrlLeakNullDis->setChecked(asic[0]->getCntrlLeakNullDis(false));
+      cntrlDoubleGain->setChecked(asic[0]->getCntrlDoubleGain(false));
+      cntrlDisPerRst->setChecked(asic[0]->getCntrlDisPerRst(false));
+      cntrlEnDcRst->setChecked(asic[0]->getCntrlEnDcRst(false));
+      cntrlShortIntEn->setChecked(asic[0]->getCntrlShortIntEn(false));
+      cntrlDisPwrCycle->setChecked(asic[0]->getCntrlDisPwrCycle(false));
+      cntrlFeCurr->setCurrentItem(asic[0]->getCntrlFeCurr(false));
+      cntrlDiffTime->setCurrentItem(asic[0]->getCntrlDiffTime(false));
       if ( asic[0]->getVersion() < 8 ) 
-         cntrlHoldTime->setCurrentItem(asic[0]->getCntrlHoldTime(readEn)-1);
+         cntrlHoldTime->setCurrentItem(asic[0]->getCntrlHoldTime(false)-1);
       else
-         cntrlHoldTime->setCurrentItem(asic[0]->getCntrlHoldTime(readEn));
+         cntrlHoldTime->setCurrentItem(asic[0]->getCntrlHoldTime(false));
       dacValueChanged();
    }
 }
 
 
+// Read Settings From Asic/Fpga class
+void KpixGuiConfig::readConfig() {
+   if ( asicCnt != 0 ) {
+      asic[0]->getCfgAutoReadDis();
+      asic[0]->getCfgForceTemp();
+      asic[0]->getCfgDisableTemp();
+      asic[0]->getCfgAutoStatus();
+      asic[0]->getDacRampThresh();
+      asic[0]->getDacRangeThresh();
+      asic[0]->getDacEventThreshRef();
+      asic[0]->getDacShaperBias();
+      asic[0]->getDacDefaultAnalog();
+      asic[0]->getCntrlForceLowGain();
+      asic[0]->getCntrlLeakNullDis();
+      asic[0]->getCntrlDoubleGain();
+      asic[0]->getCntrlDisPerRst();
+      asic[0]->getCntrlEnDcRst();
+      asic[0]->getCntrlShortIntEn();
+      asic[0]->getCntrlDisPwrCycle();
+      asic[0]->getCntrlFeCurr();
+      asic[0]->getCntrlDiffTime();
+      asic[0]->getCntrlHoldTime();
+   }
+}
+
+
 // Write Settings To Asic/Fpga class
-void KpixGuiConfig::writeConfig(bool writeEn) {
+void KpixGuiConfig::writeConfig() {
 
    unsigned int x;
 
    // Asic
    for (x=0; x < asicCnt; x++) {
-      asic[x]->setCfgAutoReadDis(cfgAutoReadDis->isChecked(),writeEn);
-      asic[x]->setCfgForceTemp(cfgForceTemp->isChecked(),writeEn);
-      asic[x]->setCfgDisableTemp(cfgDisableTemp->isChecked(),writeEn);
-      asic[x]->setCfgAutoStatus(cfgAutoStatus->isChecked(),writeEn);
-      asic[x]->setDacRampThresh(dacRampThresh->value(),writeEn);
-      asic[x]->setDacRangeThresh(dacRangeThresh->value(),writeEn);
-      asic[x]->setDacEventThreshRef(dacEventThreshRef->value(),writeEn);
-      asic[x]->setDacShaperBias(dacShaperBias->value(),writeEn);
-      asic[x]->setDacDefaultAnalog(dacDefaultAnalog->value(),writeEn);
-      asic[x]->setCntrlForceLowGain(cntrlForceLowGain->isChecked(),writeEn);
-      asic[x]->setCntrlLeakNullDis(cntrlLeakNullDis->isChecked(),writeEn);
-      asic[x]->setCntrlDoubleGain(cntrlDoubleGain->isChecked(),writeEn);
-      asic[x]->setCntrlDisPerRst(cntrlDisPerRst->isChecked(),writeEn);
-      asic[x]->setCntrlEnDcRst(cntrlEnDcRst->isChecked(),writeEn);
-      asic[x]->setCntrlShortIntEn(cntrlShortIntEn->isChecked(),writeEn);
-      asic[x]->setCntrlDisPwrCycle(cntrlDisPwrCycle->isChecked(),writeEn);
-      asic[x]->setCntrlFeCurr(cntrlFeCurr->currentItem(),writeEn);
-      asic[x]->setCntrlDiffTime(cntrlDiffTime->currentItem(),writeEn);
+      asic[x]->setCfgAutoReadDis(cfgAutoReadDis->isChecked());
+      asic[x]->setCfgForceTemp(cfgForceTemp->isChecked());
+      asic[x]->setCfgDisableTemp(cfgDisableTemp->isChecked());
+      asic[x]->setCfgAutoStatus(cfgAutoStatus->isChecked());
+      asic[x]->setDacRampThresh(dacRampThresh->value());
+      asic[x]->setDacRangeThresh(dacRangeThresh->value());
+      asic[x]->setDacEventThreshRef(dacEventThreshRef->value());
+      asic[x]->setDacShaperBias(dacShaperBias->value());
+      asic[x]->setDacDefaultAnalog(dacDefaultAnalog->value());
+      asic[x]->setCntrlForceLowGain(cntrlForceLowGain->isChecked());
+      asic[x]->setCntrlLeakNullDis(cntrlLeakNullDis->isChecked());
+      asic[x]->setCntrlDoubleGain(cntrlDoubleGain->isChecked());
+      asic[x]->setCntrlDisPerRst(cntrlDisPerRst->isChecked());
+      asic[x]->setCntrlEnDcRst(cntrlEnDcRst->isChecked());
+      asic[x]->setCntrlShortIntEn(cntrlShortIntEn->isChecked());
+      asic[x]->setCntrlDisPwrCycle(cntrlDisPwrCycle->isChecked());
+      asic[x]->setCntrlFeCurr(cntrlFeCurr->currentItem());
+      asic[x]->setCntrlDiffTime(cntrlDiffTime->currentItem());
 
       // Older kpix versions have valid hold time values of 1,2,3 while newer
       // version supports 0-7
       if ( asic[x]->getVersion() < 8 )
-         asic[x]->setCntrlHoldTime(cntrlHoldTime->currentItem()+1,writeEn);
+         asic[x]->setCntrlHoldTime(cntrlHoldTime->currentItem()+1);
       else
-         asic[x]->setCntrlHoldTime(cntrlHoldTime->currentItem(),writeEn);
+         asic[x]->setCntrlHoldTime(cntrlHoldTime->currentItem());
    }
 }
 

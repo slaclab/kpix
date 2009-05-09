@@ -140,6 +140,7 @@ void KpixGuiThreshScan::runTest_pressed ( ) {
    ::close(fd);
 
    // Start Thread
+   parent->setEnabled(false);
    enRun = true;
    QThread::start();
 }
@@ -272,25 +273,18 @@ void KpixGuiThreshScan::customEvent ( QCustomEvent *event ) {
 
       // Run is starting
       if ( eventRun->runStart ) {
-         parent->setEnabled(false);
          isRunning = true;
       }
 
       // Run is stopping
       if ( eventRun->runStop ) {
-         try {
-            parent->readConfig(true);
-            parent->readStatus();
-         } catch ( string error ) {
-            errorMsg->showMessage(error);
-         }
 
          // Delete run variables
          for (x=0; x< runVarCount; x++) delete runVars[x];
          if ( runVars != NULL ) free(runVars);
 
-         // Enable buttons
-         parent->setEnabled(true);
+         // Update Config
+         parent->readConfig_pressed();
          isRunning = false;
       }
             

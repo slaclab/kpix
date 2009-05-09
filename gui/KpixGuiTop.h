@@ -15,6 +15,7 @@
 // Modification history :
 // 07/02/2008: created
 // 03/05/2009: Added rate limit function.
+// 04/29/2009: Added thread to handle IO functions
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_TOP_H__
 #define __KPIX_GUI_TOP_H__
@@ -35,6 +36,7 @@
 #include <qpushbutton.h>
 #include <qerrormessage.h>
 #include <qtable.h>
+#include <qthread.h>
 #include <qspinbox.h>
 #include "KpixGuiInject.h"
 #include "KpixGuiConfig.h"
@@ -48,20 +50,24 @@
 #include "KpixGuiRun.h"
 #include "KpixGuiCalibrate.h"
 #include "KpixGuiThreshScan.h"
+#include "KpixGuiEventRun.h"
+#include "KpixGuiEventError.h"
 
 
 // Max support KPIX Address
 #define KPIX_MAX_ADDR 3
 
 
-class KpixGuiTop : public KpixGuiTopForm {
+class KpixGuiTop : public KpixGuiTopForm, public QThread {
 
       // ASIC & FPGA Containers
       unsigned int  asicCnt;
       unsigned int  asicVersion;
       unsigned int  defClkPeriod;
+      unsigned int  cmdType;
       KpixAsic      *asic[KPIX_MAX_ADDR+1];
       KpixFpga      *fpga;
+      KpixRunRead   *runRead;
       SidLink       *sidLink;
       KpixGuiError  *errorMsg;
 
@@ -78,6 +84,15 @@ class KpixGuiTop : public KpixGuiTopForm {
       KpixGuiThreshScan *kpixGuiThreshScan;
       KpixGuiRun        *kpixGuiRun;
 
+      // Constants for command type
+      static const unsigned int CmdReadStatus    = 1;
+      static const unsigned int CmdClearCounters = 2;
+      static const unsigned int CmdReadConfig    = 3;
+      static const unsigned int CmdWriteConfig   = 4;
+      static const unsigned int CmdSetDefaults   = 5;
+      static const unsigned int CmdRescanKpix    = 6;
+      static const unsigned int CmdLoadSettings  = 7;
+
    public:
 
       // Creation Class
@@ -90,9 +105,6 @@ class KpixGuiTop : public KpixGuiTopForm {
 
       // Control Enable Of Buttons/Edits
       void setEnabled ( bool enable );
-
-      // Find KPIX Devices
-      void findConnectedAsics();
 
       // Get Run Description
       string getRunDescription();
@@ -112,8 +124,13 @@ class KpixGuiTop : public KpixGuiTopForm {
       // Window was closed
       void closeEvent(QCloseEvent *e);
 
+   protected:
+
+      void run();
+
    private slots:
 
+      void customEvent ( QCustomEvent *event );
       void kpixReScan_pressed();
       void calibMenu_pressed();
       void threshScanMenu_pressed();
@@ -121,7 +138,6 @@ class KpixGuiTop : public KpixGuiTopForm {
       void runMenu_pressed();
       void readStatus_pressed();
       void clearCounters_pressed();
-      void readConfig_pressed();
       void writeConfig_pressed();
       void kpixAsicDebug_toggled( bool );
       void kpixFpgaDebug_toggled( bool );
@@ -136,10 +152,9 @@ class KpixGuiTop : public KpixGuiTopForm {
 
    public slots:
 
-      // Read & Write Configuration
-      void readConfig(bool readEn);
-      void writeConfig(bool writeEn);
-      void readStatus();
+      // update display
+      void readConfig_pressed();
+      void updateDisplay();
 };
 
 #endif

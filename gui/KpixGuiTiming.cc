@@ -15,6 +15,7 @@
 // Modification history :
 // 07/02/2008: created
 // 03/05/2009: Added rate limit function.
+// 04/29/2009: Seperate methods for display update and data read.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -127,8 +128,8 @@ void KpixGuiTiming::timeValueChanged() {
 }
 
 
-// Read Settings From Asic/Fpga class
-void KpixGuiTiming::readConfig(bool readEn) {
+// Update Display
+void KpixGuiTiming::updateDisplay() {
 
    unsigned int  clkPeriodVal;
    unsigned int  resetOnVal;
@@ -145,9 +146,9 @@ void KpixGuiTiming::readConfig(bool readEn) {
 
    // Fpga
    if ( fpga != NULL ) {
-      acqClkPeriod->setValue(fpga->getClockPeriod(readEn));
-      digClkPeriod->setValue(fpga->getClockPeriodDig(readEn));
-      readClkPeriod->setValue(fpga->getClockPeriodRead(readEn));
+      acqClkPeriod->setValue(fpga->getClockPeriod(false));
+      digClkPeriod->setValue(fpga->getClockPeriodDig(false));
+      readClkPeriod->setValue(fpga->getClockPeriodRead(false));
    }
 
    if ( asicCnt != 0 ) {
@@ -156,7 +157,7 @@ void KpixGuiTiming::readConfig(bool readEn) {
       asic[0]->getTiming ( &clkPeriodVal,  &resetOnVal,     &resetOffVal,   &leakNullOffVal,
                            &offNullOffVal, &threshOffVal,   &trigInhOffVal, &pwrUpOnVal,
                            &deselDlyVal,   &bunchClkDlyVal, &digDelayVal,   &bunchCountVal,
-                           readEn, rawTrigInh->isChecked());
+                           false, rawTrigInh->isChecked());
 
       // Set Values
       resetOn->setValue(resetOnVal);
@@ -174,16 +175,50 @@ void KpixGuiTiming::readConfig(bool readEn) {
 }
 
 
+// Read Settings From Asic/Fpga class
+void KpixGuiTiming::readConfig() {
+
+   unsigned int  clkPeriodVal;
+   unsigned int  resetOnVal;
+   unsigned int  resetOffVal;
+   unsigned int  leakNullOffVal;
+   unsigned int  offNullOffVal;
+   unsigned int  threshOffVal;
+   unsigned int  trigInhOffVal;
+   unsigned int  pwrUpOnVal;
+   unsigned int  deselDlyVal;
+   unsigned int  bunchClkDlyVal;
+   unsigned int  digDelayVal;
+   unsigned int  bunchCountVal;
+
+   // Fpga
+   if ( fpga != NULL ) {
+      fpga->getClockPeriod();
+      fpga->getClockPeriodDig();
+      fpga->getClockPeriodRead();
+   }
+
+   if ( asicCnt != 0 ) {
+
+      // Asic
+      asic[0]->getTiming ( &clkPeriodVal,  &resetOnVal,     &resetOffVal,   &leakNullOffVal,
+                           &offNullOffVal, &threshOffVal,   &trigInhOffVal, &pwrUpOnVal,
+                           &deselDlyVal,   &bunchClkDlyVal, &digDelayVal,   &bunchCountVal,
+                           true, rawTrigInh->isChecked());
+   }
+}
+
+
 // Write Settings To Asic/Fpga class
-void KpixGuiTiming::writeConfig(bool writeEn) {
+void KpixGuiTiming::writeConfig() {
 
    unsigned int x;
 
    // Fpga
    if ( fpga != NULL ) {
-      fpga->setClockPeriod(acqClkPeriod->value(),writeEn);
-      fpga->setClockPeriodDig(digClkPeriod->value(),writeEn);
-      fpga->setClockPeriodRead(readClkPeriod->value(),writeEn);
+      fpga->setClockPeriod(acqClkPeriod->value());
+      fpga->setClockPeriodDig(digClkPeriod->value());
+      fpga->setClockPeriodRead(readClkPeriod->value());
    }
 
    // Asic
@@ -192,7 +227,7 @@ void KpixGuiTiming::writeConfig(bool writeEn) {
                         leakNullOff->value(), offNullOff->value(), threshOff->value(),   
                         trigInhOff->value(),  pwrUpOn->value(),    deselDly->value(),    
                         bunchClkDly->value(), digDelay->value(),   bunchCount->value(),
-                        !disChecks->isChecked(), writeEn, rawTrigInh->isChecked() );
+                        !disChecks->isChecked(), false, rawTrigInh->isChecked() );
 }
 
 
@@ -226,7 +261,7 @@ void KpixGuiTiming::rawTrigInh_stateChanged() {
       bcLabel->setText("Bunches");
    }
 
-   // Update settings
-   readConfig(false);
+   // Update display
+   updateDisplay();
 }
 

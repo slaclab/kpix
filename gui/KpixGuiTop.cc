@@ -15,6 +15,7 @@
 // Modification history :
 // 07/02/2008: created
 // 03/05/2009: Added rate limit function.
+// 04/29/2009: Added thread to handle IO functions
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -26,6 +27,7 @@
 #include <qtabwidget.h>
 #include <TError.h>
 #include <qfiledialog.h>
+#include <qapplication.h>
 #include <KpixRunRead.h>
 #include "KpixGuiTop.h"
 #include "KpixGuiError.h"
@@ -45,6 +47,8 @@ KpixGuiTop::KpixGuiTop ( SidLink *sidLink, unsigned int clkPeriod, unsigned int 
    this->sidLink       = sidLink;
    this->asicVersion   = version;
    this->defClkPeriod  = clkPeriod;
+   this->cmdType       = 0;
+   this->runRead       = NULL;
 
    // Set base directory
    baseDirBox->setText(baseDir);
@@ -80,7 +84,7 @@ KpixGuiTop::KpixGuiTop ( SidLink *sidLink, unsigned int clkPeriod, unsigned int 
    kpixGuiRun        = new KpixGuiRun(this);
 
    // Update display
-   readConfig(false);
+   updateDisplay();
    setEnabled(true);
 }
 
@@ -142,60 +146,35 @@ void KpixGuiTop::setEnabled ( bool enable ) {
 }
 
 
-void KpixGuiTop::readStatus() {
-   kpixGuiStatus->readStatus();
+// Update Display
+void KpixGuiTop::updateDisplay() {
+   kpixGuiMain->updateDisplay();
+   kpixGuiFpga->updateDisplay();
+   kpixGuiConfig->updateDisplay();
+   kpixGuiTiming->updateDisplay();
+   kpixGuiTrig->updateDisplay();
+   kpixGuiInject->updateDisplay();
+   kpixGuiStatus->updateDisplay();
 }
 
 
-// Read Configuration
-void KpixGuiTop::readConfig(bool readEn) {
-   kpixGuiMain->readConfig(readEn);
-   kpixGuiFpga->readConfig(readEn);
-   kpixGuiConfig->readConfig(readEn);
-   kpixGuiTiming->readConfig(readEn);
-   kpixGuiTrig->readConfig(readEn);
-   kpixGuiInject->readConfig(readEn);
-   kpixGuiStatus->readStatus();
-}
-
-
-// Write Configuration
-void KpixGuiTop::writeConfig(bool writeEn) {
-   kpixGuiMain->writeConfig(writeEn);
-   kpixGuiFpga->writeConfig(writeEn);
-   kpixGuiConfig->writeConfig(writeEn);
-   kpixGuiTiming->writeConfig(writeEn);
-   kpixGuiTrig->writeConfig(writeEn);
-   kpixGuiInject->writeConfig(writeEn);
-}
-
-
+// Set defaults
 void KpixGuiTop::setDefaults_pressed( ) {
-   unsigned int x;
-   try {
-      fpga->setDefaults(defClkPeriod,(asicVersion>7));
-      for(x=0; x<asicCnt; x++) asic[x]->setDefaults(defClkPeriod);
-      readConfig(false);
-      update();
-   } catch ( string error ) {
-      errorMsg->showMessage(error);
-      cout << "Caught Exception: " << error << endl;
-   }
+   setEnabled(false);
+   cmdType = CmdSetDefaults;
+   QThread::start();
 }
 
 
+// ReScan Kpix Devices
 void KpixGuiTop::kpixReScan_pressed() {
-   cout << "ReScan Started" << endl;
-   try {
-      findConnectedAsics();
-   } catch ( string error ) {
-      errorMsg->showMessage(error);
-      cout << "Caught Exception: " << error << endl;
-   }
-   cout << "ReScan Done" << endl;
+   setEnabled(false);
+   cmdType = CmdRescanKpix;
+   QThread::start();
 }
 
 
+// Calib menu pressed
 void KpixGuiTop::calibMenu_pressed() {
    unsigned int x;
    bool         ok;
@@ -209,6 +188,7 @@ void KpixGuiTop::calibMenu_pressed() {
 }
 
 
+// Thresh Scan Menu
 void KpixGuiTop::threshScanMenu_pressed() {
    unsigned int x;
    bool         ok;
@@ -222,6 +202,7 @@ void KpixGuiTop::threshScanMenu_pressed() {
 }
 
 
+// Run Menu
 void KpixGuiTop::runMenu_pressed() {
    unsigned int x;
    bool         ok;
@@ -235,53 +216,41 @@ void KpixGuiTop::runMenu_pressed() {
 }
 
 
+// Reg Test
 void KpixGuiTop::regTest_pressed() {
    kpixGuiRegTest->show();
 }
 
 
+// Read Status
 void KpixGuiTop::readStatus_pressed() {
-   try {
-      readStatus();
-   } catch ( string error ) {
-      errorMsg->showMessage(error);
-      cout << "Caught Exception: " << error << endl;
-   }
+   setEnabled(false);
+   cmdType = CmdReadStatus;
+   QThread::start();
 }
 
 
+// Clear Counters
 void KpixGuiTop::clearCounters_pressed() {
-   try {
-      fpga->cmdRstCheckSumErrors();
-      fpga->cmdRstParErrors();
-      fpga->cmdRstDeadCount();
-      fpga->cmdRstTrainNumber();
-      readStatus();
-   } catch ( string error ) {
-      errorMsg->showMessage(error);
-      cout << "Caught Exception: " << error << endl;
-   }
+   setEnabled(false);
+   cmdType = CmdClearCounters;
+   QThread::start();
 }
 
 
+// Read Configuration
 void KpixGuiTop::readConfig_pressed() {
-   try {
-      readConfig(true);
-   } catch ( string error ) {
-      errorMsg->showMessage(error);
-      cout << "Caught Exception: " << error << endl;
-   }
+   setEnabled(false);
+   cmdType = CmdReadConfig;
+   QThread::start();
 }
 
 
+// Write Configuration
 void KpixGuiTop::writeConfig_pressed() {
-   try {
-      writeConfig(true);
-      readConfig(false);
-   } catch ( string error ) {
-      errorMsg->showMessage(error);
-      cout << "Caught Exception: " << error << endl;
-   }
+   setEnabled(false);
+   cmdType = CmdWriteConfig;
+   QThread::start();
 }
 
 
@@ -312,72 +281,6 @@ void KpixGuiTop::dumpSettings_pressed( ) {
       cout << endl << "Dumping Asic " << x << " Settings: " << endl;
       asic[x]->dumpSettings();
    }
-}
-
-
-void KpixGuiTop::findConnectedAsics() {
-   bool          temp1,temp2,temp3;
-   unsigned char temp4;
-   unsigned int  x;
-
-   // Delete ASICs
-   for (x=0; x < asicCnt; x++) delete asic[x];
-   asicCnt = 0;
-
-   // Delete FPGA
-   if ( fpga != NULL ) delete fpga;
-
-   // Create object
-   fpga = new KpixFpga(sidLink);
-
-   // Set defaults
-   fpga->setDefaults(defClkPeriod,(asicVersion>7));
-
-   // Find Each Address
-   cout << "Searching For ASICs" << endl;
-   for (x=0; x <= KPIX_MAX_ADDR; x++) {
-
-      // Create an ASIC object for test
-      asic[asicCnt] = new KpixAsic(sidLink,(x==KPIX_MAX_ADDR?0:asicVersion),x,0);
-
-      // Attempt to find each ASIC
-      try {
-
-         // Send reset command
-         asic[asicCnt]->cmdReset();
-
-         // Attempt to read from device
-         asic[asicCnt]->getStatus(&temp1,&temp2,&temp3,&temp4);
-
-         // If we got here asic was found
-         asic[asicCnt]->setDefaults(defClkPeriod);
-         asicCnt++;
-         cout << "Found ASIC at address 0x" << hex << x << endl;
-      }
-      catch ( string error ) {
-         cout << "No ASIC at address 0x" << hex << x << endl;
-         delete asic[asicCnt];
-      }
-   }
-
-   // Pass asics to sub classes
-   kpixGuiCalibrate->setAsics(asic,asicCnt,fpga);
-   kpixGuiThreshScan->setAsics(asic,asicCnt,fpga);
-   kpixGuiRegTest->setAsics(asic,asicCnt);
-   kpixGuiRun->setAsics(asic,asicCnt,fpga);
-   kpixGuiMain->setAsics(asic,asicCnt);
-   kpixGuiFpga->setFpga(fpga);
-   kpixGuiConfig->setAsics(asic,asicCnt);
-   kpixGuiTiming->setAsics(asic,asicCnt,fpga);
-   kpixGuiTrig->setAsics(asic,asicCnt,fpga);
-   kpixGuiInject->setAsics(asic,asicCnt);
-   kpixGuiStatus->setAsics(asic,asicCnt,fpga);
-
-   // Update display
-   calEnable->setChecked(true);
-   readConfig(false);
-   kpixGuiStatus->readStatus();
-   setEnabled(true);
 }
 
 
@@ -454,64 +357,9 @@ void KpixGuiTop::clearFile_pressed() {
 
 
 void KpixGuiTop::loadSettings_pressed() {
-
-   KpixRunRead  *runRead;
-   unsigned int x;
-
-   try {
-      runRead = new KpixRunRead(calSetFile->text().ascii(),false);
-      gErrorIgnoreLevel = 5000; 
-
-      // Delete ASICs
-      for (x=0; x < asicCnt; x++) delete asic[x];
-      asicCnt = 0;
-
-      // Delete FPGA
-      if ( fpga != NULL ) delete fpga; fpga = NULL;
-
-      // Copy FPGA object
-      fpga = new KpixFpga(*(runRead->getFpga()));
-      fpga->setSidLink(sidLink);
-
-      // Get Asic Count
-      asicCnt = runRead->getAsicCount();
-
-      // Set asic pointers
-      for (x=0; x < asicCnt; x++) {
-         asic[x] = new KpixAsic(*(runRead->getAsic(x)));
-         asic[x]->setSidLink(sidLink);
-      }
-
-      // Pass asics to sub classes
-      kpixGuiCalibrate->setAsics(asic,asicCnt,fpga);
-      kpixGuiThreshScan->setAsics(asic,asicCnt,fpga);
-      kpixGuiRegTest->setAsics(asic,asicCnt);
-      kpixGuiRun->setAsics(asic,asicCnt,fpga,runRead);
-      kpixGuiMain->setAsics(asic,asicCnt);
-      kpixGuiFpga->setFpga(fpga);
-      kpixGuiConfig->setAsics(asic,asicCnt);
-      kpixGuiTiming->setAsics(asic,asicCnt,fpga);
-      kpixGuiTrig->setAsics(asic,asicCnt,fpga);
-      kpixGuiInject->setAsics(asic,asicCnt);
-      kpixGuiStatus->setAsics(asic,asicCnt,fpga);
-
-      // Pass run read to main
-      kpixGuiMain->setRunRead(runRead);
-
-      // Close input file
-      delete runRead;
-
-      // Update
-      readConfig(false);
-      writeConfig(true);
-   } catch (string error) {
-      errorMsg->showMessage(error);
-   }
-
-   // Update
-   calEnable->setChecked(false);
-   kpixGuiStatus->readStatus();
-   setEnabled(true);
+   setEnabled(false);
+   cmdType = CmdLoadSettings;
+   QThread::start();
 }
 
 
@@ -521,5 +369,189 @@ void KpixGuiTop::closeEvent(QCloseEvent *e) {
         kpixGuiRun->close() &&
         kpixGuiThreshScan->close() ) e->accept();
    else e->ignore();
+}
+
+
+// Thread for command run
+void KpixGuiTop::run() {
+   KpixGuiEventRun   *event;
+   KpixGuiEventError *error;
+   unsigned int      x;
+   bool              temp1,temp2,temp3;
+   unsigned char     temp4;
+
+   // Which command
+   try {
+      switch ( cmdType ) {
+
+         case CmdReadStatus : 
+            kpixGuiStatus->readStatus();
+            break;
+
+         case CmdClearCounters :
+            fpga->cmdRstCheckSumErrors();
+            fpga->cmdRstParErrors();
+            fpga->cmdRstDeadCount();
+            fpga->cmdRstTrainNumber();
+            break;
+
+         case CmdReadConfig :
+            kpixGuiMain->readConfig();
+            kpixGuiFpga->readConfig();
+            kpixGuiConfig->readConfig();
+            kpixGuiTiming->readConfig();
+            kpixGuiTrig->readConfig();
+            kpixGuiInject->readConfig();
+            kpixGuiStatus->readStatus();
+            break;
+
+         case CmdWriteConfig :
+            kpixGuiMain->writeConfig();
+            kpixGuiFpga->writeConfig();
+            kpixGuiConfig->writeConfig();
+            kpixGuiTiming->writeConfig();
+            kpixGuiTrig->writeConfig();
+            kpixGuiInject->writeConfig();
+            break;
+
+         case CmdSetDefaults :
+            fpga->setDefaults(defClkPeriod,(asicVersion>7));
+            for(x=0; x<asicCnt; x++) asic[x]->setDefaults(defClkPeriod);
+            break;
+
+         case CmdRescanKpix :
+            cout << "ReScan Started" << endl;
+
+            // Delete ASICs
+            for (x=0; x < asicCnt; x++) delete asic[x];
+            asicCnt = 0;
+
+            // Delete FPGA
+            if ( fpga != NULL ) delete fpga;
+
+            // Create object
+            fpga = new KpixFpga(sidLink);
+
+            // Set defaults
+            fpga->setDefaults(defClkPeriod,(asicVersion>7));
+
+            // Find Each Address
+            cout << "Searching For ASICs" << endl;
+            for (x=0; x <= KPIX_MAX_ADDR; x++) {
+
+               // Create an ASIC object for test
+               asic[asicCnt] = new KpixAsic(sidLink,(x==KPIX_MAX_ADDR?0:asicVersion),x,0);
+
+               // Attempt to find each ASIC
+               try {
+
+                  // Send reset command
+                  asic[asicCnt]->cmdReset();
+
+                  // Attempt to read from device
+                  asic[asicCnt]->getStatus(&temp1,&temp2,&temp3,&temp4);
+
+                  // If we got here asic was found
+                  asic[asicCnt]->setDefaults(defClkPeriod);
+                  asicCnt++;
+                  cout << "Found ASIC at address 0x" << hex << x << endl;
+               }
+               catch ( string error ) {
+                  cout << "No ASIC at address 0x" << hex << x << endl;
+                  delete asic[asicCnt];
+               }
+            }
+            cout << "ReScan Done" << endl;
+            break;
+
+         case CmdLoadSettings :
+
+            // Read File
+            runRead = new KpixRunRead(calSetFile->text().ascii(),false);
+            gErrorIgnoreLevel = 5000; 
+
+            // Delete ASICs
+            for (x=0; x < asicCnt; x++) delete asic[x];
+            asicCnt = 0;
+
+            // Delete FPGA
+            if ( fpga != NULL ) delete fpga; fpga = NULL;
+
+            // Copy FPGA object
+            fpga = new KpixFpga(*(runRead->getFpga()));
+            fpga->setSidLink(sidLink);
+
+            // Get Asic Count
+            asicCnt = runRead->getAsicCount();
+
+            // Set asic pointers
+            for (x=0; x < asicCnt; x++) {
+               asic[x] = new KpixAsic(*(runRead->getAsic(x)));
+               asic[x]->setSidLink(sidLink);
+            }
+            break;
+      }
+   } 
+   catch ( string errorMsg ) {
+      error = new KpixGuiEventError(errorMsg);
+      QApplication::postEvent(this,error);
+   }
+
+   // Update status display
+   event = new KpixGuiEventRun(false,true,"",0,0,0,0);
+   QApplication::postEvent(this,event);
+}
+
+
+
+// Receive Custom Events
+void KpixGuiTop::customEvent ( QCustomEvent *event ) {
+
+   KpixGuiEventError *eventError;
+   KpixGuiEventRun   *eventRun;
+
+   // Run Event
+   if ( event->type() == KPIX_GUI_EVENT_RUN ) {
+      eventRun = (KpixGuiEventRun *)event;
+
+      // Run is stopping
+      if ( eventRun->runStop ) {
+
+         // Read or re-scan
+         if ( cmdType == CmdRescanKpix || cmdType == CmdLoadSettings ) {
+
+            // Pass asics to sub classes
+            kpixGuiCalibrate->setAsics(asic,asicCnt,fpga);
+            kpixGuiThreshScan->setAsics(asic,asicCnt,fpga);
+            kpixGuiRegTest->setAsics(asic,asicCnt);
+            kpixGuiRun->setAsics(asic,asicCnt,fpga,runRead);
+            kpixGuiMain->setAsics(asic,asicCnt);
+            kpixGuiFpga->setFpga(fpga);
+            kpixGuiConfig->setAsics(asic,asicCnt);
+            kpixGuiTiming->setAsics(asic,asicCnt,fpga);
+            kpixGuiTrig->setAsics(asic,asicCnt,fpga);
+            kpixGuiInject->setAsics(asic,asicCnt);
+            kpixGuiStatus->setAsics(asic,asicCnt,fpga);
+
+            // Pass run read to main
+            if ( runRead != NULL ) {
+               kpixGuiMain->setRunRead(runRead);
+               delete runRead;
+               runRead = NULL;
+            }
+         }
+         calEnable->setChecked(cmdType==CmdRescanKpix);
+         updateDisplay();
+         setEnabled(true);
+      }
+      update();
+   }
+
+   // Error Event
+   if ( event->type() == KPIX_GUI_EVENT_ERROR ) {
+      eventError = (KpixGuiEventError *)event;
+      errorMsg->showMessage(eventError->errorMsg);
+      update();
+   }
 }
 

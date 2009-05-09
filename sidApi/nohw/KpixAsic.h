@@ -47,6 +47,7 @@
 // 10/29/2008: Added dac to volt conversion with double input
 // 02/06/2009: Added KPIX version 8 support
 // 04/08/2009: Added flag in timing methods to set mode for trigger inhibit time
+// 04/29/2009: Added readEn flag to some read calls.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_ASIC_H__
 #define __KPIX_ASIC_H__
@@ -226,7 +227,7 @@ class KpixAsic : public TObject {
       // cmdPerr  - Command parity error flag
       // dataPerr - Data parity error flag
       void getStatus ( bool *cmdPerr, bool *dataPerr, 
-                       bool *tempEn, unsigned char *tempValue );
+                       bool *tempEn, unsigned char *tempValue, bool readEn = true );
 
       // Method to set testData mode in Config Register
       // Pass testData flag

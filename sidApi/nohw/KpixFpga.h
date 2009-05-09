@@ -28,6 +28,7 @@
 // 09/26/2008: Added method to set FPGA defaults.
 // 10/23/2008: Added method to set sidLink object.
 // 02/06/2009: Added methods to set digization and readout clocks & Kpix Version
+// 04/29/2009: Added readEn flag to some read calls.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_FPGA_H__
 #define __KPIX_FPGA_H__
@@ -136,10 +137,10 @@ class KpixFpga : public TObject {
       bool regGetReset ( unsigned char address );
 
       // Method to get FPGA Version
-      unsigned int getVersion ( );
+      unsigned int getVersion ( bool readEn = true );
 
       // Method to get FPGA Jumper Inputs.
-      unsigned short getJumpers ( );
+      unsigned short getJumpers ( bool readEn = true );
 
       // Method to set FPGA scratchpad register contents.
       // Default value = 0x00000000
@@ -323,11 +324,11 @@ class KpixFpga : public TObject {
 
       // Method to get KPIX response parity error counter.
       // Set readEn to false to disable real read from FPGA.
-      unsigned char getRspParErrors ( );
+      unsigned char getRspParErrors (bool readEn = true );
 
       // Method to get KPIX data parity error counter.
       // Set readEn to false to disable real read from FPGA.
-      unsigned char getDataParErrors ( );
+      unsigned char getDataParErrors (bool readEn = true );
 
       // Method to reset KPIX response/data parity error counters.
       void cmdRstParErrors ();
@@ -488,7 +489,7 @@ class KpixFpga : public TObject {
 
       // Method to get KPIX train number value.
       // Set readEn to false to disable real read from FPGA.
-      unsigned int getTrainNumber ( );
+      unsigned int getTrainNumber ( bool readEn=false );
 
       // Method to reset KPIX train number value.
       void cmdRstTrainNumber ();
@@ -499,7 +500,7 @@ class KpixFpga : public TObject {
 
       // Method to get KPIX dead time counter.
       // Set readEn to false to disable real read from FPGA.
-      unsigned short getDeadCount ( );
+      unsigned short getDeadCount ( bool readEn=true );
 
       // Method to reset KPIX dead time counter.
       void cmdRstDeadCount ();

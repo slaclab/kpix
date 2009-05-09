@@ -28,6 +28,7 @@
 // 09/26/2008: Added method to set FPGA defaults.
 // 10/23/2008: Added method to set sidLink object.
 // 02/06/2009: Added methods to set digization and readout clocks & kpix Version
+// 04/29/2009: Added readEn flag to some read calls.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -377,8 +378,8 @@ bool KpixFpga::regGetReset ( unsigned char address ) {
 
 // Method to get FPGA Version
 // Set readEn to false to disable real read from FPGA.
-unsigned int KpixFpga::getVersion ( ) { 
-   unsigned int ret = regGetValue ( 0x00, true );
+unsigned int KpixFpga::getVersion ( bool readEn ) { 
+   unsigned int ret = regGetValue ( 0x00, readEn );
    if ( enDebug ) {
       cout << "KpixFpga::getVersion -> Version=";
       cout << hex << setfill('0') << setw(8) << ret << ".\n";
@@ -389,8 +390,8 @@ unsigned int KpixFpga::getVersion ( ) {
 
 // Method to get FPGA Jumper Inputs.
 // Set readEn to false to disable real read from FPGA.
-unsigned short KpixFpga::getJumpers ( ) { 
-   unsigned int ret = regGetValue ( 0x01, true ) & 0x0F;
+unsigned short KpixFpga::getJumpers ( bool readEn ) { 
+   unsigned int ret = regGetValue ( 0x01, readEn ) & 0x0F;
    if ( enDebug ) {
       cout << "KpixFpga::getJumpers -> Jumpers=";
       cout << hex << setfill('0') << setw(1) << ret << ".\n";
@@ -934,8 +935,8 @@ bool KpixFpga::getDisKpixD ( bool readEn ) {
 
 // Method to get KPIX response parity error counter.
 // Set readEn to false to disable real read from FPGA.
-unsigned char KpixFpga::getRspParErrors ( ) {
-   unsigned int temp = regGetValue ( 0x09, true );
+unsigned char KpixFpga::getRspParErrors ( bool readEn ) {
+   unsigned int temp = regGetValue ( 0x09, readEn );
    unsigned char ret = ((temp >> 8) & 0xFF);
    if ( enDebug ) {
       cout << "KpixFpga::getRspParErrors -> RspParErrors=";
@@ -947,8 +948,8 @@ unsigned char KpixFpga::getRspParErrors ( ) {
 
 // Method to get KPIX data parity error counter.
 // Set readEn to false to disable real read from FPGA.
-unsigned char KpixFpga::getDataParErrors ( ) {
-   unsigned int temp = regGetValue ( 0x09, true );
+unsigned char KpixFpga::getDataParErrors ( bool readEn ) {
+   unsigned int temp = regGetValue ( 0x09, readEn );
    unsigned char ret = (temp & 0xFF);
    if ( enDebug ) {
       cout << "KpixFpga::getDataParErrors -> DataParErrors=";
@@ -1471,8 +1472,8 @@ unsigned char KpixFpga::getRstLength ( bool readEn ) {
 
 // Method to get KPIX train number value.
 // Set readEn to false to disable real read from FPGA.
-unsigned int KpixFpga::getTrainNumber ( ) {
-   unsigned int ret = regGetValue ( 0x0C, true );
+unsigned int KpixFpga::getTrainNumber ( bool readEn ) {
+   unsigned int ret = regGetValue ( 0x0C, readEn );
    if ( enDebug ) {
       cout << "KpixFpga::getTrainNumber -> TrainNumber=";
       cout << hex << setfill('0') << setw(8) << ret << ".\n";
@@ -1500,8 +1501,8 @@ double KpixFpga::getTempValue ( bool readEn ) {
 
 // Method to get KPIX dead time counter.
 // Set readEn to false to disable real read from FPGA.
-unsigned short KpixFpga::getDeadCount ( ) {
-   unsigned short ret = regGetValue ( 0x0D, true ) & 0xFFFF;
+unsigned short KpixFpga::getDeadCount ( bool readEn ) {
+   unsigned short ret = regGetValue ( 0x0D, readEn ) & 0xFFFF;
    if ( enDebug ) {
       cout << "KpixFpga::getDeadCount -> DeadCount=";
       cout << hex << setfill('0') << setw(2) << ret << ".\n";
