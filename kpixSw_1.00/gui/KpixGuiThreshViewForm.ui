@@ -1,0 +1,601 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>KpixGuiThreshViewForm</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>KpixGuiThreshViewForm</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>1019</width>
+            <height>576</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>KPIX Threshold Scan Viewer</string>
+    </property>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>inFileOpen</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>810</x>
+                <y>10</y>
+                <width>93</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Open</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>inFileBrowse</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>700</x>
+                <y>10</y>
+                <width>93</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Browse</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>10</y>
+                <width>160</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Input Calibration File:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>inFile</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>160</x>
+                <y>10</y>
+                <width>520</width>
+                <height>23</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>inFileClose</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>920</x>
+                <y>10</y>
+                <width>93</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Close</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>viewConfig</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>350</y>
+                <width>140</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>View Configuration</string>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>outFile</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>160</x>
+                <y>540</y>
+                <width>520</width>
+                <height>23</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>outFileBrowse</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>700</x>
+                <y>540</y>
+                <width>93</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Browse</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>outFileOpen</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>810</x>
+                <y>540</y>
+                <width>93</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Open</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>540</y>
+                <width>160</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Output Calibration File:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>outFileClose</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>920</x>
+                <y>540</y>
+                <width>93</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Close</string>
+        </property>
+    </widget>
+    <widget class="TQtWidget">
+        <property name="name">
+            <cstring>plotData</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>410</x>
+                <y>50</y>
+                <width>600</width>
+                <height>480</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>closeWindow</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>260</x>
+                <y>500</y>
+                <width>140</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Close Window</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>viewChan</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>390</y>
+                <width>140</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>View Channel Plots</string>
+        </property>
+    </widget>
+    <widget class="QTable">
+        <column>
+            <property name="text">
+                <string>Channel</string>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Gain</string>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Mean</string>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Sigma</string>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Sigma (el)</string>
+            </property>
+        </column>
+        <property name="name">
+            <cstring>resultsTable</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>40</y>
+                <width>390</width>
+                <height>300</height>
+            </rect>
+        </property>
+        <property name="font">
+            <font>
+                <pointsize>8</pointsize>
+            </font>
+        </property>
+        <property name="numRows">
+            <number>0</number>
+        </property>
+        <property name="numCols">
+            <number>5</number>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QComboBox">
+        <item>
+            <property name="text">
+                <string>Normal</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Double</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Low</string>
+            </property>
+        </item>
+        <property name="name">
+            <cstring>selGain</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>170</x>
+                <y>420</y>
+                <width>100</width>
+                <height>23</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_2_3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>170</x>
+                <y>400</y>
+                <width>100</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="center"&gt;Gain&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QComboBox">
+        <property name="name">
+            <cstring>selSerial</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>170</x>
+                <y>370</y>
+                <width>100</width>
+                <height>23</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>170</x>
+                <y>350</y>
+                <width>100</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="center"&gt;KPIX Serial&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_2_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>290</x>
+                <y>350</y>
+                <width>100</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="center"&gt;Plot To View&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>writePdf</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>300</x>
+                <y>420</y>
+                <width>80</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Write PDF</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>autoWriteAll</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>440</y>
+                <width>140</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Auto Fit and Save All</string>
+        </property>
+        <property name="accel">
+            <string></string>
+        </property>
+    </widget>
+    <widget class="QComboBox">
+        <item>
+            <property name="text">
+                <string>Gain</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Mean</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Sigma</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Sigma (el)</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Cal Sigma</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Cal Sigma (el)</string>
+            </property>
+        </item>
+        <property name="name">
+            <cstring>selPlot</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>290</x>
+                <y>370</y>
+                <width>100</width>
+                <height>23</height>
+            </rect>
+        </property>
+    </widget>
+</widget>
+<customwidgets>
+    <customwidget>
+        <class>TQtWidget</class>
+        <header location="local">TQtWidget.h</header>
+        <sizehint>
+            <width>-1</width>
+            <height>-1</height>
+        </sizehint>
+        <container>0</container>
+        <sizepolicy>
+            <hordata>5</hordata>
+            <verdata>5</verdata>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        <pixmap>image0</pixmap>
+        <signal>CanvasPainted()</signal>
+        <signal>Saved(bool)</signal>
+        <signal>RootEventProcessed(TObject *object, UInt_t event, TCanvas *RootCanvas)</signal>
+        <slot access="public" specifier="">cd(int)</slot>
+        <slot access="public" specifier="">Disconnect()</slot>
+        <slot access="public" specifier="">cd()</slot>
+        <slot access="public" specifier="">Refresh()</slot>
+        <slot access="public" specifier="">slot()</slot>
+        <slot access="public" specifier="">Save(const char *fileName) const</slot>
+        <slot access="public" specifier="">Save(QString&amp;fileName) const</slot>
+        <slot access="public" specifier="">Save(QString&amp;fileName, const char*format, int quality) const</slot>
+        <slot access="public" specifier="">Save(const char *fileName, const char*format, int quality) const</slot>
+    </customwidget>
+</customwidgets>
+<images>
+    <image name="image0">
+        <data format="PNG" length="342">89504e470d0a1a0a0000000d4948445200000020000000200806000000737a7af40000011d49444154789ced97510e84200c44cbc653b5098737a1a732e97eb8b88214ab2b8b1f4e62621c818776401d33434fbd00001051ba02d42493a87035cfe29b005aeb017800160099444a47ee21a2eaedb5cdbd04c00dce958eb5479e0040803c41eeedb52d7909c031c9658bd77d6a604ff38cd7939e5fc5df005a6968d571ac91bddd7601b06c3a614c3b235f6e479e208c610189e76bc5240cf985d2e01f4fc8a3da5154ac15f25f60ad6f801bd48009609b8059610cc97aa0ddf71380356a67063701cc6af7c576410c0510dda9d92700b518e6f1db7a0100caf7c43ac9a3688a616c588a5f1c5cf3725f8ba25a03678beaa8eeb90e58675f7bfca9f4ef870dc091475f2b4e2b4402d0febd6f211c3377f9376466b700f454f714bc014433eaccd710071d0000000049454e44ae426082</data>
+    </image>
+</images>
+<connections>
+    <connection>
+        <sender>inFileBrowse</sender>
+        <signal>pressed()</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>inFileBrowse_pressed()</slot>
+    </connection>
+    <connection>
+        <sender>inFileOpen</sender>
+        <signal>pressed()</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>inFileOpen_pressed()</slot>
+    </connection>
+    <connection>
+        <sender>viewConfig</sender>
+        <signal>pressed()</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>viewConfig_pressed()</slot>
+    </connection>
+    <connection>
+        <sender>outFileBrowse</sender>
+        <signal>pressed()</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>outFileBrowse_pressed()</slot>
+    </connection>
+    <connection>
+        <sender>closeWindow</sender>
+        <signal>pressed()</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>close()</slot>
+    </connection>
+    <connection>
+        <sender>inFileClose</sender>
+        <signal>pressed()</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>inFileClose_pressed()</slot>
+    </connection>
+    <connection>
+        <sender>outFileOpen</sender>
+        <signal>pressed()</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>outFileOpen_pressed()</slot>
+    </connection>
+    <connection>
+        <sender>outFileClose</sender>
+        <signal>pressed()</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>outFileClose_pressed()</slot>
+    </connection>
+    <connection>
+        <sender>selSerial</sender>
+        <signal>activated(int)</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>updateDisplay()</slot>
+    </connection>
+    <connection>
+        <sender>selGain</sender>
+        <signal>activated(int)</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>updateDisplay()</slot>
+    </connection>
+    <connection>
+        <sender>viewChan</sender>
+        <signal>pressed()</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>viewChan_pressed()</slot>
+    </connection>
+    <connection>
+        <sender>writePdf</sender>
+        <signal>pressed()</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>writePdf_pressed()</slot>
+    </connection>
+    <connection>
+        <sender>selPlot</sender>
+        <signal>activated(const QString&amp;)</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>updateDisplay()</slot>
+    </connection>
+    <connection>
+        <sender>autoWriteAll</sender>
+        <signal>pressed()</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>autoWriteAll_pressed()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">KpixGuiThreshViewForm.ui.h</include>
+</includes>
+<slots>
+    <slot>inFileBrowse_pressed()</slot>
+    <slot>inFileOpen_pressed()</slot>
+    <slot>viewConfig_pressed()</slot>
+    <slot>plotDirBrowse_pressed()</slot>
+    <slot>outFileBrowse_pressed()</slot>
+    <slot>outFileWrite_pressed()</slot>
+    <slot>inFileClose_pressed()</slot>
+    <slot>viewInCalib_pressed()</slot>
+    <slot>viewInHist_pressed()</slot>
+    <slot>autoWriteAll_pressed()</slot>
+    <slot>outFileOpen_pressed()</slot>
+    <slot>outFileClose_pressed()</slot>
+    <slot>updateDisplay()</slot>
+    <slot>genPdf_pressed()</slot>
+    <slot>writePdf_pressed()</slot>
+    <slot>viewChan_pressed()</slot>
+    <slot>autoWriteAll_released()</slot>
+</slots>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+<includehints>
+    <includehint>TQtWidget.h</includehint>
+</includehints>
+</UI>
