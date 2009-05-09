@@ -109,6 +109,13 @@ KpixGuiCalFit::KpixGuiCalFit ( string baseDir, bool open ) : KpixGuiCalFitForm()
       }
    }
 
+   // Bucket times
+   calCount      = 0;
+   calTime[0]    = 0;
+   calTime[1]    = 0;
+   calTime[2]    = 0;
+   calTime[3]    = 0;
+
    // Auto open file
    if ( open ) inFileOpen_pressed();
 }
@@ -992,7 +999,7 @@ void KpixGuiCalFit::run() {
    KpixGuiEventError  *error;
    unsigned int       x;
    stringstream       temp, cmd;
-   string             calTime;
+   string             calTimeStamp;
    KpixRunVar         *runVar;
    unsigned int       curr, total;
    QString            qtemp;
@@ -1001,6 +1008,7 @@ void KpixGuiCalFit::run() {
    unsigned int       serial;
    unsigned int       channel;
    unsigned int       bucket;
+   unsigned int       calA, calB, calC, calD;
 
    // Get current entries
    dirIndex = selDir->currentItem();
@@ -1032,6 +1040,15 @@ void KpixGuiCalFit::run() {
                asic[x] = inFileRoot->kpixRunRead->getAsic(x);
                calibData[x] = new KpixGuiCalFitData();
             }
+
+            // Update calibration times
+            asic[0]->getCalibTime(&calCount,&calA,&calB,&calC,&calD,false);
+
+            // Compute time points
+            calTime[0] = calA;
+            calTime[1] = calA + calB + 4;
+            calTime[2] = calA + calB + calC + 8;
+            calTime[3] = calA + calB + calC + calD + 12;
 
             // Loop through types
             total = DIR_COUNT*3*asicCnt*asic[0]->getChCount();
@@ -1069,13 +1086,13 @@ void KpixGuiCalFit::run() {
             }
 
             // Determine cal time
-            calTime = inFileRoot->kpixRunRead->getRunCalib();
-            if ( calTime == "" ) calTime = inFileRoot->kpixRunRead->getRunTime();
+            calTimeStamp = inFileRoot->kpixRunRead->getRunCalib();
+            if ( calTimeStamp == "" ) calTimeStamp = inFileRoot->kpixRunRead->getRunTime();
 
             // attempt to open output file
             outFileRoot = new KpixRunWrite(outFile->text().ascii(),
                                            inFileRoot->kpixRunRead->getRunName(),
-                                           inFileRoot->kpixRunRead->getRunDescription(), calTime,
+                                           inFileRoot->kpixRunRead->getRunDescription(), calTimeStamp,
                                            inFileRoot->kpixRunRead->getRunTime(),
                                            inFileRoot->kpixRunRead->getEndTime());
             gErrorIgnoreLevel = 5000; 

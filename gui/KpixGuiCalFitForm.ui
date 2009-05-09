@@ -985,25 +985,6 @@
                 <string>&lt;p align="right"&gt;Normal:&lt;/p&gt;</string>
             </property>
         </widget>
-        <widget class="QCheckBox">
-            <property name="name">
-                <cstring>timeFiltEn</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>50</x>
-                    <y>130</y>
-                    <width>150</width>
-                    <height>21</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>Apply Time Filter</string>
-            </property>
-            <property name="checked">
-                <bool>true</bool>
-            </property>
-        </widget>
         <widget class="QLineEdit">
             <property name="name">
                 <cstring>normMinFit</cstring>
@@ -1028,22 +1009,6 @@
                 <rect>
                     <x>60</x>
                     <y>70</y>
-                    <width>60</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>0</string>
-            </property>
-        </widget>
-        <widget class="QLineEdit">
-            <property name="name">
-                <cstring>lowMinFit</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>60</x>
-                    <y>100</y>
                     <width>60</width>
                     <height>23</height>
                 </rect>
@@ -1098,6 +1063,41 @@
             </property>
             <property name="text">
                 <string>20000</string>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>lowMinFit</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>60</x>
+                    <y>100</y>
+                    <width>60</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>0</string>
+            </property>
+        </widget>
+        <widget class="QCheckBox">
+            <property name="name">
+                <cstring>timeFiltEn</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>50</x>
+                    <y>130</y>
+                    <width>150</width>
+                    <height>21</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>Apply Time Filter</string>
+            </property>
+            <property name="checked">
+                <bool>true</bool>
             </property>
         </widget>
     </widget>
@@ -1379,6 +1379,12 @@
     <connection>
         <sender>lowMaxFit</sender>
         <signal>returnPressed()</signal>
+        <receiver>KpixGuiCalFitForm</receiver>
+        <slot>selChanged()</slot>
+    </connection>
+    <connection>
+        <sender>timeFiltEn</sender>
+        <signal>toggled(bool)</signal>
         <receiver>KpixGuiCalFitForm</receiver>
         <slot>selChanged()</slot>
     </connection>
