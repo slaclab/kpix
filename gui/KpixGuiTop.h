@@ -14,6 +14,7 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 03/05/2009: Added rate limit function.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_TOP_H__
 #define __KPIX_GUI_TOP_H__
@@ -42,6 +43,7 @@
 #include "KpixGuiMain.h"
 #include "KpixGuiTiming.h"
 #include "KpixGuiTrig.h"
+#include "KpixGuiStatus.h"
 #include "KpixGuiRegTest.h"
 #include "KpixGuiRun.h"
 #include "KpixGuiCalibrate.h"
@@ -68,6 +70,7 @@ class KpixGuiTop : public KpixGuiTopForm {
       KpixGuiFpga       *kpixGuiFpga;
       KpixGuiConfig     *kpixGuiConfig;
       KpixGuiTiming     *kpixGuiTiming;
+      KpixGuiStatus     *kpixGuiStatus;
       KpixGuiTrig       *kpixGuiTrig;
       KpixGuiInject     *kpixGuiInject;
       KpixGuiRegTest    *kpixGuiRegTest;
@@ -79,7 +82,8 @@ class KpixGuiTop : public KpixGuiTopForm {
 
       // Creation Class
       KpixGuiTop ( SidLink *sidLink, unsigned int clkPeriod, unsigned int version, 
-                   string baseDir, string calString, QWidget *parent=0 );
+                   string baseDir, string calString, unsigned int rateLimit, 
+                   QWidget *parent=0 );
 
       // Delete
       ~KpixGuiTop ( );
@@ -99,6 +103,9 @@ class KpixGuiTop : public KpixGuiTopForm {
       // Get Run Variable List
       KpixRunVar **getRunVarList(unsigned int *count);
 
+      // Get rate limit value, zero for none
+      unsigned int getRateLimit();
+
       // Get Calibration/Settings File Name
       string getCalFile ();
 
@@ -112,7 +119,7 @@ class KpixGuiTop : public KpixGuiTopForm {
       void threshScanMenu_pressed();
       void regTest_pressed();
       void runMenu_pressed();
-      void readCounters_pressed();
+      void readStatus_pressed();
       void clearCounters_pressed();
       void readConfig_pressed();
       void writeConfig_pressed();
@@ -132,7 +139,7 @@ class KpixGuiTop : public KpixGuiTopForm {
       // Read & Write Configuration
       void readConfig(bool readEn);
       void writeConfig(bool writeEn);
-      void readFpgaCounters();
+      void readStatus();
 };
 
 #endif

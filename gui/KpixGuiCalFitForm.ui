@@ -380,71 +380,23 @@
             <string>Close Window</string>
         </property>
     </widget>
-    <widget class="QTable">
-        <column>
-            <property name="text">
-                <string>Chan/Bucket</string>
-            </property>
-        </column>
-        <column>
-            <property name="text">
-                <string>Gain</string>
-            </property>
-        </column>
-        <column>
-            <property name="text">
-                <string>Icept</string>
-            </property>
-        </column>
-        <column>
-            <property name="text">
-                <string>RMS</string>
-            </property>
-        </column>
-        <column>
-            <property name="text">
-                <string>Mean</string>
-            </property>
-        </column>
-        <column>
-            <property name="text">
-                <string>Sigma</string>
-            </property>
-        </column>
-        <column>
-            <property name="text">
-                <string>RMS(el)</string>
-            </property>
-        </column>
-        <column>
-            <property name="text">
-                <string>Sigma(el)</string>
-            </property>
-        </column>
+    <widget class="QPushButton">
         <property name="name">
-            <cstring>resultsTable</cstring>
+            <cstring>autoWriteAll</cstring>
         </property>
         <property name="geometry">
             <rect>
                 <x>10</x>
-                <y>40</y>
-                <width>560</width>
-                <height>300</height>
+                <y>480</y>
+                <width>140</width>
+                <height>28</height>
             </rect>
         </property>
-        <property name="font">
-            <font>
-                <pointsize>8</pointsize>
-            </font>
+        <property name="text">
+            <string>Auto Fit and Save All</string>
         </property>
-        <property name="numRows">
-            <number>0</number>
-        </property>
-        <property name="numCols">
-            <number>8</number>
-        </property>
-        <property name="readOnly">
-            <bool>true</bool>
+        <property name="accel">
+            <string></string>
         </property>
     </widget>
     <widget class="QComboBox">
@@ -483,6 +435,16 @@
                 <string>Sigma (el)</string>
             </property>
         </item>
+        <item>
+            <property name="text">
+                <string>HRms</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>HRms (el)</string>
+            </property>
+        </item>
         <property name="name">
             <cstring>selPlot</cstring>
         </property>
@@ -495,23 +457,111 @@
             </rect>
         </property>
     </widget>
-    <widget class="QPushButton">
+    <widget class="QTable">
+        <column>
+            <property name="text">
+                <string>Chan/Bucket</string>
+            </property>
+            <property name="pixmap">
+                <pixmap></pixmap>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Gain</string>
+            </property>
+            <property name="pixmap">
+                <pixmap></pixmap>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Icept</string>
+            </property>
+            <property name="pixmap">
+                <pixmap></pixmap>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>RMS</string>
+            </property>
+            <property name="pixmap">
+                <pixmap></pixmap>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Mean</string>
+            </property>
+            <property name="pixmap">
+                <pixmap></pixmap>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Sigma</string>
+            </property>
+            <property name="pixmap">
+                <pixmap></pixmap>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>RMS(el)</string>
+            </property>
+            <property name="pixmap">
+                <pixmap></pixmap>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Sigma(el)</string>
+            </property>
+            <property name="pixmap">
+                <pixmap></pixmap>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Hrms</string>
+            </property>
+            <property name="pixmap">
+                <pixmap></pixmap>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>HRms(el)</string>
+            </property>
+            <property name="pixmap">
+                <pixmap></pixmap>
+            </property>
+        </column>
         <property name="name">
-            <cstring>autoWriteAll</cstring>
+            <cstring>resultsTable</cstring>
         </property>
         <property name="geometry">
             <rect>
                 <x>10</x>
-                <y>480</y>
-                <width>140</width>
-                <height>28</height>
+                <y>40</y>
+                <width>560</width>
+                <height>300</height>
             </rect>
         </property>
-        <property name="text">
-            <string>Auto Fit and Save All</string>
+        <property name="font">
+            <font>
+                <pointsize>8</pointsize>
+            </font>
         </property>
-        <property name="accel">
-            <string></string>
+        <property name="numRows">
+            <number>0</number>
+        </property>
+        <property name="numCols">
+            <number>10</number>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
         </property>
     </widget>
 </widget>
@@ -547,7 +597,7 @@
 </customwidgets>
 <images>
     <image name="image0">
-        <data format="PNG" length="342">89504e470d0a1a0a0000000d4948445200000020000000200806000000737a7af40000011d49444154789ced97510e84200c44cbc653b5098737a1a732e97eb8b88214ab2b8b1f4e62621c818776401d33434fbd00001051ba02d42493a87035cfe29b005aeb017800160099444a47ee21a2eaedb5cdbd04c00dce958eb5479e0040803c41eeedb52d7909c031c9658bd77d6a604ff38cd7939e5fc5df005a6968d571ac91bddd7601b06c3a614c3b235f6e479e208c610189e76bc5240cf985d2e01f4fc8a3da5154ac15f25f60ad6f801bd48009609b8059610cc97aa0ddf71380356a67063701cc6af7c576410c0510dda9d92700b518e6f1db7a0100caf7c43ac9a3688a616c588a5f1c5cf3725f8ba25a03678beaa8eeb90e58675f7bfca9f4ef870dc091475f2b4e2b4402d0febd6f211c3377f9376466b700f454f714bc014433eaccd710071d0000000049454e44ae426082</data>
+        <data format="PNG" length="340">89504e470d0a1a0a0000000d4948445200000020000000200806000000737a7af40000011b49444154789ced97db0e84200c44878d5f65133edea47c9509fbe0954bb1bab2f8e024269b8cd08374d035ec182df50100eac93705286a840c57f234be0aa0b25e8017600318e1b357e4514fa2773436f102800e267bed3cb204c0832c21f68ec6663d5cde027fdbe1f5a01e38d0b4e2fda2e7adf817402d75b5265e7ae4e86dbb01285e3a3cb8b088cd8f234be0815790e57754d98400bb6824c527cf93edc589d6e273af90dd014b73e3013da00248133089070ece03e9be9f00b451bb525c0530a9de17db0d31f4a0de5c5a7d085088611cbfd46300f97b963e49a2a889e132301bbfb9b8e425be1045b107ae36d5593df31cd0aebef4f843c9df0f09c099475f6a4e2d4400507fdf5308c38e9bfc3764c7660568a9e629f8027148aaf121ee81060000000049454e44ae426082</data>
     </image>
 </images>
 <connections>

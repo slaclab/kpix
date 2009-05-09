@@ -149,9 +149,8 @@ void KpixGuiThreshChan::show() {
 // Pass original histogram containing a bin for each threshold value.
 // Pass total number of iterations for bayes divide.
 // Returned plot will have millivolts on the x-axis
-TGraphAsymmErrors *KpixGuiThreshChan::convertHist (TH1D *passHist, unsigned int total, 
-                                                   double *hint, double *min, double *max) {
-
+TGraphAsymmErrors *KpixGuiThreshChan::convertHist (TH1D *passHist, unsigned int total, double *hint, 
+                                                   double *min, double *max, bool debug, bool convert ) {
    TGraphAsymmErrors *temp;
    TH1D              *tot;
    unsigned int      newCount;
@@ -162,54 +161,89 @@ TGraphAsymmErrors *KpixGuiThreshChan::convertHist (TH1D *passHist, unsigned int 
    double            newY[256];
    double            newYlow[256];
    double            newYhigh[256];
+   double            hintMin, hintMax;
 
    // Clone histogram to total hist
    tot = new TH1D(*passHist);
 
    // Fill each bin with the total count
-   for (x=1; x<= (unsigned int)tot->GetNbinsX(); x++) {
-      tot->SetBinContent(x,total);
-   }
+   for (x=1; x<= (unsigned int)tot->GetNbinsX(); x++) tot->SetBinContent(x,total);
 
-   // Creat temporary AsymErrors Plot
+   // Create AsymErrors Plot
    temp = new TGraphAsymmErrors(passHist,tot,"w");
    delete passHist;
    delete tot;
 
-   // Get and convert points
-   *min = -1; *max = -1;
+   // Init min & max values
+   *min    = -1; 
+   *max    = -1;
+   hintMin = -1;
+   hintMax = -1;
+
+   // Go through each point
    newCount = temp->GetN();
-   *hint=-1;
    for (x=0; x< newCount; x++) {
+
+      // Set x errors to zero
+      temp->SetPointEXhigh(x, 0.0);
+      temp->SetPointEXlow(x, 0.0);
+
+      // Get points for voltage conversion
       temp->GetPoint(x,newX[x],newY[x]);
-      newX[x]     = KpixAsic::dacToVolt(newX[x])*1000.0;
+      if ( convert ) newX[x] = KpixAsic::dacToVolt((unsigned char)newX[x])*1000.0;
+      else newX[x] = newX[x] - 0.5;
       newXlow[x]  = 0;
       newXhigh[x] = 0;
       newYlow[x]  = temp->GetErrorYlow(x);
       newYhigh[x] = temp->GetErrorYhigh(x);
 
-      // Find min value as last zero value moving from left
-      if ( *min == -1 && newY[x] != 0 ) 
+      // Debug output
+      if ( debug ) {
+         cout << setw(10) << setfill(' ') << x;
+         cout << setprecision(4) << setw(10) << setfill(' ') << newX[x];
+         cout << setprecision(4) << setw(10) << setfill(' ') << newY[x];
+         cout << setprecision(4) << setw(10) << setfill(' ') << newYlow[x];
+         cout << setprecision(4) << setw(10) << setfill(' ') << newYhigh[x];
+         cout << endl;
+      }
+
+      // Find min value as last zero value moving from left to right
+      if ( *min == -1 && newY[x] != 0 ) {
          if ( x > 0 ) *min = newX[x-1];
          else *min = newX[0];
+      }
 
-      // Find max value as the last 1 value moving from right
+      // Find max value as the last 1 value moving from right to left
       if ( *max == -1 ) {
          if ( newY[x] == 1 ) *max = newX[x];
       }
       else if ( newY[x] < 1 ) *max = -1; // Reset if non 1 value found after max set
+
+      // Find range for possible mean
+      if ( newY[x] <= 0.15 ) hintMin = newX[x];
+      if ( newY[x] >= 0.85 && hintMax == -1 ) hintMax = newX[x];
    }
+
+   // Create converted graph
    delete temp;
+   temp = new TGraphAsymmErrors(newCount,newX,newY,newXlow,newXhigh,newYlow,newYhigh);
 
    // make sure we always get a min and a max
    if ( *min == -1 ) *min = newX[0];
    if ( *max == -1 ) *max = newX[newCount-1];
 
-   // Determine hint from min/max values
-   *hint = *min + (*max-*min)/2.0;
+   // Determine hint, Use max value if plot never reaches 100%
+   if ( hintMax == -1 ) *hint = newX[newCount-1];
+   else *hint = hintMin + (hintMax-hintMin)/2.0;
 
-   // Create new graph
-   temp = new TGraphAsymmErrors(newCount,newX,newY,newXlow,newXhigh,newYlow,newYhigh);
+   // Debug
+   if ( debug ) {
+      cout << "Min =" << *min << endl;
+      cout << "Max =" << *max << endl;
+      cout << "Hint=" << *hint << endl;
+   }
+
+   // Return new plot
    return(temp);
 }
 
@@ -227,6 +261,7 @@ void KpixGuiThreshChan::updateDisplay() {
    double       gainVal, sigmaVal;
    double       hint;
    double       min,max,lmin,lmax;
+   bool         debug;
 
    // Calib Data or directory not valid
    if ( threshRead == NULL ) 
@@ -276,7 +311,7 @@ void KpixGuiThreshChan::updateDisplay() {
    gStyle->SetOptFit(1111);
 
    // Create fitting function
-   if ( threshRead->kpixRunRead->getAsic(serial)->getSerial() >= 7 )
+   if ( threshRead->kpixRunRead->getAsic(serial)->getSerial() >= 7 ) 
       fitFunc = new TF1("fit","(0.5)*TMath::Erfc(([0]-x)/(sqrt(2.0)*[1]))");
    else
       fitFunc = new TF1("fit","(0.5)*TMath::Erfc((x-[0])/(sqrt(2.0)*[1]))");
@@ -320,25 +355,35 @@ void KpixGuiThreshChan::updateDisplay() {
             // Skip if histogram is not found
             if ( origHist == NULL ) continue;
 
+            // Determine debug
+            debug = (!calSame->isChecked()) && 
+                    (cal == (unsigned int)calDac->value()) && 
+                    fitDebug->isChecked();
+
             // Create Asym Calibration Graph
             calGraph[cal] = convertHist(origHist->ProjectionX("temp",0,calTime->value()),
-                                        threshCount,&hint,&lmin,&lmax);
+                                        threshCount,&hint,&lmin,&lmax,debug,voltConvert->isChecked());
+
+            // Set title
             calGraph[cal]->SetTitle(KpixThreshRead::genPlotTitle("Thresh Graph Cal",gain,
                                    threshRead->kpixRunRead->getAsic(serial)->getSerial(),
                                    channel,cal).c_str());
+
+            // Determine min/max for all channels
             if ( min == -1 || lmin < min ) min = lmin;
             if ( max == -1 || lmax > max ) max = lmax;
 
             // Set Fit Hint
             fitFunc->SetParameter(0,hint);
-            fitFunc->SetParLimits(0,lmin-20,lmax+20);
+            fitFunc->SetParLimits(0,lmin,lmax);
             fitFunc->SetParameter(1,calHint->text().toDouble());
 
             // Attempt to fit
-            if ( calGraph[cal]->Fit(fitFunc,"q") != 0 ||
-                 calGraph[cal]->GetFunction("fit")->GetParameter(0) < 0 ||
-                 calGraph[cal]->GetFunction("fit")->GetParameter(1) < 0 ) {
+            if ( calGraph[cal]->Fit(fitFunc,(debug?"":"q")," ",lmin,lmax) != 0 ||
+                 (calGraph[cal]->GetFunction("fit")->GetParameter(0) < 0 && !debug) ||
+                 (calGraph[cal]->GetFunction("fit")->GetParameter(1) < 0 && !debug)) {
                delete calGraph[cal]->GetFunction("fit");
+               if ( debug ) cout << "Fit Function Deleted" << endl;
             }
             else {
                calX[calCnt] = KpixAsic::computeCalibCharge(0,cal,
@@ -363,23 +408,24 @@ void KpixGuiThreshChan::updateDisplay() {
          }
 
          // Adjust min&max range of calibration plots
+         min -= 20; max += 20;
          for (cal=calMin; cal <= calMax; cal += calStep)
-            if ( calGraph[cal] != NULL ) calGraph[cal]->GetXaxis()->SetRangeUser(min-20,max+20);
+            if ( calGraph[cal] != NULL ) calGraph[cal]->GetXaxis()->SetRangeUser(min,max);
 
          // Create thresh hist graph
          if ( sumHist != NULL ) {
-            threshGraph = convertHist(sumHist,histCount,&hint,&min,&max);
+            threshGraph = convertHist(sumHist,histCount,&hint,&min,&max,fitDebug->isChecked(),voltConvert->isChecked());
             threshGraph->SetTitle(KpixThreshRead::genPlotTitle("Thresh Graph",gain,
                                   threshRead->kpixRunRead->getAsic(serial)->getSerial(),
                                   channel).c_str());
 
             // Set Fit Hint
             fitFunc->SetParameter(0,hint);
-            fitFunc->SetParLimits(0,min-20,max+20);
+            fitFunc->SetParLimits(0,min,max);
             fitFunc->SetParameter(1,threshHint->text().toDouble());
 
             // Attempt to fit
-            if ( threshGraph->Fit(fitFunc,"q") != 0 ||
+            if ( threshGraph->Fit(fitFunc,fitDebug->isChecked()?"":"q","",min,max) != 0 ||
                  threshGraph->GetFunction("fit")->GetParameter(0) < 0 ||
                  threshGraph->GetFunction("fit")->GetParameter(1) < 0 ) {
                delete threshGraph->GetFunction("fit");

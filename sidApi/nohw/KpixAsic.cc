@@ -50,6 +50,9 @@
 // 10/23/2008: Added method to set sidLink object.
 // 10/27/2008: Added method to get trigger inhibit time.
 // 10/29/2008: Added dac to volt conversion with double input
+// 02/06/2009: Added KPIX version 8 support
+// 02/23/2009: Changed default timing values.
+// 04/08/2009: Added flag in timing methods to set mode for trigger inhibit time
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -205,6 +208,363 @@ void KpixAsic::regRead ( unsigned char address ) {
 }
 
 
+// Private method to write timing settings for versions 0-7
+void KpixAsic::setTimingV7 ( unsigned int clkPeriod,  unsigned int resetOn,
+                             unsigned int resetOff,   unsigned int leakNullOff,
+                             unsigned int offNullOff, unsigned int threshOff,
+                             unsigned int trigInhOff, unsigned int pwrUpOn,
+                             unsigned int deselDly,   unsigned int bunchClkDly,
+                             unsigned int digDelay,   bool enChecking,
+                             bool writeEn,            bool trigInhRaw ) {
+
+   // Additional times that are auto generated
+   unsigned int pwrUpAcqOff;
+   unsigned int pwrUpDigOff;
+   unsigned int leakNullOn;
+   unsigned int trigInhOn;
+   unsigned int offNullOn;
+   unsigned int threshOn;
+   unsigned int tempLow[7];
+   unsigned int tempHigh[7];
+   unsigned int temp[8];
+   int i;
+   stringstream error;
+
+   // Store clock period
+   this->clkPeriod = clkPeriod;
+
+   // Trigger inhibit mode
+   if ( ! trigInhRaw ) trigInhOff = bunchClkDly + (clkPeriod * 8 * trigInhOff) + clkPeriod;
+
+   // Timing ordering checks
+   if ( enChecking && ! (
+
+      // Leakage null comes first    - Then reset assertion
+      (leakNullOff < resetOn)        && (resetOn < pwrUpOn)
+
+      // Then power up               - Then deselect 
+      && (pwrUpOn < deselDly)        && (deselDly < offNullOff)
+      
+      // Then offset null            - Then threshold offset
+      && (offNullOff < threshOff)    && (threshOff < resetOff)
+
+      // Then reset off              // Then bunch clock delay, trigger inhibit
+      && (resetOff < bunchClkDly)    && (bunchClkDly < trigInhOff) ) ) {
+
+      // Declare error
+      throw string("KpixAsic::setTiming -> Timing sequence error detected!");
+   }
+
+   // Generate auto time values
+   pwrUpAcqOff = bunchClkDly + 2891 * 8 * clkPeriod;
+   leakNullOn  = pwrUpAcqOff;
+   trigInhOn   = pwrUpAcqOff;
+   pwrUpDigOff = bunchClkDly + 2890 * 8 * clkPeriod + digDelay + 32841 * clkPeriod;
+   offNullOn   = pwrUpDigOff;
+   threshOn    = pwrUpDigOff;
+
+   // Copy data into an array
+   tempLow[0]  = resetOn;     tempHigh[0] = resetOff;
+   tempLow[1]  = leakNullOff; tempHigh[1] = leakNullOn;
+   tempLow[2]  = offNullOff;  tempHigh[2] = offNullOn;
+   tempLow[3]  = threshOff;   tempHigh[3] = threshOn;
+   tempLow[4]  = trigInhOff;  tempHigh[4] = trigInhOn;
+   tempLow[5]  = pwrUpOn;     tempHigh[5] = pwrUpAcqOff;
+   tempLow[6]  = pwrUpOn;     tempHigh[6] = pwrUpDigOff;
+
+   // Convert values and verify values are ok
+   for (i=0; i < 7; i++) {
+
+      // Check divide
+      if ((tempLow[i] % clkPeriod) != 0 || (tempHigh[i] % clkPeriod) != 0)  {
+         cout << "KpixAsic::setTiming -> ";
+         cout << "Warning: Timing register ";
+         cout << dec << i << " value not divisiable by clkPeriod. ";
+         cout << "Values=" << dec << tempLow[i] << "/" << dec << tempHigh[i];
+         cout << " clkPeriod=" << dec << clkPeriod << ".\n";
+      }
+
+      // Check range
+      if ((tempLow[i] / clkPeriod) > 0xFFFF || (tempHigh[i] / clkPeriod) > 0xFFFF) {
+         error << "KpixAsic::setTiming -> ";
+         error << "Timing register " << dec << i << " value too large. ";
+         error << "Values=" << dec << tempLow[i] << "/" << dec << tempHigh[i] << ".";
+         throw(error.str()); 
+      }
+
+      // Convert to register value
+      temp[i]  = (tempLow[i]  / clkPeriod) & 0x0000FFFF;
+      temp[i] |= ((tempHigh[i] / clkPeriod) << 16) & 0xFFFF0000;
+   }
+
+   // Check clock period divide for register 7
+   if ((deselDly%clkPeriod)!=0 || (bunchClkDly%clkPeriod)!=0 || (digDelay%clkPeriod)!=0 ) {
+      cout << "KpixAsic::setTiming -> ";
+      cout << "Warning: Timing register 7 value not divisiable by clkPeriod. ";
+      cout << "Values=" << dec << deselDly << "/" << dec << bunchClkDly << "/";
+      cout << dec << digDelay << " clkPeriod=" << dec << clkPeriod << ".\n";
+   }
+
+   // Convert register values
+   if ((deselDly/clkPeriod)>0xFF || (bunchClkDly/clkPeriod)>0xFFFF || 
+       (digDelay/clkPeriod>0xFF)) {
+      error << "KpixAsic::setTiming -> ";
+      error << "Timing register 7 value too large. " << "Values="; 
+      error << dec << deselDly << "/" << dec << bunchClkDly << "/" << dec << digDelay << ".";
+      throw(error.str()); 
+   }
+
+   // Convert to register value
+   temp[7]  = (deselDly     / clkPeriod) & 0x000000FF;
+   temp[7] |= ((bunchClkDly / clkPeriod) <<  8) & 0x00FFFF00;
+   temp[7] |= ((digDelay    / clkPeriod) << 24) & 0xFF000000;
+
+   // Debug if enabled
+   if ( enDebug ) {
+      cout << "KpixAsic::setTiming -> writing timing: \n";
+      cout << "                       clkPeriod    = " << dec << clkPeriod    << "\n";
+      cout << "                       resetOn      = " << dec << resetOn      << "\n";
+      cout << "                       resetOff     = " << dec << resetOff     << "\n";
+      cout << "                       leakNullOff  = " << dec << leakNullOff  << "\n";
+      cout << "                       leakNullOn   = " << dec << leakNullOn   << " (auto)\n";
+      cout << "                       offNullOff   = " << dec << offNullOff   << "\n";
+      cout << "                       offNullOn    = " << dec << offNullOn    << " (auto)\n";
+      cout << "                       threshOff    = " << dec << threshOff    << "\n";
+      cout << "                       threshOn     = " << dec << threshOn     << " (auto)\n";
+      cout << "                       trigInhOff   = " << dec << trigInhOff   << "\n";
+      cout << "                       trigInhOn    = " << dec << trigInhOn    << " (auto)\n";
+      cout << "                       pwrUpOn      = " << dec << pwrUpOn      << "\n";
+      cout << "                       pwrUpAcqOff  = " << dec << pwrUpAcqOff  << " (auto)\n";
+      cout << "                       pwrUpDigOff  = " << dec << pwrUpDigOff  << " (auto)\n";
+      cout << "                       deselDly     = " << dec << deselDly     << "\n";
+      cout << "                       bunchClkDly  = " << dec << bunchClkDly  << "\n";
+      cout << "                       digDelay     = " << dec << digDelay     << "\n";
+   }
+
+   // Write registers
+   for (i=0; i<8; i++) regSetValue(0x08+i,temp[i],writeEn);
+}
+
+
+// Private method to read timing settings for versions 0-7
+void KpixAsic::getTimingV7 ( unsigned int *clkPeriod,  unsigned int *resetOn,
+                             unsigned int *resetOff,   unsigned int *leakNullOff,
+                             unsigned int *offNullOff, unsigned int *threshOff,
+                             unsigned int *trigInhOff, unsigned int *pwrUpOn,
+                             unsigned int *deselDly,   unsigned int *bunchClkDly,
+                             unsigned int *digDelay,   bool readEn,
+                             bool trigInhRaw ) {
+
+   // Local variables
+   unsigned int pwrUpAcqOff;
+   unsigned int pwrUpDigOff;
+   unsigned int leakNullOn;
+   unsigned int trigInhOn;
+   unsigned int offNullOn;
+   unsigned int threshOn;
+   unsigned int tempLow[7];
+   unsigned int tempHigh[7];
+   unsigned int temp[8];
+   int i;
+   stringstream error;
+
+   // Store clock period
+   *clkPeriod = this->clkPeriod;
+
+   // Read register value
+   for (i=0; i<8; i++) temp[i] = regGetValue(0x08+i,readEn);
+
+   // Convert values for registers 0-6
+   for (i=0; i<8; i++) {
+      tempLow[i]  = temp[i] & 0x0000FFFF;
+      tempHigh[i] = (temp[i] >> 16) & 0x0000FFFF;
+   }
+
+   // Extract values
+   *resetOn     = tempLow[0]  * *clkPeriod; *resetOff   = tempHigh[0] * *clkPeriod;
+   *leakNullOff = tempLow[1]  * *clkPeriod; leakNullOn  = tempHigh[1] * *clkPeriod;
+   *offNullOff  = tempLow[2]  * *clkPeriod; offNullOn   = tempHigh[2] * *clkPeriod;
+   *threshOff   = tempLow[3]  * *clkPeriod; threshOn    = tempHigh[3] * *clkPeriod;
+   *trigInhOff  = tempLow[4]  * *clkPeriod; trigInhOn   = tempHigh[4] * *clkPeriod;
+   *pwrUpOn     = tempLow[5]  * *clkPeriod; pwrUpAcqOff = tempHigh[5] * *clkPeriod;
+   pwrUpDigOff  = tempHigh[6] * *clkPeriod;
+
+   // Extract state timing signals
+   *deselDly    = (temp[7] & 0xFF) * *clkPeriod;
+   *bunchClkDly = ((temp[7] >> 8) & 0xFFFF) * *clkPeriod;
+   *digDelay    = ((temp[7] >> 24) & 0xFF) * *clkPeriod;
+
+   // Convert trigger inhibit
+   if ( ! trigInhRaw ) *trigInhOff = ((*trigInhOff - *bunchClkDly - *clkPeriod) / *clkPeriod) / 8;
+
+   // Debug if enabled
+   if ( enDebug ) {
+      cout << "KpixAsic::getTiming -> read timing: \n";
+      cout << "                       clkPeriod    = " << dec << *clkPeriod    << "\n";
+      cout << "                       resetOn      = " << dec << *resetOn      << "\n";
+      cout << "                       resetOff     = " << dec << *resetOff     << "\n";
+      cout << "                       leakNullOff  = " << dec << *leakNullOff  << "\n";
+      cout << "                       leakNullOn   = " << dec << leakNullOn    << " (auto)\n";
+      cout << "                       offNullOff   = " << dec << *offNullOff   << "\n";
+      cout << "                       offNullOn    = " << dec << offNullOn     << " (auto)\n";
+      cout << "                       threshOff    = " << dec << *threshOff    << "\n";
+      cout << "                       threshOn     = " << dec << threshOn      << " (auto)\n";
+      cout << "                       trigInhOff   = " << dec << *trigInhOff   << "\n";
+      cout << "                       trigInhOn    = " << dec << trigInhOn     << " (auto)\n";
+      cout << "                       pwrUpOn      = " << dec << *pwrUpOn      << "\n";
+      cout << "                       pwrUpAcqOff  = " << dec << pwrUpAcqOff   << " (auto)\n";
+      cout << "                       pwrUpDigOff  = " << dec << pwrUpDigOff   << " (auto)\n";
+      cout << "                       deselDly     = " << dec << *deselDly     << "\n";
+      cout << "                       bunchClkDly  = " << dec << *bunchClkDly  << "\n";
+      cout << "                       digDelay     = " << dec << *digDelay     << "\n";
+      cout << "                       bunchCount   = 2890                          \n";
+   }
+}
+
+
+// Private method to write timing settings for versions 8+
+void KpixAsic::setTimingV8 ( unsigned int clkPeriod,  unsigned int resetOn,
+                             unsigned int resetOff,   unsigned int leakNullOff,
+                             unsigned int offNullOff, unsigned int threshOff,
+                             unsigned int trigInhOff, unsigned int pwrUpOn,
+                             unsigned int deselDly,   unsigned int bunchClkDly,
+                             unsigned int digDelay,   unsigned int bunchCount,
+                             bool enChecking,         bool writeEn,
+                             bool trigInhRaw ) {
+
+   unsigned int temp[6];
+   int i;
+   stringstream error;
+
+   // Store clock period
+   this->clkPeriod = clkPeriod;
+
+   // Trigger inhibit mode
+   if ( ! trigInhRaw ) trigInhOff = bunchClkDly + (clkPeriod * 8 * trigInhOff) + clkPeriod;
+
+   // Timing ordering checks
+   if ( enChecking && ! (
+
+      // Leakage null comes first    - Then reset assertion
+      (leakNullOff < resetOn)        && (resetOn < pwrUpOn)
+
+      // Then power up               - Then deselect 
+      && (pwrUpOn < deselDly)        && (deselDly < offNullOff)
+      
+      // Then offset null            - Then threshold offset
+      && (offNullOff < threshOff)    && (threshOff < resetOff)
+
+      // Then reset off              - Then bunch clock delay, trigger inhibit
+      && (resetOff < bunchClkDly)    && (bunchClkDly < trigInhOff) ) ) {
+
+      // Declare error
+      throw string("KpixAsic::setTiming -> Timing sequence error detected!");
+   }
+
+   // Check clock period divide
+   if ( ((resetOn     % clkPeriod) != 0 ) || ((resetOn     / clkPeriod) > 0xFFFF ) ||
+        ((resetOff    % clkPeriod) != 0 ) || ((resetOff    / clkPeriod) > 0xFFFF ) ||
+        ((leakNullOff % clkPeriod) != 0 ) || ((leakNullOff / clkPeriod) > 0xFFFF ) ||
+        ((offNullOff  % clkPeriod) != 0 ) || ((offNullOff  / clkPeriod) > 0xFFFF ) ||
+        ((threshOff   % clkPeriod) != 0 ) || ((threshOff   / clkPeriod) > 0xFFFF ) ||
+        ((trigInhOff  % clkPeriod) != 0 ) || 
+        ((pwrUpOn     % clkPeriod) != 0 ) || ((pwrUpOn     / clkPeriod) > 0xFFFF ) ||
+        ((deselDly    % clkPeriod) != 0 ) || ((deselDly    / clkPeriod) > 0xFF   ) ||
+        ((bunchClkDly % clkPeriod) != 0 ) || ((bunchClkDly / clkPeriod) > 0xFFFF ) ||
+        ((digDelay    % clkPeriod) != 0 ) || ((digDelay    / clkPeriod) > 0xFF   ) ||
+        (bunchCount   > 8191) ) 
+      cout << "KpixAsic::setTiming -> Warning: Bad Timing Value" << endl;
+
+   // Copy data into an array
+   temp[0]  = (resetOn      / clkPeriod) & 0xFFFF; 
+   temp[0] |= ((resetOff    / clkPeriod) << 16) & 0xFFFF0000;
+   temp[1]  = (offNullOff   / clkPeriod) & 0xFFFF; 
+   temp[1] |= ((leakNullOff / clkPeriod) << 16) & 0xFFFF0000;
+   temp[2]  = (pwrUpOn      / clkPeriod) & 0xFFFF; 
+   temp[2] |= ((threshOff   / clkPeriod) << 16) & 0xFFFF0000;
+   temp[3]  = (trigInhOff   / clkPeriod);
+   temp[4]  = bunchCount & 0xFFFF;
+   temp[4] |= ((pwrUpOn     / clkPeriod) << 16) & 0xFFFF0000;
+   temp[5]  = (deselDly     / clkPeriod) & 0x000000FF;
+   temp[5] |= ((bunchClkDly / clkPeriod) <<  8) & 0x00FFFF00;
+   temp[5] |= ((digDelay    / clkPeriod) << 24) & 0xFF000000;
+
+   // Debug if enabled
+   if ( enDebug ) {
+      cout << "KpixAsic::setTiming -> writing timing: \n";
+      cout << "                       clkPeriod    = " << dec << clkPeriod    << "\n";
+      cout << "                       resetOn      = " << dec << resetOn      << "\n";
+      cout << "                       resetOff     = " << dec << resetOff     << "\n";
+      cout << "                       leakNullOff  = " << dec << leakNullOff  << "\n";
+      cout << "                       offNullOff   = " << dec << offNullOff   << "\n";
+      cout << "                       threshOff    = " << dec << threshOff    << "\n";
+      cout << "                       trigInhOff   = " << dec << trigInhOff   << "\n";
+      cout << "                       pwrUpOn      = " << dec << pwrUpOn      << "\n";
+      cout << "                       deselDly     = " << dec << deselDly     << "\n";
+      cout << "                       bunchClkDly  = " << dec << bunchClkDly  << "\n";
+      cout << "                       digDelay     = " << dec << digDelay     << "\n";
+      cout << "                       bunchCount   = " << dec << bunchCount   << "\n";
+   }
+
+   // Write registers
+   for (i=0; i<6; i++) regSetValue(0x08+i,temp[i],writeEn);
+}
+
+
+// Private method to read timing settings for versions 0-8
+void KpixAsic::getTimingV8 ( unsigned int *clkPeriod,  unsigned int *resetOn,
+                             unsigned int *resetOff,   unsigned int *leakNullOff,
+                             unsigned int *offNullOff, unsigned int *threshOff,
+                             unsigned int *trigInhOff, unsigned int *pwrUpOn,
+                             unsigned int *deselDly,   unsigned int *bunchClkDly,
+                             unsigned int *digDelay,   unsigned int *bunchCount,
+                             bool readEn,              bool trigInhRaw ) {
+
+   // Local variables
+   unsigned int temp[6];
+   int i;
+
+   // Store clock period
+   *clkPeriod = this->clkPeriod;
+
+   // Read register value
+   for (i=0; i<6; i++) temp[i] = regGetValue(0x08+i,readEn);
+
+   // Extract values
+   *resetOn     = ((temp[0]      ) & 0xFFFF) * *clkPeriod; 
+   *resetOff    = ((temp[0] >> 16) & 0xFFFF) * *clkPeriod;
+   *offNullOff  = ((temp[1]      ) & 0xFFFF) * *clkPeriod; 
+   *leakNullOff = ((temp[1] >> 16) & 0xFFFF) * *clkPeriod;
+   *pwrUpOn     = ((temp[2]      ) & 0xFFFF) * *clkPeriod; 
+   *threshOff   = ((temp[2] >> 16) & 0xFFFF) * *clkPeriod;
+   *trigInhOff  = ( temp[3]                ) * *clkPeriod; 
+   *bunchCount  = ( temp[4]        & 0xFFFF) * *clkPeriod;
+   *deselDly    = ((temp[5]      ) & 0x00FF) * *clkPeriod;
+   *bunchClkDly = ((temp[5] >>  8) & 0xFFFF) * *clkPeriod;
+   *digDelay    = ((temp[5] >> 24) & 0x00FF) * *clkPeriod;
+
+   // Convert trigger inhibit
+   if ( ! trigInhRaw ) *trigInhOff = ((*trigInhOff - *bunchClkDly - *clkPeriod) / *clkPeriod) / 8;
+
+   // Debug if enabled
+   if ( enDebug ) {
+      cout << "KpixAsic::getTiming -> read timing: \n";
+      cout << "                       clkPeriod    = " << dec << *clkPeriod    << "\n";
+      cout << "                       resetOn      = " << dec << *resetOn      << "\n";
+      cout << "                       resetOff     = " << dec << *resetOff     << "\n";
+      cout << "                       leakNullOff  = " << dec << *leakNullOff  << "\n";
+      cout << "                       offNullOff   = " << dec << *offNullOff   << "\n";
+      cout << "                       threshOff    = " << dec << *threshOff    << "\n";
+      cout << "                       trigInhOff   = " << dec << *trigInhOff   << "\n";
+      cout << "                       pwrUpOn      = " << dec << *pwrUpOn      << "\n";
+      cout << "                       deselDly     = " << dec << *deselDly     << "\n";
+      cout << "                       bunchClkDly  = " << dec << *bunchClkDly  << "\n";
+      cout << "                       digDelay     = " << dec << *digDelay     << "\n";
+      cout << "                       bunchCount   = " << dec << *bunchCount   << "\n";
+   }
+}
+
+
 // Kpix ASIC Constructor
 KpixAsic::KpixAsic ( ) {
 
@@ -313,16 +673,16 @@ KpixAsic::KpixAsic ( SidLink *sidLink, unsigned short version, unsigned short ad
 
       // Control register width depends on KPIX version
       regWriteable[0x30] = true;
-      regWidth[0x30]     = ((version<3)?8:16);
+      regWidth[0x30]     = ((version<3)?8:((version<8)?16:32));
 
       // Calibration Mask Register
-      for (i=0; i< 2; i++) {
+      for (i=0; i< ((version<8)?2:8); i++) {
          regWriteable[0x40+i] = true;
          regWidth[0x40+i]     = 32;
       }
 
       // Range Select Register
-      for (i=0; i< 2; i++) {
+      for (i=0; i< ((version<8)?2:8); i++) {
          regWriteable[0x60+i] = true;
          regWidth[0x60+i]     = 32;
       }
@@ -339,7 +699,7 @@ void KpixAsic::setSidLink ( SidLink *sidLink ) {
 
 
 // Max Kpix Version
-unsigned short KpixAsic::maxVersion() { return(7); }
+unsigned short KpixAsic::maxVersion() { return(8); }
 
 
 // Send reset command to KPIX
@@ -505,14 +865,14 @@ string KpixAsic::regGetName ( unsigned char address ) {
    if ( address == 0x30 ) temp = "Control Reg";
 
    // Calibration Mask Registers
-   if ( address >= 0x40 && address <= 0x41 ) {
+   if ( address >= 0x40 && address <= ((kpixVersion<8)?0x61:0x67) ) {
       tempString.str("");
       tempString << "Calibration Mask Reg 0x" << setw(2) << setfill('0') << hex << (address-0x40);
       temp = tempString.str();
    }
 
    // Range Select Registers
-   if ( address >= 0x60 && address <= 0x61 ) {
+   if ( address >= 0x60 && address <= ((kpixVersion<8)?0x61:0x67) ) {
       tempString.str("");
       tempString << "Range Select Reg 0x" << setw(2) << setfill('0') << hex << (address-0x60);
       temp = tempString.str();
@@ -537,17 +897,21 @@ bool KpixAsic::regGetWriteable ( unsigned char address ) {
 // Pass location pointers in which to store the following status flags:
 // cmdPerr  - Command parity error flag
 // dataPerr - Data parity error flag
-void KpixAsic::getStatus ( bool *cmdPerr, bool *dataPerr ) {
+void KpixAsic::getStatus ( bool *cmdPerr, bool *dataPerr, bool *tempEn, unsigned char *tempValue ) {
 
    // Get values, read once only
-   *cmdPerr  = regGetBit(0x00,0,true);
-   *dataPerr = regGetBit(0x00,1,false);
+   *cmdPerr   = regGetBit(0x00,0,true);
+   *dataPerr  = regGetBit(0x00,1,false);
+   *tempEn    = regGetBit(0x00,2,false);
+   *tempValue = (regGetValue(0x00,false) >> 24) & 0xFF;
 
    // Debug if enabled
    if ( enDebug ) {
       cout << "KpixAsic::getStatus -> read status:";
       cout << " CmdPerr  = " << *cmdPerr;
-      cout << ", DataPerr = " << *dataPerr << "\n";
+      cout << ", DataPerr = " << *dataPerr;
+      cout << ", TempEn = " << *tempEn;
+      cout << ", TempValue = " << dec << (int)(*tempValue) << "\n";
    }
 }
 
@@ -570,7 +934,7 @@ void KpixAsic::setCfgTestData ( bool testData, bool writeEn ) {
 // Set readEn to false to disable real read from KPIX, this flag allows
 // the user to get the currently set status without actually accessing
 // the device.
-bool KpixAsic:: getCfgTestData (  bool readEn ) {
+bool KpixAsic::getCfgTestData (  bool readEn ) {
    bool ret = regGetBit(0x01,0,readEn); 
    if ( enDebug ) {
       cout << "KpixAsic::getCfgTestData -> Get TestData=" << ret;
@@ -580,39 +944,141 @@ bool KpixAsic:: getCfgTestData (  bool readEn ) {
 }
 
 
-// Method to set zero supression mode in Config Register
-// Pass zeroSupress flag
+// Method to set auto readout disable flag in Config Register
+// Pass autoReadDis flag
 // Set writeEn to false to disable real write to KPIX
-// Currently a hold time of 1 is the longest but this needs to
-// be verified through testing. 
-void KpixAsic::setCfgZeroSupress ( bool zeroSupress, bool writeEn ) {
-   if ( enDebug ) {
-      cout << "KpixAsic::setCfgZeroSupress -> Set ZeroSupress=" << zeroSupress;
-      cout << ", WriteEn=" << writeEn << ".\n";
+void KpixAsic::setCfgAutoReadDis ( bool autoReadDis, bool writeEn ) {
+   if ( kpixVersion >= 8 ) {
+      if ( enDebug ) {
+         cout << "KpixAsic::setCfgAutoReadDis -> Set AutoReadDis=" << autoReadDis;
+         cout << ", WriteEn=" << writeEn << ".\n";
+      }
+      regSetBit(0x01,2,autoReadDis,writeEn);
    }
-   regSetBit(0x01,1,zeroSupress,writeEn);
 }
 
 
-// Method to get status of zero supression mode in Config Register
+// Method to get status of auto readout disable flag in Config Register
 // Set readEn to false to disable real read from KPIX, this flag allows
 // the user to get the currently set status without actually accessing
 // the device.
-bool KpixAsic:: getCfgZeroSupress (  bool readEn ) {
-   bool ret = regGetBit(0x01,1,readEn); 
-   if ( enDebug ) {
-      cout << "KpixAsic::getCfgZeroSupress -> Get ZeroSupress=" << ret;
-      cout << ", ReadEn=" << readEn << ".\n";
+bool KpixAsic::getCfgAutoReadDis ( bool readEn ) {
+   if ( kpixVersion >= 8 ) {
+      bool ret = regGetBit(0x01,2,readEn); 
+      if ( enDebug ) {
+         cout << "KpixAsic::getCfgAutoReadDis -> Get AutoReadDis=" << ret;
+         cout << ", ReadEn=" << readEn << ".\n";
+      }
+      return(ret);
+   } else return(0);
+}
+
+
+// Method to set force temperature on flag in Config Register
+// Pass forceTemp flag
+// Set writeEn to false to disable real write to KPIX
+void KpixAsic::setCfgForceTemp ( bool forceTemp, bool writeEn ) {
+   if ( kpixVersion >= 8 ) {
+      if ( enDebug ) {
+         cout << "KpixAsic::setCfgForceTemp -> Set ForceTemp=" << forceTemp;
+         cout << ", WriteEn=" << writeEn << ".\n";
+      }
+      regSetBit(0x01,3,forceTemp,writeEn);
    }
-   return(ret);
+}
+
+
+// Method to get status of force temperature on flag in Config Register
+// Set readEn to false to disable real read from KPIX, this flag allows
+// the user to get the currently set status without actually accessing
+// the device.
+bool KpixAsic::getCfgForceTemp ( bool readEn ) {
+   if ( kpixVersion >= 8 ) {
+      bool ret = regGetBit(0x01,3,readEn); 
+      if ( enDebug ) {
+         cout << "KpixAsic::getCfgForceTemp -> Get ForceTemp=" << ret;
+         cout << ", ReadEn=" << readEn << ".\n";
+      }
+      return(ret);
+   } else return(0);
+}
+
+
+// Method to set disable temperature flag in Config Register
+// Pass disableTemp flag
+// Set writeEn to false to disable real write to KPIX
+void KpixAsic::setCfgDisableTemp ( bool disableTemp, bool writeEn ) {
+   if ( kpixVersion >= 8 ) {
+      if ( enDebug ) {
+         cout << "KpixAsic::setCfgDisableTemp -> Set DisableTemp=" << disableTemp;
+         cout << ", WriteEn=" << writeEn << ".\n";
+      }
+      regSetBit(0x01,4,disableTemp,writeEn);
+   }
+}
+
+
+// Method to get status of disable temperature flag in Config Register
+// Set readEn to false to disable real read from KPIX, this flag allows
+// the user to get the currently set status without actually accessing
+// the device.
+bool KpixAsic::getCfgDisableTemp ( bool readEn ) {
+   if ( kpixVersion >= 8 ) {
+      bool ret = regGetBit(0x01,4,readEn); 
+      if ( enDebug ) {
+         cout << "KpixAsic::getCfgDisableTemp -> Get DisableTemp=" << ret;
+         cout << ", ReadEn=" << readEn << ".\n";
+      }
+      return(ret);
+   } else return(0);
+}
+
+
+// Method to set auto status message flag in Config Register
+// Pass autoStatus flag
+// Set writeEn to false to disable real write to KPIX
+void KpixAsic::setCfgAutoStatus ( bool autoStatus, bool writeEn ) {
+   if ( kpixVersion >= 8 ) {
+      if ( enDebug ) {
+         cout << "KpixAsic::setCfgAutoStatus -> Set AutoStatus=" << autoStatus;
+         cout << ", WriteEn=" << writeEn << ".\n";
+      }
+      regSetBit(0x01,5,autoStatus,writeEn);
+   }
+}
+
+
+// Method to set auto status message flag in Config Register
+// Set readEn to false to disable real read from KPIX, this flag allows
+// the user to get the currently set status without actually accessing
+// the device.
+bool KpixAsic::getCfgAutoStatus ( bool readEn ) {
+   if ( kpixVersion >= 8 ) {
+      bool ret = regGetBit(0x01,5,readEn); 
+      if ( enDebug ) {
+         cout << "KpixAsic::getCfgAutoStatus -> Get AutoStatus=" << ret;
+         cout << ", ReadEn=" << readEn << ".\n";
+      }
+      return(ret);
+   } else return(0);
 }
 
 
 // Method to set hold time value in Control Register
-// Pass holdTime value, 1,2 or 3
 // Set writeEn to false to disable real write to KPIX
-// Currently a hold time of 1 is the longest but this needs to
-// be verified through testing. 
+// Hold Times For 20Mhz Clock In Kpix Versions 0-7:
+//    1 = 3.2uS 
+//    2 = 2.0uS
+//    3 = 1.6uS
+// Hold Times For 20Mhz Clock In Kpix Version 8+:
+//    0 = 0.4uS 
+//    1 = 0.8uS 
+//    2 = 1.2uS
+//    3 = 1.6uS
+//    4 = 2.0uS
+//    5 = 2.4uS
+//    6 = 2.8uS
+//    7 = 3.2uS
 void KpixAsic::setCntrlHoldTime ( unsigned char holdTime, bool writeEn ) {
 
    unsigned short bit;
@@ -622,20 +1088,37 @@ void KpixAsic::setCntrlHoldTime ( unsigned char holdTime, bool writeEn ) {
       cout << ", WriteEn=" << writeEn << ".\n";
    }
 
-   // Verify range
-   if ( holdTime < 1 || holdTime > 3 ) 
-      throw string("KpixAsic::setCntrlHoldTime -> Invalid Value");
+   // Older Kpix Versions
+   if ( kpixVersion < 8 ) {
 
-   // Start bit depends on version
-   if ( kpixVersion >= 3 ) bit = 8; else bit = 0;
+      // Verify range
+      if ( holdTime < 1 || holdTime > 3 ) 
+         throw string("KpixAsic::setCntrlHoldTime -> Invalid Value");
 
-   // Clear bits by default, don't write
-   regSetBit(0x30,bit,false,false);
-   regSetBit(0x30,bit+1,false,false);
-   regSetBit(0x30,bit+2,false,false);
+      // Start bit depends on version
+      if ( kpixVersion >= 3 ) bit = 8; else bit = 0;
 
-   // Set proper bit
-   regSetBit(0x030,bit+(holdTime-1),true,writeEn);
+      // Clear bits by default, don't write
+      regSetBit(0x30,bit,false,false);
+      regSetBit(0x30,bit+1,false,false);
+      regSetBit(0x30,bit+2,false,false);
+
+      // Set proper bit
+      regSetBit(0x030,bit+(holdTime-1),true,writeEn);
+   }
+
+   // New Kpix Versions
+   else {
+
+      // Verify range
+      if ( holdTime > 7 ) 
+         throw string("KpixAsic::setCntrlHoldTime -> Invalid Value");
+
+      // Set Bits
+      regSetBit(0x30,8,((holdTime&0x1)!=0),false);
+      regSetBit(0x30,9,((holdTime&0x2)!=0),false);
+      regSetBit(0x30,10,((holdTime&0x4)!=0),writeEn);
+   }
 }
 
 
@@ -643,23 +1126,33 @@ void KpixAsic::setCntrlHoldTime ( unsigned char holdTime, bool writeEn ) {
 // Set readEn to false to disable real read from KPIX, this flag allows
 // the user to get the currently set status without actually accessing
 // the device.
-// Currently a hold time of 1 is the longest but this needs to
-// be verified through testing. 
 unsigned char KpixAsic::getCntrlHoldTime (  bool readEn ) {
 
    unsigned short ret;
    unsigned short bit;
 
-   // Start bit depends on version
-   if ( kpixVersion >= 3 ) bit = 8; else bit = 0;
+   // Older Kpix Versions
+   if ( kpixVersion < 8 ) {
 
-   // Set default return to Short Hold
-   ret = 1;
+      // Start bit depends on version
+      if ( kpixVersion >= 3 ) bit = 8; else bit = 0;
 
-   // Determine return, read only once
-   if ( regGetBit(0x30,bit,readEn)  ) ret = 1;
-   if ( regGetBit(0x30,bit+1,false) ) ret = 2;
-   if ( regGetBit(0x30,bit+2,false) ) ret = 3;
+      // Set default return to Short Hold
+      ret = 1;
+
+      // Determine return, read only once
+      if ( regGetBit(0x30,bit,readEn)  ) ret = 1;
+      if ( regGetBit(0x30,bit+1,false) ) ret = 2;
+      if ( regGetBit(0x30,bit+2,false) ) ret = 3;
+   }
+
+   // Newer Version
+   else {
+      ret = 0;
+      if ( regGetBit(0x30,8,readEn)) ret += 0x1;
+      if ( regGetBit(0x30,9,false))  ret += 0x2;
+      if ( regGetBit(0x30,10,false)) ret += 0x4;
+   }
 
    if ( enDebug ) {
       cout << "KpixAsic::getCntrlHoldTime -> Get HoldTime=" << ret;
@@ -707,12 +1200,14 @@ bool KpixAsic:: getCntrlCalibHigh (  bool readEn ) {
 // to allow the individual register bits to be set before performing a write
 // to the device.
 void KpixAsic::setCntrlCalDacInt ( bool calDacInt, bool writeEn ) {
-   if ( enDebug ) {
-      cout << "KpixAsic::setCntrlCalDacInt -> Set CalDacInt=" << calDacInt;
-      cout << ", WriteEn=" << writeEn << ".\n";
+   if ( kpixVersion < 8 ) {
+      if ( enDebug ) {
+         cout << "KpixAsic::setCntrlCalDacInt -> Set CalDacInt=" << calDacInt;
+         cout << ", WriteEn=" << writeEn << ".\n";
+      }
+      // Bit depends on version
+      regSetBit(0x30,((kpixVersion>=3)?12:4),calDacInt,writeEn);
    }
-   // Bit depends on version
-   regSetBit(0x30,((kpixVersion>=3)?12:4),calDacInt,writeEn);
 }
 
 
@@ -720,14 +1215,16 @@ void KpixAsic::setCntrlCalDacInt ( bool calDacInt, bool writeEn ) {
 // Set readEn to false to disable real read from KPIX, this flag allows
 // the user to get the currently set status without actually accessing
 // the device.
-bool KpixAsic:: getCntrlCalDacInt (  bool readEn ) {
-   // Bit depends on version
-   bool ret = regGetBit(0x30,((kpixVersion>=3)?12:4),readEn);
-   if ( enDebug ) {
-      cout << "KpixAsic::getCntrlCalDacInt -> Get CalDacInt=" << ret;
-      cout << ", ReadEn=" << readEn << ".\n";
-   }
-   return(ret);
+bool KpixAsic:: getCntrlCalDacInt ( bool readEn ) {
+   if ( kpixVersion < 8 ) {
+      // Bit depends on version
+      bool ret = regGetBit(0x30,((kpixVersion>=3)?12:4),readEn);
+      if ( enDebug ) {
+         cout << "KpixAsic::getCntrlCalDacInt -> Get CalDacInt=" << ret;
+         cout << ", ReadEn=" << readEn << ".\n";
+      }
+      return(ret);
+   } else return(true);
 }
 
 
@@ -1048,6 +1545,172 @@ bool KpixAsic::getCntrlEnDcRst (  bool readEn ) {
 }
 
 
+// Method to select short integration time
+// Pass shortIntEn flag
+// Set writeEn to false to disable real write to KPIX, this flag can be used
+// to allow the individual register bits to be set before performing a write
+// to the device.
+void KpixAsic::setCntrlShortIntEn ( bool shortIntEn, bool writeEn ) {
+   if ( kpixVersion > 7 ) {
+      if ( enDebug ) {
+         cout << "KpixAsic::setCntrlShortIntEn -> Set ShortIntEn = " << shortIntEn;
+         cout << ", WriteEn=" << writeEn << ".\n";
+      }
+      // Bit depends on version
+      regSetBit(0x30,12,shortIntEn,writeEn);
+   }
+}
+
+
+// Method to get status of short integration time enable bit in Control Register
+// Set readEn to false to disable real read from KPIX, this flag allows
+// the user to get the currently set status without actually accessing
+// the device.
+bool KpixAsic::getCntrlShortIntEn (  bool readEn ) {
+   if ( kpixVersion > 7 ) {
+      bool ret = regGetBit(0x30,12,readEn);
+      if ( enDebug ) {
+         cout << "KpixAsic::getCntrlShortIntEn -> Get ShortIntEn = " << ret;
+         cout << ", ReadEn=" << readEn << ".\n";
+      }
+      return(ret);
+   } else return(false);
+}
+
+
+// Method to disable power cycling
+// Pass disPwrCycle flag
+// Set writeEn to false to disable real write to KPIX, this flag can be used
+// to allow the individual register bits to be set before performing a write
+// to the device.
+void KpixAsic::setCntrlDisPwrCycle ( bool disPwrCycle, bool writeEn ) {
+   if ( kpixVersion > 7 ) {
+      if ( enDebug ) {
+         cout << "KpixAsic::setCntrlDisPwrCycle -> Set DisPwrCycle =" << disPwrCycle;
+         cout << ", WriteEn=" << writeEn << ".\n";
+      }
+      // Bit depends on version
+      regSetBit(0x30,24,disPwrCycle,writeEn);
+   }
+}
+
+
+// Method to get status of disable power cycle bit in Control Register
+// Set readEn to false to disable real read from KPIX, this flag allows
+// the user to get the currently set status without actually accessing
+// the device.
+bool KpixAsic::getCntrlDisPwrCycle (  bool readEn ) {
+   if ( kpixVersion > 7 ) {
+      bool ret = regGetBit(0x30,12,readEn);
+      if ( enDebug ) {
+         cout << "KpixAsic::getCntrlDisPwrCycle -> Get DisPwrCycle = " << ret;
+         cout << ", ReadEn=" << readEn << ".\n";
+      }
+      return(ret);
+   } else return(false);
+}
+
+
+// Method to set front end current value in Control Register
+// Set writeEn to false to disable real write to KPIX
+// Current values:
+//    0 = 1uA  
+//    1 = 31uA 
+//    2 = 61uA 
+//    3 = 91uA 
+//    4 = 121uA
+//    5 = 151uA
+//    6 = 181uA
+//    7 = 211uA
+void KpixAsic::setCntrlFeCurr ( unsigned char feCurr, bool writeEn ) {
+   if ( kpixVersion > 7 ) {
+      if ( enDebug ) {
+         cout << "KpixAsic::setCntrlFeCurr -> Set FeCurr=" << (int)feCurr;
+         cout << ", WriteEn=" << writeEn << ".\n";
+      }
+
+      // Verify range
+      if ( feCurr > 7 ) 
+         throw string("KpixAsic::setCntrlFeCurr -> Invalid Value");
+
+      // Set Bits
+      regSetBit(0x30,25,((feCurr&0x4)!=0),false);
+      regSetBit(0x30,26,((feCurr&0x2)!=0),false);
+      regSetBit(0x30,27,((feCurr&0x1)!=0),writeEn);
+   }
+}
+
+
+// Method to get front end current value from Control Register
+// Set readEn to false to disable real read from KPIX, this flag allows
+// the user to get the currently set status without actually accessing
+// the device.
+unsigned char KpixAsic::getCntrlFeCurr ( bool readEn ) {
+   unsigned short ret;
+   if ( kpixVersion > 7 ) {
+
+      ret = 0;
+      if ( regGetBit(0x30,25,readEn)) ret += 0x4;
+      if ( regGetBit(0x30,26,false))  ret += 0x2;
+      if ( regGetBit(0x30,27,false))  ret += 0x1;
+
+      if ( enDebug ) {
+         cout << "KpixAsic::getCntrlFeCurr -> Get FeCurr=" << ret;
+         cout << ", ReadEn=" << readEn << ".\n";
+      }
+      return(ret);
+   }
+   else return(4);
+}
+
+
+// Method to set shaper diff time value in Control Register
+// Set writeEn to false to disable real write to KPIX
+// Current values:
+//    0 = Normal
+//    1 = 1/2
+//    2 = 1/3
+//    3 = 1/4
+void KpixAsic::setCntrlDiffTime ( unsigned char diffTime, bool writeEn ) {
+   if ( kpixVersion > 7 ) {
+      if ( enDebug ) {
+         cout << "KpixAsic::setCntrlDiffTime -> Set FeCurr=" << (int)diffTime;
+         cout << ", WriteEn=" << writeEn << ".\n";
+      }
+
+      // Verify range
+      if ( diffTime > 3 ) 
+         throw string("KpixAsic::setCntrlDiffTime -> Invalid Value");
+
+      // Set Bits
+      regSetBit(0x30,28,((diffTime&0x1)!=0),false);
+      regSetBit(0x30,29,((diffTime&0x2)!=0),writeEn);
+   }
+}
+
+
+// Method to get shaper diff time value from Control Register
+// Set readEn to false to disable real read from KPIX, this flag allows
+// the user to get the currently set status without actually accessing
+// the device.
+unsigned char KpixAsic::getCntrlDiffTime ( bool readEn ) {
+   unsigned short ret;
+
+   if ( kpixVersion > 7 ) {
+      ret = 0;
+      if ( regGetBit(0x30,28,readEn)) ret += 0x1;
+      if ( regGetBit(0x30,29,false))  ret += 0x2;
+
+      if ( enDebug ) {
+         cout << "KpixAsic::getCntrlDiffTime -> Get DiffTime=" << ret;
+         cout << ", ReadEn=" << readEn << ".\n";
+      }
+      return(ret);
+   }
+   else return(0);
+}
+
+
 // Method to update KPIX timing configuration
 // If the passed timing values are not evenly divisable by the
 // clkPeriod the value will be rounded and a warning will be generated.
@@ -1059,151 +1722,36 @@ bool KpixAsic::getCntrlEnDcRst (  bool readEn ) {
 // offNullOff   - Offset_Null set off time in nS
 // threshOff    - Threshold_Offset set off time in nS
 // trigInhOff   - Trigger_Inhibit set off time in nS or in bunch clock count
-//                Values larger than 2890 will be treated as ns delay.
-//                Values less than or equal to 2890 will be treated as bunch count
 // pwrUpOn      - Power_up ACQ/DIG set on time in nS
 // deselDly     - Deselect/select sequence delay in nS
 // bunchClkDly  - Bunch clock start delay in nS
 // digDelay     - Delete between bunch clocks & digitization in nS
+// bunchCount   - Number of bunch crossings, 0 based count, 0-8191
 // enChecking   - Enable/disable timing sanity checks
 // Set writeEn to false to disable real write to KPIX
+// Set trigInhRaw to set raw trigger inhibit value
 void KpixAsic::setTiming ( unsigned int clkPeriod,  unsigned int resetOn,
                            unsigned int resetOff,   unsigned int leakNullOff,
                            unsigned int offNullOff, unsigned int threshOff,
                            unsigned int trigInhOff, unsigned int pwrUpOn,
                            unsigned int deselDly,   unsigned int bunchClkDly,
-                           unsigned int digDelay,   bool enChecking,
-                           bool writeEn ) {
+                           unsigned int digDelay,   unsigned int bunchCount,
+                           bool enChecking,         bool writeEn,
+                           bool trigInhRaw ) {
 
-   // Additional times that are auto generated
-   unsigned int pwrUpAcqOff;
-   unsigned int pwrUpDigOff;
-   unsigned int leakNullOn;
-   unsigned int trigInhOn;
-   unsigned int offNullOn;
-   unsigned int threshOn;
-   unsigned int tempLow[7];
-   unsigned int tempHigh[7];
-   unsigned int temp[8];
-   int i;
-   stringstream error;
+   // Earlier versions
+   if ( kpixVersion <= 7 ) 
+      setTimingV7 ( clkPeriod,  resetOn, resetOff,   leakNullOff,
+                    offNullOff, threshOff, trigInhOff, pwrUpOn,
+                    deselDly,   bunchClkDly, digDelay, enChecking,
+                    writeEn, trigInhRaw);
 
-   // Store clock period
-   this->clkPeriod = clkPeriod;
-
-   // Determine if trig inhibit is in bunch clock periods.
-   // or in ns delay. Adjust to ns if the passed value is in
-   // bunch clock periods.
-   if ( trigInhOff <= 2890 ) 
-      trigInhOff = bunchClkDly + (clkPeriod * 8 * trigInhOff) + clkPeriod;
-
-   // Timing ordering checks
-   if ( enChecking && ! (
-
-      // Leakage null comes first    - Then reset assertion
-      (leakNullOff < resetOn)        && (resetOn < pwrUpOn)
-
-      // Then power up               - Then deselect 
-      && (pwrUpOn < deselDly)        && (deselDly < offNullOff)
-      
-      // Then offset null            - Then threshold offset
-      && (offNullOff < threshOff)    && (threshOff < resetOff)
-
-      // Then reset off              // Then bunch clock delay, trigger inhibit
-      && (resetOff < bunchClkDly)    && (bunchClkDly < trigInhOff) ) ) {
-
-      // Declare error
-      throw string("KpixAsic::setTiming -> Timing sequence error detected!");
-   }
-
-   // Generate auto time values
-   pwrUpAcqOff = bunchClkDly + 2891 * 8 * clkPeriod;
-   leakNullOn  = pwrUpAcqOff;
-   trigInhOn   = pwrUpAcqOff;
-   pwrUpDigOff = bunchClkDly + 2890 * 8 * clkPeriod + digDelay + 32841 * clkPeriod;
-   offNullOn   = pwrUpDigOff;
-   threshOn    = pwrUpDigOff;
-
-   // Copy data into an array
-   tempLow[0]  = resetOn;     tempHigh[0] = resetOff;
-   tempLow[1]  = leakNullOff; tempHigh[1] = leakNullOn;
-   tempLow[2]  = offNullOff;  tempHigh[2] = offNullOn;
-   tempLow[3]  = threshOff;   tempHigh[3] = threshOn;
-   tempLow[4]  = trigInhOff;  tempHigh[4] = trigInhOn;
-   tempLow[5]  = pwrUpOn;     tempHigh[5] = pwrUpAcqOff;
-   tempLow[6]  = pwrUpOn;     tempHigh[6] = pwrUpDigOff;
-
-   // Convert values and verify values are ok
-   for (i=0; i < 7; i++) {
-
-      // Check divide
-      if ((tempLow[i] % clkPeriod) != 0 || (tempHigh[i] % clkPeriod) != 0)  {
-         cout << "KpixAsic::setTiming -> ";
-         cout << "Warning: Timing register ";
-         cout << dec << i << " value not divisiable by clkPeriod. ";
-         cout << "Values=" << dec << tempLow[i] << "/" << dec << tempHigh[i];
-         cout << " clkPeriod=" << dec << clkPeriod << ".\n";
-      }
-
-      // Check range
-      if ((tempLow[i] / clkPeriod) > 0xFFFF || (tempHigh[i] / clkPeriod) > 0xFFFF) {
-         error << "KpixAsic::setTiming -> ";
-         error << "Timing register " << dec << i << " value too large. ";
-         error << "Values=" << dec << tempLow[i] << "/" << dec << tempHigh[i] << ".";
-         throw(error.str()); 
-      }
-
-      // Convert to register value
-      temp[i]  = (tempLow[i]  / clkPeriod) & 0x0000FFFF;
-      temp[i] |= ((tempHigh[i] / clkPeriod) << 16) & 0xFFFF0000;
-   }
-
-   // Check clock period divide for register 7
-   if ((deselDly%clkPeriod)!=0 || (bunchClkDly%clkPeriod)!=0 || (digDelay%clkPeriod)!=0 ) {
-      cout << "KpixAsic::setTiming -> ";
-      cout << "Warning: Timing register 7 value not divisiable by clkPeriod. ";
-      cout << "Values=" << dec << deselDly << "/" << dec << bunchClkDly << "/";
-      cout << dec << digDelay << " clkPeriod=" << dec << clkPeriod << ".\n";
-   }
-
-   // Convert register values
-   if ((deselDly/clkPeriod)>0xFF || (bunchClkDly/clkPeriod)>0xFFFF || 
-       (digDelay/clkPeriod>0xFF)) {
-      error << "KpixAsic::setTiming -> ";
-      error << "Timing register 7 value too large. " << "Values="; 
-      error << dec << deselDly << "/" << dec << bunchClkDly << "/" << dec << digDelay << ".";
-      throw(error.str()); 
-   }
-
-   // Convert to register value
-   temp[7]  = (deselDly     / clkPeriod) & 0x000000FF;
-   temp[7] |= ((bunchClkDly / clkPeriod) <<  8) & 0x00FFFF00;
-   temp[7] |= ((digDelay    / clkPeriod) << 24) & 0xFF000000;
-
-   // Debug if enabled
-   if ( enDebug ) {
-      cout << "KpixAsic::setTiming -> writing timing: \n";
-      cout << "                       clkPeriod    = " << dec << clkPeriod    << "\n";
-      cout << "                       resetOn      = " << dec << resetOn      << "\n";
-      cout << "                       resetOff     = " << dec << resetOff     << "\n";
-      cout << "                       leakNullOff  = " << dec << leakNullOff  << "\n";
-      cout << "                       leakNullOn   = " << dec << leakNullOn   << " (auto)\n";
-      cout << "                       offNullOff   = " << dec << offNullOff   << "\n";
-      cout << "                       offNullOn    = " << dec << offNullOn    << " (auto)\n";
-      cout << "                       threshOff    = " << dec << threshOff    << "\n";
-      cout << "                       threshOn     = " << dec << threshOn     << " (auto)\n";
-      cout << "                       trigInhOff   = " << dec << trigInhOff   << "\n";
-      cout << "                       trigInhOn    = " << dec << trigInhOn    << " (auto)\n";
-      cout << "                       pwrUpOn      = " << dec << pwrUpOn      << "\n";
-      cout << "                       pwrUpAcqOff  = " << dec << pwrUpAcqOff  << " (auto)\n";
-      cout << "                       pwrUpDigOff  = " << dec << pwrUpDigOff  << " (auto)\n";
-      cout << "                       deselDly     = " << dec << deselDly     << "\n";
-      cout << "                       bunchClkDly  = " << dec << bunchClkDly  << "\n";
-      cout << "                       digDelay     = " << dec << digDelay     << "\n";
-   }
-
-   // Write registers
-   for (i=0; i<8; i++) regSetValue(0x08+i,temp[i],writeEn);
+   // Later Versions
+   else 
+      setTimingV8 ( clkPeriod,  resetOn, resetOff,   leakNullOff,
+                    offNullOff, threshOff, trigInhOff, pwrUpOn,
+                    deselDly,   bunchClkDly, digDelay,   bunchCount, 
+                    enChecking, writeEn, trigInhRaw );
 }
 
 
@@ -1220,82 +1768,37 @@ void KpixAsic::setTiming ( unsigned int clkPeriod,  unsigned int resetOn,
 // deselDly     - Deselect/select sequence delay in nanoseconds
 // bunchClkDly  - Bunch clock start delay in nanoseconds
 // digDelay     - Delete between bunch clocks & digitization in nanoseconds
+// bunchCount   - Number of bunch crossings, 0 based count, 0-8191
 // Set readEn to false to disable real read from KPIX
+// Set trigInhRaw to return raw trigger inhibit value
 void KpixAsic::getTiming ( unsigned int *clkPeriod,  unsigned int *resetOn,
                            unsigned int *resetOff,   unsigned int *leakNullOff,
                            unsigned int *offNullOff, unsigned int *threshOff,
                            unsigned int *trigInhOff, unsigned int *pwrUpOn,
                            unsigned int *deselDly,   unsigned int *bunchClkDly,
-                           unsigned int *digDelay,   bool readEn ) {
-  
-   // Local variables
-   unsigned int pwrUpAcqOff;
-   unsigned int pwrUpDigOff;
-   unsigned int leakNullOn;
-   unsigned int trigInhOn;
-   unsigned int offNullOn;
-   unsigned int threshOn;
-   unsigned int tempLow[7];
-   unsigned int tempHigh[7];
-   unsigned int temp[8];
-   int i;
-   stringstream error;
+                           unsigned int *digDelay,   unsigned int *bunchCount,
+                           bool readEn,              bool trigInhRaw ) {
 
-   // Store clock period
-   *clkPeriod = this->clkPeriod;
-
-   // Read register value
-   for (i=0; i<8; i++) temp[i] = regGetValue(0x08+i,readEn);
-
-   // Convert values for registers 0-6
-   for (i=0; i<8; i++) {
-      tempLow[i]  = temp[i] & 0x0000FFFF;
-      tempHigh[i] = (temp[i] >> 16) & 0x0000FFFF;
+   // Earlier versions
+   if ( kpixVersion <= 7 ) {
+      getTimingV7 ( clkPeriod,  resetOn, resetOff,   leakNullOff,
+                    offNullOff, threshOff, trigInhOff, pwrUpOn,
+                    deselDly,   bunchClkDly, digDelay, 
+                    readEn, trigInhRaw);
+      *bunchCount=2889;
    }
 
-   // Extract values
-   *resetOn     = tempLow[0]  * *clkPeriod; *resetOff   = tempHigh[0] * *clkPeriod;
-   *leakNullOff = tempLow[1]  * *clkPeriod; leakNullOn  = tempHigh[1] * *clkPeriod;
-   *offNullOff  = tempLow[2]  * *clkPeriod; offNullOn   = tempHigh[2] * *clkPeriod;
-   *threshOff   = tempLow[3]  * *clkPeriod; threshOn    = tempHigh[3] * *clkPeriod;
-   *trigInhOff  = tempLow[4]  * *clkPeriod; trigInhOn   = tempHigh[4] * *clkPeriod;
-   *pwrUpOn     = tempLow[5]  * *clkPeriod; pwrUpAcqOff = tempHigh[5] * *clkPeriod;
-   pwrUpDigOff  = tempHigh[6] * *clkPeriod;
-
-   // Extract state timing signals
-   *deselDly    = (temp[7] & 0xFF) * *clkPeriod;
-   *bunchClkDly = ((temp[7] >> 8) & 0xFFFF) * *clkPeriod;
-   *digDelay    = ((temp[7] >> 24) & 0xFF) * *clkPeriod;
-
-   // Convert trigger inhibit
-   *trigInhOff = ((*trigInhOff - *bunchClkDly - *clkPeriod) / *clkPeriod) / 8;
-
-   // Debug if enabled
-   if ( enDebug ) {
-      cout << "KpixAsic::getTiming -> read timing: \n";
-      cout << "                       clkPeriod    = " << dec << *clkPeriod    << "\n";
-      cout << "                       resetOn      = " << dec << *resetOn      << "\n";
-      cout << "                       resetOff     = " << dec << *resetOff     << "\n";
-      cout << "                       leakNullOff  = " << dec << *leakNullOff  << "\n";
-      cout << "                       leakNullOn   = " << dec << leakNullOn    << " (auto)\n";
-      cout << "                       offNullOff   = " << dec << *offNullOff   << "\n";
-      cout << "                       offNullOn    = " << dec << offNullOn     << " (auto)\n";
-      cout << "                       threshOff    = " << dec << *threshOff    << "\n";
-      cout << "                       threshOn     = " << dec << threshOn      << " (auto)\n";
-      cout << "                       trigInhOff   = " << dec << *trigInhOff   << "\n";
-      cout << "                       trigInhOn    = " << dec << trigInhOn     << " (auto)\n";
-      cout << "                       pwrUpOn      = " << dec << *pwrUpOn      << "\n";
-      cout << "                       pwrUpAcqOff  = " << dec << pwrUpAcqOff   << " (auto)\n";
-      cout << "                       pwrUpDigOff  = " << dec << pwrUpDigOff   << " (auto)\n";
-      cout << "                       deselDly     = " << dec << *deselDly     << "\n";
-      cout << "                       bunchClkDly  = " << dec << *bunchClkDly  << "\n";
-      cout << "                       digDelay     = " << dec << *digDelay     << "\n";
-   }
+   // Later Versions
+   else 
+      getTimingV8 ( clkPeriod,  resetOn, resetOff,   leakNullOff,
+                    offNullOff, threshOff, trigInhOff, pwrUpOn,
+                    deselDly,   bunchClkDly, digDelay,   bunchCount, 
+                    readEn, trigInhRaw);
 }
 
 
 // Method to get trigger inhibit bucket
-unsigned int KpixAsic::getTrigInh ( bool readEn ) {
+unsigned int KpixAsic::getTrigInh ( bool readEn, bool trigInhRaw ) {
 
    // Local variables
    unsigned int clkPeriod;
@@ -1306,16 +1809,32 @@ unsigned int KpixAsic::getTrigInh ( bool readEn ) {
    // Store clock period
    clkPeriod = this->clkPeriod;
 
-   // Get Trigger Inhibit Value
-   temp = regGetValue(0x08+4,readEn);
-   trigInh = (temp&0xFFFF) * clkPeriod;
+   // Version 0-7
+   if ( kpixVersion <= 7 ) {
 
-   // Get Bunch Clock Delay Value
-   temp = regGetValue(0x08+7,readEn);
-   bunchClkDly = ((temp>>8)&0xFFFF) * clkPeriod;
+      // Get Trigger Inhibit Value
+      temp = regGetValue(0x08+4,readEn);
+      trigInh = (temp&0xFFFF) * clkPeriod;
+
+      // Get Bunch Clock Delay Value
+      temp = regGetValue(0x08+7,readEn);
+      bunchClkDly = ((temp>>8)&0xFFFF) * clkPeriod;
+   }
+
+   // Version 8+
+   else {
+
+      // Get Trigger Inhibit Value
+      temp = regGetValue(0x08+3,readEn);
+      trigInh = temp * clkPeriod;
+
+      // Get Bunch Clock Delay Value
+      temp = regGetValue(0x08+5,readEn);
+      bunchClkDly = ((temp>>8)&0xFFFF) * clkPeriod;
+   }
 
    // Convert trigger inhibit
-   trigInh = ((trigInh - bunchClkDly - clkPeriod) / clkPeriod) / 8;
+   if ( ! trigInhRaw ) trigInh = ((trigInh - bunchClkDly - clkPeriod) / clkPeriod) / 8;
 
    // Debug if enabled
    if ( enDebug ) {
@@ -1331,10 +1850,10 @@ unsigned int KpixAsic::getTrigInh ( bool readEn ) {
 // Method to update KPIX calibration pulse settings
 // Pass the following values for update:
 // calCount     - Number of calibration pulses to assert, 0-4
-// cal0Delay    - Cal pulse 0 delay 0-2889 bunch clocks
-// cal1Delay    - Cal pulse 1 delay 0-2889 bunch clocks
-// cal2Delay    - Cal pulse 2 delay 0-2889 bunch clocks
-// cal3Delay    - Cal pulse 3 delay 0-2889 bunch clocks
+// cal0Delay    - Cal pulse 0 delay 0-8191 bunch clocks
+// cal1Delay    - Cal pulse 1 delay 0-8191 bunch clocks
+// cal2Delay    - Cal pulse 2 delay 0-8191 bunch clocks
+// cal3Delay    - Cal pulse 3 delay 0-8191 bunch clocks
 // Set writeEn to false to disable real write to KPIX
 void KpixAsic::setCalibTime ( unsigned int calCount,  unsigned int cal0Delay,
                               unsigned int cal1Delay, unsigned int cal2Delay,
@@ -1345,13 +1864,15 @@ void KpixAsic::setCalibTime ( unsigned int calCount,  unsigned int cal0Delay,
    // Check for valid input
    if ( calCount  >    4 ) 
       throw string("KpixAsic::setCalibTime -> calCount  out of range");
-   if ( cal0Delay > 2880 ) 
+   if (( cal0Delay > 2880 && kpixVersion <= 7) ||  cal0Delay > 8191 ) 
       throw string("KpixAsic::setCalibTime -> cal0Delay out of range");
-   if (( cal0Delay + cal1Delay ) > 2880 ) 
+   if ((( cal0Delay + cal1Delay ) > 2880 && kpixVersion <= 7) || (( cal0Delay + cal1Delay ) > 8191 )) 
       throw string("KpixAsic::setCalibTime -> cal1Delay out of range");
-   if (( cal0Delay + cal1Delay + cal2Delay ) > 2880 ) 
+   if ((( cal0Delay + cal1Delay + cal2Delay ) > 2880 && kpixVersion <= 7) || 
+       (( cal0Delay + cal1Delay + cal2Delay ) > 8191 ))
       throw string("KpixAsic::setCalibTime -> cal2Delay out of range");
-   if (( cal0Delay + cal1Delay + cal2Delay + cal3Delay ) > 2880 ) 
+   if ((( cal0Delay + cal1Delay + cal2Delay + cal3Delay ) > 2880 && kpixVersion <= 7) || 
+       (( cal0Delay + cal1Delay + cal2Delay + cal3Delay ) > 8191 )) 
       throw string("KpixAsic::setCalibTime -> cal3Delay out of range");
 
    // Debug if enabled
@@ -1368,31 +1889,55 @@ void KpixAsic::setCalibTime ( unsigned int calCount,  unsigned int cal0Delay,
       cout << hex << cal3Delay << "\n";
    }
 
-   // Set cal delay register 0
-   temp = 0;
-   if ( calCount >= 1 ) temp |= 0x00001000;
-   if ( calCount >= 2 ) temp |= 0x10000000;
-   temp |= cal0Delay & 0x00000FFF;
-   temp |= (cal1Delay << 16) & 0x0FFF0000;
-   regSetValue(0x10,temp,writeEn);
+   // Kpix versions 0-7
+   if ( kpixVersion <= 7 ) {
 
-   // Set cal delay register 1
-   temp = 0;
-   if ( calCount >= 3 ) temp |= 0x00001000;
-   if ( calCount == 4 ) temp |= 0x10000000;
-   temp |= cal1Delay & 0x00000FFF;
-   temp |= (cal2Delay << 16) & 0x0FFF0000;
-   regSetValue(0x11,temp,writeEn);
+      // Set cal delay register 0
+      temp = 0;
+      if ( calCount >= 1 ) temp |= 0x00001000;
+      if ( calCount >= 2 ) temp |= 0x10000000;
+      temp |= cal0Delay & 0x00000FFF;
+      temp |= (cal1Delay << 16) & 0x0FFF0000;
+      regSetValue(0x10,temp,writeEn);
+
+      // Set cal delay register 1
+      temp = 0;
+      if ( calCount >= 3 ) temp |= 0x00001000;
+      if ( calCount == 4 ) temp |= 0x10000000;
+      temp |= cal1Delay & 0x00000FFF;
+      temp |= (cal2Delay << 16) & 0x0FFF0000;
+      regSetValue(0x11,temp,writeEn);
+   } 
+
+   // Version 8+
+   else {
+
+      // Set cal delay register 0
+      temp = 0;
+      if ( calCount >= 1 ) temp |= 0x00008000;
+      if ( calCount >= 2 ) temp |= 0x80000000;
+      temp |= cal0Delay & 0x00001FFF;
+      temp |= (cal1Delay << 16) & 0x1FFF0000;
+      regSetValue(0x10,temp,writeEn);
+
+      // Set cal delay register 1
+      temp = 0;
+      if ( calCount >= 3 ) temp |= 0x00008000;
+      if ( calCount == 4 ) temp |= 0x80000000;
+      temp |= cal1Delay & 0x00001FFF;
+      temp |= (cal2Delay << 16) & 0x1FFF0000;
+      regSetValue(0x11,temp,writeEn);
+   }
 }
 
 
 // Method to read KPIX calibration pulse settings
 // Pass location pointers in which to store the following values:
 // calCount     - Number of calibration pulses to assert, 0-4
-// cal0Delay    - Cal pulse 0 delay 0-2889 bunch clocks
-// cal1Delay    - Cal pulse 1 delay 0-2889 bunch clocks
-// cal2Delay    - Cal pulse 2 delay 0-2889 bunch clocks
-// cal3Delay    - Cal pulse 3 delay 0-2889 bunch clocks
+// cal0Delay    - Cal pulse 0 delay 0-8191 bunch clocks
+// cal1Delay    - Cal pulse 1 delay 0-8191 bunch clocks
+// cal2Delay    - Cal pulse 2 delay 0-8191 bunch clocks
+// cal3Delay    - Cal pulse 3 delay 0-8191 bunch clocks
 // Set readEn to false to disable real read from KPIX
 void KpixAsic::getCalibTime ( unsigned int *calCount,  unsigned int *cal0Delay,
                               unsigned int *cal1Delay, unsigned int *cal2Delay,
@@ -1406,19 +1951,41 @@ void KpixAsic::getCalibTime ( unsigned int *calCount,  unsigned int *cal0Delay,
    temp1 = regGetValue(0x10,readEn);
    temp2 = regGetValue(0x11,readEn);
 
-   // Generate cal count
-   count = 0;
-   if ( (temp1 & 0x10000000) != 0 ) count++;
-   if ( (temp1 & 0x00001000) != 0 ) count++;
-   if ( (temp2 & 0x10000000) != 0 ) count++;
-   if ( (temp2 & 0x00001000) != 0 ) count++;
-   *calCount = count;
+   // Kpix Version 0-7
+   if ( kpixVersion <= 7 ) {
 
-   // Extract delay values
-   *cal0Delay = temp1 & 0x00000FFF;
-   *cal1Delay = (temp1 >> 16) & 0x00000FFF;
-   *cal2Delay = temp2 & 0x00000FFF;
-   *cal3Delay = (temp2 >> 16) & 0x00000FFF;
+      // Generate cal count
+      count = 0;
+      if ( (temp1 & 0x10000000) != 0 ) count++;
+      if ( (temp1 & 0x00001000) != 0 ) count++;
+      if ( (temp2 & 0x10000000) != 0 ) count++;
+      if ( (temp2 & 0x00001000) != 0 ) count++;
+      *calCount = count;
+
+      // Extract delay values
+      *cal0Delay = temp1 & 0x00000FFF;
+      *cal1Delay = (temp1 >> 16) & 0x00000FFF;
+      *cal2Delay = temp2 & 0x00000FFF;
+      *cal3Delay = (temp2 >> 16) & 0x00000FFF;
+   }
+
+   // Kpix version 8+
+   else {
+
+      // Generate cal count
+      count = 0;
+      if ( (temp1 & 0x80000000) != 0 ) count++;
+      if ( (temp1 & 0x00008000) != 0 ) count++;
+      if ( (temp2 & 0x80000000) != 0 ) count++;
+      if ( (temp2 & 0x00008000) != 0 ) count++;
+      *calCount = count;
+
+      // Extract delay values
+      *cal0Delay = temp1 & 0x00001FFF;
+      *cal1Delay = (temp1 >> 16) & 0x00001FFF;
+      *cal2Delay = temp2 & 0x00001FFF;
+      *cal3Delay = (temp2 >> 16) & 0x00001FFF;
+   }
 
    // Debug if enabled
    if ( enDebug ) {
@@ -1954,9 +2521,11 @@ void KpixAsic::setDefaults ( unsigned int clkPeriod, bool writeEn ) {
    unsigned int modes[1024];
 
    // Configure Control Registers
-   setCfgTestData       ( false,     writeEn );
-   setCfgZeroSupress    ( false,     writeEn );
-   setCntrlHoldTime     ( HOLD_LONG, writeEn );
+   setCfgTestData       ( false,     false   );
+   setCfgAutoReadDis    ( false,     false   );
+   setCfgForceTemp      ( false,     false   );
+   setCfgDisableTemp    ( false,     false   );
+   setCfgAutoStatus     ( false,     writeEn );
    setCntrlCalibHigh    ( false,     writeEn );
    setCntrlCalDacInt    ( true,      writeEn );
    setCntrlForceLowGain ( false,     writeEn );
@@ -1968,19 +2537,27 @@ void KpixAsic::setDefaults ( unsigned int clkPeriod, bool writeEn ) {
    setCntrlEnDcRst      ( true,      writeEn );
    setCntrlCalSrcCore   ( true,      writeEn );
    setCntrlTrigSrcCore  ( false,     writeEn );
+   setCntrlShortIntEn   ( false,     writeEn );
+   setCntrlDisPwrCycle  ( false,     writeEn );
+   setCntrlFeCurr       ( 4,         writeEn );
+   if ( kpixVersion < 8 ) 
+      setCntrlHoldTime     ( 1, writeEn );
+   else 
+      setCntrlHoldTime     ( 7, writeEn );
 
    // Set timing values
    setTiming ( clkPeriod, // Clock Period
                700,       // Reset On Time
-               467000,    // Reset off Time
+               120000,    // Reset off Time
                200,       // Leakage Null Off
-               364500,    // Offset Null Off
-               365500,    // Thresh Off
-               1251,      // Trig Inhibit Off (bunch periods)
+               100500,    // Offset Null Off
+               101500,    // Thresh Off
+               0,         // Trig Inhibit Off (bunch periods)
                900,       // Power Up On
                6900,      // Desel Sequence
                467500,    // Bunch Clock Delay
                10000,     // Digitization Delay
+               2890,      // Bunch Clock Count
                true,      // Checking Enable
                writeEn
              );
@@ -2029,6 +2606,7 @@ void KpixAsic::dumpSettings () {
    unsigned int  deselDly;
    unsigned int  bunchClkDly;
    unsigned int  digDelay;
+   unsigned int  bunchCount;
    unsigned int  calCount;
    unsigned int  cal0Delay;
    unsigned int  cal1Delay;
@@ -2039,12 +2617,12 @@ void KpixAsic::dumpSettings () {
    unsigned char rstTholdB;
    unsigned char trigTholdB;
    unsigned int  modes[1024];
-   int           x;
+   unsigned int  x;
 
    // Get some values
    getTiming ( &clkPeriod,  &resetOn, &resetOff,   &leakNullOff,
                &offNullOff, &threshOff, &trigInhOff, &pwrUpOn,
-               &deselDly,   &bunchClkDly, &digDelay, false);
+               &deselDly,   &bunchClkDly, &digDelay, &bunchCount, false, false);
    getCalibTime ( &calCount, &cal0Delay, &cal1Delay, &cal2Delay, &cal3Delay, false );
    getDacThreshRangeA ( &rstTholdA, &trigTholdA, false );
    getDacThreshRangeB ( &rstTholdB, &trigTholdB, false );
@@ -2054,7 +2632,10 @@ void KpixAsic::dumpSettings () {
    cout << "        KpixSerial = " << dec << kpixSerial  << "\n";
    cout << "       KpixVersion = " << dec << kpixVersion << "\n";
    cout << "       CfgTestData = " << getCfgTestData(false) << "\n";
-   cout << "   CfgZeroSuppress = " << getCfgZeroSupress(false) << "\n";
+   cout << "    CfgAutoReadDis = " << getCfgAutoReadDis(false) << "\n";
+   cout << "      CfgForceTemp = " << getCfgForceTemp(false) << "\n";
+   cout << "    CfgDisableTemp = " << getCfgDisableTemp(false) << "\n";
+   cout << "     CfgAutoStatus = " << getCfgAutoStatus(false) << "\n";
    cout << "     CntrlHoldTime = " << dec << (int)getCntrlHoldTime(false) << "\n";
    cout << "    CntrlCalibHigh = " << getCntrlCalibHigh(false) << "\n";
    cout << "    CntrlCalDacInt = " << getCntrlCalDacInt(false) << "\n";
@@ -2067,6 +2648,9 @@ void KpixAsic::dumpSettings () {
    cout << "   CntrlDoubleGain = " << getCntrlDoubleGain(false) << "\n";
    cout << "    CntrlDisPerRst = " << getCntrlDisPerRst(false) << "\n";
    cout << "      CntrlEnDcRst = " << getCntrlEnDcRst(false) << "\n";
+   cout << "   CntrlShortIntEn = " << getCntrlShortIntEn(false) << "\n";
+   cout << "  CntrlDisPwrCycle = " << getCntrlDisPwrCycle(false) << "\n";
+   cout << "        CntrlFeCur = " << dec << (int)getCntrlFeCurr(false) << "\n";
    cout << "          DacCalib = 0x" << hex << setw(2) << setfill('0');
    cout << (int)getDacCalib(false) << "\n";
    cout << "     DacRampThresh = 0x" << hex << setw(2) << setfill('0');
@@ -2085,11 +2669,13 @@ void KpixAsic::dumpSettings () {
    cout << "       LeakNullOff = " << dec << leakNullOff << "ns\n";
    cout << "        OffNullOff = " << dec << offNullOff << "ns\n";
    cout << "         ThreshOff = " << dec << threshOff << "ns\n";
-   cout << "        TrigInhOff = " << dec << trigInhOff << "ns\n";
+   cout << "        TrigInhOff = " << dec << trigInhOff << "(bunch clock)\n";
+   cout << "        TrigInhOff = " << dec << getTrigInh ( false, true ) << "ns\n";
    cout << "           PwrUpOn = " << dec << pwrUpOn << "ns\n";
    cout << "          DeselDly = " << dec << deselDly << "ns\n";
    cout << "       BunchClkDly = " << dec << bunchClkDly << "ns\n";
    cout << "          DigDelay = " << dec << digDelay << "ns\n";
+   cout << "        BunchCount = " << dec << bunchCount << "\n";
    cout << "          CalCount = " << dec << setw(1) << setfill('0') << (int)calCount << "\n";
    cout << "         Cal0Delay = 0x" << hex << setw(3) << setfill('0') << cal0Delay << "\n";
    cout << "         Cal1Delay = 0x" << hex << setw(3) << setfill('0') << cal1Delay << "\n";
@@ -2102,27 +2688,27 @@ void KpixAsic::dumpSettings () {
 
    // Get channel modes
    getChannelModeArray(modes,false);
-   cout << "   Chan Mode 00:31 = ";
-   for ( x=0; x < 32; x++ ) {
-      if ( x % 4 == 0 && x != 0 ) cout << " ";
+   for ( x=0; x < getChCount(); x++) {
+      if ( x % 32 == 0 ) {
+         cout << " Chan Mode ";
+         cout << dec << setfill('0') << setw(3) << x;
+         cout << ":";
+         cout << dec << setfill('0') << setw(3) << x+31;
+         cout << " = ";
+      }
+      if ( x % 4 == 0 && x % 32 != 0 ) cout << " ";
       if ( modes[x] == DISABLE ) cout << "D";
       if ( modes[x] == CAL_A   ) cout << "C";
       if ( modes[x] == TH_A    ) cout << "A";
       if ( modes[x] == TH_B    ) cout << "B";
+      if ( x % 32 == 31 ) cout << "\n";
    }
-   cout << "\n";
-   cout << "   Chan Mode 32:63 = ";
-   for ( x=32; x < 64; x++ ) {
-      if ( x % 4 == 0 && x != 32 ) cout << " ";
-      if ( modes[x] == DISABLE ) cout << "D";
-      if ( modes[x] == CAL_A   ) cout << "C";
-      if ( modes[x] == TH_A    ) cout << "A";
-      if ( modes[x] == TH_B    ) cout << "B";
-   }
-   cout << "\n";
 }
 
 
 // Get Channel COunt
-unsigned int KpixAsic::getChCount() { return(64); }
+unsigned int KpixAsic::getChCount() { 
+   if ( kpixVersion < 8 ) return(64);
+   else return(256);
+}
 

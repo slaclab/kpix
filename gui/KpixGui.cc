@@ -71,6 +71,8 @@ int main ( int argc, char **argv ) {
    char              *env;
    char              oc;
    string            modeString;
+   string            rateString;
+   unsigned int      rateLimit;
 
    // Set Default Options
    deviceString = "/dev/ttyUSB0";
@@ -90,6 +92,7 @@ int main ( int argc, char **argv ) {
    if ( (env = getenv("KPIX_BASE_DIR")) != NULL ) baseDir.assign(env);
    if ( (env = getenv("KPIX_CLK_PER"))  != NULL ) clkString.assign(env);
    if ( (env = getenv("KPIX_CAL_FILE"))  != NULL ) calString.assign(env);
+   if ( (env = getenv("KPIX_RATE_LIMIT"))  != NULL ) rateString.assign(env);
 
    // Process Args
    while ((oc = getopt(argc, argv, ":hd:b:a:v:c:s:")) != -1) {
@@ -112,6 +115,10 @@ int main ( int argc, char **argv ) {
       printUsage(argv[0]); 
       return(1); 
    }
+
+   // Convert rate limit
+   if ( rateString != "" ) rateLimit = atoi(rateString.c_str());
+   else rateLimit = 0;
 
    // Convert Version
    if ( verString != "" ) verInt = atoi(verString.c_str());
@@ -159,7 +166,7 @@ int main ( int argc, char **argv ) {
       }
 
       // Create Gui Windows
-      kpixGuiTop = new KpixGuiTop(sidLink,clkInt,verInt,baseDir,calString);
+      kpixGuiTop = new KpixGuiTop(sidLink,clkInt,verInt,baseDir,calString,rateLimit);
       kpixGuiTop->show();
    }
 

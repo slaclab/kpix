@@ -64,6 +64,7 @@ class KpixGuiRun : public KpixGuiRunForm, public QThread {
       unsigned int runVarCount;
       int          dispKpix[16];
       int          dispChan[16];
+      int          dispBucket[16];
 
    public:
 

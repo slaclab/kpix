@@ -193,7 +193,7 @@ void KpixGuiRegTest::customEvent ( QCustomEvent *event ) {
       if ( eventRun->runStop ) {
          try {
             parent->readConfig(true);
-            parent->readFpgaCounters();
+            parent->readStatus();
          } catch ( string error ) {
             errorMsg->showMessage(error);
          }

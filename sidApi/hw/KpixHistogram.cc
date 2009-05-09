@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 10/15/2008: created
+// 03/03/2009: changed container values to unsigned int
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -36,14 +37,14 @@ KpixHistogram::~KpixHistogram ( ) {
 
 
 // Add an entry
-void KpixHistogram::fill(unsigned short value) {
-   unsigned short *newData;
-   unsigned int   newEntries;
-   unsigned int   x,diff;
+void KpixHistogram::fill(unsigned int value) {
+   unsigned int *newData;
+   unsigned int newEntries;
+   unsigned int x,diff;
 
    // First entry is added
    if ( data == NULL ) {
-      data = (unsigned short *) malloc(sizeof(unsigned short));
+      data = (unsigned int *) malloc(sizeof(unsigned int));
       if ( data == NULL ) throw(string("KpixHistogram::fill -> Malloc Error"));
       data[0] = 1;
       entries = 1;
@@ -55,7 +56,7 @@ void KpixHistogram::fill(unsigned short value) {
       if ( value < min ) {
          diff = min-value;
          newEntries = entries + diff;
-         newData = (unsigned short *) malloc(newEntries * sizeof(unsigned short));
+         newData = (unsigned int *) malloc(newEntries * sizeof(unsigned int));
          if ( newData == NULL ) throw(string("KpixHistogram::fill -> Malloc Error"));
          for (x=0; x < diff; x++) newData[x] = 0;
          for (x=0; x < entries; x++) newData[x+diff] = data[x];
@@ -69,7 +70,7 @@ void KpixHistogram::fill(unsigned short value) {
       else if ( value > max ) {
          diff = value-max;
          newEntries = entries + diff;
-         newData = (unsigned short *) malloc(newEntries * sizeof(unsigned short));
+         newData = (unsigned int *) malloc(newEntries * sizeof(unsigned int));
          if ( newData == NULL ) throw(string("KpixHistogram::fill -> Malloc Error"));
          for (x=0; x < entries; x++) newData[x] = data[x];
          for (x=0; x < diff; x++) newData[x+entries] = 0;
@@ -90,22 +91,22 @@ unsigned int KpixHistogram::binCount() { return(entries); }
 
 
 // Get Min Value
-unsigned short KpixHistogram::minValue() { return(min); }
+unsigned int KpixHistogram::minValue() { return(min); }
 
 
 // Get Max Value
-unsigned short KpixHistogram::maxValue() { return(max); }
+unsigned int KpixHistogram::maxValue() { return(max); }
 
 
 // Get Bin Value
-unsigned short KpixHistogram::value(unsigned int bin) { 
+unsigned int KpixHistogram::value(unsigned int bin) { 
    if ( bin < entries ) return(min+bin);
    else return(0);
 }
 
 
 // Get Bin Count
-unsigned short KpixHistogram::count(unsigned int bin) { 
+unsigned int KpixHistogram::count(unsigned int bin) { 
    if ( bin < entries ) return(data[bin]);
    else return(0);
 }

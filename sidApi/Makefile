@@ -23,7 +23,7 @@ NOHW_OBJ  := $(patsubst $(NOHW_DIR)/%.cc,$(OBJ)/%.o,$(NOHW_SRC))
 NOHW_DEPS := $(patsubst $(OBJ)/%.o,$(DEP)/%.d,$(NOHW_OBJ))
 
 # Default
-all: dirs $(OUT)/libsidapi.so
+all: dirs $(TAR)
 
 # Create object directory
 dirs:

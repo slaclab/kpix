@@ -57,7 +57,6 @@ class KpixGuiFpga : public KpixGuiFpgaForm {
 
       void readConfig(bool readEn);
       void writeConfig(bool writeEn);
-      void readCounters();
 
 };
 

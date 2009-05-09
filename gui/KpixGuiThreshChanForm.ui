@@ -453,22 +453,6 @@ Next Plot</string>
             <bool>true</bool>
         </property>
     </widget>
-    <widget class="QCheckBox">
-        <property name="name">
-            <cstring>reFitEn</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>20</x>
-                <y>230</y>
-                <width>89</width>
-                <height>21</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Fit Enable</string>
-        </property>
-    </widget>
     <widget class="TQtWidget">
         <property name="name">
             <cstring>plotDisplay</cstring>
@@ -602,6 +586,57 @@ Next Plot</string>
         </property>
         <property name="text">
             <string>3.0</string>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>reFitEn</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>20</x>
+                <y>230</y>
+                <width>89</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Fit Enable</string>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>fitDebug</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>120</x>
+                <y>230</y>
+                <width>90</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Fit Debug</string>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>voltConvert</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>20</x>
+                <y>250</y>
+                <width>110</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Volt Convert</string>
+        </property>
+        <property name="checked">
+            <bool>true</bool>
         </property>
     </widget>
 </widget>
@@ -740,6 +775,18 @@ Next Plot</string>
     <connection>
         <sender>threshHint</sender>
         <signal>textChanged(const QString&amp;)</signal>
+        <receiver>KpixGuiThreshChanForm</receiver>
+        <slot>updateDisplay()</slot>
+    </connection>
+    <connection>
+        <sender>fitDebug</sender>
+        <signal>stateChanged(int)</signal>
+        <receiver>KpixGuiThreshChanForm</receiver>
+        <slot>updateDisplay()</slot>
+    </connection>
+    <connection>
+        <sender>voltConvert</sender>
+        <signal>stateChanged(int)</signal>
         <receiver>KpixGuiThreshChanForm</receiver>
         <slot>updateDisplay()</slot>
     </connection>

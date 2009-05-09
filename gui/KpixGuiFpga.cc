@@ -97,33 +97,3 @@ void KpixGuiFpga::writeConfig(bool writeEn) {
 }
 
 
-// Update Counters
-void KpixGuiFpga::readCounters() {
-
-   stringstream temp;
-
-   if ( fpga != NULL ) {
-      temp.str("");
-      temp << "0x" << hex << setw(8) << setfill('0') << fpga->getVersion();
-      fpgaVersion->setText(temp.str());
-      temp.str("");
-      temp << "0x" << hex << setw(8) << setfill('0') << fpga->getJumpers();
-      fpgaJumpers->setText(temp.str());
-      temp.str("");
-      temp << dec << (int)fpga->getCheckSumErrors();
-      checkSumErrors->setText(temp.str());
-      temp.str("");
-      temp << dec << (int)fpga->getRspParErrors();
-      rspParErrors->setText(temp.str());
-      temp.str("");
-      temp << dec << (int)fpga->getDataParErrors();
-      dataParErrors->setText(temp.str());
-      temp.str("");
-      temp << dec << (int)fpga->getDeadCount();
-      deadCount->setText(temp.str());
-      temp.str("");
-      temp << dec << (int)fpga->getTrainNumber();
-      trainNumber->setText(temp.str());
-   }
-}
-

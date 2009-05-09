@@ -13,6 +13,9 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 11/30/2006: created
+// 12/12/2008: Added RMS value extraction from histogram.
+// 04/29/2009: Histograms copied along with calibration data.
+//             Parameter errors now read as well.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -168,7 +171,8 @@ TGraph *KpixCalibRead::getGraphFilt ( string dir, int gain, int kpix, int channe
 
 // Get Calibration Graph Fit Results If They Exist
 bool KpixCalibRead::getCalibData ( double *fitGain, double *fitIntercept,
-                                   string dir, int gain, int kpix, int channel, int bucket) {
+                                   string dir, int gain, int kpix, int channel, int bucket,
+                                   double *fitGainErr, double *fitInterceptErr ) {
 
    TGraph *gr;
    string name;
@@ -191,6 +195,8 @@ bool KpixCalibRead::getCalibData ( double *fitGain, double *fitIntercept,
    if ( gr != NULL && gr->GetFunction("pol1") != NULL ) {
       *fitGain      = gr->GetFunction("pol1")->GetParameter(1);
       *fitIntercept = gr->GetFunction("pol1")->GetParameter(0);
+      if ( fitGainErr      != NULL ) *fitGainErr      = gr->GetFunction("pol1")->GetParError(1);
+      if ( fitInterceptErr != NULL ) *fitInterceptErr = gr->GetFunction("pol1")->GetParError(0);
    }
    if ( gr != NULL ) delete gr;
 
@@ -226,8 +232,9 @@ bool KpixCalibRead::getCalibRms ( double *rms, string dir, int gain, int kpix, i
 
 
 // Get Histogram Graph Fit Results If They Exist
-bool KpixCalibRead::getHistData ( double *fitMean, double *fitSigma, string dir, int gain, 
-                                  int kpix, int channel, int bucket) {
+bool KpixCalibRead::getHistData ( double *fitMean, double *fitSigma, double *fitRms, 
+                                  string dir, int gain, int kpix, int channel, int bucket,
+                                  double *fitMeanErr, double *fitSigmaErr ) {
 
    TH1F *hist;
 
@@ -243,6 +250,9 @@ bool KpixCalibRead::getHistData ( double *fitMean, double *fitSigma, string dir,
    if ( hist != NULL && hist->GetFunction("gaus") != NULL ) {
       *fitMean = hist->GetFunction("gaus")->GetParameter(1);
       *fitSigma = hist->GetFunction("gaus")->GetParameter(2);
+      *fitRms   = hist->GetRMS();
+      if ( fitMeanErr  != NULL ) *fitMeanErr  = hist->GetFunction("gaus")->GetParError(1);
+      if ( fitSigmaErr != NULL ) *fitSigmaErr = hist->GetFunction("gaus")->GetParError(2);
    }
    if ( hist != NULL ) delete hist;
 
@@ -257,6 +267,7 @@ bool KpixCalibRead::getHistData ( double *fitMean, double *fitSigma, string dir,
 void KpixCalibRead::copyCalibData ( TFile *newFile, string directory, KpixAsic **asic, int asicCnt ) {
    unsigned int idx, kpix, chan, buck, gain, range;
    TGraph *tg;
+   TH1F   *th;
    
    // make the directory in the new file
    newFile->cd("/");
@@ -280,10 +291,16 @@ void KpixCalibRead::copyCalibData ( TFile *newFile, string directory, KpixAsic *
                   delete tg;
                }
 
-               // Otherwise keep value plot
+               // Otherwise keep raw value plot
                else if ( (tg = getGraphValue (directory,gain,kpix,chan,buck,range) ) != NULL ) {
                   tg->Write(genPlotName (gain,kpix,chan,buck,"calib_value",range).c_str());
                   delete tg;
+               }
+
+               // Copy histogram as well
+               if ( (th = getHistValue (directory,gain,kpix,chan,buck) ) != NULL ) {
+                  th->Write();
+                  delete th;
                }
             }
          }

@@ -169,6 +169,19 @@
             <string>View Samples</string>
         </property>
     </widget>
+    <widget class="QComboBox">
+        <property name="name">
+            <cstring>selSerial</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>160</y>
+                <width>100</width>
+                <height>23</height>
+            </rect>
+        </property>
+    </widget>
     <widget class="QLabel">
         <property name="name">
             <cstring>textLabel1_2_2</cstring>
@@ -176,29 +189,13 @@
         <property name="geometry">
             <rect>
                 <x>30</x>
-                <y>170</y>
+                <y>140</y>
                 <width>100</width>
                 <height>20</height>
             </rect>
         </property>
         <property name="text">
             <string>&lt;p align="center"&gt;KPIX Serial&lt;/p&gt;</string>
-        </property>
-    </widget>
-    <widget class="QSpinBox">
-        <property name="name">
-            <cstring>selChannel</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>30</x>
-                <y>250</y>
-                <width>100</width>
-                <height>23</height>
-            </rect>
-        </property>
-        <property name="maxValue">
-            <number>1023</number>
         </property>
     </widget>
     <widget class="QLabel">
@@ -208,26 +205,13 @@
         <property name="geometry">
             <rect>
                 <x>30</x>
-                <y>230</y>
+                <y>200</y>
                 <width>100</width>
                 <height>20</height>
             </rect>
         </property>
         <property name="text">
             <string>&lt;p align="center"&gt;KPIX Channel&lt;/p&gt;</string>
-        </property>
-    </widget>
-    <widget class="QComboBox">
-        <property name="name">
-            <cstring>selSerial</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>30</x>
-                <y>190</y>
-                <width>100</width>
-                <height>23</height>
-            </rect>
         </property>
     </widget>
     <widget class="QPushButton">
@@ -237,7 +221,7 @@
         <property name="geometry">
             <rect>
                 <x>20</x>
-                <y>340</y>
+                <y>370</y>
                 <width>110</width>
                 <height>28</height>
             </rect>
@@ -253,13 +237,61 @@
         <property name="geometry">
             <rect>
                 <x>20</x>
-                <y>300</y>
+                <y>330</y>
                 <width>110</width>
                 <height>28</height>
             </rect>
         </property>
         <property name="text">
             <string>Next</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_2_2_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>250</y>
+                <width>100</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="center"&gt;KPIX Bucket&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QSpinBox">
+        <property name="name">
+            <cstring>selChannel</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>220</y>
+                <width>100</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="maxValue">
+            <number>1023</number>
+        </property>
+    </widget>
+    <widget class="QSpinBox">
+        <property name="name">
+            <cstring>selBucket</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>270</y>
+                <width>100</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="maxValue">
+            <number>3</number>
         </property>
     </widget>
 </widget>
@@ -364,6 +396,12 @@
         <signal>pressed()</signal>
         <receiver>KpixGuiRunViewForm</receiver>
         <slot>viewSamples_pressed()</slot>
+    </connection>
+    <connection>
+        <sender>selBucket</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>KpixGuiRunViewForm</receiver>
+        <slot>updateDisplay()</slot>
     </connection>
 </connections>
 <includes>

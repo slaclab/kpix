@@ -22,6 +22,7 @@
 // 04/29/2007: Train number now passed during creation
 // 04/30/2007: Modified to throw strings instead of const char *
 // 02/27/2008: Added ability to store/read empty & bad count flags.
+// 04/27/2009: Added trigger type flag.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -53,25 +54,26 @@ KpixSample::KpixSample ( ) {
 
 // Event class constructor
 // Pass the following values for construction
-// address   = KPIX Address
-// channel   = KPIX Channel
-// bucket    = KPIX Bucket
-// range     = Range Flag
-// time      = Timestamp
-// value     = Value
-// train     = Train Number
-// empty     = Sample is empty
-// badCount  = Channel counter was bad
+// address      = KPIX Address
+// channel      = KPIX Channel
+// bucket       = KPIX Bucket
+// range        = Range Flag
+// time         = Timestamp
+// value        = Value
+// train        = Train Number
+// empty        = Sample is empty
+// badCount     = Channel counter was bad
+// trigType     = 0=Local, 1=Neighbor
 KpixSample::KpixSample ( Int_t address, Int_t channel, Int_t bucket, Int_t range, 
                          Int_t time, Int_t value, Int_t train, Int_t empty, 
-                         Int_t badCount, bool debug ) {
+                         Int_t badCount, Int_t trigType, bool debug ) {
 
    // Set values
    trainNum     = train;
    kpixAddress  = address;
    kpixChannel  = channel;
    kpixBucket   = bucket;
-   sampleRange  = (range & 0x1) | ((empty << 1) & 0x2) | ((badCount << 2) & 0x4);
+   sampleRange  = (range & 0x1) | ((empty << 1) & 0x2) | ((badCount << 2) & 0x4) | ((trigType << 3) & 0x8);
    sampleTime   = time;
    sampleValue  = value;
    varCount     = 0;
@@ -88,6 +90,7 @@ KpixSample::KpixSample ( Int_t address, Int_t channel, Int_t bucket, Int_t range
       cout << ", Train=0x" << setw(8) << setfill('0') << hex << train;
       cout << ", Empty=" << empty;
       cout << ", BadCount=" << badCount;
+      cout << ", TrigType=" << trigType;
       cout << "\n";
    }
 }
@@ -139,6 +142,9 @@ Int_t KpixSample::getEmpty() { return(((sampleRange >> 1) & 0x1)); }
 
 // Get badCount flag
 Int_t KpixSample::getBadCount() { return(((sampleRange >> 2) & 0x1)); }
+
+// Get trigger type flag
+Int_t KpixSample::getTrigType() { return(((sampleRange >> 3) & 0x1)); }
 
 // Deconstructor
 KpixSample::~KpixSample () {}

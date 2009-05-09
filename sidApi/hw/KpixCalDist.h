@@ -20,6 +20,7 @@
 // 09/26/2008: Added support for progress updates to calling class.
 // 10/13/2008: Removed fitting functions. Seperate plot & raw data enable from
 //             canvas and plot directory setting.
+// 03/05/2009: Added ability to rate limit calibration and dist generation
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_CAL_DIST_H__
 #define __KPIX_CAL_DIST_H__
@@ -85,6 +86,9 @@ class KpixCalDist {
       // Lookup Table For Kpix Index
       unsigned int *kpixIdxLookup;
 
+      // Rate Limit In uS
+      unsigned int rateLimit;
+
       // Plot information
       string plotDir;
 
@@ -130,6 +134,9 @@ class KpixCalDist {
 
       // Pass name of the TFile directory in which to store the plots
       void setPlotDir( string plotDir );
+
+      // Set Rate Limit
+      void setRateLimit( unsigned int rateLimit );
 
       // Execute distribution, pass channel to enable calibration mask for
       // Or pass -1 to set cal mask for all channels or -2 to set mask for no channels

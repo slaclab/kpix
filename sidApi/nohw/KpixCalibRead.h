@@ -14,6 +14,9 @@
 // Modification history :
 // 11/30/2006: created
 // 10/25/2008: Added method to copy calibration data to a new root file.
+// 12/12/2008: Added RMS value extraction from histogram.
+// 04/29/2009: Histograms copied along with calibration data.
+//             Parameter errors now read as well.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_CALIB_READ_H__
 #define __KPIX_CALIB_READ_H__
@@ -81,16 +84,18 @@ class KpixCalibRead {
       TGraph *getGraphFilt ( string dir, int gain, int kpix, int channel, int bucket, int range=-1 );
 
       // Get Calibration Graph Fit Results If They Exist
-      bool getCalibData ( double *fitGain, double *fitIntercept,
-                          string dir, int gain, int kpix, int channel, int bucket);
+      bool getCalibData ( double *fitGain, double *fitIntercept, 
+                          string dir, int gain, int kpix, int channel, int bucket,
+                          double *fitGainErr=NULL, double *fitInterceptErr=NULL );
 
       // Get Calibration Graph Fit RMS Value
-      bool getCalibRms  ( double *rms,
+      bool getCalibRms  ( double *rms, 
                           string dir, int gain, int kpix, int channel, int bucket);
 
       // Get Histogram Graph Fit Results If They Exist
-      bool getHistData ( double *mean, double *sigma, 
-                         string dir, int gain, int kpix, int channel, int bucket);
+      bool getHistData ( double *mean, double *sigma, double *rms,
+                         string dir, int gain, int kpix, int channel, int bucket,
+                         double *meanErr=NULL, double *sigmaErr=NULL);
 
       // Copy calibration data to a new root file
       void copyCalibData ( TFile *newFile, string directory, KpixAsic **asic, int asicCnt );

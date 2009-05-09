@@ -29,7 +29,7 @@ using namespace std;
 KpixGuiViewConfig::KpixGuiViewConfig ( ) : KpixGuiViewConfigForm() { 
    kpixGuiList   = new KpixGuiList(this);
    kpixGuiConfig = new KpixGuiConfig(this);
-   kpixGuiTiming = new KpixGuiTiming(this);
+   kpixGuiTiming = new KpixGuiTiming(0,this);
    kpixGuiTrig   = new KpixGuiTrig(this);
    kpixGuiInject = new KpixGuiInject(this);
 

@@ -27,6 +27,7 @@
 // 12/17/2007: Added reset pulse extension
 // 09/26/2008: Added method to set FPGA defaults.
 // 10/23/2008: Added method to set sidLink object.
+// 02/06/2009: Added methods to set digization and readout clocks & Kpix Version
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_FPGA_H__
 #define __KPIX_FPGA_H__
@@ -171,6 +172,28 @@ class KpixFpga : public TObject {
       // Set readEn to false to disable real read from FPGA.
       unsigned short getClockPeriod ( bool readEn=true );
 
+      // Method to set FPGA digiization clock register.
+      // Default value = 50ns (20Mhz)
+      // Pass value containing the desired clock period. Valid values are
+      // multiples of 10ns from 10ns to 320 ns.
+      // Set writeEn to false to disable real write to KPIX
+      void setClockPeriodDig ( unsigned short period, bool writeEn=true );
+
+      // Method to set FPGA digitization clock period.
+      // Set readEn to false to disable real read from FPGA.
+      unsigned short getClockPeriodDig ( bool readEn=true );
+
+      // Method to set FPGA readout clock register.
+      // Default value = 50ns (20Mhz)
+      // Pass value containing the desired clock period. Valid values are
+      // multiples of 10ns from 10ns to 320 ns.
+      // Set writeEn to false to disable real write to KPIX
+      void setClockPeriodRead ( unsigned short period, bool writeEn=true );
+
+      // Method to set FPGA readout clock period.
+      // Set readEn to false to disable real read from FPGA.
+      unsigned short getClockPeriodRead ( bool readEn=true );
+
       // Method to get FPGA receive checksum error counter
       // Set readEn to false to disable real read from FPGA.
       unsigned char getCheckSumErrors ( bool readEn=true );
@@ -234,6 +257,15 @@ class KpixFpga : public TObject {
       // Method to get Drop Data Flag.
       // Set readEn to false to disable real read from FPGA.
       bool getDropData ( bool readEn=true );
+
+      // Method to set Kpix Version Flag. false = 0-7, true = 8+
+      // Default value = False
+      // Set writeEn to false to disable real write to KPIX
+      void setKpixVer ( bool value, bool writeEn=true );
+
+      // Method to get Kpix Version Flag, false = 0-7, true = 8+
+      // Set readEn to false to disable real read from FPGA.
+      bool getKpixVer ( bool readEn=true );
 
       // Method to set Raw Data Flag.
       // Default value = False
@@ -485,7 +517,7 @@ class KpixFpga : public TObject {
       bool getValid ( );
 
       // Set Defaults
-      void setDefaults ( unsigned int clkPeriod, bool writeEn=true );
+      void setDefaults ( unsigned int clkPeriod, bool kpixVer=false, bool writeEn=true );
 
 #ifdef HW_EN
       // Return SID Link Object Pointer

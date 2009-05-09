@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 12/12/2008: Added RMS extraction and plots for histogram.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -117,7 +118,7 @@ void KpixGuiCalFit::inFileBrowse_pressed() {
 // Open the input file
 void KpixGuiCalFit::inFileOpen_pressed() {
    int          x,y,dir,serial,gain,channel,bucket,serNum, chCount;
-   double       gainVal, iceptVal, rmsVal, meanVal, sigmaVal;
+   double       gainVal, iceptVal, rmsVal, meanVal, sigmaVal, hrmsVal;
    stringstream temp;
 
    if ( ! inFileIsOpen ) {
@@ -162,7 +163,7 @@ void KpixGuiCalFit::inFileOpen_pressed() {
                         // Get calibration data
                         inFileRoot->getCalibData (&gainVal,&iceptVal,dirNames[dir],gain,serNum,channel,bucket);
                         inFileRoot->getCalibRms  (&rmsVal,dirNames[dir],gain,serNum,channel,bucket);
-                        inFileRoot->getHistData ( &meanVal, &sigmaVal, dirNames[dir], gain, serNum, channel, bucket);
+                        inFileRoot->getHistData ( &meanVal, &sigmaVal, &hrmsVal, dirNames[dir], gain, serNum, channel, bucket);
 
                         // Set structure
                         inCalibData[serial].calGain[dir][gain][channel][bucket] = gainVal;
@@ -170,6 +171,7 @@ void KpixGuiCalFit::inFileOpen_pressed() {
                         inCalibData[serial].calRms[dir][gain][channel][bucket] = rmsVal; 
                         inCalibData[serial].distMean[dir][gain][channel][bucket] = meanVal;
                         inCalibData[serial].distSigma[dir][gain][channel][bucket] = sigmaVal;
+                        inCalibData[serial].distRms[dir][gain][channel][bucket] = hrmsVal;
                         inCalibData[serial].calWriteDone[dir][gain][channel][bucket] = false;
                         inCalibData[serial].distWriteDone[dir][gain][channel][bucket] = false;
                      }
@@ -321,6 +323,7 @@ void KpixGuiCalFit::outFileOpen_pressed() {
                         outCalibData[serial].calRms[dir][gain][channel][bucket] = 0;
                         outCalibData[serial].distMean[dir][gain][channel][bucket] = 0;
                         outCalibData[serial].distSigma[dir][gain][channel][bucket] = 0;
+                        outCalibData[serial].distRms[dir][gain][channel][bucket] = 0;
                         outCalibData[serial].calWriteDone[dir][gain][channel][bucket] = false;
                         outCalibData[serial].distWriteDone[dir][gain][channel][bucket] = false;
                      }
@@ -446,6 +449,8 @@ void KpixGuiCalFit::writeHist(int dirIndex,int gain,int serial,int channel,int b
             hist[0]->GetFunction("gaus")->GetParameter(1);
          outCalibData[serial].distSigma[dirIndex][gain][channel][bucket] =
             hist[0]->GetFunction("gaus")->GetParameter(2);
+         outCalibData[serial].distRms[dirIndex][gain][channel][bucket] =
+            hist[0]->GetRMS();
       }
 
       // Write Graphs To File
@@ -534,7 +539,7 @@ void KpixGuiCalFit::writeCalib(int dirIndex,int gain,int serial,int channel,int 
 void KpixGuiCalFit::updateDisplay() {
 
    unsigned int dir,serial,gain,channel,bucket,chCount;
-   double       gainVal, iceptVal, rmsVal, meanVal, sigmaVal;
+   double       gainVal, iceptVal, rmsVal, meanVal, sigmaVal, hrmsVal;
    stringstream temp;
    string       temp2;
    double       fillValue, fillMin, fillMax;
@@ -607,6 +612,16 @@ void KpixGuiCalFit::updateDisplay() {
             hist  = new TH1F("sigma_el",temp2.c_str(),1000,0,100000);
             hist->SetDirectory(0);
             break;
+         case 7:
+            temp2 = "HRMS, " + temp.str();
+            hist  = new TH1F("hrms",temp2.c_str(),50,0,10);
+            hist->SetDirectory(0);
+            break;
+         case 8:
+            temp2 = "HRMS (el), " + temp.str();
+            hist  = new TH1F("hrms_el",temp2.c_str(),1000,0,100000);
+            hist->SetDirectory(0);
+            break;
          default:
             hist = NULL;
             break;
@@ -623,6 +638,7 @@ void KpixGuiCalFit::updateDisplay() {
                rmsVal   = outCalibData[serial].calRms[dir][gain][channel][bucket];
                meanVal  = outCalibData[serial].distMean[dir][gain][channel][bucket];
                sigmaVal = outCalibData[serial].distSigma[dir][gain][channel][bucket];
+               hrmsVal  = outCalibData[serial].distRms[dir][gain][channel][bucket];
             }
 
             // Use Input File
@@ -632,6 +648,7 @@ void KpixGuiCalFit::updateDisplay() {
                rmsVal   = inCalibData[serial].calRms[dir][gain][channel][bucket];
                meanVal  = inCalibData[serial].distMean[dir][gain][channel][bucket];
                sigmaVal = inCalibData[serial].distSigma[dir][gain][channel][bucket];
+               hrmsVal  = inCalibData[serial].distRms[dir][gain][channel][bucket];
             }
 
             // Update Table
@@ -644,6 +661,9 @@ void KpixGuiCalFit::updateDisplay() {
             resultsTable->setText(channel*4+bucket,6,temp.str());
             temp.str(""); if ( gainVal != 0 ) temp << ((sigmaVal/gainVal)*1e15*6240);
             resultsTable->setText(channel*4+bucket,7,temp.str());
+            temp.str(""); temp << hrmsVal; resultsTable->setText(channel*4+bucket,8,temp.str());
+            temp.str(""); if ( gainVal != 0 ) temp << ((hrmsVal/gainVal)*1e15*6240);
+            resultsTable->setText(channel*4+bucket,9,temp.str());
             
             // Auto Adjust
             resultsTable->adjustColumn(0);
@@ -654,6 +674,8 @@ void KpixGuiCalFit::updateDisplay() {
             resultsTable->adjustColumn(5);
             resultsTable->adjustColumn(6);
             resultsTable->adjustColumn(7);
+            resultsTable->adjustColumn(8);
+            resultsTable->adjustColumn(9);
 
             // Select Fill Value
             switch ( selPlot->currentItem() ) {
@@ -662,10 +684,25 @@ void KpixGuiCalFit::updateDisplay() {
                case 2: fillValue = rmsVal;   break;
                case 3: fillValue = meanVal;  break;
                case 4: fillValue = sigmaVal; break;
-               case 5: if ( gainVal != 0 ) fillValue = (rmsVal/gainVal)*1e15*6240;
-                       else fillValue = 0; break;
-               case 6: if ( gainVal != 0 ) fillValue = (sigmaVal/gainVal)*1e15*6240;
-                       else fillValue = 0; break;
+               case 5: 
+                  if ( gainVal != 0 ) fillValue = (rmsVal/gainVal)*1e15*6240;
+                  else fillValue = 0; 
+                  if ( fillValue < 0   ) fillValue = 0;
+                  if ( fillValue > 1e5 ) fillValue = 0;
+                  break;
+               case 6: 
+                  if ( gainVal != 0 ) fillValue = (sigmaVal/gainVal)*1e15*6240;
+                  else fillValue = 0; 
+                  if ( fillValue < 0   ) fillValue = 0;
+                  if ( fillValue > 1e5 ) fillValue = 0;
+                  break;
+               case 7: fillValue = hrmsVal; break;
+               case 8: 
+                  if ( gainVal != 0 ) fillValue = (hrmsVal/gainVal)*1e15*6240;
+                  else fillValue = 0; 
+                  if ( fillValue < 0   ) fillValue = 0;
+                  if ( fillValue > 1e5 ) fillValue = 0;
+                  break;
                default: fillValue = 0; break;
             }
 
@@ -684,6 +721,8 @@ void KpixGuiCalFit::updateDisplay() {
    plotData->GetCanvas()->Clear();
    plotData->GetCanvas()->cd();
    if ( hist != NULL ) {
+      fillMax += 1;
+      fillMin -= 1;
       hist->GetXaxis()->SetRangeUser(fillMin,fillMax);
       hist->Draw();
    }
@@ -701,7 +740,7 @@ void KpixGuiCalFit::writePdf_pressed() {
       for ( serial=0; serial < (unsigned int)(inFileRoot->kpixRunRead->getAsicCount()-1); serial++) {
          for ( dir=0; dir < DIR_COUNT; dir++) {
             for ( gain=0; gain < 3; gain++ ) {
-               for ( plot=0; plot < 8; plot++ ) {
+               for ( plot=0; plot < 9; plot++ ) {
 
                   // Set current items
                   selSerial->setCurrentItem(serial);

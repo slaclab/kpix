@@ -33,7 +33,8 @@ HEADERS	+= KpixGuiInject.h \
 	KpixGuiThreshChan.h \
 	KpixGuiThreshView.h \
 	KpixGuiRunNetwork.h \
-	KpixGuiEventData.h
+	KpixGuiEventData.h \
+	KpixGuiStatus.h
 
 SOURCES	+= KpixGuiInject.cc \
 	KpixGuiConfig.cc \
@@ -60,10 +61,12 @@ SOURCES	+= KpixGuiInject.cc \
 	KpixGuiThreshChan.cc \
 	KpixGuiThreshView.cc \
 	KpixGuiRunNetwork.cc \
-	KpixGuiEventData.cc
+	KpixGuiEventData.cc \
+	KpixGuiStatus.cc
 
 FORMS	= KpixGuiInjectForm.ui \
 	KpixGuiConfigForm.ui \
+	KpixGuiStatusForm.ui \
 	KpixGuiFpgaForm.ui \
 	KpixGuiListForm.ui \
 	KpixGuiMainForm.ui \

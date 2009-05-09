@@ -27,6 +27,7 @@
 // 12/17/2007: Added reset pulse extension
 // 09/26/2008: Added method to set FPGA defaults.
 // 10/23/2008: Added method to set sidLink object.
+// 02/06/2009: Added methods to set digization and readout clocks & kpix Version
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -464,7 +465,11 @@ unsigned int KpixFpga::getUsbDelay ( bool readEn ) {
 // Set writeEn to false to disable real write to KPIX
 void KpixFpga::setClockPeriod ( unsigned short period, bool writeEn ) {
 
-   int set;
+   unsigned int set;
+   unsigned int value;
+
+   // Get register
+   value = regGetValue(0x03,false);
 
    // Verify range
    if ( period < 10 || period > 320 || (period % 10) != 0 ) 
@@ -480,8 +485,12 @@ void KpixFpga::setClockPeriod ( unsigned short period, bool writeEn ) {
    // Convert value
    set = ((period / 10) - 1);
 
+   // Set proper bits
+   value &= 0xFFFFFF00;
+   value |= (set & 0xFF);
+
    // Set register
-   regSetValue(0x03,set,writeEn);
+   regSetValue(0x03,value,writeEn);
 }
 
 
@@ -493,11 +502,121 @@ unsigned short KpixFpga::getClockPeriod ( bool readEn ) {
    unsigned int val = regGetValue ( 0x03, readEn ) & 0x1F;
 
    // Convert value
-   unsigned short ret = (val + 1) * 10;
+   unsigned short ret = ((val&0xFF) + 1) * 10;
 
    // Debug
    if ( enDebug ) {
       cout << "KpixFpga::getClockPeriod -> ClockPeriod=";
+      cout << hex << setfill('0') << setw(1) << ret << ".\n";
+   }
+   return(ret);
+}
+
+
+// Method to set FPGA digization clock control register.
+// Default value = 50ns (20Mhz)
+// Pass value containing the desired clock period. Valid values are
+// multiples of 10ns from 10ns to 320 ns.
+// Set writeEn to false to disable real write to KPIX
+void KpixFpga::setClockPeriodDig ( unsigned short period, bool writeEn ) {
+
+   unsigned int set;
+   unsigned int value;
+
+   // Get register
+   value = regGetValue(0x03,false);
+
+   // Verify range
+   if ( period < 10 || period > 320 || (period % 10) != 0 ) 
+      throw string("KpixFpga::setClockPeriodDig -> Invalid Value");
+
+   // Output value
+   if ( enDebug ) {
+      cout << "KpixFpga::setClockPeriodDig -> Set ClockPeriodDig=";
+      cout << setw(3) << setfill('0') << dec << period << " ns";
+      cout << ", WriteEn=" << writeEn << ".\n";
+   }
+
+   // Convert value
+   set = ((period / 10) - 1);
+
+   // Set proper bits
+   value &= 0xFFFF00FF;
+   value |= ((set << 8) & 0xFF00);
+
+   // Set register
+   regSetValue(0x03,value,writeEn);
+}
+
+
+// Method to set FPGA digization clock period.
+// Set readEn to false to disable real read from FPGA.
+unsigned short KpixFpga::getClockPeriodDig ( bool readEn ) {
+
+   // Get Value
+   unsigned int val = regGetValue ( 0x03, readEn );
+
+   // Convert value
+   unsigned short ret = (((val>>8)&0xFF) + 1) * 10;
+
+   // Debug
+   if ( enDebug ) {
+      cout << "KpixFpga::getClockPeriodDig -> ClockPeriodDig=";
+      cout << hex << setfill('0') << setw(1) << ret << ".\n";
+   }
+   return(ret);
+}
+
+
+// Method to set FPGA readout clock control register.
+// Default value = 50ns (20Mhz)
+// Pass value containing the desired clock period. Valid values are
+// multiples of 10ns from 10ns to 320 ns.
+// Set writeEn to false to disable real write to KPIX
+void KpixFpga::setClockPeriodRead ( unsigned short period, bool writeEn ) {
+
+   unsigned int set;
+   unsigned int value;
+
+   // Get register
+   value = regGetValue(0x03,false);
+
+   // Verify range
+   if ( period < 10 || period > 320 || (period % 10) != 0 ) 
+      throw string("KpixFpga::setClockPeriodRead -> Invalid Value");
+
+   // Output value
+   if ( enDebug ) {
+      cout << "KpixFpga::setClockPeriodRead -> Set ClockPeriodRead=";
+      cout << setw(3) << setfill('0') << dec << period << " ns";
+      cout << ", WriteEn=" << writeEn << ".\n";
+   }
+
+   // Convert value
+   set = ((period / 10) - 1);
+
+   // Set proper bits
+   value &= 0xFF00FFFF;
+   value |= ((set << 16) & 0xFF0000);
+
+   // Set register
+   regSetValue(0x03,value,writeEn);
+}
+
+
+// Method to set FPGA readout clock period.
+// Set readEn to false to disable real read from FPGA.
+unsigned short KpixFpga::getClockPeriodRead ( bool readEn ) {
+
+   // Get Value
+   unsigned int val = regGetValue ( 0x03, readEn );
+
+   // Convert value
+   unsigned short ret = (((val>>16)&0xFF) + 1) * 10;
+
+   // Debug
+   if ( enDebug ) {
+      cout << "KpixFpga::getClockPeriodRead -> ClockPeriodRead=";
       cout << hex << setfill('0') << setw(1) << ret << ".\n";
    }
    return(ret);
@@ -639,6 +758,30 @@ bool KpixFpga::getDropData ( bool readEn ) {
    bool ret = regGetBit(0x08,4,readEn); 
    if ( enDebug ) {
       cout << "KpixFpga::getDropData -> Get DropData=" << ret;
+      cout << ", ReadEn=" << readEn << ".\n";
+   }
+   return(ret);
+}
+
+
+// Method to set Kpix Version Flag. false = 0-7, true = 8+
+// Default value = False
+// Set writeEn to false to disable real write to KPIX
+void KpixFpga::setKpixVer ( bool value, bool writeEn ) {
+   if ( enDebug ) {
+      cout << "KpixFpga::setKpixVer -> Set KpixVer=" << value;
+      cout << ", WriteEn=" << writeEn << ".\n";
+   }
+   regSetBit(0x08,28,value,writeEn);
+}
+
+
+// Method to get Kpix Version Flag, false = 0-7, true = 8+
+// Set readEn to false to disable real read from FPGA.
+bool KpixFpga::getKpixVer ( bool readEn ) {
+   bool ret = regGetBit(0x08,28,readEn); 
+   if ( enDebug ) {
+      cout << "KpixFpga::getKpixVer -> Get KpixVer=" << ret;
       cout << ", ReadEn=" << readEn << ".\n";
    }
    return(ret);
@@ -1401,14 +1544,17 @@ bool KpixFpga::fpgaDebug ( ) { return(enDebug); }
 
 
 // Set Defaults
-void KpixFpga::setDefaults ( unsigned int clkPeriod, bool writeEn ) {
+void KpixFpga::setDefaults ( unsigned int clkPeriod, bool kpixVer, bool writeEn ) {
 
    // Send resets if write is enabled
    if ( writeEn ) cmdResetMst();
    setClockPeriod(clkPeriod,writeEn );
+   setClockPeriodDig(clkPeriod,writeEn );
+   setClockPeriodRead(clkPeriod,writeEn );
    if ( writeEn ) cmdResetKpix();
 
    // Other defaults
+   setKpixVer  ( kpixVer, writeEn ); // Not On Gui
    setUsbDelay ( 0, writeEn ); // Not On Gui
    setBncSourceA ( 0x03, writeEn );
    setBncSourceB ( 0x03, writeEn );
@@ -1448,8 +1594,11 @@ void KpixFpga::dumpSettings () {
    cout << "        ScratchPad = " << getScratchPad(false)  << "\n";
    cout << "          UsbDelay = " << getUsbDelay(false)    << "\n";
    cout << "       ClockPeriod = " << getClockPeriod(false) << "\n";
+   cout << "    ClockPeriodDig = " << getClockPeriodDig(false)  << "\n";
+   cout << "   ClockPeriodRead = " << getClockPeriodRead(false) << "\n";
    cout << "        BncSourceA = " << (int)getBncSourceA(false) << "\n";
    cout << "        BncSourceB = " << (int)getBncSourceB(false) << "\n";
+   cout << "           KpixVer = " << getKpixVer(false)  << "\n";
    cout << "          DropData = " << getDropData(false) << "\n";
    cout << "          DisKpixA = " << getDisKpixA(false) << "\n";
    cout << "          DisKpixB = " << getDisKpixB(false) << "\n";

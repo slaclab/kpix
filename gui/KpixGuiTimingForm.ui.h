@@ -19,3 +19,9 @@ void KpixGuiTimingForm::timeValueChanged()
 
 }
 
+
+
+void KpixGuiTimingForm::rawTrigInh_stateChanged()
+{
+
+}

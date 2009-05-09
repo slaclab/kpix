@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 06/09/2007: created
+// 03/03/2009: Added timestamps to stored data.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -32,7 +33,7 @@ int main ( int argc, char **argv ) {
    int               oldPct, curPct;
    double            icept[64],gain[64];
    Double_t          charge[64];
-   Int_t             run,event;
+   Int_t             run,event, time[64];
 
    // Check Input
    if ( argc < 3 ) {
@@ -52,6 +53,7 @@ int main ( int argc, char **argv ) {
    sampleTree->Branch("run",&run,"run/I");
    sampleTree->Branch("event",&event,"event/I");
    sampleTree->Branch("charge",charge,"charge[64]/D");
+   sampleTree->Branch("time",time,"time[64]/I");
 
    // Process each passed file
    for ( x=2; x < argc; x++ ) {
@@ -117,8 +119,14 @@ int main ( int argc, char **argv ) {
 
          // Only store bucket 0
          if ( sample->getKpixBucket() == 0 ) {
-            if ( gain[channel] != 0 ) charge[channel] = (sample->getSampleValue() - icept[channel]) / gain[channel];
-            else charge[channel] = 0;
+            if ( gain[channel] != 0 ) {
+               charge[channel] = (sample->getSampleValue() - icept[channel]) / gain[channel];
+               time[channel]   = sample->getSampleTime();
+            }
+            else {
+               charge[channel] = 0;
+               time[channel]   = 0;
+            }
          }
       }
 

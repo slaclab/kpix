@@ -14,6 +14,7 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 03/05/2009: Added rate limit function.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -36,7 +37,8 @@ using namespace std;
 
 // Constructor
 KpixGuiTop::KpixGuiTop ( SidLink *sidLink, unsigned int clkPeriod, unsigned int version, 
-                         string baseDir, string calString, QWidget *parent ) : KpixGuiTopForm(parent) {
+                         string baseDir, string calString, unsigned int rateLimit, 
+                         QWidget *parent ) : KpixGuiTopForm(parent) {
 
    this->asicCnt       = 0;
    this->fpga          = NULL;
@@ -55,9 +57,10 @@ KpixGuiTop::KpixGuiTop ( SidLink *sidLink, unsigned int clkPeriod, unsigned int 
    kpixGuiMain   = new KpixGuiMain(this);
    kpixGuiFpga   = new KpixGuiFpga(this);
    kpixGuiConfig = new KpixGuiConfig(this);
-   kpixGuiTiming = new KpixGuiTiming(this);
+   kpixGuiTiming = new KpixGuiTiming(rateLimit,this);
    kpixGuiTrig   = new KpixGuiTrig(this);
    kpixGuiInject = new KpixGuiInject(this);
+   kpixGuiStatus = new KpixGuiStatus(this);
 
    // Fill in the tabs
    kpixTabs->insertTab(kpixGuiMain,"Main",0);
@@ -66,6 +69,7 @@ KpixGuiTop::KpixGuiTop ( SidLink *sidLink, unsigned int clkPeriod, unsigned int 
    kpixTabs->insertTab(kpixGuiTiming,"Timing",3);
    kpixTabs->insertTab(kpixGuiTrig,"Trigger",4);
    kpixTabs->insertTab(kpixGuiInject,"Inject",5);
+   kpixTabs->insertTab(kpixGuiStatus,"Status",6);
    kpixTabs->removePage(deleteTab);
    kpixTabs->setCurrentPage(0);
 
@@ -117,7 +121,7 @@ void KpixGuiTop::setEnabled ( bool enable ) {
    runMenu->setEnabled(enable&&asicEn);
 
    // Local Stuff
-   readCounters->setEnabled(enable&&asicEn);
+   updateStatus->setEnabled(enable&&asicEn);
    clearCounters->setEnabled(enable&&asicEn);
    readConfiguration->setEnabled(enable&&asicEn);
    writeConfiguration->setEnabled(enable&&asicEn);
@@ -138,8 +142,8 @@ void KpixGuiTop::setEnabled ( bool enable ) {
 }
 
 
-void KpixGuiTop::readFpgaCounters() {
-   kpixGuiFpga->readCounters();
+void KpixGuiTop::readStatus() {
+   kpixGuiStatus->readStatus();
 }
 
 
@@ -151,6 +155,7 @@ void KpixGuiTop::readConfig(bool readEn) {
    kpixGuiTiming->readConfig(readEn);
    kpixGuiTrig->readConfig(readEn);
    kpixGuiInject->readConfig(readEn);
+   kpixGuiStatus->readStatus();
 }
 
 
@@ -168,7 +173,7 @@ void KpixGuiTop::writeConfig(bool writeEn) {
 void KpixGuiTop::setDefaults_pressed( ) {
    unsigned int x;
    try {
-      fpga->setDefaults(defClkPeriod);
+      fpga->setDefaults(defClkPeriod,(asicVersion>7));
       for(x=0; x<asicCnt; x++) asic[x]->setDefaults(defClkPeriod);
       readConfig(false);
       update();
@@ -235,9 +240,9 @@ void KpixGuiTop::regTest_pressed() {
 }
 
 
-void KpixGuiTop::readCounters_pressed() {
+void KpixGuiTop::readStatus_pressed() {
    try {
-      readFpgaCounters();
+      readStatus();
    } catch ( string error ) {
       errorMsg->showMessage(error);
       cout << "Caught Exception: " << error << endl;
@@ -251,7 +256,7 @@ void KpixGuiTop::clearCounters_pressed() {
       fpga->cmdRstParErrors();
       fpga->cmdRstDeadCount();
       fpga->cmdRstTrainNumber();
-      readFpgaCounters();
+      readStatus();
    } catch ( string error ) {
       errorMsg->showMessage(error);
       cout << "Caught Exception: " << error << endl;
@@ -311,8 +316,9 @@ void KpixGuiTop::dumpSettings_pressed( ) {
 
 
 void KpixGuiTop::findConnectedAsics() {
-   bool         temp1,temp2;
-   unsigned int x;
+   bool          temp1,temp2,temp3;
+   unsigned char temp4;
+   unsigned int  x;
 
    // Delete ASICs
    for (x=0; x < asicCnt; x++) delete asic[x];
@@ -325,7 +331,7 @@ void KpixGuiTop::findConnectedAsics() {
    fpga = new KpixFpga(sidLink);
 
    // Set defaults
-   fpga->setDefaults(defClkPeriod);
+   fpga->setDefaults(defClkPeriod,(asicVersion>7));
 
    // Find Each Address
    cout << "Searching For ASICs" << endl;
@@ -341,7 +347,7 @@ void KpixGuiTop::findConnectedAsics() {
          asic[asicCnt]->cmdReset();
 
          // Attempt to read from device
-         asic[asicCnt]->getStatus(&temp1,&temp2);
+         asic[asicCnt]->getStatus(&temp1,&temp2,&temp3,&temp4);
 
          // If we got here asic was found
          asic[asicCnt]->setDefaults(defClkPeriod);
@@ -365,11 +371,12 @@ void KpixGuiTop::findConnectedAsics() {
    kpixGuiTiming->setAsics(asic,asicCnt,fpga);
    kpixGuiTrig->setAsics(asic,asicCnt,fpga);
    kpixGuiInject->setAsics(asic,asicCnt);
+   kpixGuiStatus->setAsics(asic,asicCnt,fpga);
 
    // Update display
    calEnable->setChecked(true);
    readConfig(false);
-   kpixGuiFpga->readCounters();
+   kpixGuiStatus->readStatus();
    setEnabled(true);
 }
 
@@ -397,6 +404,12 @@ string KpixGuiTop::getCalFile() {
 // Get Run Variable List
 KpixRunVar **KpixGuiTop::getRunVarList(unsigned int *count){
    return(kpixGuiMain->getRunVarList(count));
+}
+
+
+// Get rate limit value, zero for none
+unsigned int KpixGuiTop::getRateLimit() {
+   return(kpixGuiTiming->getRateLimit());
 }
 
 
@@ -480,6 +493,7 @@ void KpixGuiTop::loadSettings_pressed() {
       kpixGuiTiming->setAsics(asic,asicCnt,fpga);
       kpixGuiTrig->setAsics(asic,asicCnt,fpga);
       kpixGuiInject->setAsics(asic,asicCnt);
+      kpixGuiStatus->setAsics(asic,asicCnt,fpga);
 
       // Pass run read to main
       kpixGuiMain->setRunRead(runRead);
@@ -496,7 +510,7 @@ void KpixGuiTop::loadSettings_pressed() {
 
    // Update
    calEnable->setChecked(false);
-   kpixGuiFpga->readCounters();
+   kpixGuiStatus->readStatus();
    setEnabled(true);
 }
 

@@ -14,6 +14,7 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 03/05/2009: Added rate limit function.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -26,10 +27,19 @@ using namespace std;
 
 
 // Constructor
-KpixGuiTiming::KpixGuiTiming ( QWidget *parent ) : KpixGuiTimingForm(parent) {
+KpixGuiTiming::KpixGuiTiming ( unsigned int rateLimit, QWidget *parent ) : KpixGuiTimingForm(parent) {
    this->asicCnt = 0;
    this->asic    = NULL;
    this->fpga    = NULL;
+
+   // Set default rate limit
+   switch(rateLimit) {
+      case  0: this->rateLimit->setCurrentItem(0); break;
+      case 10: this->rateLimit->setCurrentItem(1); break;
+      case 15: this->rateLimit->setCurrentItem(2); break;
+      case 20: this->rateLimit->setCurrentItem(3); break;
+      default: this->rateLimit->setCurrentItem(0); break;
+   }
    setEnabled(false,false);
 }
 
@@ -46,8 +56,8 @@ void KpixGuiTiming::setAsics (KpixAsic **asic, unsigned int asicCnt, KpixFpga *f
 void KpixGuiTiming::setEnabled ( bool enable, bool calEnable ) {
    if ( asicCnt == 0 ) enable = false;
    acqClkPeriod->setEnabled(enable&&calEnable);
-   digClkPeriod->setEnabled(false&&calEnable);
-   readClkPeriod->setEnabled(false);
+   digClkPeriod->setEnabled(enable&&calEnable);
+   readClkPeriod->setEnabled(enable);
    resetOn->setEnabled(enable&&calEnable);
    resetOff->setEnabled(enable&&calEnable);
    leakNullOff->setEnabled(enable&&calEnable);
@@ -58,6 +68,8 @@ void KpixGuiTiming::setEnabled ( bool enable, bool calEnable ) {
    deselDly->setEnabled(enable&&calEnable);
    bunchClkDly->setEnabled(enable&&calEnable);
    digDelay->setEnabled(enable&&calEnable);
+   bunchCount->setEnabled(enable&&(asic[0]->getVersion()>7));
+   rateLimit->setEnabled(enable);
 }
 
 
@@ -129,12 +141,13 @@ void KpixGuiTiming::readConfig(bool readEn) {
    unsigned int  deselDlyVal;
    unsigned int  bunchClkDlyVal;
    unsigned int  digDelayVal;
+   unsigned int  bunchCountVal;
 
    // Fpga
    if ( fpga != NULL ) {
       acqClkPeriod->setValue(fpga->getClockPeriod(readEn));
-      digClkPeriod->setValue(fpga->getClockPeriod(readEn));
-      readClkPeriod->setValue(fpga->getClockPeriod(readEn));
+      digClkPeriod->setValue(fpga->getClockPeriodDig(readEn));
+      readClkPeriod->setValue(fpga->getClockPeriodRead(readEn));
    }
 
    if ( asicCnt != 0 ) {
@@ -142,7 +155,8 @@ void KpixGuiTiming::readConfig(bool readEn) {
       // Asic
       asic[0]->getTiming ( &clkPeriodVal,  &resetOnVal,     &resetOffVal,   &leakNullOffVal,
                            &offNullOffVal, &threshOffVal,   &trigInhOffVal, &pwrUpOnVal,
-                           &deselDlyVal,   &bunchClkDlyVal, &digDelayVal,   readEn);
+                           &deselDlyVal,   &bunchClkDlyVal, &digDelayVal,   &bunchCountVal,
+                           readEn, rawTrigInh->isChecked());
 
       // Set Values
       resetOn->setValue(resetOnVal);
@@ -155,6 +169,7 @@ void KpixGuiTiming::readConfig(bool readEn) {
       deselDly->setValue(deselDlyVal);
       bunchClkDly->setValue(bunchClkDlyVal);
       digDelay->setValue(digDelayVal);
+      bunchCount->setValue(bunchCountVal);
    }
 }
 
@@ -165,14 +180,53 @@ void KpixGuiTiming::writeConfig(bool writeEn) {
    unsigned int x;
 
    // Fpga
-   if ( fpga != NULL ) fpga->setClockPeriod(acqClkPeriod->value(),writeEn);
+   if ( fpga != NULL ) {
+      fpga->setClockPeriod(acqClkPeriod->value(),writeEn);
+      fpga->setClockPeriodDig(digClkPeriod->value(),writeEn);
+      fpga->setClockPeriodRead(readClkPeriod->value(),writeEn);
+   }
 
    // Asic
    for (x=0; x < asicCnt; x++)
       asic[x]->setTiming ( acqClkPeriod->value(), resetOn->value(),    resetOff->value(),   
                         leakNullOff->value(), offNullOff->value(), threshOff->value(),   
                         trigInhOff->value(),  pwrUpOn->value(),    deselDly->value(),    
-                        bunchClkDly->value(), digDelay->value(),   true, writeEn);
+                        bunchClkDly->value(), digDelay->value(),   bunchCount->value(),
+                        !disChecks->isChecked(), writeEn, rawTrigInh->isChecked() );
 }
 
+
+// Get rate limit value, zero for none
+// Returned value is in uS
+unsigned int KpixGuiTiming::getRateLimit() {
+   switch(rateLimit->currentItem()) {
+      case 0:  return(0);      
+      case 1:  return(100000); // 10Hz
+      case 2:  return(66666);  // 15Hz
+      case 3:  return(50000);  // 20Hz
+      default: return(0);
+   }
+}
+
+
+
+// Raw trigger inhibit check box changed, update range for 
+// trigger inhibit box
+void KpixGuiTiming::rawTrigInh_stateChanged() {
+
+   // Raw Mode
+   if ( rawTrigInh->isChecked() ) {
+      trigInhOff->setMaxValue(1000000000);
+      bcLabel->setText("nS");
+   }
+
+   // Bunch Count Mode
+   else {
+      trigInhOff->setMaxValue(8191);
+      bcLabel->setText("Bunches");
+   }
+
+   // Update settings
+   readConfig(false);
+}
 

@@ -174,3 +174,9 @@ void KpixGuiTopForm::calSetBrowse_pressed()
 {
 
 }
+
+
+void KpixGuiTopForm::readStatus_pressed()
+{
+
+}

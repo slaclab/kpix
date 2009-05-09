@@ -45,6 +45,8 @@
 // 10/23/2008: Added method to set sidLink object.
 // 10/27/2008: Added method to get trigger inhibit time.
 // 10/29/2008: Added dac to volt conversion with double input
+// 02/06/2009: Added KPIX version 8 support
+// 04/08/2009: Added flag in timing methods to set mode for trigger inhibit time
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_ASIC_H__
 #define __KPIX_ASIC_H__
@@ -66,11 +68,6 @@ using namespace std;
 #define CAL_A   0x3
 #define TH_A    0x2
 #define TH_B    0x0
-
-// Constants for hold times
-#define HOLD_LONG    0x1
-#define HOLD_MEDIUM  0x2
-#define HOLD_SHORT   0x3
 
 
 // KPIX ASIC Class
@@ -112,6 +109,43 @@ class KpixAsic : public TObject {
 
       // Private method to read register value from Kpix
       void regRead (unsigned char address);
+
+      // Private method to write timing settings for versions 0-7
+      void setTimingV7 ( unsigned int clkPeriod,  unsigned int resetOn,
+                         unsigned int resetOff,   unsigned int leakNullOff,
+                         unsigned int offNullOff, unsigned int threshOff,
+                         unsigned int trigInhOff, unsigned int pwrUpOn,
+                         unsigned int deselDly,   unsigned int bunchClkDly,
+                         unsigned int digDelay,   bool enChecking,
+                         bool writeEn,            bool trigInhRaw );
+
+      // Private method to read timing settings for versions 0-7
+      void getTimingV7 ( unsigned int *clkPeriod,  unsigned int *resetOn,
+                         unsigned int *resetOff,   unsigned int *leakNullOff,
+                         unsigned int *offNullOff, unsigned int *threshOff,
+                         unsigned int *trigInhOff, unsigned int *pwrUpOn,
+                         unsigned int *deselDly,   unsigned int *bunchClkDly,
+                         unsigned int *digDelay,   bool readEn,
+                         bool trigInhRaw);
+
+      // Private method to write timing settings for versions 8+
+      void setTimingV8 ( unsigned int clkPeriod,  unsigned int resetOn,
+                         unsigned int resetOff,   unsigned int leakNullOff,
+                         unsigned int offNullOff, unsigned int threshOff,
+                         unsigned int trigInhOff, unsigned int pwrUpOn,
+                         unsigned int deselDly,   unsigned int bunchClkDly,
+                         unsigned int digDelay,   unsigned int bunchCount, 
+                         bool enChecking,         bool writeEn,
+                         bool trigInhRaw);
+
+      // Private method to read timing settings for versions 8+
+      void getTimingV8 ( unsigned int *clkPeriod,  unsigned int *resetOn,
+                         unsigned int *resetOff,   unsigned int *leakNullOff,
+                         unsigned int *offNullOff, unsigned int *threshOff,
+                         unsigned int *trigInhOff, unsigned int *pwrUpOn,
+                         unsigned int *deselDly,   unsigned int *bunchClkDly,
+                         unsigned int *digDelay,   unsigned int *bunchCount,
+                         bool readEn,              bool trigInhRaw );
 
    public:
 
@@ -191,13 +225,12 @@ class KpixAsic : public TObject {
       // Pass location pointers in which to store the following status flags:
       // cmdPerr  - Command parity error flag
       // dataPerr - Data parity error flag
-      void getStatus ( bool *cmdPerr, bool *dataPerr );
+      void getStatus ( bool *cmdPerr, bool *dataPerr, 
+                       bool *tempEn, unsigned char *tempValue );
 
       // Method to set testData mode in Config Register
       // Pass testData flag
       // Set writeEn to false to disable real write to KPIX
-      // Currently a hold time of 1 is the longest but this needs to
-      // be verified through testing. 
       void setCfgTestData ( bool testData, bool writeEn=true );
 
       // Method to get status of testData mode in Config Register
@@ -206,32 +239,71 @@ class KpixAsic : public TObject {
       // the device.
       bool getCfgTestData (  bool readEn=true );
 
-      // Method to set zero supression mode in Config Register
-      // Pass zeroSupress flag
+      // Method to set auto readout disable flag in Config Register
+      // Pass autoReadDis flag
       // Set writeEn to false to disable real write to KPIX
-      // Currently a hold time of 1 is the longest but this needs to
-      // be verified through testing. 
-      void setCfgZeroSupress ( bool zeroSupress, bool writeEn=true );
+      void setCfgAutoReadDis ( bool autoReadDis, bool writeEn=true );
 
-      // Method to get status of zero supression mode in Config Register
+      // Method to get status of auto readout disable flag in Config Register
       // Set readEn to false to disable real read from KPIX, this flag allows
       // the user to get the currently set status without actually accessing
       // the device.
-      bool getCfgZeroSupress (  bool readEn=true );
+      bool getCfgAutoReadDis (  bool readEn=true );
+
+      // Method to set force temperature on flag in Config Register
+      // Pass forceTemp flag
+      // Set writeEn to false to disable real write to KPIX
+      void setCfgForceTemp ( bool forceTemp, bool writeEn=true );
+
+      // Method to get status of force temperature on flag in Config Register
+      // Set readEn to false to disable real read from KPIX, this flag allows
+      // the user to get the currently set status without actually accessing
+      // the device.
+      bool getCfgForceTemp (  bool readEn=true );
+
+      // Method to set disable temperature flag in Config Register
+      // Pass disableTemp flag
+      // Set writeEn to false to disable real write to KPIX
+      void setCfgDisableTemp ( bool disableTemp, bool writeEn=true );
+
+      // Method to get status of disable temperature flag in Config Register
+      // Set readEn to false to disable real read from KPIX, this flag allows
+      // the user to get the currently set status without actually accessing
+      // the device.
+      bool getCfgDisableTemp (  bool readEn=true );
+
+      // Method to set auto status message flag in Config Register
+      // Pass autoStatus flag
+      // Set writeEn to false to disable real write to KPIX
+      void setCfgAutoStatus ( bool autoStatus, bool writeEn=true );
+
+      // Method to set auto status message flag in Config Register
+      // Set readEn to false to disable real read from KPIX, this flag allows
+      // the user to get the currently set status without actually accessing
+      // the device.
+      bool getCfgAutoStatus (  bool readEn=true );
 
       // Method to set hold time value in Control Register
-      // Pass holdTime value, 1,2 or 3
       // Set writeEn to false to disable real write to KPIX
-      // Currently a hold time of 1 is the longest but this needs to
-      // be verified through testing. 
+      // Hold Times For 20Mhz Clock In Kpix Versions 0-7:
+      //    1 = 3.2uS 
+      //    2 = 2.0uS
+      //    3 = 1.6uS
+      // Hold Times For 20Mhz Clock In Kpix Version 8+:
+      //    0 = 0.4uS 
+      //    1 = 0.8uS 
+      //    2 = 1.2uS
+      //    3 = 1.6uS
+      //    4 = 2.0uS
+      //    5 = 2.4uS
+      //    6 = 2.8uS
+      //    7 = 3.2uS
       void setCntrlHoldTime ( unsigned char holdTime, bool writeEn=true );
 
       // Method to get hold time value from Control Register
       // Set readEn to false to disable real read from KPIX, this flag allows
       // the user to get the currently set status without actually accessing
       // the device.
-      // Currently a hold time of 1 is the longest but this needs to
-      // be verified through testing. 
       unsigned char getCntrlHoldTime ( bool readEn=true );
 
       // Method to set calibration pulse 0 high range mode in Control Register
@@ -377,6 +449,66 @@ class KpixAsic : public TObject {
       // the device.
       bool getCntrlEnDcRst (  bool readEn=true );
 
+      // Method to select short integration time
+      // Pass shortIntEn flag
+      // Set writeEn to false to disable real write to KPIX, this flag can be used
+      // to allow the individual register bits to be set before performing a write
+      // to the device.
+      void setCntrlShortIntEn ( bool shortIntEn, bool writeEn=true );
+
+      // Method to get status of short integration time enable bit in Control Register
+      // Set readEn to false to disable real read from KPIX, this flag allows
+      // the user to get the currently set status without actually accessing
+      // the device.
+      bool getCntrlShortIntEn (  bool readEn=true );
+
+      // Method to disable power cycling
+      // Pass disPwrCycle flag
+      // Set writeEn to false to disable real write to KPIX, this flag can be used
+      // to allow the individual register bits to be set before performing a write
+      // to the device.
+      void setCntrlDisPwrCycle ( bool disPwrCycle, bool writeEn=true );
+
+      // Method to get status of disable power cycle bit in Control Register
+      // Set readEn to false to disable real read from KPIX, this flag allows
+      // the user to get the currently set status without actually accessing
+      // the device.
+      bool getCntrlDisPwrCycle (  bool readEn=true );
+
+      // Method to set front end current value in Control Register
+      // Set writeEn to false to disable real write to KPIX
+      // Current values:
+      //    0 = 1uA  
+      //    1 = 31uA 
+      //    2 = 61uA 
+      //    3 = 91uA 
+      //    4 = 121uA
+      //    5 = 151uA
+      //    6 = 181uA
+      //    7 = 211uA
+      void setCntrlFeCurr ( unsigned char feCurr, bool writeEn=true );
+
+      // Method to get front end current value from Control Register
+      // Set readEn to false to disable real read from KPIX, this flag allows
+      // the user to get the currently set status without actually accessing
+      // the device.
+      unsigned char getCntrlFeCurr ( bool readEn=true );
+
+      // Method to set shaper diff time value in Control Register
+      // Set writeEn to false to disable real write to KPIX
+      // Current values:
+      //    0 = Normal
+      //    1 = 1/2
+      //    2 = 1/3
+      //    3 = 1/4
+      void setCntrlDiffTime ( unsigned char diffTime, bool writeEn=true );
+
+      // Method to get shaper diff time value from Control Register
+      // Set readEn to false to disable real read from KPIX, this flag allows
+      // the user to get the currently set status without actually accessing
+      // the device.
+      unsigned char getCntrlDiffTime ( bool readEn=true );
+
       // Method to update KPIX timing configuration
       // If the passed timing values are not evenly divisable by the
       // clkPeriod the value will be rounded and a warning will be generated.
@@ -394,15 +526,18 @@ class KpixAsic : public TObject {
       // deselDly     - Deselect/select sequence delay in nS
       // bunchClkDly  - Bunch clock start delay in nS
       // digDelay     - Delete between bunch clocks & digitization in nS
+      // bunchCount   - Number of bunch crossings, 0 based count, 0-8191
       // enChecking   - Enable/disable timing sanity checks
       // Set writeEn to false to disable real write to KPIX
+      // Set trigInhRaw to set raw trigger inhibit value
       void setTiming ( unsigned int clkPeriod,  unsigned int resetOn,
                        unsigned int resetOff,   unsigned int leakNullOff,
                        unsigned int offNullOff, unsigned int threshOff,
                        unsigned int trigInhOff, unsigned int pwrUpOn,
                        unsigned int deselDly,   unsigned int bunchClkDly,
-                       unsigned int digDelay,   bool enChecking=true,
-                       bool writeEn=true );
+                       unsigned int digDelay,   unsigned int bunchCount,
+                       bool enChecking=true,    bool writeEn=true,
+                       bool trigInhRaw=false);
 
       // Method to read KPIX timing configuration
       // Pass location pointers in which to store the following values:
@@ -417,16 +552,19 @@ class KpixAsic : public TObject {
       // deselDly     - Deselect/select sequence delay in nanoseconds
       // bunchClkDly  - Bunch clock start delay in nanoseconds
       // digDelay     - Delete between bunch clocks & digitization in nanoseconds
+      // bunchCount   - Number of bunch crossings, 0 based count, 0-8191
       // Set readEn to false to disable real read from KPIX
+      // Set trigInhRaw to return raw trigger inhibit value
       void getTiming ( unsigned int *clkPeriod,  unsigned int *resetOn,
                        unsigned int *resetOff,   unsigned int *leakNullOff,
                        unsigned int *offNullOff, unsigned int *threshOff,
                        unsigned int *trigInhOff, unsigned int *pwrUpOn,
                        unsigned int *deselDly,   unsigned int *bunchClkDly,
-                       unsigned int *digDelay,   bool readEn=true );
+                       unsigned int *digDelay,   unsigned int *bunchCount,
+                       bool readEn=true,         bool trigInhRaw=false );
 
       // Method to get trigger inhibit bucket
-      unsigned int getTrigInh ( bool readEn=true );
+      unsigned int getTrigInh ( bool readEn=true, bool trigInhRaw=false );
 
       // Method to update KPIX calibration pulse settings
       // Pass the following values for update:

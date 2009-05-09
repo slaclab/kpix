@@ -25,12 +25,14 @@
 // 10/09/2008: Fixed bug where tc was not initalized to NULL.
 // 10/13/2008: Removed fitting functions. Seperate plot & raw data enable from
 //             canvas and plot directory setting.
+// 03/05/2009: Added ability to rate limit calibration and dist generation
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <sys/time.h>
 #include <TStyle.h>
 #include <TH1F.h>
 #include <TGraph.h>
@@ -77,6 +79,7 @@ KpixCalDist::KpixCalDist ( KpixAsic **asic, unsigned int count, KpixRunWrite *ru
    distCalDac   = 0xFF;
    plotDir      = "Plots";
    kpixProgress = NULL;
+   rateLimit    = 0;
    
    // THis should not happen
    if ( count == 0 ) throw(string("KpixCalDist::KpixCalDist -> Error: Asic Count Is Zero"));
@@ -149,6 +152,10 @@ void KpixCalDist::enablePlots( bool enable ) { this->plotEn = enable; }
 void KpixCalDist::setPlotDir(string plotDir ) { this->plotDir = plotDir; }
 
 
+// Set Rate Limit
+void KpixCalDist::setRateLimit( unsigned int rateLimit ) { this->rateLimit = rateLimit; }
+
+
 // Execute distribution, pass channel to enable calibration mask for
 // Or pass -1 to set cal mask for all channels or -2 to set mask for no channels
 void KpixCalDist::runDistribution ( short channel ) {
@@ -166,6 +173,8 @@ void KpixCalDist::runDistribution ( short channel ) {
    KpixHistogram  *value[4096 * kpixCount];
    KpixHistogram  *time[4096 * kpixCount];
    unsigned int   plotCount;
+   struct timeval curTime, acqTime;
+   unsigned long  diff, secUs;
 
    // Set Plot Directory
    if ( plotEn ) {
@@ -209,6 +218,11 @@ void KpixCalDist::runDistribution ( short channel ) {
    // Init progress
    prgCount = 0;
    prgTotal = 0;
+
+   // Init time
+   gettimeofday(&curTime, NULL); 
+   acqTime.tv_sec  = curTime.tv_sec - 100;
+   acqTime.tv_usec = 0;
 
    // Compute total
    if ( enNormal ) prgTotal++;
@@ -262,6 +276,20 @@ void KpixCalDist::runDistribution ( short channel ) {
 
       // Loop through dist iterations
       for ( x=0; x < distCount; x++ ) {
+
+         // Throttle acquistion if enabled
+         do {
+
+            // Get Current acquisition time
+            gettimeofday(&curTime,NULL); 
+
+            // Difference in uS
+            secUs = 1000000 * (curTime.tv_sec - acqTime.tv_sec);
+            diff  = (secUs + curTime.tv_usec) - acqTime.tv_usec;
+
+         } while ( rateLimit != 0 && diff < rateLimit );
+         acqTime.tv_sec  = curTime.tv_sec; 
+         acqTime.tv_usec = curTime.tv_usec; 
 
          // Start Calibration
          errCnt = 0;
@@ -435,6 +463,8 @@ void KpixCalDist::runCalibration ( short channel ) {
    KpixCalDistData  *dataR0[4096 * kpixCount];
    KpixCalDistData  *dataR1[4096 * kpixCount];
    unsigned int     plotCount;
+   struct timeval   curTime, acqTime;
+   unsigned long    diff, secUs;
 
    // Set Plot Directory
    if ( plotEn ) {
@@ -474,6 +504,11 @@ void KpixCalDist::runCalibration ( short channel ) {
       else if ( channel == -2 ) cout << "None\n";
       else cout << "0x" << hex << setw(3) << setfill('0') << channel << "\n";
    }
+
+   // Init time
+   gettimeofday(&curTime, NULL); 
+   acqTime.tv_sec  = curTime.tv_sec - 100;
+   acqTime.tv_usec = 0;
 
    // Init progress
    prgCount = 0;
@@ -531,6 +566,20 @@ void KpixCalDist::runCalibration ( short channel ) {
          kpixRunWrite->setEventVar("b1Charge",charges[1]);
          kpixRunWrite->setEventVar("b2Charge",charges[2]);
          kpixRunWrite->setEventVar("b3Charge",charges[3]);
+
+         // Throttle acquistion if enabled
+         do {
+
+            // Get Current acquisition time
+            gettimeofday(&curTime,NULL); 
+
+            // Difference in uS
+            secUs = 1000000 * (curTime.tv_sec - acqTime.tv_sec);
+            diff  = (secUs + curTime.tv_usec) - acqTime.tv_usec;
+
+         } while ( rateLimit != 0 && diff < rateLimit );
+         acqTime.tv_sec  = curTime.tv_sec; 
+         acqTime.tv_usec = curTime.tv_usec; 
 
          // Start Calibration
          errCnt = 0;

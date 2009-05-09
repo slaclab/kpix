@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 12/12/2008: Added RMS extraction and plots for histogram.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_CAL_FIT_H__
 #define __KPIX_GUI_CAL_FIT_H__
@@ -51,6 +52,7 @@ class KpixGuiCalFitData {
       double calRms[DIR_COUNT][3][1024][4];
       double distMean[DIR_COUNT][3][1024][4];
       double distSigma[DIR_COUNT][3][1024][4];
+      double distRms[DIR_COUNT][3][1024][4];
       bool   calWriteDone[DIR_COUNT][3][1024][4];
       bool   distWriteDone[DIR_COUNT][3][1024][4];
 };

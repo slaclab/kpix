@@ -86,7 +86,7 @@ class KpixGuiThreshChan : public KpixGuiThreshChanForm {
       // hint pointer will be set to estimated mean value
       // min & max pointers will be updated
       static TGraphAsymmErrors *convertHist (TH1D *passHist, unsigned int total, double *hint,
-                                             double *min, double *max);
+                                             double *min, double *max, bool debug = false, bool convert = false);
 
    public:
 

@@ -12,6 +12,8 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 03/05/2009: Added rate limit function.
+// 04/29/2009: Added support for all 4 buckets.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -27,6 +29,7 @@
 #include <qprogressbar.h>
 #include <qapplication.h>
 #include <qlistbox.h>
+#include <sys/time.h>
 #include <KpixCalDist.h>
 #include "KpixGuiRun.h"
 #include "KpixGuiTop.h"
@@ -112,7 +115,7 @@ void KpixGuiRun::setEnabled ( bool enable ) {
 
 // Set Asics
 void KpixGuiRun::setAsics ( KpixAsic **asic, unsigned int asicCnt, KpixFpga *fpga, KpixRunRead *runRead ) {
-   unsigned int x,y,count;
+   unsigned int x,y,z,count;
    stringstream temp;
    string       temp2;
    KpixEventVar *eventVar;
@@ -126,11 +129,14 @@ void KpixGuiRun::setAsics ( KpixAsic **asic, unsigned int asicCnt, KpixFpga *fpg
    count = 0;
    if ( asicCnt > 1 ) for (x=0; x < (asicCnt-1); x++) {
       for (y=0; y < asic[x]->getChCount(); y++) {
-         temp.str("");
-         temp << "Kpix " << dec << x << " - Ch ";
-         temp << dec << y;
-         chanSel->insertItem(temp.str(),count);
-         count++;
+         for (z=0; z < 4; z++) {
+            temp.str("");
+            temp << "Kpix " << dec << x;
+            temp << " - Ch " << dec << y;
+            temp << " - Bk " << dec << z;
+            chanSel->insertItem(temp.str(),count);
+            count++;
+         }
       }
    }
 
@@ -222,7 +228,7 @@ void KpixGuiRun::viewData_pressed() {
 
 // Thread for register test
 void KpixGuiRun::run() {
-   unsigned int      x,y,z,idx;
+   unsigned int      x,y,z,r,idx;
    KpixRunWrite      *kpixRunWrite;
    KpixBunchTrain    *train;
    KpixSample        *sample;
@@ -235,16 +241,19 @@ void KpixGuiRun::run() {
    stringstream      temp, temp2;
    unsigned int      *kpixIdxLookup;
    int               kpixIdx, kpixAddr, chan, bucket, range;
-   long              curTime, prvTime;
+   struct timeval    curTime, prvTime, acqTime;
    KpixHistogram     **histR0;
    KpixHistogram     **histR1;
    TH1F              *plot[32];
    TH1F              *cHist;
    KpixCalibRead     *calData;
+   double            tempIcept;
+   double            tempSigma;
+   double            tempRms;
    double            *chGainR0;
-   double            *chIceptR0;
+   double            *chMeanR0;
    double            *chGainR1;
-   double            *chIceptR1;
+   double            *chMeanR1;
    unsigned int      gain;
    unsigned int      netCount;
    string            calString;
@@ -254,6 +263,9 @@ void KpixGuiRun::run() {
    double            *eventCmd;
    unsigned int      eventCnt;
    string            status;
+   string            delError;
+   unsigned int      rateLimit;
+   unsigned long     diff, secUs;
 
    // Figure out which gain we are running in
    gain = 0;
@@ -269,6 +281,9 @@ void KpixGuiRun::run() {
 
    // Store Raw Data
    enRaw = enableRawData->isChecked();
+
+   // Get rate limit
+   rateLimit = parent->getRateLimit();
 
    // Determine run type
    if ( runCommand->currentItem() == 0 ) runCmd = false;
@@ -287,8 +302,11 @@ void KpixGuiRun::run() {
    for (x=0; x < asicCnt; x++) kpixIdxLookup[asic[x]->getAddress()] = x;
 
    // Total progress 
-   time(&curTime); 
-   prvTime  = curTime - 100;
+   gettimeofday(&curTime, NULL); 
+   prvTime.tv_sec  = curTime.tv_sec - 100;
+   prvTime.tv_usec = 0;
+   acqTime.tv_sec  = curTime.tv_sec - 100;
+   acqTime.tv_usec = 0;
    iters    = 0;
    rate     = 0;
    triggers = 0;
@@ -298,13 +316,13 @@ void KpixGuiRun::run() {
 
    // Create tracking histograms
    if ( enPlot ) {
-      histR0 = (KpixHistogram **) malloc(sizeof(KpixHistogram *) * (asicCnt-1) * 1024);
-      histR1 = (KpixHistogram **) malloc(sizeof(KpixHistogram *) * (asicCnt-1) * 1024);
+      histR0 = (KpixHistogram **) malloc(sizeof(KpixHistogram *) * (asicCnt-1) * 4096);
+      histR1 = (KpixHistogram **) malloc(sizeof(KpixHistogram *) * (asicCnt-1) * 4096);
       if ( histR0 == NULL || histR1 == NULL ) throw(string("KpixGuiRun::run -> Malloc Error"));
       for (x=0; x< (asicCnt-1); x++) {
-         for (y=0; y< 1024; y++) {
-            histR0[x*1024+y] = NULL;
-            histR1[x*1024+y] = NULL;
+         for (y=0; y< 4096; y++) {
+            histR0[x*4096+y] = NULL;
+            histR1[x*4096+y] = NULL;
          }
       }
    }
@@ -325,203 +343,240 @@ void KpixGuiRun::run() {
          calString = "";
          calData = NULL;
       }
+   } catch ( string errorMsg ) {
+      cout << "Error opening calibration file: " << calFile << "\n";
+      calString = "";
+      calData = NULL;
+   }
+
+
+   chGainR0  = NULL;
+   chMeanR0  = NULL;
+   chGainR1  = NULL;
+   chMeanR1  = NULL;
+   eventCnt  = 0;
+   eventVars = NULL;
+   eventCmd  = NULL;
+   try {
 
       // Create Run Write Class To Store Data & Settings
       kpixRunWrite = new KpixRunWrite (outDataFile,"run",desc,calString);
       gErrorIgnoreLevel = 5000; 
       for (x=0; x<asicCnt; x++) kpixRunWrite->addAsic ( asic[x] );
       kpixRunWrite->addFpga ( fpga );
+      delError = "";
 
-      // Load Calibration Constants
-      if ( calFile != "" ) {
+      try {
 
-         // Update status display
-         event = new KpixGuiEventRun(false,false,"Copying Calibration Data",0,0,0,0);
-         QApplication::postEvent(this,event);
+         // Load Calibration Constants
+         if ( calFile != "" ) {
 
-         // Copy calibrations data to the new file
-         calData->copyCalibData ( kpixRunWrite->treeFile, "Force_Trig",asic,asicCnt);
+            // Update status display
+            event = new KpixGuiEventRun(false,false,"Copying Calibration Data",0,0,0,0);
+            QApplication::postEvent(this,event);
 
-         // Update status display
-         event = new KpixGuiEventRun(false,false,"Loading Calibration Constants",0,0,0,0);
-         QApplication::postEvent(this,event);
+            // Copy calibrations data to the new file
+            calData->copyCalibData ( kpixRunWrite->treeFile, "Force_Trig",asic,asicCnt);
 
-         // Only load cal constants if plots are enabled
-         if ( enPlot ) {
+            // Update status display
+            event = new KpixGuiEventRun(false,false,"Loading Calibration Constants",0,0,0,0);
+            QApplication::postEvent(this,event);
 
-            // Storage for constants
-            chGainR0  = (double *) malloc(sizeof(double) * (asicCnt-1) * 1024);
-            chIceptR0 = (double *) malloc(sizeof(double) * (asicCnt-1) * 1024);
-            chGainR1  = (double *) malloc(sizeof(double) * (asicCnt-1) * 1024);
-            chIceptR1 = (double *) malloc(sizeof(double) * (asicCnt-1) * 1024);
-            if ( chGainR0 == NULL || chIceptR0 == NULL || chGainR1 == NULL || chIceptR1 == NULL )
-               throw(string("KpixGuiRun::run -> Malloc Error"));
-    
-            // Load the constants
-            for (x=0; x< (asicCnt-1); x++) {
-               for (y=0; y< 1024; y++) {
-    
-                  // Load range 0 gain if not in force low gain mode
-                  if ( gain != 2 )
-                     calData->getCalibData ( &(chGainR0[x*1024+y]), &(chIceptR0[x*1024+y]),
-                                             "Force_Trig", gain, asic[x]->getSerial(), y, 0);
-                  else {
-                     chGainR0[x*1024+y] = 0;
-                     chIceptR0[x*1024+y] = 0;
-                  }
+            // Only load cal constants if plots are enabled
+            if ( enPlot ) {
 
-                  // Load range 1 if in normal mode or force low gain mode
-                  if ( gain != 1 ) 
-                     calData->getCalibData ( &(chGainR1[x*1024+y]), &(chIceptR1[x*1024+y]),
-                                             "Force_Trig", 2, asic[x]->getSerial(), y, 0);
-                  else {
-                     chGainR1[x*1024+y] = 0;
-                     chIceptR1[x*1024+y] = 0;
+               // Storage for constants
+               chGainR0 = (double *) malloc(sizeof(double) * (asicCnt-1) * 4096);
+               chMeanR0 = (double *) malloc(sizeof(double) * (asicCnt-1) * 4096);
+               chGainR1 = (double *) malloc(sizeof(double) * (asicCnt-1) * 4096);
+               chMeanR1 = (double *) malloc(sizeof(double) * (asicCnt-1) * 4096);
+               if ( chGainR0 == NULL || chMeanR0 == NULL || chGainR1 == NULL || chMeanR1 == NULL )
+                  throw(string("KpixGuiRun::run -> Malloc Error"));
+       
+               // Load the constants
+               for (x=0; x< (asicCnt-1); x++) {
+                  for (y=0; y< 1024; y++) {
+                     for (z=0; z< 4; z++) {
+       
+                        // Load range 0 gain if not in force low gain mode
+                        if ( gain != 2 ) {
+                           calData->getCalibData ( &(chGainR0[x*4096+y*4+z]), &tempIcept,
+                                                   "Force_Trig", gain, asic[x]->getSerial(), y, z);
+                           calData->getHistData ( &(chMeanR0[x*4096+y*4+z]), &tempSigma, &tempRms,
+                                                   "Force_Trig", gain, asic[x]->getSerial(), y, z);
+                        }
+                        else {
+                           chGainR0[x*4096+y*4+z] = 0;
+                           chMeanR0[x*4096+y*4+z] = 0;
+                        }
+
+                        // Load range 1 if in normal mode or force low gain mode
+                        if ( gain != 1 ) {
+                           calData->getCalibData ( &(chGainR1[x*4096+y*4+z]), &tempIcept,
+                                                   "Force_Trig", 2, asic[x]->getSerial(), y, z);
+                           calData->getHistData ( &(chMeanR1[x*4096+y*4+z]), &tempSigma, &tempRms,
+                                                   "Force_Trig", 2, asic[x]->getSerial(), y, z);
+                        }
+                        else {
+                           chGainR1[x*4096+y*4+z] = 0;
+                           chMeanR1[x*4096+y*4+z] = 0;
+                        }
+                     }
                   }
                }
+            }
+            else {
+               chGainR0 = NULL;
+               chMeanR0 = NULL;
+               chGainR1 = NULL;
+               chMeanR1 = NULL;
             }
          }
          else {
-            chGainR0  = NULL;
-            chIceptR0 = NULL;
-            chGainR1  = NULL;
-            chIceptR1 = NULL;
-         }
-      }
-      else {
-         chGainR0  = NULL;
-         chIceptR0 = NULL;
-         chGainR1  = NULL;
-         chIceptR1 = NULL;
-      }
-
-      if ( calData != NULL ) delete calData;
-
-      // Add run variables
-      for (x=0; x< runVarCount; x++) kpixRunWrite->addRunVar ( runVars[x]->name(), runVars[x]->description(),
-                                                               runVars[x]->value());
-
-      // Create run variable list
-      eventCnt = eventTable->numRows();
-      eventVars = (double **) malloc(sizeof(double *)*eventCnt);
-      eventCmd  = (double *) malloc(sizeof(double)*eventCnt);
-      if ( eventVars == NULL ) throw(string("KpixGuiRun::run -> Malloc Error"));
-
-      // Add event variables
-      for (x=0; x< eventCnt; x++) {
-         if ( eventTable->text(x,0) != "" ) {
-            kpixRunWrite->addEventVar (eventTable->text(x,0).ascii(),
-                                       eventTable->text(x,2).ascii(),
-                                       eventTable->text(x,1).toDouble());
-
-         }
-         eventVars[x] = (double *)malloc(sizeof(double));
-         eventCmd[x] = eventTable->text(x,1).toDouble();
-         if ( eventVars[x] == NULL ) throw(string("KpixGuiRun::run -> Malloc Error"));
-      }
-
-      // Update status display
-      event = new KpixGuiEventRun(false,false,"Running",0,0,0,0);
-      QApplication::postEvent(this,event);
-
-      // Do run stuff here
-      paused=false;
-      netCount = 0;
-      status = "";
-      while ( enRun ) {
-
-         // Detect new pause
-         if ( pRun ) {
-            event = new KpixGuiEventRun(true,true,"Paused",iters,rate,triggers,0);
-            QApplication::postEvent(this,event);
-            paused=true;
+            chGainR0 = NULL;
+            chMeanR0 = NULL;
+            chGainR1 = NULL;
+            chMeanR1 = NULL;
          }
 
-         // In Pause
-         while ( pRun && enRun ) usleep(1);
+         if ( calData != NULL ) delete calData;
 
-         // Leaving Pause
-         if ( paused ) {
-            event = new KpixGuiEventRun(false,false,"Running",iters,rate,triggers,0);
-            QApplication::postEvent(this,event);
-            paused=false;
+         // Add run variables
+         for (x=0; x< runVarCount; x++) kpixRunWrite->addRunVar ( runVars[x]->name(), runVars[x]->description(),
+                                                                  runVars[x]->value());
 
-            // Update event variables
-            for (x=0; x < (unsigned int)eventTable->numRows(); x++ ) {
-               if ( eventTable->text(x,0) != "" )
-                  kpixRunWrite->setEventVar(eventTable->text(x,0).ascii(),eventTable->text(x,1).toDouble());
+         // Create run variable list
+         eventCnt = eventTable->numRows();
+         eventVars = (double **) malloc(sizeof(double *)*eventCnt);
+         eventCmd  = (double *) malloc(sizeof(double)*eventCnt);
+         if ( eventVars == NULL ) throw(string("KpixGuiRun::run -> Malloc Error"));
+
+         // Add event variables
+         for (x=0; x< eventCnt; x++) {
+            if ( eventTable->text(x,0) != "" ) {
+               kpixRunWrite->addEventVar (eventTable->text(x,0).ascii(),
+                                          eventTable->text(x,2).ascii(),
+                                          eventTable->text(x,1).toDouble());
+
             }
+            eventVars[x] = (double *)malloc(sizeof(double));
+            eventCmd[x] = eventTable->text(x,1).toDouble();
+            if ( eventVars[x] == NULL ) throw(string("KpixGuiRun::run -> Malloc Error"));
          }
 
-         // Possible network stop point
-         if ( network != NULL ) {
-            
-            // Still Running
-            if ( netCount > 0 ) netCount--;
+         // Update status display
+         event = new KpixGuiEventRun(false,false,"Running",0,0,0,0);
+         QApplication::postEvent(this,event);
 
-            // Wait for new command
-            else {
+         // Do run stuff here
+         paused=false;
+         netCount = 0;
+         status = "";
+         while ( enRun ) {
 
-               // Ack old command
-               network->ackCommand();
-
-               // Update Status
-               status = network->getStatus();
-               event = new KpixGuiEventRun(false,false,status,iters,rate,triggers,0);
+            // Detect new pause
+            if ( pRun ) {
+               event = new KpixGuiEventRun(true,true,"Paused",iters,rate,triggers,0);
                QApplication::postEvent(this,event);
-
-               // Get command and variables from socket
-               while ( (netCount = network->getCommand(eventCmd,eventCnt)) == 0 && enRun ) {
-                  if ( network->getStatus() != status ) {
-                     status = network->getStatus();
-                     event = new KpixGuiEventRun(false,false,status,iters,rate,triggers,0);
-                     QApplication::postEvent(this,event);
-                  }
-                  usleep(1); 
-               }
-
-               // Net count was valid
-               if ( netCount > 0 ) {
-                  for(x=0; x<eventCnt; x++) {
-                     *(eventVars[x]) = eventCmd[x];
-                     kpixRunWrite->setEventVar(eventTable->text(x,0).ascii(),eventCmd[x]);
-                  }
-                  data = new KpixGuiEventData(KPRG_DOUBLE,eventCnt,(void **)eventVars);
-                  QApplication::postEvent(this,data);
-               }
-               netCount--;
+               paused=true;
             }
-         }
 
-         // Skip Last Run If Stopped
-         if ( enRun ) {
+            // In Pause
+            while ( pRun && enRun ) usleep(1);
 
-            // Send start command
-            if ( runCmd ) asic[0]->cmdCalibrate(true);
-            else asic[0]->cmdAcquire(true);
-            iters++;
+            // Leaving Pause
+            if ( paused ) {
+               event = new KpixGuiEventRun(false,false,"Running",iters,rate,triggers,0);
+               QApplication::postEvent(this,event);
+               paused=false;
 
-            // Get bunch train data
-            train = new KpixBunchTrain ( asic[0]->getSidLink(), false );
+               // Update event variables
+               for (x=0; x < (unsigned int)eventTable->numRows(); x++ ) {
+                  if ( eventTable->text(x,0) != "" )
+                     kpixRunWrite->setEventVar(eventTable->text(x,0).ascii(),eventTable->text(x,1).toDouble());
+               }
+            }
 
-            // Add sample to run
-            if ( enRaw ) kpixRunWrite->addBunchTrain(train);
+            // Possible network stop point
+            if ( network != NULL ) {
+               
+               // Still Running
+               if ( netCount > 0 ) netCount--;
 
-            // Plots Enabled
-            if ( enPlot ) {
+               // Wait for new command
+               else {
 
-               // Process samples
-               for (x=0; x < train->getSampleCount(); x++) {
-                  sample   = train->getSampleList()[x];
-                  kpixAddr = sample->getKpixAddress();
-                  chan     = sample->getKpixChannel();
-                  bucket   = sample->getKpixBucket();
-                  range    = sample->getSampleRange();
-                  kpixIdx  = kpixIdxLookup[kpixAddr];
-                  idx = kpixIdx*1024+chan;
+                  // Ack old command
+                  network->ackCommand();
 
-                  // Only store bucket 0, For Matching Range
-                  if ( bucket == 0 ) {
+                  // Update Status
+                  status = network->getStatus();
+                  event = new KpixGuiEventRun(false,false,status,iters,rate,triggers,0);
+                  QApplication::postEvent(this,event);
+
+                  // Get command and variables from socket
+                  while ( (netCount = network->getCommand(eventCmd,eventCnt)) == 0 && enRun ) {
+                     if ( network->getStatus() != status ) {
+                        status = network->getStatus();
+                        event = new KpixGuiEventRun(false,false,status,iters,rate,triggers,0);
+                        QApplication::postEvent(this,event);
+                     }
+                     usleep(1); 
+                  }
+
+                  // Net count was valid
+                  if ( netCount > 0 ) {
+                     for(x=0; x<eventCnt; x++) {
+                        *(eventVars[x]) = eventCmd[x];
+                        kpixRunWrite->setEventVar(eventTable->text(x,0).ascii(),eventCmd[x]);
+                     }
+                     data = new KpixGuiEventData(KPRG_DOUBLE,eventCnt,(void **)eventVars);
+                     QApplication::postEvent(this,data);
+                  }
+                  netCount--;
+               }
+            }
+
+            // Skip Last Run If Stopped
+            if ( enRun ) {
+
+               // Throttle acquistion if enabled
+               do {
+
+                  // Get Current acquisition time
+                  gettimeofday(&curTime,NULL); 
+
+                  // Difference in uS
+                  secUs = 1000000 * (curTime.tv_sec - acqTime.tv_sec);
+                  diff  = (secUs + curTime.tv_usec) - acqTime.tv_usec;
+
+               } while ( rateLimit != 0 && diff < rateLimit );
+               acqTime.tv_sec  = curTime.tv_sec; 
+               acqTime.tv_usec = curTime.tv_usec; 
+
+               // Send start command
+               if ( runCmd ) asic[0]->cmdCalibrate(true);
+               else asic[0]->cmdAcquire(true);
+               iters++;
+
+               // Get bunch train data
+               train = new KpixBunchTrain ( asic[0]->getSidLink(), false );
+
+               // Add sample to run
+               if ( enRaw ) kpixRunWrite->addBunchTrain(train);
+
+               // Plots Enabled
+               if ( enPlot ) {
+
+                  // Process samples
+                  for (x=0; x < train->getSampleCount(); x++) {
+                     sample   = train->getSampleList()[x];
+                     kpixAddr = sample->getKpixAddress();
+                     chan     = sample->getKpixChannel();
+                     bucket   = sample->getKpixBucket();
+                     range    = sample->getSampleRange();
+                     kpixIdx  = kpixIdxLookup[kpixAddr];
+                     idx = kpixIdx*4096+chan*4+bucket;
 
                      // Fill full run histogram
                      if ( range == 0 ) {
@@ -533,115 +588,117 @@ void KpixGuiRun::run() {
                      }
                   }
                }
+               if ( train->getSampleCount() > 0 ) triggers++;
+               delete train;
             }
-            if ( train->getSampleCount() > 0 ) triggers++;
-            delete train;
-         }
 
-         // Report progress every second, force update if we will wait for network on next cycle
-         time(&curTime);
-         if ( (curTime - prvTime) >= 1 || (network != NULL && netCount == 0) || pRun || !enRun ) {
-            cout << "\r";
-            cout << "Iterations=" << dec << setw(4) << setfill('0') << iters;
-            cout << ", Rate="  << rate << " Hz";
-            cout << ", Triggers="  << triggers; 
-            cout << flush;
-            prvTime = curTime;
+            // Report progress every second, force update if we will wait for network on next cycle
+            if ( (curTime.tv_sec - prvTime.tv_sec) >= 1 || (network != NULL && netCount == 0) || pRun || !enRun ) {
+               cout << "\r";
+               cout << "Iterations=" << dec << setw(4) << setfill('0') << iters;
+               cout << ", Rate="  << rate << " Hz";
+               cout << ", Triggers="  << triggers; 
+               cout << flush;
+               prvTime.tv_sec = curTime.tv_sec;
 
-            // Generate status
-            temp.str("");
-            temp << "Running - ";
-            if ( gain == 0 ) temp << "Normal Gain";
-            else if ( gain == 1 ) temp << "Double Gain";
-            else temp << "Low Gain";
+               // Generate status
+               temp.str("");
+               temp << "Running - ";
+               if ( gain == 0 ) temp << "Normal Gain";
+               else if ( gain == 1 ) temp << "Double Gain";
+               else temp << "Low Gain";
 
-            // Status Update
-            event = new KpixGuiEventRun(false,false,temp.str(),iters,rate,triggers,0);
-            QApplication::postEvent(this,event);
-            rate = 0;
+               // Status Update
+               event = new KpixGuiEventRun(false,false,temp.str(),iters,rate,triggers,0);
+               QApplication::postEvent(this,event);
+               rate = 0;
 
-            // Look through plots list
-            if ( enPlot ) {
-               for (x=0; x < 16; x++) {
+               // Look through plots list
+               if ( enPlot ) {
+                  for (x=0; x < 16; x++) {
 
-                  // Plot is enabled 
-                  if ( dispKpix[x] >= 0 && dispChan[x] >= 0 ) {
-                     idx = dispKpix[x]*1024+dispChan[x];
+                     // Plot is enabled 
+                     if ( dispKpix[x] >= 0 && dispChan[x] >= 0 && dispBucket[x] >= 0 ) {
+                        idx = dispKpix[x]*4096+dispChan[x]*4+dispBucket[x];
 
-                     // Range 0 Plot
-                     if ( histR0[idx] != NULL ) {
-                        temp.str("");
-                        temp << "h0" << dec << setw(1) << x;
-                        temp2.str("");
-                        temp2 << "Charge Histogram, Kpix=" << asic[dispKpix[x]]->getSerial();
-                        temp2 << ", Channel=" << dispChan[x];
-                        temp2 << ", Range=0";
+                        // Range 0 Plot
+                        if ( histR0[idx] != NULL ) {
+                           temp.str("");
+                           temp << "h0" << dec << setw(1) << x;
+                           temp2.str("");
+                           temp2 << "Charge Histogram, Kpix=" << asic[dispKpix[x]]->getSerial();
+                           temp2 << ", Channel=" << dispChan[x];
+                           temp2 << ", Bucket=" << dispBucket[x];
+                           temp2 << ", Range=0";
 
-                        // Convert end points to charge with calibration constants
-                        if ( chGainR0 != NULL && chGainR0[idx] != 0 ) {
-                           bMin = (histR0[idx]->minValue()-chIceptR0[idx]) / chGainR0[idx];
-                           bMax = ((histR0[idx]->maxValue()+1)-chIceptR0[idx]) / chGainR0[idx];
+                           // Convert end points to charge with calibration constants
+                           if ( chGainR0 != NULL && chGainR0[idx] != 0 ) {
+                              bMin = (histR0[idx]->minValue()-chMeanR0[idx]) / chGainR0[idx];
+                              bMax = ((histR0[idx]->maxValue()+1)-chMeanR0[idx]) / chGainR0[idx];
+                           }
+                           else {
+                              bMin = histR0[idx]->minValue();
+                              bMax = histR0[idx]->maxValue()+1;
+                           }
+
+                           // Create Plot
+                           plot[x*2] = new TH1F(temp.str().c_str(),temp2.str().c_str(),histR0[idx]->binCount(),bMin,bMax);
+                           plot[x*2]->SetDirectory(0);
+                           plot[x*2]->SetLineColor(4);
+
+                           // Add values
+                           for (y=0; y < histR0[idx]->binCount(); y++) {
+                              plot[x*2]->SetBinContent(y+1,histR0[idx]->count(y));
+                           }
                         }
-                        else {
-                           bMin = histR0[idx]->minValue();
-                           bMax = histR0[idx]->maxValue()+1;
-                        }
+                        else plot[x*2] = NULL;
 
-                        // Create Plot
-                        plot[x*2] = new TH1F(temp.str().c_str(),temp2.str().c_str(),histR0[idx]->binCount(),bMin,bMax);
-                        plot[x*2]->SetDirectory(0);
-                        plot[x*2]->SetLineColor(4);
+                        // Range 1 Plot
+                        if ( histR1[idx] != NULL ) {
+                           temp.str("");
+                           temp << "h1" << dec << setw(1) << x;
+                           temp2.str("");
+                           temp2 << "Charge Histogram, Kpix=" << asic[dispKpix[x]]->getSerial();
+                           temp2 << ", Channel=" << dispChan[x];
+                           temp2 << ", Bucket=" << dispBucket[x];
+                           temp2 << ", Range=1";
 
-                        // Add values
-                        for (y=0; y < histR0[idx]->binCount(); y++) {
-                           plot[x*2]->SetBinContent(y+1,histR0[idx]->count(y));
+                           // Convert end points to charge with calibration constants
+                           if ( chGainR1 != NULL && chGainR1[idx] != 0 ) {
+                              bMin = (histR1[idx]->minValue()-chMeanR1[idx]) / chGainR1[idx];
+                              bMax = ((histR1[idx]->maxValue()+1)-chMeanR1[idx]) / chGainR1[idx];
+                           }
+                           else {
+                              bMin = histR1[idx]->minValue();
+                              bMax = histR1[idx]->maxValue()+1;
+                           }
+
+                           // Create Plot
+                           plot[x*2+1] = new TH1F(temp.str().c_str(),temp2.str().c_str(),histR1[idx]->binCount(),bMin,bMax);
+                           plot[x*2+1]->SetDirectory(0);
+                           plot[x*2+1]->SetLineColor(3);
+
+                           // Add values
+                           for (y=0; y < histR1[idx]->binCount(); y++) {
+                              plot[x*2+1]->SetBinContent(y+1,histR1[idx]->count(y));
+                           }
                         }
+                        else plot[x*2+1] = NULL;
                      }
-                     else plot[x*2] = NULL;
-
-                     // Range 1 Plot
-                     if ( histR1[idx] != NULL ) {
-                        temp.str("");
-                        temp << "h1" << dec << setw(1) << x;
-                        temp2.str("");
-                        temp2 << "Charge Histogram, Kpix=" << asic[dispKpix[x]]->getSerial();
-                        temp2 << ", Channel=" << dispChan[x];
-                        temp2 << ", Range=1";
-
-                        // Convert end points to charge with calibration constants
-                        if ( chGainR1 != NULL && chGainR1[idx] != 0 ) {
-                           bMin = (histR1[idx]->minValue()-chIceptR1[idx]) / chGainR1[idx];
-                           bMax = ((histR1[idx]->maxValue()+1)-chIceptR1[idx]) / chGainR1[idx];
-                        }
-                        else {
-                           bMin = histR1[idx]->minValue();
-                           bMax = histR1[idx]->maxValue()+1;
-                        }
-
-                        // Create Plot
-                        plot[x*2+1] = new TH1F(temp.str().c_str(),temp2.str().c_str(),histR1[idx]->binCount(),bMin,bMax);
-                        plot[x*2+1]->SetDirectory(0);
-                        plot[x*2+1]->SetLineColor(3);
-
-                        // Add values
-                        for (y=0; y < histR1[idx]->binCount(); y++) {
-                           plot[x*2+1]->SetBinContent(y+1,histR1[idx]->count(y));
-                        }
+                     else {
+                        plot[x*2]   = NULL;
+                        plot[x*2+1] = NULL;
                      }
-                     else plot[x*2+1] = NULL;
                   }
-                  else {
-                     plot[x*2]   = NULL;
-                     plot[x*2+1] = NULL;
-                  }
+
+                  // Pass Plots
+                  data = new KpixGuiEventData(KPRG_TH1F,32,(void **)plot);
+                  QApplication::postEvent(this,data);
                }
+            } else rate++;
+         } // Run stopped
 
-               // Pass Plots
-               data = new KpixGuiEventData(KPRG_TH1F,32,(void **)plot);
-               QApplication::postEvent(this,data);
-            }
-         } else rate++;
-      } // Run stopped
+      } catch ( string errorMsg ) { delError = errorMsg; }
 
       // Status Update
       event = new KpixGuiEventRun(false,false,"Storing Histograms",iters,rate,triggers,0);
@@ -656,120 +713,130 @@ void KpixGuiRun::run() {
          // Create channel histograms
          for (x=0; x< (asicCnt-1); x++) {
             for (y=0; y< 1024; y++) {
-               idx = x*1024+y;
+               for (r=0; r< 4; r++) {
+                  idx = x*4096+y*4+r;
 
-               // Range 0
-               if ( histR0[idx] != NULL ) {
+                  // Range 0
+                  if ( histR0[idx] != NULL ) {
 
-                  // Create Raw histogram
-                  temp.str("");
-                  temp << "hist_raw_s" << dec << setw(4) << setfill('0') << asic[x]->getSerial();
-                  temp << "_c" << dec << setw(4) << setfill('0') << y;
-                  temp << "_r0";
-                  temp2.str("");
-                  temp2 << "Raw Histogram, Kpix=" << asic[x]->getSerial();
-                  temp2 << ", Channel=" << y;
-                  temp2 << ", Range=0";
-                  cHist = new TH1F(temp.str().c_str(),temp2.str().c_str(),
-                                   histR0[idx]->binCount(),
-                                   histR0[idx]->minValue(),
-                                   histR0[idx]->maxValue()+1);
-                  cHist->SetDirectory(0);
-                  cHist->SetLineColor(4);
-                  for (z=0; z < histR0[idx]->binCount(); z++) 
-                     cHist->SetBinContent(z+1,histR0[idx]->count(z));
-                  cHist->Write();
-                  delete cHist;
+                     // Create Raw histogram
+                     temp.str("");
+                     temp << "hist_raw_s" << dec << setw(4) << setfill('0') << asic[x]->getSerial();
+                     temp << "_c" << dec << setw(4) << setfill('0') << y;
+                     temp << "_b" << dec << setw(1) << setfill('0') << r;
+                     temp << "_r0";
+                     temp2.str("");
+                     temp2 << "Raw Histogram, Kpix=" << asic[x]->getSerial();
+                     temp2 << ", Channel=" << y;
+                     temp2 << ", Bucket="  << r;
+                     temp2 << ", Range=0";
+                     cHist = new TH1F(temp.str().c_str(),temp2.str().c_str(),
+                                      histR0[idx]->binCount(),
+                                      histR0[idx]->minValue(),
+                                      histR0[idx]->maxValue()+1);
+                     cHist->SetDirectory(0);
+                     cHist->SetLineColor(4);
+                     for (z=0; z < histR0[idx]->binCount(); z++) 
+                        cHist->SetBinContent(z+1,histR0[idx]->count(z));
+                     cHist->Write();
+                     delete cHist;
 
-                  // Create Charge histogram
-                  temp.str("");
-                  temp << "hist_charge_s" << dec << setw(4) << setfill('0') << asic[x]->getSerial();
-                  temp << "_c" << dec << setw(4) << setfill('0') << y;
-                  temp << "_r0";
-                  temp2.str("");
-                  temp2 << "Charge Histogram, Kpix=" << asic[x]->getSerial();
-                  temp2 << ", Channel=" << y;
-                  temp2 << ", Range=0";
+                     // Create Charge histogram
+                     temp.str("");
+                     temp << "hist_charge_s" << dec << setw(4) << setfill('0') << asic[x]->getSerial();
+                     temp << "_c" << dec << setw(4) << setfill('0') << y;
+                     temp << "_b" << dec << setw(1) << setfill('0') << r;
+                     temp << "_r0";
+                     temp2.str("");
+                     temp2 << "Charge Histogram, Kpix=" << asic[x]->getSerial();
+                     temp2 << ", Channel=" << y;
+                     temp2 << ", Bucket="  << r;
+                     temp2 << ", Range=0";
 
-                  // Convert to charge with calibration constants
-                  if ( chGainR0 != NULL && chGainR0[idx] != 0 ) {
-                     bMin = (histR0[idx]->minValue() - chIceptR0[idx]) / chGainR0[idx];
-                     bMax = ((histR0[idx]->maxValue()+1) - chIceptR0[idx]) / chGainR0[idx];
-                  }
-                  else {
-                     bMin = histR0[idx]->minValue();
-                     bMax = histR0[idx]->maxValue()+1;
-                  }
+                     // Convert to charge with calibration constants
+                     if ( chGainR0 != NULL && chGainR0[idx] != 0 ) {
+                        bMin = (histR0[idx]->minValue() - chMeanR0[idx]) / chGainR0[idx];
+                        bMax = ((histR0[idx]->maxValue()+1) - chMeanR0[idx]) / chGainR0[idx];
+                     }
+                     else {
+                        bMin = histR0[idx]->minValue();
+                        bMax = histR0[idx]->maxValue()+1;
+                     }
 
-                  // Create new plot
-                  cHist = new TH1F(temp.str().c_str(),temp2.str().c_str(),histR0[idx]->binCount(),bMin,bMax);
-                  cHist->SetDirectory(0);
-                  cHist->SetLineColor(4);
+                     // Create new plot
+                     cHist = new TH1F(temp.str().c_str(),temp2.str().c_str(),histR0[idx]->binCount(),bMin,bMax);
+                     cHist->SetDirectory(0);
+                     cHist->SetLineColor(4);
 
-                  // Add values
-                  for (z=0; z < histR0[idx]->binCount(); z++) {
-                     cHist->SetBinContent(z+1,histR0[idx]->count(z));
-                  }
-                  cHist->Write();
-                  delete cHist;
-                  delete histR0[idx];
-               }
-
-               // Range 1
-               if ( histR1[idx] != NULL ) {
-
-                  // Create Raw histogram
-                  temp.str("");
-                  temp << "hist_raw_s" << dec << setw(4) << setfill('0') << asic[x]->getSerial();
-                  temp << "_c" << dec << setw(4) << setfill('0') << y;
-                  temp << "_r1";
-                  temp2.str("");
-                  temp2 << "Raw Histogram, Kpix=" << asic[x]->getSerial();
-                  temp2 << ", Channel=" << y;
-                  temp2 << ", Range=1";
-                  cHist = new TH1F(temp.str().c_str(),temp2.str().c_str(),
-                                   histR1[idx]->binCount(),
-                                   histR1[idx]->minValue(),
-                                   histR1[idx]->maxValue()+1);
-                  cHist->SetDirectory(0);
-                  cHist->SetLineColor(3);
-                  for (z=0; z < histR1[idx]->binCount(); z++) 
-                     cHist->SetBinContent(z+1,histR1[idx]->count(z));
-                  cHist->Write();
-                  delete cHist;
-
-                  // Create Charge histogram
-                  temp.str("");
-                  temp << "hist_charge_s" << dec << setw(4) << setfill('0') << asic[x]->getSerial();
-                  temp << "_c" << dec << setw(4) << setfill('0') << y;
-                  temp << "_r1";
-                  temp2.str("");
-                  temp2 << "Charge Histogram, Kpix=" << asic[x]->getSerial();
-                  temp2 << ", Channel=" << y;
-                  temp2 << ", Range=1";
-
-                  // Convert to charge with calibration constants
-                  if ( chGainR1 != NULL && chGainR1[idx] != 0 ) {
-                     bMin = (histR1[idx]->minValue() - chIceptR1[idx]) / chGainR1[idx];
-                     bMax = ((histR1[idx]->maxValue()+1) - chIceptR1[idx]) / chGainR1[idx];
-                  }
-                  else {
-                     bMin = histR1[idx]->minValue();
-                     bMax = histR1[idx]->maxValue()+1;
+                     // Add values
+                     for (z=0; z < histR0[idx]->binCount(); z++) {
+                        cHist->SetBinContent(z+1,histR0[idx]->count(z));
+                     }
+                     cHist->Write();
+                     delete cHist;
+                     delete histR0[idx];
                   }
 
-                  // Create new plot
-                  cHist = new TH1F(temp.str().c_str(),temp2.str().c_str(),histR1[idx]->binCount(),bMin,bMax);
-                  cHist->SetDirectory(0);
-                  cHist->SetLineColor(3);
+                  // Range 1
+                  if ( histR1[idx] != NULL ) {
 
-                  // Add values
-                  for (z=0; z < histR1[idx]->binCount(); z++) {
-                     cHist->SetBinContent(z+1,histR1[idx]->count(z));
+                     // Create Raw histogram
+                     temp.str("");
+                     temp << "hist_raw_s" << dec << setw(4) << setfill('0') << asic[x]->getSerial();
+                     temp << "_c" << dec << setw(4) << setfill('0') << y;
+                     temp << "_b" << dec << setw(1) << setfill('0') << r;
+                     temp << "_r1";
+                     temp2.str("");
+                     temp2 << "Raw Histogram, Kpix=" << asic[x]->getSerial();
+                     temp2 << ", Channel=" << y;
+                     temp2 << ", Bucket="  << r;
+                     temp2 << ", Range=1";
+                     cHist = new TH1F(temp.str().c_str(),temp2.str().c_str(),
+                                      histR1[idx]->binCount(),
+                                      histR1[idx]->minValue(),
+                                      histR1[idx]->maxValue()+1);
+                     cHist->SetDirectory(0);
+                     cHist->SetLineColor(3);
+                     for (z=0; z < histR1[idx]->binCount(); z++) 
+                        cHist->SetBinContent(z+1,histR1[idx]->count(z));
+                     cHist->Write();
+                     delete cHist;
+
+                     // Create Charge histogram
+                     temp.str("");
+                     temp << "hist_charge_s" << dec << setw(4) << setfill('0') << asic[x]->getSerial();
+                     temp << "_c" << dec << setw(4) << setfill('0') << y;
+                     temp << "_b" << dec << setw(1) << setfill('0') << r;
+                     temp << "_r1";
+                     temp2.str("");
+                     temp2 << "Charge Histogram, Kpix=" << asic[x]->getSerial();
+                     temp2 << ", Channel=" << y;
+                     temp2 << ", Bucket="  << r;
+                     temp2 << ", Range=1";
+
+                     // Convert to charge with calibration constants
+                     if ( chGainR1 != NULL && chGainR1[idx] != 0 ) {
+                        bMin = (histR1[idx]->minValue() - chMeanR1[idx]) / chGainR1[idx];
+                        bMax = ((histR1[idx]->maxValue()+1) - chMeanR1[idx]) / chGainR1[idx];
+                     }
+                     else {
+                        bMin = histR1[idx]->minValue();
+                        bMax = histR1[idx]->maxValue()+1;
+                     }
+
+                     // Create new plot
+                     cHist = new TH1F(temp.str().c_str(),temp2.str().c_str(),histR1[idx]->binCount(),bMin,bMax);
+                     cHist->SetDirectory(0);
+                     cHist->SetLineColor(3);
+
+                     // Add values
+                     for (z=0; z < histR1[idx]->binCount(); z++) {
+                        cHist->SetBinContent(z+1,histR1[idx]->count(z));
+                     }
+                     cHist->Write();
+                     delete cHist;
+                     delete histR1[idx];
                   }
-                  cHist->Write();
-                  delete cHist;
-                  delete histR1[idx];
                }
             }
          }
@@ -785,16 +852,19 @@ void KpixGuiRun::run() {
       free(eventVars);
       free(eventCmd);
       if ( chGainR0 != NULL ) free(chGainR0);
-      if ( chIceptR0 != NULL ) free(chIceptR0);
+      if ( chMeanR0 != NULL ) free(chMeanR0);
       if ( chGainR1 != NULL ) free(chGainR1);
-      if ( chIceptR1 != NULL ) free(chIceptR1);
+      if ( chMeanR1 != NULL ) free(chMeanR1);
       free(kpixIdxLookup);
       delete kpixRunWrite;
 
       // Log
       cout << endl << "Wrote Data To: " << outDataDir << "\n";
-   } catch ( string errorMsg ) {
-      error = new KpixGuiEventError(errorMsg);
+
+   } catch ( string errorMsg ) { delError = errorMsg; }
+
+   if ( delError != "" ) {
+      error = new KpixGuiEventError(delError);
       QApplication::postEvent(this,error);
    }
 
@@ -813,7 +883,7 @@ void KpixGuiRun::customEvent ( QCustomEvent *event ) {
    KpixGuiEventError *eventError;
    KpixGuiEventRun   *eventRun;
    KpixGuiEventData  *eventPlots;
-   unsigned int      x,y, count, divx, divy, idx;
+   unsigned int      x,y,z, count, divx, divy, idx;
    stringstream      temp;
 
    // Run Event
@@ -835,7 +905,7 @@ void KpixGuiRun::customEvent ( QCustomEvent *event ) {
       else if ( eventRun->runStop ) {
          try {
             parent->readConfig(true);
-            parent->readFpgaCounters();
+            parent->readStatus();
          } catch ( string error ) {
             errorMsg->showMessage(error);
          }
@@ -875,12 +945,15 @@ void KpixGuiRun::customEvent ( QCustomEvent *event ) {
       idx = 0;
       if ( asicCnt > 1 ) for (x=0; x < (asicCnt-1); x++) {
          for (y=0; y < asic[x]->getChCount(); y++) {
-            if ( chanSel->isSelected(count) && idx < 16) {
-               dispKpix[idx] = x;
-               dispChan[idx] = y;
-               idx++;
+            for (z=0; z < 4; z++) {
+               if ( chanSel->isSelected(count) && idx < 16) {
+                  dispKpix[idx] = x;
+                  dispChan[idx] = y;
+                  dispBucket[idx] = z;
+                  idx++;
+               }
+               count++;
             }
-            count++;
          }
       }
       update();
@@ -947,7 +1020,7 @@ void KpixGuiRun::customEvent ( QCustomEvent *event ) {
          for (x=0; x<16; x++) {
             if ( plots[x*2] != NULL || plots[x*2+1] != NULL ) {
                count++;
-               liveDisplay->GetCanvas()->cd(count);
+               liveDisplay->GetCanvas()->cd(count)->SetLogy();
                if ( plots[x*2] != NULL ) {
                   plots[x*2]->Draw();
                   if ( plots[x*2+1] != NULL ) plots[x*2+1]->Draw("same");

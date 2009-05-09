@@ -177,12 +177,13 @@ void KpixGuiRunView::setEnabled(bool enable) {
    viewSamples->setEnabled(inFileIsOpen?enable:false);
    selSerial->setEnabled(inFileIsOpen?enable:false);
    selChannel->setEnabled(inFileIsOpen?enable:false);
+   selBucket->setEnabled(inFileIsOpen?enable:false);
    writePdf->setEnabled(inFileIsOpen?enable:false);
 }
 
 
 void KpixGuiRunView::updateDisplay() {
-   unsigned int serial,chan;
+   unsigned int serial,chan, bucket;
    stringstream temp;
 
    // Delete old histogram
@@ -197,11 +198,13 @@ void KpixGuiRunView::updateDisplay() {
       // Get current selection
       serial = selSerial->currentItem();
       chan   = selChannel->value();
+      bucket = selBucket->value();
 
       // Figure out raw name, range = 0
       temp.str("");
       temp << "/RunPlots/hist_raw_s" << dec << setw(4) << setfill('0') << inFileRoot->getAsic(serial)->getSerial();
       temp << "_c" << dec << setw(4) << setfill('0') << chan;
+      temp << "_b" << dec << setw(1) << setfill('0') << bucket;
       temp << "_r0";
 
       // attempt to get object
@@ -212,6 +215,7 @@ void KpixGuiRunView::updateDisplay() {
       temp.str("");
       temp << "/RunPlots/hist_raw_s" << dec << setw(4) << setfill('0') << inFileRoot->getAsic(serial)->getSerial();
       temp << "_c" << dec << setw(4) << setfill('0') << chan;
+      temp << "_b" << dec << setw(1) << setfill('0') << bucket;
       temp << "_r1";
 
       // attempt to get object
@@ -222,6 +226,7 @@ void KpixGuiRunView::updateDisplay() {
       temp.str("");
       temp << "/RunPlots/hist_charge_s" << dec << setw(4) << setfill('0') << inFileRoot->getAsic(serial)->getSerial();
       temp << "_c" << dec << setw(4) << setfill('0') << chan;
+      temp << "_b" << dec << setw(1) << setfill('0') << bucket;
       temp << "_r0";
 
       // attempt to get object
@@ -232,6 +237,7 @@ void KpixGuiRunView::updateDisplay() {
       temp.str("");
       temp << "/RunPlots/hist_charge_s" << dec << setw(4) << setfill('0') << inFileRoot->getAsic(serial)->getSerial();
       temp << "_c" << dec << setw(4) << setfill('0') << chan;
+      temp << "_b" << dec << setw(1) << setfill('0') << bucket;
       temp << "_r1";
 
       // attempt to get object, range = 1
@@ -297,14 +303,19 @@ void KpixGuiRunView::closeEvent(QCloseEvent *e) {
 
 
 void KpixGuiRunView::prevChan_pressed() {
-   int channel, serial, chCount;
+   int channel, serial, bucket, chCount;
 
    // Get Current Values
    serial  = selSerial ->currentItem();
    channel = selChannel->value();
+   bucket  = selBucket->value();
    chCount = inFileRoot->getAsic(0)->getChCount();
 
-   channel--;
+   bucket--;
+   if ( bucket == -1 ) {
+      bucket = 3;
+      channel--;
+   }
    if ( channel == -1 ) {
       channel = chCount-1;
       serial--;
@@ -314,19 +325,25 @@ void KpixGuiRunView::prevChan_pressed() {
    // Set Current Values
    selSerial ->setCurrentItem(serial);
    selChannel->setValue(channel);
+   selBucket->setValue(bucket);
    updateDisplay();
 }
 
 
 void KpixGuiRunView::nextChan_pressed() {
-   int channel, serial, chCount;
+   int channel, serial, bucket, chCount;
 
    // Get Current Values
    serial  = selSerial ->currentItem();
    channel = selChannel->value();
+   bucket  = selBucket->value();
    chCount = inFileRoot->getAsic(0)->getChCount();
 
-   channel++;
+   bucket++;
+   if ( bucket == 4 ) {
+      bucket = 0;
+      channel++;
+   }
    if ( channel == chCount ) {
       channel = 0;
       serial++;
@@ -336,6 +353,7 @@ void KpixGuiRunView::nextChan_pressed() {
    // Set Current Values
    selSerial ->setCurrentItem(serial);
    selChannel->setValue(channel);
+   selBucket->setValue(bucket);
    updateDisplay();
 }
 

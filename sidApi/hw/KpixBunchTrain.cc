@@ -83,7 +83,9 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
    unsigned int   adc;
    unsigned int   range;
    unsigned int   badCount;
+   unsigned int   trigType;
    unsigned int   empty;
+   stringstream   error;
 
    // Init sample count & pointers
    for (x=0; x < (4*64*4); x++) samplesByTime[x] = NULL;
@@ -120,8 +122,6 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
 
       // Double check marker
       if ( (data[0] & 0xC000) != 0x4000 ) continue;
-      if ( (data[1] & 0xC000) != 0x0000 ) continue;
-      if ( (data[2] & 0xC000) != 0x0000 ) continue;
 
       // Extract sample data
       address  = (data[0] >> 10) & 0x0003;
@@ -130,8 +130,10 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
       range    = (data[1] >> 13) & 0x0001;
       empty    = (data[1] >> 12) & 0x1;
       time     = data[1] & 0x0FFF;
+      time    += (data[1] >> 2) & 0x1000; // Time Bit Expansion
       adc      = data[2] & 0x1FFF;
-      badCount = (data[2] >> 14) & 0x1;
+      badCount = (data[2] >> 13) & 0x1;
+      trigType = (data[2] >> 14) & 0x1;
 
       // Detect overrun of frame data
       if ( totalCount == 64*4*4 ) {
@@ -142,7 +144,7 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
 
       // Create a new Kpix Event
       samplesByTime[totalCount] = 
-         new KpixSample(address,channel,bucket,range,time,adc,trainNumber,empty,badCount,debug);
+         new KpixSample(address,channel,bucket,range,time,adc,trainNumber,empty,badCount,trigType,debug);
       totalCount++;
    }
 
@@ -157,11 +159,16 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
       throw(string("KpixBunchTrain::KpixBunchTrain -> Checksum Error"));
    }
 
-   // Check count
-   if ( totalCount != (unsigned int)(data[0] & 0x7FFF) ) {
+   // Check count either 1x events (old fpag) or 3x events (new fpga)
+   if ( totalCount != (unsigned int)(data[0] & 0x7FFF) && (totalCount*3) != (unsigned int)(data[0] & 0x7FFF) ) {
       for ( x=0; x < totalCount; x++) delete samplesByTime[x];
       totalCount = 0;
-      throw(string("KpixBunchTrain::KpixBunchTrain -> Sample Count Mismatch"));
+      error.str("");
+      error << "KpixBunchTrain::KpixBunchTrain -> Sample Count Mismatch. ";
+      error << "Got=" << dec << (unsigned int)(data[0] & 0x7FFF);
+      error << ", Exp=" << dec << totalCount;
+      error << " or " << dec << totalCount*3;
+      throw(error.str());
    }
 
    // Dead time counter

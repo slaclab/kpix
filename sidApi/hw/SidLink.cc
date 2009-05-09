@@ -28,6 +28,7 @@
 // 08/03/2007: Removed reset and purge from direct link open, added direct
 //             mode access to flush, added read/write timeout to direct mode
 // 01/10/2007: Added IOCTL call to set proper parameters to usb VCP interface.
+// 03/09/2009: Added echo read for simulation mode.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -615,7 +616,15 @@ int SidLink::linkRawRead ( unsigned short *data, short int size, unsigned char t
 // Pass word (16-bit) array and length
 // Return number of words written
 int SidLink::linkKpixWrite ( unsigned short int *data, short int size) {
-  return(linkRawWrite (data, size, 0, true));
+
+  // Sim Mode, all bytes are echoed
+  if ( serFdRd > 0 ) {
+     linkRawWrite (data, size, 0, true);
+     return(linkRawRead  (data, size, 0, true));
+  }
+
+  // Normal Mode
+  else return(linkRawWrite (data, size, 0, true));
 }
 
 
@@ -639,7 +648,15 @@ int SidLink::linkDataRead ( unsigned short int *data, short int size, bool first
 // Pass word (16-bit) array and length
 // Return number of words written
 int SidLink::linkFpgaWrite ( unsigned short int *data, short int size) {
-  return(linkRawWrite (data, size, 2, true));
+
+  // Sim Mode, all bytes are echoed
+  if ( serFdRd > 0 ) {
+     linkRawWrite (data, size, 2, true);
+     return(linkRawRead  (data, size, 2, true));
+  }
+
+  // Normal Mode
+  else return(linkRawWrite (data, size, 2, true));
 }
 
 

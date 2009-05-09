@@ -15,6 +15,7 @@
 // 05/04/2007: Fixed error in debug message.
 // 07/31/2007: Fixed error in register test direction.
 // 09/26/2008: Added support for progress updates to calling class.
+// 02/23/2009: Added changes required for status read.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <sstream>
@@ -65,9 +66,11 @@ void KpixRegisterTest::setDirection ( bool flag ) { this->direction = flag; }
 // Return true on success, false on fail
 bool KpixRegisterTest::runTest () {
 
-   unsigned int i,x,y,z;
-   unsigned int temp;
-   bool hperr, dperr;
+   unsigned int  i,x,y,z;
+   unsigned int  temp;
+   bool          hperr, dperr, tempEn;
+   unsigned char tempVal;
+
 
    // Init error counters
    readErrors   = 0;
@@ -100,7 +103,7 @@ bool KpixRegisterTest::runTest () {
       }
 
       // Read status register
-      kpixAsic->getStatus(&hperr,&dperr);
+      kpixAsic->getStatus(&hperr,&dperr,&tempEn,&tempVal);
 
       // Detect error in write
       if ( hperr || dperr ) {
