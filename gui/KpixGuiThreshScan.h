@@ -56,8 +56,6 @@ class KpixGuiThreshScan : public KpixGuiThreshScanForm, public QThread, public K
       bool              enRun;
       bool              isRunning;
       string            baseDir, desc, outDataDir, outDataFile;
-      unsigned int      prgCurrent;
-      unsigned int      prgTotal;
       KpixRunVar        **runVars;
       unsigned int      runVarCount;
       TH2F              *plot;

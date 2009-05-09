@@ -40,7 +40,7 @@
 #include <qspinbox.h>
 #include <TQtWidget.h>
 #include <TCanvas.h>
-#include "KpixGuiEventRun.h"
+#include "KpixGuiEventStatus.h"
 #include "KpixGuiEventError.h"
 #include "KpixGuiEventData.h"
 #include "KpixGuiCalFit.h"
@@ -60,8 +60,6 @@ class KpixGuiCalibrate : public KpixGuiCalibrateForm, public QThread, public Kpi
       string        baseDir, desc, outDataDir, outDataFile;
       void          *plots[16];
       unsigned int  pType;
-      unsigned int  prgCurrent;
-      unsigned int  prgTotal;
       KpixRunVar    **runVars;
       unsigned int  runVarCount;
       TMultiGraph   *mGraph[2];

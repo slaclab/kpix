@@ -374,11 +374,11 @@ void KpixGuiTop::closeEvent(QCloseEvent *e) {
 
 // Thread for command run
 void KpixGuiTop::run() {
-   KpixGuiEventRun   *event;
-   KpixGuiEventError *error;
-   unsigned int      x;
-   bool              temp1,temp2,temp3;
-   unsigned char     temp4;
+   KpixGuiEventStatus *event;
+   KpixGuiEventError  *error;
+   unsigned int       x;
+   bool               temp1,temp2,temp3;
+   unsigned char      temp4;
 
    // Which command
    try {
@@ -498,7 +498,7 @@ void KpixGuiTop::run() {
    }
 
    // Update status display
-   event = new KpixGuiEventRun(false,true,"",0,0,0,0);
+   event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusDone);
    QApplication::postEvent(this,event);
 }
 
@@ -507,43 +507,37 @@ void KpixGuiTop::run() {
 // Receive Custom Events
 void KpixGuiTop::customEvent ( QCustomEvent *event ) {
 
-   KpixGuiEventError *eventError;
-   KpixGuiEventRun   *eventRun;
+   KpixGuiEventError  *eventError;
 
    // Run Event
-   if ( event->type() == KPIX_GUI_EVENT_RUN ) {
-      eventRun = (KpixGuiEventRun *)event;
+   if ( event->type() == KPIX_GUI_EVENT_STATUS ) {
 
-      // Run is stopping
-      if ( eventRun->runStop ) {
+      // Read or re-scan
+      if ( cmdType == CmdRescanKpix || cmdType == CmdLoadSettings ) {
 
-         // Read or re-scan
-         if ( cmdType == CmdRescanKpix || cmdType == CmdLoadSettings ) {
+         // Pass asics to sub classes
+         kpixGuiCalibrate->setAsics(asic,asicCnt,fpga);
+         kpixGuiThreshScan->setAsics(asic,asicCnt,fpga);
+         kpixGuiRegTest->setAsics(asic,asicCnt);
+         kpixGuiRun->setAsics(asic,asicCnt,fpga,runRead);
+         kpixGuiMain->setAsics(asic,asicCnt);
+         kpixGuiFpga->setFpga(fpga);
+         kpixGuiConfig->setAsics(asic,asicCnt);
+         kpixGuiTiming->setAsics(asic,asicCnt,fpga);
+         kpixGuiTrig->setAsics(asic,asicCnt,fpga);
+         kpixGuiInject->setAsics(asic,asicCnt);
+         kpixGuiStatus->setAsics(asic,asicCnt,fpga);
 
-            // Pass asics to sub classes
-            kpixGuiCalibrate->setAsics(asic,asicCnt,fpga);
-            kpixGuiThreshScan->setAsics(asic,asicCnt,fpga);
-            kpixGuiRegTest->setAsics(asic,asicCnt);
-            kpixGuiRun->setAsics(asic,asicCnt,fpga,runRead);
-            kpixGuiMain->setAsics(asic,asicCnt);
-            kpixGuiFpga->setFpga(fpga);
-            kpixGuiConfig->setAsics(asic,asicCnt);
-            kpixGuiTiming->setAsics(asic,asicCnt,fpga);
-            kpixGuiTrig->setAsics(asic,asicCnt,fpga);
-            kpixGuiInject->setAsics(asic,asicCnt);
-            kpixGuiStatus->setAsics(asic,asicCnt,fpga);
-
-            // Pass run read to main
-            if ( runRead != NULL ) {
-               kpixGuiMain->setRunRead(runRead);
-               delete runRead;
-               runRead = NULL;
-            }
+         // Pass run read to main
+         if ( runRead != NULL ) {
+            kpixGuiMain->setRunRead(runRead);
+            delete runRead;
+            runRead = NULL;
          }
-         calEnable->setChecked(cmdType==CmdRescanKpix);
-         updateDisplay();
-         setEnabled(true);
       }
+      calEnable->setChecked(cmdType==CmdRescanKpix);
+      updateDisplay();
+      setEnabled(true);
       update();
    }
 

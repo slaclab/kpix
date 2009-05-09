@@ -20,17 +20,14 @@ HEADERS	+= KpixGuiInject.h \
 	KpixGuiRegTest.h \
 	KpixGuiCalibrate.h \
 	KpixGuiThreshScan.h \
-	KpixGuiEventRun.h \
+	KpixGuiEventStatus.h \
 	KpixGuiEventError.h \
 	KpixGuiViewConfig.h \
-	KpixGuiViewHist.h \
-	KpixGuiViewCalib.h \
 	KpixGuiList.h \
 	KpixGuiCalFit.h \
 	KpixGuiRunView.h \
 	KpixGuiRun.h \
 	KpixGuiSampleView.h \
-	KpixGuiThreshChan.h \
 	KpixGuiThreshView.h \
 	KpixGuiRunNetwork.h \
 	KpixGuiEventData.h \
@@ -48,17 +45,14 @@ SOURCES	+= KpixGuiInject.cc \
 	KpixGui.cc \
 	KpixGuiCalibrate.cc \
 	KpixGuiThreshScan.cc \
-	KpixGuiEventRun.cc \
+	KpixGuiEventStatus.cc \
 	KpixGuiEventError.cc \
 	KpixGuiViewConfig.cc \
-	KpixGuiViewHist.cc \
-	KpixGuiViewCalib.cc \
 	KpixGuiList.cc \
 	KpixGuiCalFit.cc \
 	KpixGuiRunView.cc \
 	KpixGuiRun.cc \
 	KpixGuiSampleView.cc \
-	KpixGuiThreshChan.cc \
 	KpixGuiThreshView.cc \
 	KpixGuiRunNetwork.cc \
 	KpixGuiEventData.cc \
@@ -80,10 +74,7 @@ FORMS	= KpixGuiInjectForm.ui \
 	KpixGuiThreshScanForm.ui \
 	KpixGuiCalFitForm.ui \
 	KpixGuiRunViewForm.ui \
-	KpixGuiViewHistForm.ui \
 	KpixGuiRunForm.ui \
-	KpixGuiViewCalibForm.ui \
-	KpixGuiThreshChanForm.ui \
 	KpixGuiThreshViewForm.ui \
 	KpixGuiSampleViewForm.ui
 

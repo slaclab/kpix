@@ -47,7 +47,6 @@ class KpixGuiRunView : public KpixGuiRunViewForm, public QThread {
 
       // Input/Output Files
       KpixRunRead *inFileRoot;
-      bool        inFileIsOpen;
 
       // Display Windows
       KpixGuiViewConfig *kpixGuiViewConfig;
@@ -59,8 +58,8 @@ class KpixGuiRunView : public KpixGuiRunViewForm, public QThread {
       // Histogram plots
       TH1F *hist[4];
 
-      // Update active
-      bool readActive;
+      // Thread is running
+      bool isRunning;
 
       // List of KPIX serial numbers
       unsigned int  asicCnt;
@@ -72,7 +71,6 @@ class KpixGuiRunView : public KpixGuiRunViewForm, public QThread {
       // Commands
       static const unsigned int CmdReadFile  = 1;
       static const unsigned int CmdReadPlot  = 2;
-      static const unsigned int CmdPrintPlot = 3;
 
    public:
 
@@ -95,7 +93,6 @@ class KpixGuiRunView : public KpixGuiRunViewForm, public QThread {
    public slots:
 
       void customEvent ( QCustomEvent *event );
-      void updateDisplay();
       void readPlot();
       void inFileBrowse_pressed();
       void inFileOpen_pressed();

@@ -38,7 +38,7 @@
 #include <qspinbox.h>
 #include <TQtWidget.h>
 #include <TCanvas.h>
-#include "KpixGuiEventRun.h"
+#include "KpixGuiEventStatus.h"
 #include "KpixGuiEventError.h"
 #include "KpixGuiEventData.h"
 #include "KpixGuiRunView.h"
@@ -58,8 +58,6 @@ class KpixGuiRun : public KpixGuiRunForm, public QThread {
       bool         isRunning;
       string       baseDir, desc, outDataDir, outDataFile, calFile;
       TH1F         *plots[32];
-      unsigned int prgCurrent;
-      unsigned int prgTotal;
       KpixRunVar   **runVars;
       unsigned int runVarCount;
       int          dispKpix[16];

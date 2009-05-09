@@ -193,8 +193,9 @@ void KpixGuiRun::startRun_pressed ( ) {
    ::close(fd);
 
    // Start Thread
-   enRun = true;
-   pRun = false;
+   enRun     = true;
+   pRun      = false;
+   isRunning = true;
    parent->setEnabled(false);
    pauseRun->setDown(false);
    QThread::start();
@@ -229,44 +230,44 @@ void KpixGuiRun::viewData_pressed() {
 
 // Thread for register test
 void KpixGuiRun::run() {
-   unsigned int      x,y,z,r,idx;
-   KpixRunWrite      *kpixRunWrite;
-   KpixBunchTrain    *train;
-   KpixSample        *sample;
-   KpixGuiEventRun   *event;
-   KpixGuiEventError *error;
-   KpixGuiEventData  *data;
-   bool              runCmd, enPlot, enRaw;
-   double            bMin, bMax;
-   unsigned int      iters, rate, triggers;
-   stringstream      temp, temp2;
-   unsigned int      *kpixIdxLookup;
-   int               kpixIdx, kpixAddr, chan, bucket, range;
-   struct timeval    curTime, prvTime, acqTime;
-   KpixHistogram     **histR0;
-   KpixHistogram     **histR1;
-   TH1F              *plot[32];
-   TH1F              *cHist;
-   KpixCalibRead     *calData;
-   double            tempIcept;
-   double            tempSigma;
-   double            tempRms;
-   double            *chGainR0;
-   double            *chMeanR0;
-   double            *chGainR1;
-   double            *chMeanR1;
-   unsigned int      gain;
-   unsigned int      netCount;
-   string            calString;
-   bool              paused;
-   KpixGuiRunNetwork *network;
-   double            **eventVars;
-   double            *eventCmd;
-   unsigned int      eventCnt;
-   string            status;
-   string            delError;
-   unsigned int      rateLimit;
-   unsigned long     diff, secUs;
+   unsigned int       x,y,z,r,idx;
+   KpixRunWrite       *kpixRunWrite;
+   KpixBunchTrain     *train;
+   KpixSample         *sample;
+   KpixGuiEventStatus *event;
+   KpixGuiEventError  *error;
+   KpixGuiEventData   *data;
+   bool               runCmd, enPlot, enRaw;
+   double             bMin, bMax;
+   unsigned int       iters, rate, triggers;
+   stringstream       temp, temp2;
+   unsigned int       *kpixIdxLookup;
+   int                kpixIdx, kpixAddr, chan, bucket, range;
+   struct timeval     curTime, prvTime, acqTime;
+   KpixHistogram      **histR0;
+   KpixHistogram      **histR1;
+   TH1F               *plot[32];
+   TH1F               *cHist;
+   KpixCalibRead      *calData;
+   double             tempIcept;
+   double             tempSigma;
+   double             tempRms;
+   double             *chGainR0;
+   double             *chMeanR0;
+   double             *chGainR1;
+   double             *chMeanR1;
+   unsigned int       gain;
+   unsigned int       netCount;
+   string             calString;
+   bool               paused;
+   KpixGuiRunNetwork  *network;
+   double             **eventVars;
+   double             *eventCmd;
+   unsigned int       eventCnt;
+   string             status;
+   string             delError;
+   unsigned int       rateLimit;
+   unsigned long      diff, secUs;
 
    // Figure out which gain we are running in
    gain = 0;
@@ -274,7 +275,7 @@ void KpixGuiRun::run() {
    if ( asic[0]->getCntrlDoubleGain(false) ) gain = 1;
 
    // Update Display
-   event = new KpixGuiEventRun(true,false,"Starting",0,0,0,0);
+   event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusStart,"Starting");
    QApplication::postEvent(this,event);
 
    // Store Plots?
@@ -373,14 +374,14 @@ void KpixGuiRun::run() {
          if ( calFile != "" ) {
 
             // Update status display
-            event = new KpixGuiEventRun(false,false,"Copying Calibration Data",0,0,0,0);
+            event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusMsg,"Copying Calibration Data");
             QApplication::postEvent(this,event);
 
             // Copy calibrations data to the new file
             calData->copyCalibData ( kpixRunWrite->treeFile, "Force_Trig",asic,asicCnt);
 
             // Update status display
-            event = new KpixGuiEventRun(false,false,"Loading Calibration Constants",0,0,0,0);
+            event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusMsg,"Loading Calibration Constants");
             QApplication::postEvent(this,event);
 
             // Only load cal constants if plots are enabled
@@ -466,7 +467,7 @@ void KpixGuiRun::run() {
          }
 
          // Update status display
-         event = new KpixGuiEventRun(false,false,"Running",0,0,0,0);
+         event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusMsg,"Running");
          QApplication::postEvent(this,event);
 
          // Do run stuff here
@@ -477,7 +478,7 @@ void KpixGuiRun::run() {
 
             // Detect new pause
             if ( pRun ) {
-               event = new KpixGuiEventRun(true,true,"Paused",iters,rate,triggers,0);
+               event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusPause,"Paused",iters,0,triggers);
                QApplication::postEvent(this,event);
                paused=true;
             }
@@ -487,7 +488,7 @@ void KpixGuiRun::run() {
 
             // Leaving Pause
             if ( paused ) {
-               event = new KpixGuiEventRun(false,false,"Running",iters,rate,triggers,0);
+               event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusResume,"Running",iters,0,triggers);
                QApplication::postEvent(this,event);
                paused=false;
 
@@ -512,14 +513,14 @@ void KpixGuiRun::run() {
 
                   // Update Status
                   status = network->getStatus();
-                  event = new KpixGuiEventRun(false,false,status,iters,rate,triggers,0);
+                  event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusRun,status,iters,0,triggers);
                   QApplication::postEvent(this,event);
 
                   // Get command and variables from socket
                   while ( (netCount = network->getCommand(eventCmd,eventCnt)) == 0 && enRun ) {
                      if ( network->getStatus() != status ) {
                         status = network->getStatus();
-                        event = new KpixGuiEventRun(false,false,status,iters,rate,triggers,0);
+                        event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusRun,status,iters,0,triggers);
                         QApplication::postEvent(this,event);
                      }
                      usleep(1); 
@@ -610,7 +611,7 @@ void KpixGuiRun::run() {
                else temp << "Low Gain";
 
                // Status Update
-               event = new KpixGuiEventRun(false,false,temp.str(),iters,rate,triggers,0);
+               event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusRun,temp.str(),iters,rate,triggers);
                QApplication::postEvent(this,event);
                rate = 0;
 
@@ -702,7 +703,8 @@ void KpixGuiRun::run() {
       } catch ( string errorMsg ) { delError = errorMsg; }
 
       // Status Update
-      event = new KpixGuiEventRun(false,false,"Storing Histograms",iters,rate,triggers,0);
+      event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusRun,"Storing Histograms",iters,0,triggers);
+
       QApplication::postEvent(this,event);
 
       // Store histograms
@@ -873,7 +875,7 @@ void KpixGuiRun::run() {
    if ( network != NULL ) delete network;
 
    // Update status display
-   event = new KpixGuiEventRun(false,true,"Done",iters,rate,triggers,0);
+   event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusDone,"Done");
    QApplication::postEvent(this,event);
 }
 
@@ -881,52 +883,69 @@ void KpixGuiRun::run() {
 // Receive Custom Events
 void KpixGuiRun::customEvent ( QCustomEvent *event ) {
 
-   KpixGuiEventError *eventError;
-   KpixGuiEventRun   *eventRun;
-   KpixGuiEventData  *eventPlots;
-   unsigned int      x,y,z, count, divx, divy, idx;
-   stringstream      temp;
+   KpixGuiEventError  *eventError;
+   KpixGuiEventStatus *eventStatus;
+   KpixGuiEventData   *eventPlots;
+   unsigned int       x,y,z, count, divx, divy, idx;
+   stringstream       temp;
 
    // Run Event
-   if ( event->type() == KPIX_GUI_EVENT_RUN ) {
-      eventRun = (KpixGuiEventRun *)event;
+   if ( event->type() == KPIX_GUI_EVENT_STATUS ) {
+      eventStatus = (KpixGuiEventStatus *)event;
 
-      // Pause Update
-      if ( eventRun->runStart && eventRun->runStop ) eventTable->setColumnReadOnly(1,false);
+      // Status Type
+      switch (eventStatus->statusType) {
 
-      // Run is starting
-      else if ( eventRun->runStart ) {
-         isRunning = true;
-         liveDisplay->GetCanvas()->Clear();
-         liveDisplay->GetCanvas()->Update();
+         // Run is starting
+         case KpixGuiEventStatus::StatusStart:
+            status->setText(eventStatus->statusMsg);
+            liveDisplay->GetCanvas()->Clear();
+            liveDisplay->GetCanvas()->Update();
+            break;
+
+         // Run is Stopping
+         case KpixGuiEventStatus::StatusDone:
+
+            // Delete run variables
+            for (x=0; x< runVarCount; x++) delete runVars[x];
+            if ( runVarCount != 0 ) free(runVars);
+
+            // Update flags
+            isRunning = false;
+
+            // Read back settings
+            parent->readConfig_pressed();
+            break;
+
+         // Run Pause
+         case KpixGuiEventStatus::StatusPause:
+            eventTable->setColumnReadOnly(1,false);
+            break;
+ 
+         // Run Resume
+         case KpixGuiEventStatus::StatusResume:
+            eventTable->setColumnReadOnly(1,false);
+            break;
+
+         // Run Update
+         case KpixGuiEventStatus::StatusRun:
+            status->setText(eventStatus->statusMsg);
+            temp.str("");
+            temp << eventStatus->iterations;
+            iterCount->setText(temp.str());
+            temp.str("");
+            temp << eventStatus->rate;
+            rateCount->setText(temp.str());
+            temp.str("");
+            temp << eventStatus->triggers;
+            trigCount->setText(temp.str());
+            break;
+
+         // Message Update
+         case KpixGuiEventStatus::StatusMsg:
+            status->setText(eventStatus->statusMsg);
+            break;
       }
-
-      // Run is stopping
-      else if ( eventRun->runStop ) {
-
-         // Delete run variables
-         for (x=0; x< runVarCount; x++) delete runVars[x];
-         if ( runVars != NULL ) {
-            free(runVars);
-         }
-
-         // Update Config
-         parent->readConfig_pressed();
-         isRunning = false;
-      }
-      else eventTable->setColumnReadOnly(1,true);
-            
-      // Update status
-      if ( eventRun->statusMsg != "" ) status->setText(eventRun->statusMsg);
-      temp.str("");
-      temp << eventRun->prgCurrent;
-      iterCount->setText(temp.str());
-      temp.str("");
-      temp << eventRun->prgTotal;
-      rateCount->setText(temp.str());
-      temp.str("");
-      temp << eventRun->totCurrent;
-      trigCount->setText(temp.str());
 
       // Clear plot selections
       for (x=0; x< 16; x++) {

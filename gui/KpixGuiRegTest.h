@@ -48,8 +48,6 @@ class KpixGuiRegTest : public QThread, public KpixProgress, public KpixGuiRegTes
       KpixGuiTop   *parent;
       KpixGuiError *errorMsg;
       bool         isRunning;
-      unsigned int prgCurrent;
-      unsigned int prgTotal;
 
    public:
 

@@ -81,6 +81,7 @@ void KpixGuiRegTest::setAsics ( KpixAsic **asic, unsigned int asicCnt ) {
 // Run Register Test
 void KpixGuiRegTest::runTest_pressed ( ) {
    parent->setEnabled(false);
+   isRunning = true;
    QThread::start();
 }
 
@@ -92,18 +93,20 @@ void KpixGuiRegTest::run() {
    KpixRegisterTest    *regTest;
    bool                res;
    bool                errors;
-   KpixGuiEventRun     *event;
+   KpixGuiEventStatus  *event;
    KpixGuiEventError   *error;
    KpixGuiEventData    *eData;
    stringstream        temp;
    void                *eventData[4];
+   unsigned int        mainProgress;
+   unsigned int        mainTotal;
 
-   errors     = false;
-   prgCurrent = 0;
-   prgTotal   = asicCnt;
+   errors       = false;
+   mainProgress = 0;
+   mainTotal    = asicCnt;
 
    // Init status display
-   event = new KpixGuiEventRun(true,false,"Starting",0,100,prgCurrent,prgTotal);
+   event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusStart,"Starting");
    QApplication::postEvent(this,event);
 
    try {
@@ -125,7 +128,7 @@ void KpixGuiRegTest::run() {
          temp << " (" << dec << asicCnt << " Total)";
 
          // Update status display
-         event = new KpixGuiEventRun(false,false,temp.str(),0,iterations->value(),prgCurrent,prgTotal);
+         event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusPrgMain,temp.str(),mainProgress,mainTotal);
          QApplication::postEvent(this,event);
 
          // Run Test
@@ -144,7 +147,7 @@ void KpixGuiRegTest::run() {
 
          // Cleanup
          delete regTest;
-         prgCurrent++;
+         mainProgress++;
       }
    } catch ( string errorMsg ) {
       error = new KpixGuiEventError(errorMsg);
@@ -152,14 +155,14 @@ void KpixGuiRegTest::run() {
    }
 
    // Final Update
-   event = new KpixGuiEventRun(false,true,(errors?"Done With Errors":"Done"),100,100,100,100);
+   event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusDone,(errors?"Done With Errors":"Done"));
    QApplication::postEvent(this,event);
 }
 
 
 // Update progress callback
 void KpixGuiRegTest::updateProgress(unsigned int count, unsigned int total) {
-   KpixGuiEventRun *event = new KpixGuiEventRun(false,false,"",count,total,prgCurrent,prgTotal);
+   KpixGuiEventStatus *event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusPrgSub,count,total);
    QApplication::postEvent(this,event);
 }
 
@@ -168,37 +171,56 @@ void KpixGuiRegTest::updateProgress(unsigned int count, unsigned int total) {
 void KpixGuiRegTest::customEvent ( QCustomEvent *event ) {
 
    KpixGuiEventError   *eventError;
-   KpixGuiEventRun     *eventRun;
+   KpixGuiEventStatus  *eventStatus;
    KpixGuiEventData    *eventData;
    stringstream        temp;
    unsigned int        x;
 
    // Run Event
-   if ( event->type() == KPIX_GUI_EVENT_RUN ) {
-      eventRun = (KpixGuiEventRun *)event;
+   if ( event->type() == KPIX_GUI_EVENT_STATUS ) {
+      eventStatus = (KpixGuiEventStatus *)event;
 
-      // Run is starting
-      if ( eventRun->runStart ) {
-         isRunning = true;
+      // Status Type
+      switch (eventStatus->statusType) {
 
-         // Update Results Table
-         for (x=0; x < asicCnt; x++) {
-            resultTable->setText(x,0,"");
-            resultTable->setText(x,1,"");
-            resultTable->setText(x,2,"");
-         }
+         // Run is starting
+         case KpixGuiEventStatus::StatusStart:
+            status->setText(eventStatus->statusMsg);
+
+            // Update Results Table
+            for (x=0; x < asicCnt; x++) {
+               resultTable->setText(x,0,"");
+               resultTable->setText(x,1,"");
+               resultTable->setText(x,2,"");
+            }
+            break;
+
+         // Run is Stopping
+         case KpixGuiEventStatus::StatusDone:
+
+            // Update flags
+            isRunning = false;
+
+            // Clear progress bars
+            runProgress->setProgress(-1,0);
+            totProgress->setProgress(-1,0);
+
+            // Read back settings
+            parent->readConfig_pressed();
+            break;
+
+         // Main progress update
+         case KpixGuiEventStatus::StatusPrgMain:
+            runProgress->setProgress(-1,0);
+            totProgress->setProgress(eventStatus->prgValue,eventStatus->prgTotal);
+            status->setText(eventStatus->statusMsg);
+            break;
+
+         // Sub progress update
+         case KpixGuiEventStatus::StatusPrgSub:
+            runProgress->setProgress(eventStatus->prgValue,eventStatus->prgTotal);
+            break;
       }
-
-      // Run is stopping
-      if ( eventRun->runStop ) {
-         parent->readConfig_pressed();
-         isRunning = false;
-      }
-            
-      // Update status
-      if ( eventRun->statusMsg != "" ) status->setText(eventRun->statusMsg);
-      runProgress->setProgress(eventRun->prgCurrent,eventRun->prgTotal);
-      totProgress->setProgress(eventRun->totCurrent,eventRun->totTotal);
       update();
    }
 

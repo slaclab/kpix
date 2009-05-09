@@ -99,3 +99,27 @@ void KpixGuiCalFitForm::writePdf_pressed()
 {
 
 }
+
+
+void KpixGuiCalFitForm::viewSamples_pressed()
+{
+
+}
+
+
+void KpixGuiCalFitForm::selChanged()
+{
+
+}
+
+
+void KpixGuiCalFitForm::prevPlot_pressed()
+{
+
+}
+
+
+void KpixGuiCalFitForm::nextPlot_pressed()
+{
+
+}

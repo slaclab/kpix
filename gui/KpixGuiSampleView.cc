@@ -44,9 +44,6 @@ KpixGuiSampleView::~KpixGuiSampleView ( ) {
    for (x=0; x<eventCount; x++) delete eventVar[x];
    if ( eventVar != NULL ) free(eventVar);
    eventCount = 0;
-
-   // Delete calib read class
-   if ( kpixCalibRead != NULL ) delete kpixCalibRead;
 }
 
 

@@ -101,13 +101,25 @@ void KpixGuiThreshViewForm::writePdf_pressed()
 }
 
 
-void KpixGuiThreshViewForm::viewChan_pressed()
+void KpixGuiThreshViewForm::viewSamples_pressed()
 {
 
 }
 
 
-void KpixGuiThreshViewForm::autoWriteAll_released()
+void KpixGuiThreshViewForm::selChanged()
+{
+
+}
+
+
+void KpixGuiThreshViewForm::prevPlot_pressed()
+{
+
+}
+
+
+void KpixGuiThreshViewForm::nextPlot_pressed()
 {
 
 }

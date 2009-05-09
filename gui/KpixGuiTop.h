@@ -50,7 +50,7 @@
 #include "KpixGuiRun.h"
 #include "KpixGuiCalibrate.h"
 #include "KpixGuiThreshScan.h"
-#include "KpixGuiEventRun.h"
+#include "KpixGuiEventStatus.h"
 #include "KpixGuiEventError.h"
 
 
