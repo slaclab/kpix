@@ -21,6 +21,7 @@
 // 10/13/2008: Removed fitting functions. Seperate plot & raw data enable from
 //             canvas and plot directory setting.
 // 03/05/2009: Added ability to rate limit calibration and dist generation
+// 05/11/2009: Added range checking on serial number lookup.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_CAL_DIST_H__
 #define __KPIX_CAL_DIST_H__
@@ -85,6 +86,7 @@ class KpixCalDist {
 
       // Lookup Table For Kpix Index
       unsigned int *kpixIdxLookup;
+      unsigned int maxAddress;
 
       // Rate Limit In uS
       unsigned int rateLimit;

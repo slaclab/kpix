@@ -14,6 +14,7 @@
 // 07/02/2008: created
 // 03/05/2009: Added rate limit function.
 // 04/29/2009: Added support for all 4 buckets.
+// 05/11/2009: Added range check on address field.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -242,6 +243,7 @@ void KpixGuiRun::run() {
    unsigned int       iters, rate, triggers;
    stringstream       temp, temp2;
    unsigned int       *kpixIdxLookup;
+   unsigned int       maxAddress;
    int                kpixIdx, kpixAddr, chan, bucket, range;
    struct timeval     curTime, prvTime, acqTime;
    KpixHistogram      **histR0;
@@ -296,10 +298,9 @@ void KpixGuiRun::run() {
    else network = NULL;
 
    // Create index lookup table
-   y = 0; 
-   for (x=0; x < asicCnt; x++) if ( asic[x]->getAddress() > y ) y = asic[x]->getAddress();
-   y++;
-   kpixIdxLookup = (unsigned int *)malloc(y*sizeof(unsigned int));     
+   maxAddress = 0; 
+   for (x=0; x < asicCnt; x++) if ( asic[x]->getAddress() > maxAddress ) maxAddress = asic[x]->getAddress();
+   kpixIdxLookup = (unsigned int *)malloc((maxAddress+1)*sizeof(unsigned int));     
    if ( kpixIdxLookup == NULL ) throw(string("KpixGuiRun::run -> Malloc Error"));
    for (x=0; x < asicCnt; x++) kpixIdxLookup[asic[x]->getAddress()] = x;
 
@@ -577,6 +578,10 @@ void KpixGuiRun::run() {
                      chan     = sample->getKpixChannel();
                      bucket   = sample->getKpixBucket();
                      range    = sample->getSampleRange();
+
+                     if ( (unsigned int)kpixAddr > maxAddress )
+                        throw(string("KpixGuiRun::run -> Data Received From Unkown KPIX Address"));
+
                      kpixIdx  = kpixIdxLookup[kpixAddr];
                      idx = kpixIdx*4096+chan*4+bucket;
 

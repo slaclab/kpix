@@ -26,6 +26,7 @@
 // 10/13/2008: Removed fitting functions. Seperate plot & raw data enable from
 //             canvas and plot directory setting.
 // 03/05/2009: Added ability to rate limit calibration and dist generation
+// 05/11/2009: Added range checking on serial number lookup.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <fstream>
@@ -58,7 +59,7 @@ KpixCalDist::KpixCalDist ( KpixAsic *asic, KpixRunWrite *run ) {
 // Pass a pointer to the Kpix Asic and the Run object
 KpixCalDist::KpixCalDist ( KpixAsic **asic, unsigned int count, KpixRunWrite *run ) {
 
-   unsigned int x, y;
+   unsigned int x;
 
    // Store Kpix
    kpixAsic  = asic;
@@ -97,12 +98,11 @@ KpixCalDist::KpixCalDist ( KpixAsic **asic, unsigned int count, KpixRunWrite *ru
    kpixRunWrite->addEventVar("b3Charge","Bucket 3 Calibration Charge",0.0);
 
    // Generate Kpix Lookup Table
-   y = 0;
-   for (x=0; x < count; x++) if ( kpixAsic[x]->getAddress() > y ) y = kpixAsic[x]->getAddress();
-   y++;
+   maxAddress = 0;
+   for (x=0; x < count; x++) if ( kpixAsic[x]->getAddress() > maxAddress ) maxAddress = kpixAsic[x]->getAddress();
 
    // Creat table
-   kpixIdxLookup = (unsigned int *)malloc(y*sizeof(unsigned int));     
+   kpixIdxLookup = (unsigned int *)malloc((maxAddress+1)*sizeof(unsigned int));     
    if ( kpixIdxLookup == NULL ) throw(string("KpixCalDist::KpixCalDist -> Malloc Error"));
    for (x=0; x < count; x++) kpixIdxLookup[kpixAsic[x]->getAddress()] = x;
 }

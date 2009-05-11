@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 10/16/2008: created
+// 05/11/2009: Added range checking on serial number lookup.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_SAMPLE_VIEW_H__
 #define __KPIX_GUI_SAMPLE_VIEW_H__
@@ -56,6 +57,7 @@ class KpixGuiSampleView : public KpixGuiSampleViewForm {
 
       // Lookup Table For Kpix Index
       unsigned int *kpixIdxLookup;
+      unsigned int maxAddress;
 
    public:
 

@@ -13,6 +13,7 @@
 // Modification history :
 // 07/02/2008: created
 // 04/29/2009: Added new sample fields.
+// 05/11/2009: Added range checking on serial number lookup.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -86,15 +87,14 @@ void KpixGuiSampleView::setRunData(KpixRunRead *kpixRunRead) {
       }
 
       // Determine max address
-      y = 0;
+      maxAddress = 0;
       for (x=0; x < (unsigned int)kpixRunRead->getAsicCount(); x++) {
-         if ( kpixRunRead->getAsic(x)->getAddress() > y ) 
-            y = kpixRunRead->getAsic(x)->getAddress();
+         if ( kpixRunRead->getAsic(x)->getAddress() > maxAddress ) 
+            maxAddress = kpixRunRead->getAsic(x)->getAddress();
       }
-      y++;
 
       // Creat table
-      kpixIdxLookup = (unsigned int *)malloc(y*sizeof(unsigned int));     
+      kpixIdxLookup = (unsigned int *)malloc((maxAddress+1)*sizeof(unsigned int));     
       if ( kpixIdxLookup == NULL ) throw(string("KpixSampleView::setRunData -> Malloc Error"));
       for (x=0; x < (unsigned int)kpixRunRead->getAsicCount(); x++) 
          kpixIdxLookup[kpixRunRead->getAsic(x)->getAddress()] = x;
