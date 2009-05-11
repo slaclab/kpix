@@ -60,8 +60,8 @@
 #include <TObject.h>
 using namespace std;
 
-#ifdef HW_EN
-#include "../hw/SidLink.h"
+#ifdef ONLINE_EN
+#include "../online/SidLink.h"
 #endif
 
 // Constants for channel mode
@@ -94,7 +94,7 @@ class KpixAsic : public TObject {
       // Debug flag
       bool enDebug;
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
       // Link object
       SidLink *sidLink; //! Root:Don't stream link object to file
 #else
@@ -156,7 +156,7 @@ class KpixAsic : public TObject {
       // Kpix ASIC Constructor
       KpixAsic ( );
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
       // Kpix ASIC Constructor
       // Pass SID Link Object, KPIX version, 2,3,4,etc, KPIX Address & Serial number
       KpixAsic ( SidLink *sidLink, unsigned short version, unsigned short address,
@@ -749,7 +749,7 @@ class KpixAsic : public TObject {
       // Get Channel Count
       unsigned int getChCount();
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
       // Return SID Link Object Pointer
       SidLink * getSidLink ();
 #endif

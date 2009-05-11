@@ -33,7 +33,7 @@
 #include <string>
 #include <fcntl.h>
 #include <unistd.h>
-#include "../nohw/KpixSample.h"
+#include "../offline/KpixSample.h"
 #include "SidLink.h"
 #include <Rtypes.h>
 using namespace std;

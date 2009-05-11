@@ -40,9 +40,9 @@
 #include <TError.h>
 #include "KpixThreshScan.h"
 #include "KpixBunchTrain.h"
-#include "../nohw/KpixSample.h"
-#include "../nohw/KpixAsic.h"
-#include "../nohw/KpixThreshRead.h"
+#include "../offline/KpixSample.h"
+#include "../offline/KpixAsic.h"
+#include "../offline/KpixThreshRead.h"
 #include "KpixRunWrite.h"
 using namespace std;
 

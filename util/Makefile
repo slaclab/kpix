@@ -1,6 +1,6 @@
 # Variables
 DEF     := 
-CFLAGS  := -Wall `root-config --cflags` -I ../sidApi/nohw -I ../sidApi/hw 
+CFLAGS  := -Wall `root-config --cflags` -I ../sidApi/online -I ../sidApi/offline
 LFLAGS  := -L../bin -lsidapi `root-config --libs` -lMinuit -llockdev
 CC      := g++
 OUT     := $(PWD)/../bin

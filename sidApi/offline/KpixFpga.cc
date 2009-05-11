@@ -39,8 +39,8 @@
 #include "KpixFpga.h"
 using namespace std;
 
-#ifdef HW_EN
-#include "../hw/SidLink.h"
+#ifdef ONLINE_EN
+#include "../online/SidLink.h"
 #endif
 
 
@@ -50,7 +50,7 @@ ClassImp(KpixFpga)
 // Private method to write register value to Kpix Fpga
 void KpixFpga::regWrite ( unsigned char address ) {
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
    unsigned short frameData[4];
 
    // Check for valid address
@@ -93,7 +93,7 @@ void KpixFpga::regWrite ( unsigned char address ) {
 // Private method to read register value from Kpix
 void KpixFpga::regRead ( unsigned char address ) {
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
    unsigned short frameWrData[4];
    unsigned short frameRdData[4];
 
@@ -153,7 +153,7 @@ KpixFpga::KpixFpga ( ) {
    valid   = false;
    enDebug = false;
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
    // SID Link Object
    this->sidLink = NULL;
 #endif
@@ -166,7 +166,7 @@ KpixFpga::KpixFpga ( ) {
    }
 }
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
 
 // Kpix FPGA Constructor
 // Pass SID Link Object
@@ -1581,7 +1581,7 @@ void KpixFpga::setDefaults ( unsigned int clkPeriod, bool kpixVer, bool writeEn 
 }
 
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
 // Return SID Link Object Pointer
 SidLink * KpixFpga::getSidLink () { return(sidLink); }
 #endif

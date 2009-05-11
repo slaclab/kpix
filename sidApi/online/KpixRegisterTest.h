@@ -24,7 +24,7 @@
 #include <string>
 #include <fcntl.h>
 #include <unistd.h>
-#include "../nohw/KpixAsic.h"
+#include "../offline/KpixAsic.h"
 #include "KpixProgress.h"
 #include <Rtypes.h>
 using namespace std;

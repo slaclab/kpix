@@ -64,8 +64,8 @@
 #include "KpixAsic.h"
 using namespace std;
 
-#ifdef HW_EN
-#include "../hw/SidLink.h"
+#ifdef ONLINE_EN
+#include "../online/SidLink.h"
 #endif
 
 
@@ -75,7 +75,7 @@ ClassImp(KpixAsic)
 // Pass command field and broadcast flag
 void KpixAsic::sendCommand ( unsigned char command, bool bcast ) {
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
    unsigned short frameData[4];
 
    // Link has not been set
@@ -110,7 +110,7 @@ void KpixAsic::sendCommand ( unsigned char command, bool bcast ) {
 // Private method to write register value to Kpix
 void KpixAsic::regWrite ( unsigned char address ) {
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
    unsigned short frameData[4];
 
    // Check for valid address
@@ -151,7 +151,7 @@ void KpixAsic::regWrite ( unsigned char address ) {
 // Private method to read register value from Kpix
 void KpixAsic::regRead ( unsigned char address ) {
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
    unsigned short frameWrData[4];
    unsigned short frameRdData[4];
 
@@ -579,7 +579,7 @@ KpixAsic::KpixAsic ( ) {
    clkPeriod   = 1;
    enDebug     = false;
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
    // SID Link Object
    this->sidLink = NULL;
 #endif
@@ -592,7 +592,7 @@ KpixAsic::KpixAsic ( ) {
    }
 }
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
 
 // Kpix ASIC Constructor
 // Pass SID Link Object, KPIX version, 2,3,4,etc, KPIX Address & Serial number
@@ -2508,7 +2508,7 @@ unsigned short KpixAsic::getSerial ( ) { return(kpixSerial); }
 // Change KPIX Serial Number
 void KpixAsic::setSerial ( unsigned short serial ) { kpixSerial=serial; }
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
 // Return SID Link Object Pointer
 SidLink * KpixAsic::getSidLink () { return(sidLink); }
 #endif

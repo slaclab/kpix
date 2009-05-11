@@ -43,7 +43,7 @@
 #include <unistd.h>
 #include "KpixCalDist.h"
 #include "KpixHistogram.h"
-#include "../nohw/KpixCalibRead.h"
+#include "../offline/KpixCalibRead.h"
 using namespace std;
 
 

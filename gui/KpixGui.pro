@@ -5,9 +5,9 @@ CONFIG	+= qt warn_on release thread
 
 LIBS	+= -L../bin -lsidapi -lMinuit
 
-DEFINES	+= HW_EN
+DEFINES	+= ONLINE_EN
 
-INCLUDEPATH	+= ../sidApi/hw ../sidApi/nohw
+INCLUDEPATH	+= ../sidApi/online ../sidApi/offline
 
 HEADERS	+= KpixGuiInject.h \
 	KpixGuiConfig.h \

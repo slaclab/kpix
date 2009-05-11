@@ -41,8 +41,8 @@
 #include <TObject.h>
 using namespace std;
 
-#ifdef HW_EN
-#include "../hw/SidLink.h"
+#ifdef ONLINE_EN
+#include "../online/SidLink.h"
 #endif
 
 // KPIX ASIC Class
@@ -59,7 +59,7 @@ class KpixFpga : public TObject {
       // Valid flag
       bool valid;
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
       // Link object
       SidLink *sidLink; //! Root:Don't stream link object to file
 #else
@@ -77,7 +77,7 @@ class KpixFpga : public TObject {
       // Kpix FPGA Constructor
       KpixFpga ( );
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
       // Kpix FPGA Constructor
       // Pass SID Link Object
       KpixFpga ( SidLink *sidLink );
@@ -520,7 +520,7 @@ class KpixFpga : public TObject {
       // Set Defaults
       void setDefaults ( unsigned int clkPeriod, bool kpixVer=false, bool writeEn=true );
 
-#ifdef HW_EN
+#ifdef ONLINE_EN
       // Return SID Link Object Pointer
       SidLink * getSidLink ();
 #endif

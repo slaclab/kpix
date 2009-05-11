@@ -49,11 +49,11 @@
 #include <time.h>
 #include "KpixBunchTrain.h"
 #include "KpixRunWrite.h"
-#include "../nohw/KpixSample.h"
-#include "../nohw/KpixEventVar.h"
-#include "../nohw/KpixRunVar.h"
-#include "../nohw/KpixAsic.h"
-#include "../nohw/KpixFpga.h"
+#include "../offline/KpixSample.h"
+#include "../offline/KpixEventVar.h"
+#include "../offline/KpixRunVar.h"
+#include "../offline/KpixAsic.h"
+#include "../offline/KpixFpga.h"
 using namespace std;
 
 

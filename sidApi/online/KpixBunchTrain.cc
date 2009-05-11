@@ -38,7 +38,7 @@
 #include <string>
 #include <fcntl.h>
 #include <unistd.h>
-#include "../nohw/KpixSample.h"
+#include "../offline/KpixSample.h"
 #include "KpixBunchTrain.h"
 #include "SidLink.h"
 using namespace std;

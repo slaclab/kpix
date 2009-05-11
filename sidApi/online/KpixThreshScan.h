@@ -35,8 +35,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "KpixBunchTrain.h"
-#include "../nohw/KpixSample.h"
-#include "../nohw/KpixAsic.h"
+#include "../offline/KpixSample.h"
+#include "../offline/KpixAsic.h"
 #include "KpixRunWrite.h"
 #include "KpixProgress.h"
 #include <Rtypes.h>
