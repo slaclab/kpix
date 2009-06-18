@@ -563,8 +563,7 @@ void KpixGuiRun::run() {
                iters++;
 
                // Get bunch train data
-               //train = new KpixBunchTrain ( asic[0]->getSidLink(), false );
-               train = new KpixBunchTrain ( asic[0]->getSidLink(), true );
+               train = new KpixBunchTrain ( asic[0]->getSidLink(), false );
 
                // Add sample to run
                if ( enRaw ) kpixRunWrite->addBunchTrain(train);
