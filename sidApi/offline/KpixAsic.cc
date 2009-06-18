@@ -54,6 +54,9 @@
 // 02/23/2009: Changed default timing values.
 // 04/08/2009: Added flag in timing methods to set mode for trigger inhibit time
 // 04/29/2009: Added readEn flag to some read calls.
+// 05/15/2009: Added method to get bunch clock count.
+// 06/09/2009: Added constructor flag to enable dummy kpix.
+// 06/10/2009: Added method to convert temp adc value to a celcias value
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -61,6 +64,7 @@
 #include <string>
 #include <unistd.h>
 #include <stdlib.h>
+#include <math.h>
 #include "KpixAsic.h"
 using namespace std;
 
@@ -539,7 +543,7 @@ void KpixAsic::getTimingV8 ( unsigned int *clkPeriod,  unsigned int *resetOn,
    *pwrUpOn     = ((temp[2]      ) & 0xFFFF) * *clkPeriod; 
    *threshOff   = ((temp[2] >> 16) & 0xFFFF) * *clkPeriod;
    *trigInhOff  = ( temp[3]                ) * *clkPeriod; 
-   *bunchCount  = ( temp[4]        & 0xFFFF) * *clkPeriod;
+   *bunchCount  = ( temp[4]        & 0xFFFF);
    *deselDly    = ((temp[5]      ) & 0x00FF) * *clkPeriod;
    *bunchClkDly = ((temp[5] >>  8) & 0xFFFF) * *clkPeriod;
    *digDelay    = ((temp[5] >> 24) & 0x00FF) * *clkPeriod;
@@ -597,7 +601,7 @@ KpixAsic::KpixAsic ( ) {
 // Kpix ASIC Constructor
 // Pass SID Link Object, KPIX version, 2,3,4,etc, KPIX Address & Serial number
 KpixAsic::KpixAsic ( SidLink *sidLink, unsigned short version, unsigned short address, 
-                     unsigned short serial ) {
+                     unsigned short serial, bool dummy ) {
 
    unsigned int  i;
    stringstream tempString;
@@ -639,17 +643,22 @@ KpixAsic::KpixAsic ( SidLink *sidLink, unsigned short version, unsigned short ad
    regWidth[0x0C]     = 32;
    regWriteable[0x0D] = true; // PwrUpAcq Timer Reg
    regWidth[0x0D]     = 32;
-   regWriteable[0x0E] = true; // PwrUpDig Timer Reg
-   regWidth[0x0E]     = 32;
-   regWriteable[0x0F] = true; // State Timer Reg
-   regWidth[0x0F]     = 32;
+
+   // Determine version
+   if ( version < 8 ) {
+      regWriteable[0x0E] = true; // PwrUpDig Timer Reg
+      regWidth[0x0E]     = 32;
+      regWriteable[0x0F] = true; // State Timer Reg
+      regWidth[0x0F]     = 32;
+   }
+
    regWriteable[0x10] = true; // Cal Delay 0 Reg
    regWidth[0x10]     = 32;
    regWriteable[0x11] = true; // Cal Delay 1 Reg
    regWidth[0x11]     = 32;
 
-   // Kpix version 0 only has digital core registers, no analog registers
-   if ( version != 0 ) {
+   // Dummy KPIX only has digital core registers, no analog registers
+   if ( ! dummy ) {
 
       regWriteable[0x20] = true; // Event A Reset Dac Reg
       regWidth[0x20]     = 8;
@@ -1848,6 +1857,28 @@ unsigned int KpixAsic::getTrigInh ( bool readEn, bool trigInhRaw ) {
 }
 
 
+// Method to get number of bunch crossings
+unsigned int KpixAsic::getBunchCount ( bool readEn ) {
+
+   // Local variables
+   unsigned int temp;
+   unsigned int bunchCount;
+
+   // Version 0-7
+   if ( kpixVersion <= 7 ) { bunchCount = 2889; }
+
+   // Version 8+
+   else {
+
+      // Get Bunch Count Value
+      temp = regGetValue(0x08+4,readEn);
+      bunchCount = ( temp & 0xFFFF);
+   }
+
+   return(bunchCount);
+}
+
+
 // Method to update KPIX calibration pulse settings
 // Pass the following values for update:
 // calCount     - Number of calibration pulses to assert, 0-4
@@ -2711,5 +2742,36 @@ void KpixAsic::dumpSettings () {
 unsigned int KpixAsic::getChCount() { 
    if ( kpixVersion < 8 ) return(64);
    else return(256);
+}
+
+
+// Class Method To Convert DAC value to voltage
+double KpixAsic::convertTemp(unsigned int tempAdc) {
+   int    g[8];
+   int    d[8];
+   int    de;
+   int    i;
+   double temp;
+
+   // Convert number to binary
+   for (i=7; i >= 0; i--) {
+      if ( tempAdc >= (int)pow(2,i) ) {
+         g[i] = 1;
+         tempAdc -= (int)pow(2,i);
+      }
+      else g[i] = 0;
+   }
+
+   // Convert grey code to decimal
+   d[7] = g[7];
+   for (i=6; i >= 0; i--) d[i]=d[i+1]^g[i];
+
+   // Convert back to an integer
+   de = 0;
+   for (i=0; i<8; i++) if ( d[i] != 0 ) de += (int)pow(2,i);
+
+   // Convert to temperature
+   temp=-30.2+127.45/233*(255-de-20.75);
+   return(temp);
 }
 

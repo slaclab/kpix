@@ -23,6 +23,7 @@
 // 04/30/2007: Modified to throw strings instead of const char *
 // 02/27/2008: Added ability to store/read empty & bad count flags.
 // 04/27/2009: Added trigger type flag.
+// 05/13/2009: Added special flag.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -64,16 +65,21 @@ KpixSample::KpixSample ( ) {
 // empty        = Sample is empty
 // badCount     = Channel counter was bad
 // trigType     = 0=Local, 1=Neighbor
+// special      = 0=Normal Data, 1=Special Data Type
 KpixSample::KpixSample ( Int_t address, Int_t channel, Int_t bucket, Int_t range, 
                          Int_t time, Int_t value, Int_t train, Int_t empty, 
-                         Int_t badCount, Int_t trigType, bool debug ) {
+                         Int_t badCount, Int_t trigType, Int_t special, bool debug ) {
 
    // Set values
    trainNum     = train;
    kpixAddress  = address;
    kpixChannel  = channel;
    kpixBucket   = bucket;
-   sampleRange  = (range & 0x1) | ((empty << 1) & 0x2) | ((badCount << 2) & 0x4) | ((trigType << 3) & 0x8);
+   sampleRange  = (range & 0x1) | 
+                  ((empty << 1) & 0x2) | 
+                  ((badCount << 2) & 0x4) | 
+                  ((trigType << 3) & 0x8) |
+                  ((special  << 4) & 0x10);
    sampleTime   = time;
    sampleValue  = value;
    varCount     = 0;
@@ -91,6 +97,7 @@ KpixSample::KpixSample ( Int_t address, Int_t channel, Int_t bucket, Int_t range
       cout << ", Empty=" << empty;
       cout << ", BadCount=" << badCount;
       cout << ", TrigType=" << trigType;
+      cout << ", Special=" << special;
       cout << "\n";
    }
 }
@@ -145,6 +152,9 @@ Int_t KpixSample::getBadCount() { return(((sampleRange >> 2) & 0x1)); }
 
 // Get trigger type flag
 Int_t KpixSample::getTrigType() { return(((sampleRange >> 3) & 0x1)); }
+
+// Get special flag
+Int_t KpixSample::getSpecial() { return(((sampleRange >> 4) & 0x1)); }
 
 // Deconstructor
 KpixSample::~KpixSample () {}

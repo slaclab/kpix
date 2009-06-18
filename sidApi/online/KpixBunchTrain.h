@@ -23,6 +23,8 @@
 // 04/27/2007: Convert to new communication protocol
 // 04/30/2007: Added local store of train number, ability to read.
 // 08/13/2007: Added external accept flag.
+// 05/13/2009: Added special data flag for Temp value and trigger log.
+// 05/13/2009: Removed Accept Flag.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_BUNCH_TRAIN_H__
 #define __KPIX_BUNCH_TRAIN_H__
@@ -55,9 +57,6 @@ class KpixBunchTrain {
       // Sequence Number
       unsigned int trainNumber;
 
-      // Accept flag
-      bool extAccept;
-
       // Is last
       bool lastTrain;
 
@@ -88,9 +87,6 @@ class KpixBunchTrain {
 
       // Get parity errors
       unsigned int getParErrors ();
-
-      // Get External Accept Flag
-      bool getAcceptFlag ();
 
       // Get last train flag
       bool getLastTrain ();

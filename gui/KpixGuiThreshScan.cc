@@ -101,6 +101,7 @@ void KpixGuiThreshScan::setAsics ( KpixAsic **asic, unsigned int asicCnt, KpixFp
 
    // Update Spin Box
    if ( asicCnt > 0 ) {
+      chanMin->setMaxValue ( asic[0]->getChCount()-1 );
       chanMax->setMaxValue ( asic[0]->getChCount()-1 );
       chanMax->setValue ( asic[0]->getChCount()-1 );
    }

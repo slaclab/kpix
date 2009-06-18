@@ -342,6 +342,7 @@ void KpixGuiCalFit::setEnabled(bool enable) {
    reFitEn->setEnabled((inFileRoot!=NULL)?enable:false);
    selSerial->setEnabled((inFileRoot!=NULL)?enable:false);
    selGain->setEnabled((inFileRoot!=NULL)?enable:false);
+   logScale->setEnabled((inFileRoot!=NULL)?enable:false);
    selChannel->setEnabled((inFileRoot!=NULL)?enable:false);
    selBucket->setEnabled((inFileRoot!=NULL)?enable:false);
    prevPlot->setEnabled((inFileRoot!=NULL)?enable:false);
@@ -764,7 +765,7 @@ void KpixGuiCalFit::updateSummary () {
    serial   = selSerial->currentItem();
 
    // Determine which range to use
-   if ( gain == 1 ) range = 1;
+   if ( gain == 2 ) range = 1;
    else range = 0;
 
    // Determine Title Append
@@ -834,30 +835,38 @@ void KpixGuiCalFit::updateSummary () {
    // Get data
    for (locChannel=0; locChannel < chCount; locChannel++) {
       for (locBucket=0; locBucket < 4; locBucket++) {
-         value = calibData[serial]->calGain[dirIndex][gain][locChannel][locBucket][range];
-         if ( value > histMax[0] ) histMax[0] = value;
-         if ( value < histMin[0] ) histMin[0] = value;
-         newHist[0]->Fill(value);
-         value = calibData[serial]->calIntercept[dirIndex][gain][locChannel][locBucket][range];
-         if ( value > histMax[1] ) histMax[1] = value;
-         if ( value < histMin[1] ) histMin[1] = value;
-         newHist[1]->Fill(value);
-         value = calibData[serial]->calRms[dirIndex][gain][locChannel][locBucket][range];
-         if ( value > histMax[2] ) histMax[2] = value;
-         if ( value < histMin[2] ) histMin[2] = value;
-         newHist[2]->Fill(value);
-         value = calibData[serial]->distMean[dirIndex][gain][locChannel][locBucket];
-         if ( value > histMax[3] ) histMax[3] = value;
-         if ( value < histMin[3] ) histMin[3] = value;
-         newHist[3]->Fill(value);
-         value = calibData[serial]->distSigma[dirIndex][gain][locChannel][locBucket];
-         if ( value > histMax[4] ) histMax[4] = value;
-         if ( value < histMin[4] ) histMin[4] = value;
-         newHist[4]->Fill(value);
-         value = calibData[serial]->distRms[dirIndex][gain][locChannel][locBucket];
-         if ( value > histMax[7] ) histMax[7] = value;
-         if ( value < histMin[7] ) histMin[7] = value;
-         newHist[7]->Fill(value);
+
+         // Skip channels with bad gains
+         if ( calibData[serial]->calGain[dirIndex][gain][locChannel][locBucket][range] != 0 ) {
+            value = calibData[serial]->calGain[dirIndex][gain][locChannel][locBucket][range];
+            if ( value > histMax[0] ) histMax[0] = value;
+            if ( value < histMin[0] ) histMin[0] = value;
+            newHist[0]->Fill(value);
+            value = calibData[serial]->calIntercept[dirIndex][gain][locChannel][locBucket][range];
+            if ( value > histMax[1] ) histMax[1] = value;
+            if ( value < histMin[1] ) histMin[1] = value;
+            newHist[1]->Fill(value);
+            value = calibData[serial]->calRms[dirIndex][gain][locChannel][locBucket][range];
+            if ( value > histMax[2] ) histMax[2] = value;
+            if ( value < histMin[2] ) histMin[2] = value;
+            newHist[2]->Fill(value);
+         }
+
+         // Skip channels with bad a mean of zero
+         if ( calibData[serial]->distMean[dirIndex][gain][locChannel][locBucket] != 0 ) {
+            value = calibData[serial]->distMean[dirIndex][gain][locChannel][locBucket];
+            if ( value > histMax[3] ) histMax[3] = value;
+            if ( value < histMin[3] ) histMin[3] = value;
+            newHist[3]->Fill(value);
+            value = calibData[serial]->distSigma[dirIndex][gain][locChannel][locBucket];
+            if ( value > histMax[4] ) histMax[4] = value;
+            if ( value < histMin[4] ) histMin[4] = value;
+            newHist[4]->Fill(value);
+            value = calibData[serial]->distRms[dirIndex][gain][locChannel][locBucket];
+            if ( value > histMax[7] ) histMax[7] = value;
+            if ( value < histMin[7] ) histMin[7] = value;
+            newHist[7]->Fill(value);
+         }
 
          // Electrons
          if ( calibData[serial]->calGain[dirIndex][gain][locChannel][locBucket][range] != 0 ) {
@@ -1263,6 +1272,7 @@ void KpixGuiCalFit::customEvent ( QCustomEvent *event ) {
             histCanvas->GetCanvas()->Divide(1,2,.01,.01);
             for (x=0; x < 2; x++) {
                histCanvas->GetCanvas()->cd(x+1);
+               if ( logScale->isChecked() ) histCanvas->GetCanvas()->cd(x+1)->SetLogy();
                if ( hist[x] != NULL ) hist[x]->Draw();
             }
             histCanvas->GetCanvas()->Update();
@@ -1334,7 +1344,7 @@ void KpixGuiCalFit::customEvent ( QCustomEvent *event ) {
             chCount  = asic[0]->getChCount();
 
             // Determine which range to use
-            if ( gain == 1 ) range = 1;
+            if ( gain == 2 ) range = 1;
             else range = 0;
 
             // Update table values

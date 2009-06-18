@@ -57,12 +57,7 @@ Required Packages:
       Next compile the root package
 
          csh> gmake
-
-      Before you install you must set ROOTSYS to the directory
-      in which you plan to install root.
-
          csh> setenv ROOTSYS /u1/local/root_5.20
-         csh> gmake install
 
 Kpix Software Installation:
 

@@ -56,13 +56,28 @@ void KpixGuiTiming::setAsics (KpixAsic **asic, unsigned int asicCnt, KpixFpga *f
 // Control Enable Of Buttons/Edits
 void KpixGuiTiming::setEnabled ( bool enable, bool calEnable ) {
    if ( asicCnt == 0 ) enable = false;
-   acqClkPeriod->setEnabled(enable&&calEnable);
-   digClkPeriod->setEnabled(enable&&calEnable);
-   readClkPeriod->setEnabled(enable);
-   resetOn->setEnabled(enable&&calEnable);
-   resetOff->setEnabled(enable&&calEnable);
-   leakNullOff->setEnabled(enable&&calEnable);
-   offNullOff->setEnabled(enable&&calEnable);
+
+   if ( asicCnt != 0 && asic[0]->getVersion() == 8 ) {  
+      acqClkPeriod->setEnabled(false);
+      digClkPeriod->setEnabled(false);
+      readClkPeriod->setEnabled(false);
+      resetOn->setEnabled(false);
+      resetOff->setEnabled(false);
+      leakNullOff->setEnabled(false);
+      offNullOff->setEnabled(false);
+      disChecks->setEnabled(false);
+   }
+
+   else {
+      acqClkPeriod->setEnabled(enable&&calEnable);
+      digClkPeriod->setEnabled(enable&&calEnable);
+      readClkPeriod->setEnabled(enable);
+      resetOn->setEnabled(enable&&calEnable);
+      resetOff->setEnabled(enable&&calEnable);
+      leakNullOff->setEnabled(enable&&calEnable);
+      offNullOff->setEnabled(enable&&calEnable);
+   }
+
    threshOff->setEnabled(enable&&calEnable);
    trigInhOff->setEnabled(enable);
    pwrUpOn->setEnabled(enable&&calEnable);
@@ -159,17 +174,39 @@ void KpixGuiTiming::updateDisplay() {
                            &deselDlyVal,   &bunchClkDlyVal, &digDelayVal,   &bunchCountVal,
                            false, rawTrigInh->isChecked());
 
+      // Force some values in kpix 8
+      if ( asic[0]->getVersion() == 8 ) {
+         //resetOn->setValue(0x003F*clkPeriodVal);     // Old=700nS (0xE), New=3150nS (0x3F)
+         //resetOff->setValue(0x0960*clkPeriodVal);    // 120000nS (0x0960)
+         deselDly->setValue(0x8A*clkPeriodVal);      // 6900nS (0x8A)
+         bunchClkDly->setValue(0xc000*clkPeriodVal); // Old=467500nS (0x2486), New=2457600nS (0xC000)
+         digDelay->setValue(0xff*clkPeriodVal);      // Old=10000nS  (0xC8),   New=12750nS   (0xFF)
+         //leakNullOff->setValue(0x0008*clkPeriodVal); // 0x0004 shifted left by one = 200nS
+         //offNullOff->setValue(0x0FB4*clkPeriodVal);  // 0x07DA shifted left by one = 100500nS
+
+         resetOn->setValue(0x000E*clkPeriodVal);     // Old=700nS (0xE), New=3150nS (0x3F)
+         resetOff->setValue(0x0960*clkPeriodVal);    // 120000nS (0x0960)
+         //deselDly->setValue(0x8A*clkPeriodVal);      // 6900nS (0x8A)
+         //bunchClkDly->setValue(0x2486*clkPeriodVal); // Old=467500nS (0x2486), New=2457600nS (0xC000)
+         //digDelay->setValue(0xc8*clkPeriodVal);      // Old=10000nS  (0xC8),   New=12750nS   (0xFF)
+         leakNullOff->setValue(0x0004*clkPeriodVal); // 0x0004 = 200nS
+         offNullOff->setValue(0x07DA*clkPeriodVal);  // 0x07DA = 100500nS
+         disChecks->setChecked(true);
+      }
+      else {
+         resetOn->setValue(resetOnVal);
+         resetOff->setValue(resetOffVal);
+         leakNullOff->setValue(leakNullOffVal);
+         offNullOff->setValue(offNullOffVal);
+         deselDly->setValue(deselDlyVal);
+         bunchClkDly->setValue(bunchClkDlyVal);
+         digDelay->setValue(digDelayVal);
+      }
+
       // Set Values
-      resetOn->setValue(resetOnVal);
-      resetOff->setValue(resetOffVal);
-      leakNullOff->setValue(leakNullOffVal);
-      offNullOff->setValue(offNullOffVal);
       threshOff->setValue(threshOffVal);
       trigInhOff->setValue(trigInhOffVal);
       pwrUpOn->setValue(pwrUpOnVal);
-      deselDly->setValue(deselDlyVal);
-      bunchClkDly->setValue(bunchClkDlyVal);
-      digDelay->setValue(digDelayVal);
       bunchCount->setValue(bunchCountVal);
    }
 }
@@ -204,7 +241,7 @@ void KpixGuiTiming::readConfig() {
       asic[0]->getTiming ( &clkPeriodVal,  &resetOnVal,     &resetOffVal,   &leakNullOffVal,
                            &offNullOffVal, &threshOffVal,   &trigInhOffVal, &pwrUpOnVal,
                            &deselDlyVal,   &bunchClkDlyVal, &digDelayVal,   &bunchCountVal,
-                           true, rawTrigInh->isChecked());
+                           (asic[0]->getVersion() != 8), rawTrigInh->isChecked());
    }
 }
 
@@ -227,7 +264,7 @@ void KpixGuiTiming::writeConfig() {
                         leakNullOff->value(), offNullOff->value(), threshOff->value(),   
                         trigInhOff->value(),  pwrUpOn->value(),    deselDly->value(),    
                         bunchClkDly->value(), digDelay->value(),   bunchCount->value(),
-                        !disChecks->isChecked(), false, rawTrigInh->isChecked() );
+                        !disChecks->isChecked(), true, rawTrigInh->isChecked() );
 }
 
 

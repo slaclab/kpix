@@ -52,11 +52,11 @@ void KpixGuiStatus::setAsics (KpixAsic **asic, unsigned int asicCnt, KpixFpga *f
    this->fpga    = fpga;
 
    // Set column Widths
-   statusTable->setColumnWidth(0,75);
-   statusTable->setColumnWidth(1,75);
-   statusTable->setColumnWidth(2,75);
-   statusTable->setColumnWidth(3,75);
-   statusTable->setColumnWidth(4,75);
+   statusTable->setColumnWidth(0,60);
+   statusTable->setColumnWidth(1,60);
+   statusTable->setColumnWidth(2,115);
+   statusTable->setColumnWidth(3,70);
+   statusTable->setColumnWidth(4,70);
 
    // Asic Count is non zero
    if ( asicCnt > 1 ) {
@@ -117,7 +117,8 @@ void KpixGuiStatus::updateDisplay() {
 
       // Temp / Version Value
       temp.str("");
-      temp << "0x" << hex << setw(2) << setfill('0') << tempValue;
+      temp << "0x" << hex << setw(2) << setfill('0') << (int)tempValue;
+      if ( tempEn ) temp << " (" << KpixAsic::convertTemp(tempValue) << " degC)";
       statusTable->setText(x,2,temp.str());
 
       // Command Parity Error

@@ -632,7 +632,7 @@ void KpixGuiThreshView::readFitData(unsigned int gain, unsigned int serial, unsi
 
    // Extract fit result from calibration plot
    if ( tcalPlot != NULL && tcalPlot->GetFunction("pol1") != NULL ) 
-      threshData[serial]->gain[gain][channel] = tcalPlot->GetFunction("pol1")->GetParameter(1);
+      threshData[serial]->gain[gain][channel] = -1 * tcalPlot->GetFunction("pol1")->GetParameter(1);
 
    // Extract fit result from threshold plot
    if ( tthreshGraph != NULL && tthreshGraph->GetFunction("fit") != NULL ) {
@@ -728,9 +728,9 @@ void KpixGuiThreshView::updateSummary () {
 
    // Recreate newHistograms
    temp2 = "Gain, " + temp.str();
-   newHist[0]  = new TH1F("gain",temp2.c_str(),2000,0,20e15);
+   newHist[0]  = new TH1F("gain",temp2.c_str(),100000,0,100e15);
    newHist[0]->SetDirectory(0);
-   histMin[0] = 20e15;
+   histMin[0] = 100e15;
    histMax[0] = 0;
 
    temp2 = "Mean, " + temp.str();
@@ -766,36 +766,50 @@ void KpixGuiThreshView::updateSummary () {
    // Get data
    for (locChannel=0; locChannel < chCount; locChannel++) {
       for (locBucket=0; locBucket < 4; locBucket++) {
-         value = threshData[serial]->gain[gain][locChannel];
-         if ( value > histMax[0] ) histMax[0] = value;
-         if ( value < histMin[0] ) histMin[0] = value;
-         newHist[0]->Fill(value);
-         value = threshData[serial]->mean[gain][locChannel];
-         if ( value > histMax[1] ) histMax[1] = value;
-         if ( value < histMin[1] ) histMin[1] = value;
-         newHist[1]->Fill(value);
-         value = threshData[serial]->sigma[gain][locChannel];
-         if ( value > histMax[2] ) histMax[2] = value;
-         if ( value < histMin[2] ) histMin[2] = value;
-         newHist[2]->Fill(value);
+
+         if ( threshData[serial]->gain[gain][locChannel] != 0 ) {
+            value = threshData[serial]->gain[gain][locChannel];
+            if ( value > histMax[0] ) histMax[0] = value;
+            if ( value < histMin[0] ) histMin[0] = value;
+            newHist[0]->Fill(value);
+         }
+
+         if ( threshData[serial]->mean[gain][locChannel] != 0 ) {
+            value = threshData[serial]->mean[gain][locChannel];
+            if ( value > histMax[1] ) histMax[1] = value;
+            if ( value < histMin[1] ) histMin[1] = value;
+            newHist[1]->Fill(value);
+         }
+         if ( threshData[serial]->sigma[gain][locChannel] != 0 ) {
+            value = threshData[serial]->sigma[gain][locChannel];
+            if ( value > histMax[2] ) histMax[2] = value;
+            if ( value < histMin[2] ) histMin[2] = value;
+            newHist[2]->Fill(value);
+         }
          for (x=0; x<256; x++) {
-            value = threshData[serial]->calSigma[gain][locChannel][x];
-            if ( value > histMax[4] ) histMax[4] = value;
-            if ( value < histMin[4] ) histMin[4] = value;
-            newHist[4]->Fill(value);
+            if ( threshData[serial]->calSigma[gain][locChannel][x] != 0 ) {
+               value = threshData[serial]->calSigma[gain][locChannel][x];
+               if ( value > histMax[4] ) histMax[4] = value;
+               if ( value < histMin[4] ) histMin[4] = value;
+               newHist[4]->Fill(value);
+            }
          }
 
          // Electrons
          if ( threshData[serial]->gain[gain][locChannel] != 0 ) {
-            value = ((threshData[serial]->sigma[gain][locChannel] / threshData[serial]->gain[gain][locChannel]) * 1e15*6240);
-            if ( value > histMax[3] ) histMax[3] = value;
-            if ( value < histMin[3] ) histMin[3] = value;
-            newHist[3]->Fill(value);
+            if ( threshData[serial]->sigma[gain][locChannel] != 0 ) {
+               value = ((threshData[serial]->sigma[gain][locChannel] / threshData[serial]->gain[gain][locChannel]) * 1e15*6240);
+               if ( value > histMax[3] ) histMax[3] = value;
+               if ( value < histMin[3] ) histMin[3] = value;
+               newHist[3]->Fill(value);
+            }
             for (x=0; x<256; x++) {
-               value = ((threshData[serial]->calSigma[gain][locChannel][x] / threshData[serial]->gain[gain][locChannel]) * 1e15*6240);
-               if ( value > histMax[5] ) histMax[5] = value;
-               if ( value < histMin[5] ) histMin[5] = value;
-               newHist[5]->Fill(value);
+               if ( threshData[serial]->calSigma[gain][locChannel][x] != 0 ) {
+                  value = ((threshData[serial]->calSigma[gain][locChannel][x] / threshData[serial]->gain[gain][locChannel]) * 1e15*6240);
+                  if ( value > histMax[5] ) histMax[5] = value;
+                  if ( value < histMin[5] ) histMin[5] = value;
+                  newHist[5]->Fill(value);
+               }
             }
          }
       }

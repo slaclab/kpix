@@ -155,6 +155,7 @@ bool KpixRegisterTest::runTest () {
                   if ( enDebug ) {
                      cout << "KpixRegisterTest::runTest -> Read Mismatch. Expected Value 0x" ;
                      cout << setw(8) << setfill('0') << hex << temp;
+                     cout << " Got Value 0x" << setw(8) << setfill('0') << hex << kpixAsic->regGetValue(y,false);
                      cout << " --------------------------- \n";
                   }
 

@@ -53,6 +53,9 @@ void KpixGuiRegTest::setEnabled ( bool enable ) {
    testDirection->setEnabled(enable);
    endOnError->setEnabled(enable);
    readCount->setEnabled(enable);
+   k8Dbg->setEnabled(enable);
+   testValue->setEnabled(enable);
+   regValue->setEnabled(enable);
    showProgress->setEnabled(enable);
    verbose->setEnabled(enable);
    runTest->setEnabled(enable);
@@ -100,6 +103,8 @@ void KpixGuiRegTest::run() {
    void                *eventData[4];
    unsigned int        mainProgress;
    unsigned int        mainTotal;
+   unsigned int        reg;
+   unsigned int        wval;
 
    errors       = false;
    mainProgress = 0;
@@ -109,7 +114,23 @@ void KpixGuiRegTest::run() {
    event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusStart,"Starting");
    QApplication::postEvent(this,event);
 
-   try {
+   // Debug mode
+   if ( k8Dbg->isChecked() ) {
+
+      reg  = regValue->text().toUInt(0,16);
+      wval = testValue->text().toUInt(0,16);
+
+      cout << "Writing Register 0x" << setw(2) << setfill('0') << hex << reg << ". Value 0x"
+      << setw(8) << setfill('0') << hex << wval << "\n";
+      asic[0]->regSetValue(reg,wval,true);
+
+      for (x=0; x<10; x++) {
+         cout << "Reading Register 0x" << setw(2) << setfill('0') << hex << reg << ". Value 0x"
+         << setw(8) << setfill('0') << hex << asic[0]->regGetValue(reg,true) << endl;
+      }
+   }
+
+   else try {
       for (x=0; x < asicCnt; x++) {
 
          // Create and setup test

@@ -22,6 +22,7 @@
 // 04/29/2007: Train number now passed during creation
 // 02/27/2008: Added ability to store/read empty & bad count flags.
 // 04/27/2009: Added trigger type flag.
+// 05/13/2009: Added special flag.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_SAMPLE_H__
 #define __KPIX_SAMPLE_H__
@@ -47,8 +48,15 @@ class KpixSample : public TObject {
       Int_t kpixChannel;
       Int_t kpixBucket;
 
-      // Event Data, range time & amplitude
+      // Sample Range Value, Used to map multiple bits
+      // Bit 0 = Range Flag, 0 = Normal, 1 = Low Gain
+      // Bit 1 = Empty Flag, 0 = Normal, 1 = Empty Record
+      // Bit 2 = Bad Count,  0 = Normal, 1 = Bad Count
+      // Bit 3 = Trigger,    1 = Local,  0 = External
+      // Bit 4 = Special,    0 = Normal, 1 = Special Record
       Int_t sampleRange;
+
+      // Event Data, time & amplitude
       Int_t sampleTime;
       Int_t sampleValue;
 
@@ -72,9 +80,10 @@ class KpixSample : public TObject {
       // empty        = Sample is empty
       // badCount     = Channel counter was bad
       // trigType     = 0=Local, 1=Neighbor
+      // special      = 0=Normal Data, 1=Special Data Type
       KpixSample ( Int_t address, Int_t channel, Int_t bucket, Int_t range, 
-                   Int_t time, Int_t value, Int_t train, Int_t empty, Int_t badCount, Int_t trigType,
-                   bool debug );
+                   Int_t time, Int_t value, Int_t train, Int_t empty, Int_t badCount, 
+                   Int_t trigType, Int_t special, bool debug );
 
       // Set variable values
       // Pass number of values to store and an array containing
@@ -94,7 +103,7 @@ class KpixSample : public TObject {
       // Get KPIX bucket
       Int_t getKpixBucket();
 
-      // Get sample range
+      // Get sample range, 0 = Normal, 1 = Low Gain
       Int_t getSampleRange();
 
       // Get sample time
@@ -106,14 +115,17 @@ class KpixSample : public TObject {
       // Get variable count
       Int_t getVarCount();
 
-      // Get empty flag
+      // Get empty flag, 0 = Normal, 1 = Empty Record
       Int_t getEmpty();
 
-      // Get badCount flag
+      // Get badCount flag, 0 = Normal, 1 = Bad Count
       Int_t getBadCount();
 
-      // Get trigger type flag
+      // Get trigger type flag, 1 = Local, 0 = External or neighbor
       Int_t getTrigType();
+
+      // Get special flag, 0 = Normal, 1 = Special Data
+      Int_t getSpecial();
 
       // Get variable value
       Double_t getVarValue(Int_t var);

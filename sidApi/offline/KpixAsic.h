@@ -48,6 +48,9 @@
 // 02/06/2009: Added KPIX version 8 support
 // 04/08/2009: Added flag in timing methods to set mode for trigger inhibit time
 // 04/29/2009: Added readEn flag to some read calls.
+// 05/15/2009: Added method to get bunch clock count.
+// 06/09/2009: Added constructor flag to enable dummy kpix.
+// 06/10/2009: Added method to convert temp adc value to a celcias value
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_ASIC_H__
 #define __KPIX_ASIC_H__
@@ -160,7 +163,7 @@ class KpixAsic : public TObject {
       // Kpix ASIC Constructor
       // Pass SID Link Object, KPIX version, 2,3,4,etc, KPIX Address & Serial number
       KpixAsic ( SidLink *sidLink, unsigned short version, unsigned short address,
-                 unsigned short serial );
+                 unsigned short serial, bool dummy );
 
       // Set SID Link
       void setSidLink ( SidLink *sidLink );
@@ -567,6 +570,9 @@ class KpixAsic : public TObject {
       // Method to get trigger inhibit bucket
       unsigned int getTrigInh ( bool readEn=true, bool trigInhRaw=false );
 
+      // Method to get number of bunch crossings
+      unsigned int getBunchCount ( bool readEn=true );
+
       // Method to update KPIX calibration pulse settings
       // Pass the following values for update:
       // calCount     - Number of calibration pulses to assert, 0-4
@@ -704,6 +710,9 @@ class KpixAsic : public TObject {
 
       // Class Method To Convert DAC voltage to value
       static unsigned char voltToDac ( double dacVoltage );
+
+      // Class Method To Convert DAC value to voltage
+      static double convertTemp(unsigned int tempAdc);
 
       // Class Method to retrieve the current value of the calibration charge
       // For settings provided by external code.

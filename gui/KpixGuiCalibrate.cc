@@ -108,6 +108,7 @@ void KpixGuiCalibrate::setEnabled ( bool enable ) {
    dacCalib->setEnabled(enable);
    distForceTrig->setEnabled(enable);
    distSelfTrig->setEnabled(enable);
+   randDistEn->setEnabled(enable);
    calMin->setEnabled(enable);
    calMax->setEnabled(enable);
    calStep->setEnabled(enable);
@@ -136,6 +137,7 @@ void KpixGuiCalibrate::setAsics ( KpixAsic **asic, unsigned int asicCnt, KpixFpg
 
    // Update Spin Box
    if ( asicCnt > 0 ) {
+      chanMin->setMaxValue ( asic[0]->getChCount()-1 );
       chanMax->setMaxValue ( asic[0]->getChCount()-1 );
       chanMax->setValue ( asic[0]->getChCount()-1 );
    }
@@ -257,6 +259,9 @@ void KpixGuiCalibrate::run() {
          kpixCalDist->enNormalGain (enNormalGain->isChecked());
          kpixCalDist->enDoubleGain (enDoubleGain->isChecked());
          kpixCalDist->enLowGain    (enLowGain->isChecked());
+
+         // Random distribution enable
+         kpixCalDist->enableRandDistTime(randDistEn->isChecked());
 
          // Setup disribution, Set charge if used
          kpixCalDist->setDistCount  (iterations->value());

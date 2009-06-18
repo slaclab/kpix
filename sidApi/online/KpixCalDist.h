@@ -22,6 +22,7 @@
 //             canvas and plot directory setting.
 // 03/05/2009: Added ability to rate limit calibration and dist generation
 // 05/11/2009: Added range checking on serial number lookup.
+// 05/15/2009: Added feature to support random histogram time generation.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_CAL_DIST_H__
 #define __KPIX_CAL_DIST_H__
@@ -91,6 +92,11 @@ class KpixCalDist {
       // Rate Limit In uS
       unsigned int rateLimit;
 
+      // Enable and range for random histogram time generation
+      static const unsigned int distTimeMin = 100; // Buckets from 0
+      static const unsigned int distTimeMax = 100; // Buckets from max
+      bool randDistTimeEn;
+
       // Plot information
       string plotDir;
 
@@ -139,6 +145,9 @@ class KpixCalDist {
 
       // Set Rate Limit
       void setRateLimit( unsigned int rateLimit );
+
+      // Enable random histogram time
+      void enableRandDistTime ( bool enable );
 
       // Execute distribution, pass channel to enable calibration mask for
       // Or pass -1 to set cal mask for all channels or -2 to set mask for no channels

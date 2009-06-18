@@ -15,6 +15,96 @@
     <property name="caption">
         <string>KPIX Run Viewer</string>
     </property>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>inFileOpen</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>800</x>
+                <y>500</y>
+                <width>93</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Open</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>inFileBrowse</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>690</x>
+                <y>500</y>
+                <width>93</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Browse</string>
+        </property>
+    </widget>
+    <widget class="TQtWidget">
+        <property name="name">
+            <cstring>plotData</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>160</x>
+                <y>10</y>
+                <width>850</width>
+                <height>480</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>inFileClose</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>910</x>
+                <y>500</y>
+                <width>93</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Close</string>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>inFile</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>500</y>
+                <width>520</width>
+                <height>23</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>-10</x>
+                <y>500</y>
+                <width>160</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Input Calibration File:&lt;/p&gt;</string>
+        </property>
+    </widget>
     <widget class="QSpinBox">
         <property name="name">
             <cstring>selBucket</cstring>
@@ -29,6 +119,86 @@
         </property>
         <property name="maxValue">
             <number>3</number>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_2_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>160</y>
+                <width>100</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="center"&gt;KPIX Channel&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>viewSamples</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>60</y>
+                <width>140</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>View Samples</string>
+        </property>
+    </widget>
+    <widget class="QSpinBox">
+        <property name="name">
+            <cstring>selChannel</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>180</y>
+                <width>100</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="maxValue">
+            <number>1023</number>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>100</y>
+                <width>100</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="center"&gt;KPIX Serial&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_2_2_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>210</y>
+                <width>100</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="center"&gt;KPIX Bucket&lt;/p&gt;</string>
         </property>
     </widget>
     <widget class="QComboBox">
@@ -62,124 +232,18 @@
     </widget>
     <widget class="QPushButton">
         <property name="name">
-            <cstring>inFileOpen</cstring>
+            <cstring>closeWindow</cstring>
         </property>
         <property name="geometry">
             <rect>
-                <x>800</x>
-                <y>500</y>
-                <width>93</width>
+                <x>20</x>
+                <y>460</y>
+                <width>110</width>
                 <height>28</height>
             </rect>
         </property>
         <property name="text">
-            <string>Open</string>
-        </property>
-    </widget>
-    <widget class="QPushButton">
-        <property name="name">
-            <cstring>inFileBrowse</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>690</x>
-                <y>500</y>
-                <width>93</width>
-                <height>28</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Browse</string>
-        </property>
-    </widget>
-    <widget class="QLabel">
-        <property name="name">
-            <cstring>textLabel1_2_2_2_2</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>30</x>
-                <y>210</y>
-                <width>100</width>
-                <height>20</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>&lt;p align="center"&gt;KPIX Bucket&lt;/p&gt;</string>
-        </property>
-    </widget>
-    <widget class="TQtWidget">
-        <property name="name">
-            <cstring>plotData</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>160</x>
-                <y>10</y>
-                <width>850</width>
-                <height>480</height>
-            </rect>
-        </property>
-    </widget>
-    <widget class="QPushButton">
-        <property name="name">
-            <cstring>inFileClose</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>910</x>
-                <y>500</y>
-                <width>93</width>
-                <height>28</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Close</string>
-        </property>
-    </widget>
-    <widget class="QLabel">
-        <property name="name">
-            <cstring>textLabel1_2_2</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>30</x>
-                <y>100</y>
-                <width>100</width>
-                <height>20</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>&lt;p align="center"&gt;KPIX Serial&lt;/p&gt;</string>
-        </property>
-    </widget>
-    <widget class="QLineEdit">
-        <property name="name">
-            <cstring>inFile</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>150</x>
-                <y>500</y>
-                <width>520</width>
-                <height>23</height>
-            </rect>
-        </property>
-    </widget>
-    <widget class="QCheckBox">
-        <property name="name">
-            <cstring>fitHistogram</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>30</x>
-                <y>270</y>
-                <width>100</width>
-                <height>21</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Fit Histogram</string>
+            <string>Close Window</string>
         </property>
     </widget>
     <widget class="QPushButton">
@@ -189,29 +253,13 @@
         <property name="geometry">
             <rect>
                 <x>20</x>
-                <y>400</y>
+                <y>420</y>
                 <width>110</width>
                 <height>28</height>
             </rect>
         </property>
         <property name="text">
             <string>Write PDF</string>
-        </property>
-    </widget>
-    <widget class="QSpinBox">
-        <property name="name">
-            <cstring>selChannel</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>30</x>
-                <y>180</y>
-                <width>100</width>
-                <height>23</height>
-            </rect>
-        </property>
-        <property name="maxValue">
-            <number>1023</number>
         </property>
     </widget>
     <widget class="QPushButton">
@@ -221,7 +269,7 @@
         <property name="geometry">
             <rect>
                 <x>20</x>
-                <y>350</y>
+                <y>360</y>
                 <width>110</width>
                 <height>28</height>
             </rect>
@@ -232,60 +280,12 @@
     </widget>
     <widget class="QPushButton">
         <property name="name">
-            <cstring>viewSamples</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>10</x>
-                <y>60</y>
-                <width>140</width>
-                <height>28</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>View Samples</string>
-        </property>
-    </widget>
-    <widget class="QLabel">
-        <property name="name">
-            <cstring>textLabel1</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>-10</x>
-                <y>500</y>
-                <width>160</width>
-                <height>20</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>&lt;p align="right"&gt;Input Calibration File:&lt;/p&gt;</string>
-        </property>
-    </widget>
-    <widget class="QLabel">
-        <property name="name">
-            <cstring>textLabel1_2_2_2</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>30</x>
-                <y>160</y>
-                <width>100</width>
-                <height>20</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>&lt;p align="center"&gt;KPIX Channel&lt;/p&gt;</string>
-        </property>
-    </widget>
-    <widget class="QPushButton">
-        <property name="name">
             <cstring>nextChan</cstring>
         </property>
         <property name="geometry">
             <rect>
                 <x>20</x>
-                <y>310</y>
+                <y>320</y>
                 <width>110</width>
                 <height>28</height>
             </rect>
@@ -294,20 +294,36 @@
             <string>Next</string>
         </property>
     </widget>
-    <widget class="QPushButton">
+    <widget class="QCheckBox">
         <property name="name">
-            <cstring>closeWindow</cstring>
+            <cstring>fitHistogram</cstring>
         </property>
         <property name="geometry">
             <rect>
-                <x>20</x>
-                <y>450</y>
-                <width>110</width>
-                <height>28</height>
+                <x>30</x>
+                <y>260</y>
+                <width>100</width>
+                <height>21</height>
             </rect>
         </property>
         <property name="text">
-            <string>Close Window</string>
+            <string>Fit Histogram</string>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>logScale</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>290</y>
+                <width>100</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Log Scale</string>
         </property>
     </widget>
 </widget>
@@ -421,6 +437,12 @@
     </connection>
     <connection>
         <sender>fitHistogram</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>KpixGuiRunViewForm</receiver>
+        <slot>readPlot()</slot>
+    </connection>
+    <connection>
+        <sender>logScale</sender>
         <signal>toggled(bool)</signal>
         <receiver>KpixGuiRunViewForm</receiver>
         <slot>readPlot()</slot>

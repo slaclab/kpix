@@ -29,6 +29,8 @@
 // 10/23/2008: Added method to set sidLink object.
 // 02/06/2009: Added methods to set digization and readout clocks & kpix Version
 // 04/29/2009: Added readEn flag to some read calls.
+// 05/13/2009: Changed name of accept source to extRecord 
+// 05/13/2009: Removed auto train generation logic.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -198,19 +200,13 @@ KpixFpga::KpixFpga ( SidLink *sidLink ) {
    regReset[0x02]     = false;
    regWriteable[0x03] = true;  // Clock Select Register
    regReset[0x03]     = false;
-   regData[0x03]      = 0x00000004; 
-   regWriteable[0x05] = true;  // USB Delay Enable
-   regReset[0x05]     = false;
-   regWriteable[0x07] = false; // Temperature Value
-   regReset[0x07]     = false;
+   regData[0x03]      = 0x00040404; 
    regWriteable[0x04] = true;  // Checksum error counter
    regReset[0x04]     = true;
    regWriteable[0x08] = true;  // Kpix Control Register
    regReset[0x08]     = false;
    regWriteable[0x09] = true;  // Parity Error Register
    regReset[0x09]     = true;
-   regWriteable[0x0A] = true;  // Run Control Register
-   regReset[0x0A]     = false;
    regWriteable[0x0B] = true;  // Trigger Control Register
    regReset[0x0B]     = false;
    regWriteable[0x0C] = true;  // Train Number Register
@@ -423,39 +419,6 @@ unsigned int KpixFpga::getScratchPad ( bool readEn ) {
       cout << hex << setfill('0') << setw(1) << ret << ".\n";
    }
    return(ret);
-}
-
-
-// Method to set FPGA USB Delay count, non-zero values will
-// enable the delay counter in the FPGA.
-// Pass integer value.
-// Set writeEn to false to disable real write to KPIX
-void KpixFpga::setUsbDelay ( unsigned int value, bool writeEn ) {
-
-   unsigned int temp;
-
-   if ( enDebug ) {
-      cout << "KpixFpga::setUsbDelay -> UsbDelay=";
-      cout << hex << setfill('0') << setw(8) << value;
-      cout << ", En=" << (value!=0) << ".\n";
-   }
-   temp = value & 0x7FFFFFFF;
-   if ( value != 0 ) temp |= 0x80000000;
-   regSetValue(0x05,temp,writeEn);
-}
-
-
-// Method to get FPGA USB Delay count
-// Set readEn to false to disable real read from FPGA.
-unsigned int KpixFpga::getUsbDelay ( bool readEn ) {
-
-   unsigned int ret = regGetValue ( 0x05, readEn );
-   if ( enDebug ) {
-      cout << "KpixFpga::getUsbDelay -> UsbDelay=";
-      cout << hex << setfill('0') << setw(8) << (ret&0xFFFF);
-      cout << ", En=" << ((ret&0x80000000)!=0) << ".\n";
-   }
-   return((ret&0x7FFFFFFF));
 }
 
 
@@ -813,30 +776,6 @@ bool KpixFpga::getRawData ( bool readEn ) {
 }
 
 
-// Method to set Raw Data Flag.
-// Default value = False
-// Set writeEn to false to disable real write to KPIX
-void KpixFpga::setRxPolarity ( bool value, bool writeEn ) {
-   if ( enDebug ) {
-      cout << "KpixFpga::setRxPolarity -> Set RxPolarity=" << value;
-      cout << ", WriteEn=" << writeEn << ".\n";
-   }
-   regSetBit(0x08,6,value,writeEn);
-}
-
-
-// Method to get Raw Data Flag.
-// Set readEn to false to disable real read from FPGA.
-bool KpixFpga::getRxPolarity ( bool readEn ) {
-   bool ret = regGetBit(0x08,6,readEn); 
-   if ( enDebug ) {
-      cout << "KpixFpga::getRxPolarity -> Get RxPolarity=" << ret;
-      cout << ", ReadEn=" << readEn << ".\n";
-   }
-   return(ret);
-}
-
-
 // Method to set Kpix A Disable Flag. (Kpix Address 0)
 // Default value = True
 // Set writeEn to false to disable real write to KPIX
@@ -966,101 +905,6 @@ void KpixFpga::cmdRstParErrors () {
 }
 
 
-// Method to set inter train spacing (start-start) for auto
-// train generation mode.
-// Valid values are 0-0xFFFFFF
-// Default value = 0
-// Pass number of clock periods between train starts.
-// Set writeEn to false to disable real write to KPIX
-void KpixFpga::setAutoTrainSpacing ( unsigned int value, bool writeEn ) {
-
-   // Output value
-   if ( enDebug ) {
-      cout << "KpixFpga::setAutoTrainSpacing -> Set AutoTrainSpacing=";
-      cout << setw(6) << setfill('0') << dec << value;
-      cout << ", WriteEn=" << writeEn << ".\n";
-   }
-
-   // Get current value from shadow register, don't read from device
-   unsigned int temp = regGetValue(0x0A,false);
-
-   // Set value
-   temp &= 0xFF000000;
-   temp |= value & 0x00FFFFFF;
-
-   // Set new value
-   regSetValue ( 0x0A, temp, writeEn );
-}
-
-
-// Method to get inter train spacing (start-start) for auto
-// train generation mode.
-// Set readEn to false to disable real read from FPGA.
-unsigned int KpixFpga::getAutoTrainSpacing ( bool readEn ) {
-
-   // Get Value
-   unsigned int temp = regGetValue ( 0x0A, readEn );
-
-   // Convert value
-   unsigned short ret = temp & 0x00FFFFFF;
-
-   // Debug
-   if ( enDebug ) {
-      cout << "KpixFpga::getAutoTrainSpacing -> AutoTrainSpacing=";
-      cout << hex << setfill('0') << setw(6) << ret << ".\n";
-   }
-   return(ret);
-}
-
-
-// Method to enable auto train generation.
-// Default value = False
-// Set writeEn to false to disable real write to KPIX
-void KpixFpga::setAutoTrainEnable ( bool value, bool writeEn ) {
-   if ( enDebug ) {
-      cout << "KpixFpga::setAutoTrainEnable -> Set AutoTrainEnable=" << value;
-      cout << ", WriteEn=" << writeEn << ".\n";
-   }
-   regSetBit(0x0A,24,value,writeEn);
-}
-
-
-// Method to get auto train generation flag.
-// Set readEn to false to disable real read from FPGA.
-bool KpixFpga::getAutoTrainEnable ( bool readEn ) {
-   bool ret = regGetBit(0x0A,24,readEn); 
-   if ( enDebug ) {
-      cout << "KpixFpga::getAutoTrainEnable -> Get AutoTrainEnable=" << ret;
-      cout << ", ReadEn=" << readEn << ".\n";
-   }
-   return(ret);
-}
-
-
-// Method to choose auto train type, True=Calibrate, False=Acquire
-// Default value = False
-// Set writeEn to false to disable real write to KPIX
-void KpixFpga::setAutoTrainType ( bool value, bool writeEn ) {
-   if ( enDebug ) {
-      cout << "KpixFpga::setAutoTrainType -> Set AutoTrainType=" << value;
-      cout << ", WriteEn=" << writeEn << ".\n";
-   }
-   regSetBit(0x0A,25,value,writeEn);
-}
-
-
-// Method to get auto train type flag.
-// Set readEn to false to disable real read from FPGA.
-bool KpixFpga::getAutoTrainType ( bool readEn ) {
-   bool ret = regGetBit(0x0A,25,readEn); 
-   if ( enDebug ) {
-      cout << "KpixFpga::getAutoTrainType -> Get AutoTrainType=" << ret;
-      cout << ", ReadEn=" << readEn << ".\n";
-   }
-   return(ret);
-}
-
-
 // Method to set source for external run trigger
 // Valid values are 0-4
 // Default value = 0 None.
@@ -1184,7 +1028,7 @@ bool KpixFpga::getExtRunType ( bool readEn ) {
 }
 
 
-// Method to set source for trigger accept flag:
+// Method to set source for external records.
 // Valid values are 0-4
 // Default value = 0 None.
 // Pass source index.
@@ -1194,14 +1038,14 @@ bool KpixFpga::getExtRunType ( bool readEn ) {
 //  0x3 = BncA Input
 //  0x4 = BncB Input
 // Set writeEn to false to disable real write to KPIX
-void KpixFpga::setAcceptSource ( unsigned char value, bool writeEn ) {
+void KpixFpga::setExtRecord ( unsigned char value, bool writeEn ) {
 
    // Verify range
-   if ( value > 4 ) throw string("KpixFpga::setAcceptSource -> Invalid Value");
+   if ( value > 4 ) throw string("KpixFpga::setExtRecord -> Invalid Value");
 
    // Output value
    if ( enDebug ) {
-      cout << "KpixFpga::setAcceptSource -> Set AcceptSource=";
+      cout << "KpixFpga::setExtRecord -> Set ExtRecord=";
       cout << setw(2) << setfill('0') << dec << (int)value;
       cout << ", WriteEn=" << writeEn << ".\n";
    }
@@ -1218,9 +1062,9 @@ void KpixFpga::setAcceptSource ( unsigned char value, bool writeEn ) {
 }
 
 
-// Method to get source for trigger accept flag
+// Method to get source for external records
 // Set readEn to false to disable real read from FPGA.
-unsigned char KpixFpga::getAcceptSource ( bool readEn ) {
+unsigned char KpixFpga::getExtRecord ( bool readEn ) {
 
    // Get Value
    unsigned int temp = regGetValue ( 0x0E, readEn );
@@ -1230,7 +1074,7 @@ unsigned char KpixFpga::getAcceptSource ( bool readEn ) {
 
    // Debug
    if ( enDebug ) {
-      cout << "KpixFpga::getAcceptSource -> AcceptSource=";
+      cout << "KpixFpga::getExtRecord -> ExtRecord=";
       cout << hex << setfill('0') << setw(2) << (int)ret << ".\n";
    }
    return(ret);
@@ -1422,54 +1266,6 @@ unsigned char KpixFpga::getTrigSource ( bool readEn ) {
 }
 
 
-// Method to set reset pulse length
-// Valid values are 0-7.
-// 0=50ns, 1=100ns, 2=150ns, 3=200ns, 4=250ns, 5=300ns, 6=350ns, 7=400ns
-// Default value = 0 
-// Set writeEn to false to disable real write to KPIX
-void KpixFpga::setRstLength ( unsigned char value, bool writeEn ) {
-
-   // Verify range
-   if ( value > 7 ) throw string("KpixFpga::setRstLength -> Invalid Value");
-
-   // Output value
-   if ( enDebug ) {
-      cout << "KpixFpga::setRstLength -> Set RstLength=";
-      cout << setw(2) << setfill('0') << dec << value;
-      cout << ", WriteEn=" << writeEn << ".\n";
-   }
-
-   // Get current value from shadow register, don't read from device
-   unsigned int temp = regGetValue(0x0B,false);
-
-   // Set value
-   temp &= 0x8FFFFFFF;
-   temp |= (value << 28) & 0x70000000;
-
-   // Set new value
-   regSetValue ( 0x0B, temp, writeEn );
-}
-
-
-// Method to get reset pulse length
-// Set readEn to false to disable real read from FPGA.
-unsigned char KpixFpga::getRstLength ( bool readEn ) {
-
-   // Get Value
-   unsigned int temp = regGetValue ( 0x0B, readEn );
-
-   // Convert value
-   unsigned short ret = (temp >> 28) & 0x7;
-
-   // Debug
-   if ( enDebug ) {
-      cout << "KpixFpga::getRstLength -> RstLength=";
-      cout << hex << setfill('0') << setw(2) << ret << ".\n";
-   }
-   return(ret);
-}
-
-
 // Method to get KPIX train number value.
 // Set readEn to false to disable real read from FPGA.
 unsigned int KpixFpga::getTrainNumber ( bool readEn ) {
@@ -1486,16 +1282,6 @@ unsigned int KpixFpga::getTrainNumber ( bool readEn ) {
 void KpixFpga::cmdRstTrainNumber () {
    if ( enDebug ) cout << "KpixFpga::cmdRstTrainNumbers -> Sending Reset.\n";
    regWrite(0x0C);
-}
-
-
-// Read back temperature value in degrees C
-// Set readEn to false to disable real read from FPGA.
-double KpixFpga::getTempValue ( bool readEn ) {
-   unsigned int temp = regGetValue ( 0x07, readEn );
-   double ret = (1.8455 - (((double)temp / (double)4095)*2.5))/0.01123;
-   if ( enDebug ) cout << "KpixFpga::getTempValue -> TempValue= " << ret << " C. \n";
-   return(ret);
 }
 
 
@@ -1556,28 +1342,22 @@ void KpixFpga::setDefaults ( unsigned int clkPeriod, bool kpixVer, bool writeEn 
 
    // Other defaults
    setKpixVer  ( kpixVer, writeEn ); // Not On Gui
-   setUsbDelay ( 0, writeEn ); // Not On Gui
    setBncSourceA ( 0x03, writeEn );
    setBncSourceB ( 0x03, writeEn );
    setDropData ( false, writeEn );
    setRawData ( false, writeEn );
-   setRxPolarity ( false, writeEn );
    setDisKpixA ( false, writeEn ); // Not On Gui
    setDisKpixB ( false, writeEn ); // Not On Gui
    setDisKpixC ( false, writeEn ); // Not On Gui
    setDisKpixD ( false, writeEn ); // Not On Gui
-   setAutoTrainSpacing ( 0, writeEn);
-   setAutoTrainEnable ( false, writeEn);
-   setAutoTrainType ( false, writeEn);
    setExtRunSource ( 0, writeEn);
    setExtRunDelay ( 0, writeEn);
    setExtRunType ( false, writeEn);
-   setAcceptSource ( 0, writeEn);
+   setExtRecord ( 0, writeEn);
    setTrigEnable ( 0xFF, writeEn);
    setTrigExpand ( 0, writeEn);
    setCalDelay ( 0, writeEn);
    setTrigSource ( 0, writeEn);
-   setRstLength ( 0, writeEn); // Not On Gui
 }
 
 
@@ -1593,7 +1373,6 @@ void KpixFpga::dumpSettings () {
    // Display data
    cout << "             Valid = " << getValid() << "\n";
    cout << "        ScratchPad = " << getScratchPad(false)  << "\n";
-   cout << "          UsbDelay = " << getUsbDelay(false)    << "\n";
    cout << "       ClockPeriod = " << getClockPeriod(false) << "\n";
    cout << "    ClockPeriodDig = " << getClockPeriodDig(false)  << "\n";
    cout << "   ClockPeriodRead = " << getClockPeriodRead(false) << "\n";
@@ -1601,20 +1380,17 @@ void KpixFpga::dumpSettings () {
    cout << "        BncSourceB = " << (int)getBncSourceB(false) << "\n";
    cout << "           KpixVer = " << getKpixVer(false)  << "\n";
    cout << "          DropData = " << getDropData(false) << "\n";
+   cout << "           RawData = " << getRawData(false)  << "\n";
    cout << "          DisKpixA = " << getDisKpixA(false) << "\n";
    cout << "          DisKpixB = " << getDisKpixB(false) << "\n";
    cout << "          DisKpixC = " << getDisKpixC(false) << "\n";
    cout << "          DisKpixD = " << getDisKpixD(false) << "\n";
-   cout << "  AutoTrainSpacing = " << getAutoTrainSpacing(false)  << "\n";
-   cout << "   AutoTrainEnable = " << getAutoTrainEnable(false)   << "\n";
-   cout << "     AutoTrainType = " << getAutoTrainType(false)     << "\n";
    cout << "      ExtRunSource = " << (int)getExtRunSource(false) << "\n";
    cout << "       ExtRunDelay = " << getExtRunDelay(false)       << "\n";
    cout << "        ExtRunType = " << getExtRunType(false)        << "\n";
-   cout << "      AcceptSource = " << (int)getAcceptSource(false) << "\n";
+   cout << "         ExtRecord = " << (int)getExtRecord(false) << "\n";
    cout << "        TrigEnable = " << (int)getTrigEnable(false)   << "\n";
    cout << "        TrigExpand = " << (int)getTrigExpand(false)   << "\n";
-   cout << "         TempValue = " << getTempValue(false)         << "\n";
    cout << "          CalDelay = " << (int)getCalDelay(false)     << "\n";
    cout << "        TrigSource = " << (int)getTrigSource(false)   << "\n";
 }

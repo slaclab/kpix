@@ -344,6 +344,27 @@
         </widget>
         <widget class="QCheckBox">
             <property name="name">
+                <cstring>distCalEn</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>20</x>
+                    <y>90</y>
+                    <width>170</width>
+                    <height>21</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                    <pointsize>10</pointsize>
+                </font>
+            </property>
+            <property name="text">
+                <string>Calibration Enable</string>
+            </property>
+        </widget>
+        <widget class="QCheckBox">
+            <property name="name">
                 <cstring>distSelfTrig</cstring>
             </property>
             <property name="geometry">
@@ -365,13 +386,13 @@
         </widget>
         <widget class="QCheckBox">
             <property name="name">
-                <cstring>distCalEn</cstring>
+                <cstring>randDistEn</cstring>
             </property>
             <property name="geometry">
                 <rect>
                     <x>20</x>
-                    <y>90</y>
-                    <width>170</width>
+                    <y>150</y>
+                    <width>160</width>
                     <height>21</height>
                 </rect>
             </property>
@@ -381,7 +402,7 @@
                 </font>
             </property>
             <property name="text">
-                <string>Calibration Enable</string>
+                <string>Random Dist Time En</string>
             </property>
         </widget>
     </widget>

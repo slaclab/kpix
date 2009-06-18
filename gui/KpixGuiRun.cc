@@ -563,7 +563,8 @@ void KpixGuiRun::run() {
                iters++;
 
                // Get bunch train data
-               train = new KpixBunchTrain ( asic[0]->getSidLink(), false );
+               //train = new KpixBunchTrain ( asic[0]->getSidLink(), false );
+               train = new KpixBunchTrain ( asic[0]->getSidLink(), true );
 
                // Add sample to run
                if ( enRaw ) kpixRunWrite->addBunchTrain(train);
@@ -1038,7 +1039,8 @@ void KpixGuiRun::customEvent ( QCustomEvent *event ) {
          for (x=0; x<16; x++) {
             if ( plots[x*2] != NULL || plots[x*2+1] != NULL ) {
                count++;
-               liveDisplay->GetCanvas()->cd(count)->SetLogy();
+               liveDisplay->GetCanvas()->cd(count);
+               if ( logScale->isChecked() ) liveDisplay->GetCanvas()->cd(count)->SetLogy();
                if ( plots[x*2] != NULL ) {
                   plots[x*2]->Draw();
                   if ( plots[x*2+1] != NULL ) plots[x*2+1]->Draw("same");

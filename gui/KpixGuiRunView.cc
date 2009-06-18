@@ -176,6 +176,7 @@ void KpixGuiRunView::setEnabled(bool enable) {
    fitHistogram->setEnabled(inFileRoot!=NULL?enable:false);
    prevChan->setEnabled(inFileRoot!=NULL?enable:false);
    nextChan->setEnabled(inFileRoot!=NULL?enable:false);
+   logScale->setEnabled(inFileRoot!=NULL?enable:false);
 }
 
 
@@ -459,6 +460,7 @@ void KpixGuiRunView::customEvent ( QCustomEvent *event ) {
 
       // Upper plots
       plotData->GetCanvas()->cd(1);
+      if ( logScale->isChecked() ) plotData->GetCanvas()->cd(1)->SetLogy();
       if ( hist[0] != NULL ) {
          hist[0]->Draw();
          if ( hist[1] != NULL ) hist[1]->Draw("same");
@@ -467,6 +469,7 @@ void KpixGuiRunView::customEvent ( QCustomEvent *event ) {
 
       // Lower Plot
       plotData->GetCanvas()->cd(2);
+      if ( logScale->isChecked() ) plotData->GetCanvas()->cd(2)->SetLogy();
       if ( hist[2] != NULL ) {
          hist[2]->Draw();
          if ( hist[3] != NULL ) hist[3]->Draw("same");

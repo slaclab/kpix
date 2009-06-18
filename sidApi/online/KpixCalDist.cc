@@ -27,6 +27,7 @@
 //             canvas and plot directory setting.
 // 03/05/2009: Added ability to rate limit calibration and dist generation
 // 05/11/2009: Added range checking on serial number lookup.
+// 05/15/2009: Added feature to support random histogram time generation.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <fstream>
@@ -156,6 +157,10 @@ void KpixCalDist::setPlotDir(string plotDir ) { this->plotDir = plotDir; }
 void KpixCalDist::setRateLimit( unsigned int rateLimit ) { this->rateLimit = rateLimit; }
 
 
+// Enable random histogram time
+void KpixCalDist::enableRandDistTime ( bool enable ) { this->randDistTimeEn = enable; }
+
+
 // Execute distribution, pass channel to enable calibration mask for
 // Or pass -1 to set cal mask for all channels or -2 to set mask for no channels
 void KpixCalDist::runDistribution ( short channel ) {
@@ -175,6 +180,14 @@ void KpixCalDist::runDistribution ( short channel ) {
    unsigned int   plotCount;
    struct timeval curTime, acqTime;
    unsigned long  diff, secUs;
+   unsigned int   distMin;
+   unsigned int   distMax;
+   unsigned int   calCount;
+   unsigned int   orig0Delay;
+   unsigned int   cal0Delay;
+   unsigned int   cal1Delay;
+   unsigned int   cal2Delay;
+   unsigned int   cal3Delay;
 
    // Set Plot Directory
    if ( plotEn ) {
@@ -210,9 +223,10 @@ void KpixCalDist::runDistribution ( short channel ) {
    if ( enDebug ) {
       cout << "KpixCalDist::runDistribution -> ";
       cout << "Distribution Started For Channel ";
-      if ( channel == -1 ) cout << "All\n";
-      else if ( channel == -2 ) cout << "None\n";
-      else cout << "0x" << hex << setw(3) << setfill('0') << channel << "\n";
+      if ( channel == -1 ) cout << "All.";
+      else if ( channel == -2 ) cout << "None.";
+      else cout << "0x" << hex << setw(3) << setfill('0') << channel << ".";
+      cout << ", RandDist=" << randDistTimeEn << endl;
    }
 
    // Init progress
@@ -234,6 +248,27 @@ void KpixCalDist::runDistribution ( short channel ) {
    for (x=0; x < 4096*kpixCount; x++) {
       value[x] = NULL;
       time[x]  = NULL;
+   }
+
+   // Random histogram times enabled
+   if ( randDistTimeEn ) {
+
+      // Get previous settings
+      kpixAsic[0]->getCalibTime(&calCount,&orig0Delay,&cal1Delay,&cal2Delay,&cal3Delay,false);
+
+      // Figure out range for first value
+      distMin = KpixCalDist::distTimeMin;
+      distMax = kpixAsic[0]->getBunchCount(false) - KpixCalDist::distTimeMax - cal1Delay - cal2Delay - cal3Delay;
+   }
+   else {
+      calCount   = 0;
+      orig0Delay = 0;
+      cal0Delay  = 0;
+      cal1Delay  = 0;
+      cal2Delay  = 0;
+      cal3Delay  = 0;
+      distMin    = 0;
+      distMax    = 0;
    }
 
    // Once for each gain mode
@@ -276,6 +311,16 @@ void KpixCalDist::runDistribution ( short channel ) {
 
       // Loop through dist iterations
       for ( x=0; x < distCount; x++ ) {
+
+         // Generate random times if enabled
+         if ( randDistTimeEn ) {
+
+            // Get random number
+            cal0Delay = distMin + (unsigned int)((double)(distMax-distMin) * ((double)random()/(double)RAND_MAX));
+
+            // Set new values
+            for(y=0;y<kpixCount;y++) kpixAsic[y]->setCalibTime(calCount,cal0Delay,cal1Delay,cal2Delay,cal3Delay);
+         }
 
          // Throttle acquistion if enabled
          do {
@@ -321,6 +366,10 @@ void KpixCalDist::runDistribution ( short channel ) {
                chan     = sample->getKpixChannel();
                bucket   = sample->getKpixBucket();
                range    = sample->getSampleRange();
+
+               if ( (unsigned int)kpixAddr > maxAddress )
+                  throw(string("KpixCalDist::runDistribution -> Data Received From Unkown KPIX Address"));
+
                kpixIdx  = kpixIdxLookup[kpixAddr];
 
                // Channel matches target & targetted range
@@ -361,6 +410,10 @@ void KpixCalDist::runDistribution ( short channel ) {
          if ( kpixProgress != NULL && (x % 50) == 0) kpixProgress->updateProgress(prgCount,prgTotal);
       }
       if ( kpixProgress != NULL ) kpixProgress->updateProgress(prgCount,prgTotal);
+
+      // Restore original delay settings
+      if ( randDistTimeEn ) 
+         for(x=0;x<kpixCount;x++) kpixAsic[x]->setCalibTime(calCount,orig0Delay,cal1Delay,cal2Delay,cal3Delay);
 
       // Store histograms
       if ( plotEn ) {
@@ -613,6 +666,10 @@ void KpixCalDist::runCalibration ( short channel ) {
                kpixAddr = sample->getKpixAddress();
                chan     = sample->getKpixChannel();
                bucket   = sample->getKpixBucket();
+
+               if ( (unsigned int)kpixAddr > maxAddress )
+                  throw(string("KpixCalDist::runCalibration -> Data Received From Unkown KPIX Address"));
+
                kpixIdx  = kpixIdxLookup[kpixAddr];
 
                // Channel matches target

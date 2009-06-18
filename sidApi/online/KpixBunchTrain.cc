@@ -30,6 +30,8 @@
 //             exceptions on parity error detection.
 // 02/27/2008: Added badCount and empty flags to received header. Now these
 //             values are stored in the created sample.
+// 05/13/2009: Added special data flag for Temp value and trigger log.
+// 05/13/2009: Removed Accept Flag.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -85,6 +87,7 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
    unsigned int   badCount;
    unsigned int   trigType;
    unsigned int   empty;
+   unsigned int   special;
    stringstream   error;
 
    // Init sample count & pointers
@@ -93,7 +96,7 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
    deadCount  = 0;
 
    // Debug
-   if ( debug ) cout << "KpixBunchTrain::KpixBunchTrain -> creating new bunchTrain.\n";
+   if ( debug ) cout << "KpixBunchTrain::KpixBunchTrain -> Creating new bunchTrain.\n";
 
    // Get header first
    link->linkDataRead(data,2,true);
@@ -101,6 +104,9 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
    // Store train sequence number
    trainNumber  = data[0];
    trainNumber |= (data[1] << 16) & 0xFFFF0000;
+
+   // Debug
+   if ( debug ) cout << "KpixBunchTrain::KpixBunchTrain -> Got Header. Train Number=" << dec << trainNumber << endl;
 
    // Init
    checkSum   = data[0] + data[1];
@@ -121,19 +127,30 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
       checkSum += data[2];
 
       // Double check marker
-      if ( (data[0] & 0xC000) != 0x4000 ) continue;
+      if ( (data[0] & 0xC000) != 0x4000 ) {
+         if ( debug ) cout << "KpixBunchTrain::KpixBunchTrain -> Found Bad Marker.\n";
+         continue;
+      }
 
       // Extract sample data
+
+      // Word 0
+      bucket   = (data[0] >> 12) & 0x0003;
       address  = (data[0] >> 10) & 0x0003;
       channel  = data[0] & 0x03FF;
-      bucket   = (data[0] >> 12) & 0x0003;
+
+      // Word 1
+      special  = (data[1] >> 15) & 0x1;
       range    = (data[1] >> 13) & 0x0001;
       empty    = (data[1] >> 12) & 0x1;
       time     = data[1] & 0x0FFF;
-      time    += (data[1] >> 2) & 0x1000; // Time Bit Expansion
-      adc      = data[2] & 0x1FFF;
-      badCount = (data[2] >> 13) & 0x1;
+      time    += (data[1] >> 2) & 0x1000; // Time Bit Expansion, Bit 14
+
+      // Word 2
+      //       = (data[2] >> 15) & 0x1; // Future
       trigType = (data[2] >> 14) & 0x1;
+      badCount = (data[2] >> 13) & 0x1;
+      adc      = data[2] & 0x1FFF;
 
       // Detect overrun of frame data
       if ( totalCount == 64*4*4 ) {
@@ -144,7 +161,7 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
 
       // Create a new Kpix Event
       samplesByTime[totalCount] = 
-         new KpixSample(address,channel,bucket,range,time,adc,trainNumber,empty,badCount,trigType,debug);
+         new KpixSample(address,channel,bucket,range,time,adc,trainNumber,empty,badCount,trigType,special,debug);
       totalCount++;
    }
 
@@ -177,23 +194,22 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
    // Parity error count
    parErrors = (data[1] >> 13) & 0x1;
 
-   // Throw exception on parity errors
-   if ( parErrors > 0 ) 
-      throw(string("KpixBunchTrain::KpixBunchTrain -> Parity Errors Detected"));
-
    // last train flag
    lastTrain = (data[1] & 0x8000) == 0;
-
-   // External Accept Flag
-   extAccept = (data[1] & 0x4000) != 0;
 
    // Sort sample list by time
    if ( totalCount > 0 ) 
       qsort(samplesByTime,totalCount,sizeof(KpixSample *),&(compareSamples));
 
    // Debug
-   if ( debug ) 
-      cout << "KpixBunchTrain::KpixBunchTrain -> stored " << dec << totalCount << " samples.\n";
+   if ( debug ) {
+      cout << "KpixBunchTrain::KpixBunchTrain -> Got Tail. Last Train=" << dec << setw(1) << lastTrain;
+      cout << ", Dead Count=" << dec << deadCount << ", Errors=" << dec << parErrors;
+      cout << ", Total Count=" << dec << totalCount << endl;
+   }
+
+   // Throw exception on parity errors
+   if ( parErrors > 0 ) throw(string("KpixBunchTrain::KpixBunchTrain -> Errors Detected."));
 }
 
 
@@ -246,10 +262,6 @@ unsigned int KpixBunchTrain::getDeadCount () { return(deadCount); }
 
 // Get parity errors
 unsigned int KpixBunchTrain::getParErrors () { return(parErrors); }
-
-
-// Get External Accept Flag
-bool KpixBunchTrain::getAcceptFlag () { return(extAccept); }
 
 
 // Get last train flag

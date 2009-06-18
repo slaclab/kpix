@@ -29,6 +29,8 @@
 // 10/23/2008: Added method to set sidLink object.
 // 02/06/2009: Added methods to set digization and readout clocks & Kpix Version
 // 04/29/2009: Added readEn flag to some read calls.
+// 05/13/2009: Changed name of accept source to extRecord 
+// 05/13/2009: Removed auto train generation logic.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_FPGA_H__
 #define __KPIX_FPGA_H__
@@ -152,16 +154,6 @@ class KpixFpga : public TObject {
       // Set readEn to false to disable real read from FPGA.
       unsigned int getScratchPad ( bool readEn=true );
 
-      // Method to set FPGA USB Delay count, non-zero values will
-      // enable the delay counter in the FPGA.
-      // Pass integer value.
-      // Set writeEn to false to disable real write to KPIX
-      void setUsbDelay ( unsigned int value, bool writeEn=true );
-
-      // Method to get FPGA USB Delay count
-      // Set readEn to false to disable real read from FPGA.
-      unsigned int getUsbDelay ( bool readEn=true );
-
       // Method to set FPGA clock control register.
       // Default value = 50ns (20Mhz)
       // Pass value containing the desired clock period. Valid values are
@@ -277,15 +269,6 @@ class KpixFpga : public TObject {
       // Set readEn to false to disable real read from FPGA.
       bool getRawData ( bool readEn=true );
 
-      // Method to set receive polarity flag. False=pos edge.
-      // Default value = False
-      // Set writeEn to false to disable real write to KPIX
-      void setRxPolarity ( bool value, bool writeEn=true );
-
-      // Method to get receive polarity flag. False=pos edge.
-      // Set readEn to false to disable real read from FPGA.
-      bool getRxPolarity ( bool readEn=true );
-
       // Method to set Kpix A Disable Flag. (Kpix Address 0)
       // Default value = True
       // Set writeEn to false to disable real write to KPIX
@@ -333,37 +316,6 @@ class KpixFpga : public TObject {
       // Method to reset KPIX response/data parity error counters.
       void cmdRstParErrors ();
 
-      // Method to set inter train spacing (end-start) for auto
-      // train generation mode.
-      // Valid values are 0-0xFFFFFF
-      // Default value = 0
-      // Pass number of clock periods between train starts.
-      // Set writeEn to false to disable real write to KPIX
-      void setAutoTrainSpacing ( unsigned int value, bool writeEn=true );
-
-      // Method to get inter train spacing (start-start) for auto
-      // train generation mode.
-      // Set readEn to false to disable real read from FPGA.
-      unsigned int getAutoTrainSpacing ( bool readEn=true );
-
-      // Method to enable auto train generation.
-      // Default value = False
-      // Set writeEn to false to disable real write to KPIX
-      void setAutoTrainEnable ( bool value, bool writeEn=true );
-
-      // Method to get auto train generation flag.
-      // Set readEn to false to disable real read from FPGA.
-      bool getAutoTrainEnable ( bool readEn=true );
-
-      // Method to choose auto train type, True=Calibrate, False=Acquire
-      // Default value = False
-      // Set writeEn to false to disable real write to KPIX
-      void setAutoTrainType ( bool value, bool writeEn=true );
-
-      // Method to get auto train type flag.
-      // Set readEn to false to disable real read from FPGA.
-      bool getAutoTrainType ( bool readEn=true );
-
       // Method to set source for external run trigger
       // Valid values are 0-4
       // Default value = 0 None.
@@ -401,7 +353,7 @@ class KpixFpga : public TObject {
       // Set readEn to false to disable real read from FPGA.
       bool getExtRunType ( bool readEn=true );
 
-      // Method to set source for trigger accept flag:
+      // Method to set source for external records.
       // Valid values are 0-4
       // Default value = 0 None.
       // Pass source index.
@@ -411,11 +363,11 @@ class KpixFpga : public TObject {
       //  0x3 = BncA Input
       //  0x4 = BncB Input
       // Set writeEn to false to disable real write to KPIX
-      void setAcceptSource ( unsigned char value, bool writeEn=true );
+      void setExtRecord ( unsigned char value, bool writeEn=true );
 
-      // Method to get source for trigger accept flag
+      // Method to get source for external records.
       // Set readEn to false to disable real read from FPGA.
-      unsigned char getAcceptSource ( bool readEn=true );
+      unsigned char getExtRecord ( bool readEn=true );
 
       // Method to set external trigger enable windows
       // Pass bit mask (8-bits) to define which portions of the bunch
@@ -476,27 +428,12 @@ class KpixFpga : public TObject {
       // Set readEn to false to disable real read from FPGA.
       unsigned char getTrigSource ( bool readEn=true );
 
-      // Method to set reset pulse length
-      // Valid values are 0-7.
-      // 0=50ns, 1=100ns, 2=150ns, 3=200ns, 4=250ns, 5=300ns, 6=350ns, 7=400ns
-      // Default value = 0 
-      // Set writeEn to false to disable real write to KPIX
-      void setRstLength ( unsigned char value, bool writeEn=true );
-
-      // Method to get reset pulse length
-      // Set readEn to false to disable real read from FPGA.
-      unsigned char getRstLength ( bool readEn=true );
-
       // Method to get KPIX train number value.
       // Set readEn to false to disable real read from FPGA.
       unsigned int getTrainNumber ( bool readEn=false );
 
       // Method to reset KPIX train number value.
       void cmdRstTrainNumber ();
-
-      // Read back temperature value in degrees C
-      // Set readEn to false to disable real read from FPGA.
-      double getTempValue ( bool readEn=true );
 
       // Method to get KPIX dead time counter.
       // Set readEn to false to disable real read from FPGA.

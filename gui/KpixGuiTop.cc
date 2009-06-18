@@ -440,7 +440,7 @@ void KpixGuiTop::run() {
             for (x=0; x <= KPIX_MAX_ADDR; x++) {
 
                // Create an ASIC object for test
-               asic[asicCnt] = new KpixAsic(sidLink,(x==KPIX_MAX_ADDR?0:asicVersion),x,0);
+               asic[asicCnt] = new KpixAsic(sidLink,asicVersion,x,0,x==KPIX_MAX_ADDR);
 
                // Attempt to find each ASIC
                try {
