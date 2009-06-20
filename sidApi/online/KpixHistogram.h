@@ -13,54 +13,53 @@
 // Modification history :
 // 10/15/2008: created
 // 03/03/2009: changed container values to unsigned int
+// 06/18/2009: Added namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_HISTOGRAM_H__
 #define __KPIX_HISTOGRAM_H__
 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
-using namespace std;
 
-// KPIX Event Data Class
-class KpixHistogram {
 
-      // Histogram contents
-      unsigned int *data;
+namespace sidApi {
+   namespace online {
+      class KpixHistogram {
 
-      // Number of entries in histogram
-      unsigned int entries;
+            // Histogram contents
+            unsigned int *data;
 
-      // Min Value
-      unsigned int min;
-      unsigned int max;
+            // Number of entries in histogram
+            unsigned int entries;
 
-   public:
+            // Min Value
+            unsigned int min;
+            unsigned int max;
 
-      // Constructor
-      KpixHistogram ( );
+         public:
 
-      // Constructor
-      ~KpixHistogram ( );
+            // Constructor
+            KpixHistogram ( );
 
-      // Add an entry
-      void fill(unsigned int value);
+            // Constructor
+            ~KpixHistogram ( );
 
-      // Get Number Of Entries
-      unsigned int binCount();
+            // Add an entry
+            void fill(unsigned int value);
 
-      // Get Min Value
-      unsigned int minValue();
+            // Get Number Of Entries
+            unsigned int binCount();
 
-      // Get Max Value
-      unsigned int maxValue();
+            // Get Min Value
+            unsigned int minValue();
 
-      // Get Bin Value
-      unsigned int value(unsigned int bin);
+            // Get Max Value
+            unsigned int maxValue();
 
-      // Get Bin Count
-      unsigned int count(unsigned int bin);
-};
+            // Get Bin Value
+            unsigned int value(unsigned int bin);
 
+            // Get Bin Count
+            unsigned int count(unsigned int bin);
+      };
+   }
+}
 #endif

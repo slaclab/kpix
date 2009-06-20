@@ -67,9 +67,11 @@
 #include <math.h>
 #include "KpixAsic.h"
 using namespace std;
+using namespace sidApi::offline;
 
 #ifdef ONLINE_EN
 #include "../online/SidLink.h"
+using namespace sidApi::online;
 #endif
 
 
@@ -2340,8 +2342,8 @@ unsigned char KpixAsic::getDacDefaultAnalog ( bool readEn ) {
 
 // Method to set channel mode according to a passed array
 // Pass array of integers (1024) to select the mode of
-// each channel. The modes enabled are CAL_A, TH_A, TH_B, DISABLE
-// If DISABLE is passed for a KPIX earlier than 6, TH_B will be selected.
+// each channel. The modes enabled are ChanThreshACal, ChanThreshA, ChanThreshB, ChanDisable
+// If ChanDisable is passed for a KPIX earlier than 6, ChanThreshB will be selected.
 // Set writeEn to false to disable real write to KPIX
 void KpixAsic::setChannelModeArray (unsigned int *modes, bool writeEn ) {
 
@@ -2361,20 +2363,20 @@ void KpixAsic::setChannelModeArray (unsigned int *modes, bool writeEn ) {
       temp[1] = 0;
       for (y=0; y < 32; y++)  {
 
-         // Disable not supported before KPIX 6, set to TH_B
-         if ( modes[32*x+y] == DISABLE && kpixVersion < 6 ) modes[32*x+y] = TH_B;
+         // Disable not supported before KPIX 6, set to ChanThreshB
+         if ( modes[32*x+y] == ChanDisable && kpixVersion < 6 ) modes[32*x+y] = ChanThreshB;
 
          // Determine mode
-         if ( modes[32*x+y] == CAL_A ) { // CalMask = 1, Thresh = 1
+         if ( modes[32*x+y] == ChanThreshACal ) { // CalMask = 1, Thresh = 1
             temp[0] |= 1 << y;
             temp[1] |= 1 << y;
          }
-         else if ( modes[32*x+y] == DISABLE ) // CalMask = 1, Thresh = 0
+         else if ( modes[32*x+y] == ChanDisable ) // CalMask = 1, Thresh = 0
             temp[0] |= 1 << y;
-         else if ( modes[32*x+y] == TH_A ) // CalMask = 0, Thresh = 1
+         else if ( modes[32*x+y] == ChanThreshA ) // CalMask = 0, Thresh = 1
             temp[1] |= 1 << y;
 
-         // TH_B = CalMask=0, Thresh=0
+         // ChanThreshB = CalMask=0, Thresh=0
       }
 
       // Write register
@@ -2386,7 +2388,7 @@ void KpixAsic::setChannelModeArray (unsigned int *modes, bool writeEn ) {
 
 // Method to update the passed array with the current mode of each channel
 // Pass array of integers (1024) to update. Each location will be updated
-// with one of the following values: CAL_A, TH_A, TH_B, DISABLE
+// with one of the following values: ChanThreshACal, ChanThreshA, ChanThreshB, ChanDisable
 // Set readEn to false to disable real read from KPIX
 void KpixAsic::getChannelModeArray ( unsigned int *modes, bool readEn ) {
 
@@ -2403,17 +2405,17 @@ void KpixAsic::getChannelModeArray ( unsigned int *modes, bool readEn ) {
       // Go through each bit value
       for (y=0; y < 32; y++) {
 
-         // CalMask=1, Thresh=1, CAL_A
-         if ( (temp[0] & (1<<y)) != 0 && (temp[1] & (1<<y)) != 0 ) modes[32*x+y] = CAL_A;
+         // CalMask=1, Thresh=1, ChanThreshACal
+         if ( (temp[0] & (1<<y)) != 0 && (temp[1] & (1<<y)) != 0 ) modes[32*x+y] = ChanThreshACal;
 
-         // CalMask=1, Thresh=0, DISABLE
-         else if ( (temp[0] & (1<<y)) != 0 && (temp[1] & (1<<y)) == 0 ) modes[32*x+y] = DISABLE;
+         // CalMask=1, Thresh=0, ChanDisable
+         else if ( (temp[0] & (1<<y)) != 0 && (temp[1] & (1<<y)) == 0 ) modes[32*x+y] = ChanDisable;
 
-         // CalMask=0, Thresh=1, DISABLE
-         else if ( (temp[0] & (1<<y)) == 0 && (temp[1] & (1<<y)) != 0 ) modes[32*x+y] = TH_A;
+         // CalMask=0, Thresh=1, ChanDisable
+         else if ( (temp[0] & (1<<y)) == 0 && (temp[1] & (1<<y)) != 0 ) modes[32*x+y] = ChanThreshA;
 
-         // CalMask=0, Thresh=0, TH_B
-         else modes[32*x+y] = TH_B;
+         // CalMask=0, Thresh=0, ChanThreshB
+         else modes[32*x+y] = ChanThreshB;
       }
    }
 
@@ -2611,7 +2613,7 @@ void KpixAsic::setDefaults ( unsigned int clkPeriod, bool writeEn ) {
                         writeEn);
 
    // Init Channel Modes
-   for(x=0; x < 1024; x++) modes[x] = DISABLE;
+   for(x=0; x < 1024; x++) modes[x] = ChanDisable;
    setChannelModeArray(modes,writeEn);
 
    // Setup calibration strobes
@@ -2729,10 +2731,10 @@ void KpixAsic::dumpSettings () {
          cout << " = ";
       }
       if ( x % 4 == 0 && x % 32 != 0 ) cout << " ";
-      if ( modes[x] == DISABLE ) cout << "D";
-      if ( modes[x] == CAL_A   ) cout << "C";
-      if ( modes[x] == TH_A    ) cout << "A";
-      if ( modes[x] == TH_B    ) cout << "B";
+      if ( modes[x] == ChanDisable    ) cout << "D";
+      if ( modes[x] == ChanThreshACal ) cout << "C";
+      if ( modes[x] == ChanThreshA    ) cout << "A";
+      if ( modes[x] == ChanThreshB    ) cout << "B";
       if ( x % 32 == 31 ) cout << "\n";
    }
 }
@@ -2755,9 +2757,9 @@ double KpixAsic::convertTemp(unsigned int tempAdc) {
 
    // Convert number to binary
    for (i=7; i >= 0; i--) {
-      if ( tempAdc >= (int)pow(2,i) ) {
+      if ( tempAdc >= (unsigned int)pow(2,i) ) {
          g[i] = 1;
-         tempAdc -= (int)pow(2,i);
+         tempAdc -= (unsigned int)pow(2,i);
       }
       else g[i] = 0;
    }

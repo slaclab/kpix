@@ -40,11 +40,14 @@
 #include <TError.h>
 #include "KpixThreshScan.h"
 #include "KpixBunchTrain.h"
-#include "../offline/KpixSample.h"
 #include "../offline/KpixAsic.h"
+#include "../offline/KpixSample.h"
 #include "../offline/KpixThreshRead.h"
 #include "KpixRunWrite.h"
+#include "KpixProgress.h"
 using namespace std;
+using namespace sidApi::online;
+using namespace sidApi::offline;
 
 
 // Constructor for single KPIX. 
@@ -196,16 +199,16 @@ void KpixThreshScan::runThreshold ( short channel ) {
    kpixRunWrite->addRunVar("threshOffset","Threshold Offset",threshOffset);
 
    // Init modes
-   for (x=0; x < 1024; x++) modes[x] = DISABLE;
+   for (x=0; x < 1024; x++) modes[x] = KpixAsic::ChanDisable;
 
    // Determine if calibration is enabled
    if (calEnable) {
       kpixRunWrite->setEventVar("calEnable",1.0);
-      mode = CAL_A;
+      mode = KpixAsic::ChanThreshACal;
    }
    else {
       kpixRunWrite->setEventVar("calEnable",0.0);
-      mode = TH_A;
+      mode = KpixAsic::ChanThreshA;
    }
 
    // All Channels Calibration Enabled
@@ -412,7 +415,7 @@ void KpixThreshScan::runThreshold ( short channel ) {
                hist[idx]->GetXaxis()->SetRangeUser(minX[idx],maxX[idx]);
                hist[idx]->GetYaxis()->SetRangeUser(minY[idx],maxY[idx]);
                hist[idx]->Write();
-               if ( kpixProgress != NULL ) kpixProgress->updateData(KPRG_TH2F,1,(void**)(&(hist[idx])));
+               if ( kpixProgress != NULL ) kpixProgress->updateData(KpixProgress::DataTH2F,1,(void**)(&(hist[idx])));
                else delete hist[idx];
             }
             sleep(2);

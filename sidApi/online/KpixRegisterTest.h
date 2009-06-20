@@ -17,86 +17,88 @@
 #ifndef __KPIX_REGISTER_TEST_H__
 #define __KPIX_REGISTER_TEST_H__
 
-#include <iostream>
-#include <fstream>
-#include <iomanip>
-#include <sstream>
-#include <string>
-#include <fcntl.h>
-#include <unistd.h>
-#include "../offline/KpixAsic.h"
-#include "KpixProgress.h"
-#include <Rtypes.h>
-using namespace std;
 
 
-// KPIX Register Test Class
-class KpixRegisterTest {
+// Forward declarations
+namespace sidApi {
+   namespace online {
+      class KpixProgress;
+   }
+   namespace offline {
+      class KpixAsic;
+   }
+}
 
-      // Kpix Object
-      KpixAsic *kpixAsic;
 
-      // Configuration
-      bool endOnError;
-      bool showProgress;
-      bool direction;
-      unsigned int iterations;
-      unsigned int readCount;
+namespace sidApi {
+   namespace online {
+      class KpixRegisterTest {
 
-      // Error counters
-      unsigned int readErrors;
-      unsigned int statusErrors;
+            // Kpix Object
+            sidApi::offline::KpixAsic *kpixAsic;
 
-      // Progress class for reporting status
-      KpixProgress *kpixProgress;
+            // Configuration
+            bool endOnError;
+            bool showProgress;
+            bool direction;
+            unsigned int iterations;
+            unsigned int readCount;
 
-      // Debug enable
-      bool enDebug;
+            // Error counters
+            unsigned int readErrors;
+            unsigned int statusErrors;
 
-   public:
+            // Progress class for reporting status
+            sidApi::online::KpixProgress *kpixProgress;
 
-      // Register test class constructor
-      // Pass the following values for construction
-      // asic    = KPIX ASIC Object
-      KpixRegisterTest ( KpixAsic *asic );
+            // Debug enable
+            bool enDebug;
 
-      // Deconstructor.
-      virtual ~KpixRegisterTest ();
+         public:
 
-      // Set end on error flag, default = true
-      // Controls if the test should end when an error occurs or just
-      // count the error and keep on running.
-      void setEndOnError(bool flag);
+            // Register test class constructor
+            // Pass the following values for construction
+            // asic    = KPIX ASIC Object
+            KpixRegisterTest ( sidApi::offline::KpixAsic *asic );
 
-      // Set iterations to run, default = 100
-      void setIterations (unsigned int iterations);
+            // Deconstructor.
+            virtual ~KpixRegisterTest ();
 
-      // Set reads to perform in each iteration, default = 2
-      void setReadCount (unsigned int readCount);
+            // Set end on error flag, default = true
+            // Controls if the test should end when an error occurs or just
+            // count the error and keep on running.
+            void setEndOnError(bool flag);
 
-      // Turn on progress display, default = false
-      void setShowProgress ( bool flag );
+            // Set iterations to run, default = 100
+            void setIterations (unsigned int iterations);
 
-      // Set direction of test
-      // Controls the order of register read and writes
-      void setDirection ( bool flag );
+            // Set reads to perform in each iteration, default = 2
+            void setReadCount (unsigned int readCount);
 
-      // Run the register test
-      // Return true on success, false on fail
-      bool runTest ();
+            // Turn on progress display, default = false
+            void setShowProgress ( bool flag );
 
-      // Return the number of read-mismatches found
-      unsigned int getReadErrors();
+            // Set direction of test
+            // Controls the order of register read and writes
+            void setDirection ( bool flag );
 
-      // Return the number of status errors detected
-      unsigned int getStatusErrors();
+            // Run the register test
+            // Return true on success, false on fail
+            bool runTest ();
 
-      // Enable/disable debug
-      void setDebug ( bool debug );
+            // Return the number of read-mismatches found
+            unsigned int getReadErrors();
 
-      // Set progress Callback
-      void setKpixProgress(KpixProgress *progress);
+            // Return the number of status errors detected
+            unsigned int getStatusErrors();
 
-};
+            // Enable/disable debug
+            void setDebug ( bool debug );
 
+            // Set progress Callback
+            void setKpixProgress(sidApi::online::KpixProgress *progress);
+
+      };
+   }
+}
 #endif

@@ -12,73 +12,74 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 10/27/2008: created
+// 06/18/2009: Added namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_THREAH_READ_H__
 #define __KPIX_THREAH_READ_H__
 
-#include <iostream>
-#include <sstream>
 #include <string>
-#include <unistd.h>
-#include <Rtypes.h>
-#include <TObject.h>
-#include <TFile.h>
-#include <TText.h>
-#include <TGraph.h>
-#include <TH2F.h>
-#include <TH1D.h>
-#include <TGraphAsymmErrors.h>
-#include <TError.h>
-#include <TStyle.h>
-#include "KpixRunRead.h"
 using namespace std;
 
-// Calibration Data Class
-class KpixThreshRead {
+// Forward declarations
+namespace sidApi {
+   namespace offline {
+      class KpixRunRead;
+   }
+}
+class TH2F;
+class TGraph;
+class TGraphAsymmErrors;
 
-      // Flag to delete runRead
-      bool delRunRead;
 
-   public:
+namespace sidApi {
+   namespace offline {
+      class KpixThreshRead {
 
-      // Run Read Class
-      KpixRunRead *kpixRunRead;
+            // Flag to delete runRead
+            bool delRunRead;
 
-      // Calib Data Class Constructor
-      // Pass path to calibration data or
-      KpixThreshRead ( string threshFile, bool debug = false );
+         public:
 
-      // Calib Data Class Constructor
-      // Pass already open run read class
-      KpixThreshRead ( KpixRunRead *kpixRunRead );
+            // Run Read Class
+            KpixRunRead *kpixRunRead;
 
-      // Calib Data Class DeConstructor
-      ~KpixThreshRead ( );
+            // Calib Data Class Constructor
+            // Pass path to calibration data or
+            KpixThreshRead ( string threshFile, bool debug = false );
 
-      // Function to create plot name
-      static string genPlotName ( string prefix, int gain, int kpix, int channel, int cal=-1 );
+            // Calib Data Class Constructor
+            // Pass already open run read class
+            KpixThreshRead ( KpixRunRead *kpixRunRead );
 
-      // Function to create plot title
-      static string genPlotTitle ( string prefix, int gain, int kpix, int channel, int cal=-1 );
+            // Calib Data Class DeConstructor
+            ~KpixThreshRead ( );
 
-      // Get Threshold Scan Histogram
-      TH2F *getThreshScan ( string dir, int gain, int kpix, int channel, int cal );
+            // Function to create plot name
+            static string genPlotName ( string prefix, int gain, int kpix, int channel, int cal=-1 );
 
-      // Get Threshold Curve
-      TGraphAsymmErrors *getThreshCurve ( string dir, int gain, int kpix, int channel);
+            // Function to create plot title
+            static string genPlotTitle ( string prefix, int gain, int kpix, int channel, int cal=-1 );
 
-      // Get Threshold Cal
-      TGraphAsymmErrors *getThreshCal ( string dir, int gain, int kpix, int channel, int cal);
+            // Get Threshold Scan Histogram
+            TH2F *getThreshScan ( string dir, int gain, int kpix, int channel, int cal );
 
-      // Get Threshold Gain
-      TGraph *getThreshGain ( string dir, int gain, int kpix, int channel);
+            // Get Threshold Curve
+            TGraphAsymmErrors *getThreshCurve ( string dir, int gain, int kpix, int channel);
 
-      // Get Threshold Data
-      bool getThreshData (double *meanVal, double *sigmaVal, double *gainVal, string dir,int gain,int serNum,int channel);
+            // Get Threshold Cal
+            TGraphAsymmErrors *getThreshCal ( string dir, int gain, int kpix, int channel, int cal);
 
-      // Get Calibration Sigma Value
-      bool getCalSigma (double *sigmaVal,string dir,int gain,int serNum,int channel, int cal);
+            // Get Threshold Gain
+            TGraph *getThreshGain ( string dir, int gain, int kpix, int channel);
 
-};
+            // Get Threshold Data
+            bool getThreshData (double *meanVal, double *sigmaVal, double *gainVal, string dir,int gain,int serNum,int channel);
+
+            // Get Calibration Sigma Value
+            bool getCalSigma (double *sigmaVal,string dir,int gain,int serNum,int channel, int cal);
+
+      };
+   }
+}
 
 #endif

@@ -14,12 +14,11 @@
 // 10/15/2008: created
 // 03/03/2009: changed container values to unsigned int
 //-----------------------------------------------------------------------------
-#include <iostream>
-#include <iomanip>
-#include <sstream>
-#include <unistd.h>
+#include <string>
 #include "KpixHistogram.h"
 using namespace std;
+using namespace sidApi::online;
+
 
 // Constructor
 KpixHistogram::KpixHistogram () {

@@ -44,12 +44,16 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <TString.h>
+#include <TFile.h>
+#include <TTree.h>
 #include "KpixSample.h"
 #include "KpixAsic.h"
+#include "KpixFpga.h"
 #include "KpixRunVar.h"
 #include "KpixEventVar.h"
 #include "KpixRunRead.h"
 using namespace std;
+using namespace sidApi::offline;
 
 // Create run read object. Opens tree file for reading
 // Pass the following values:

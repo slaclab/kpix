@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include "KpixSample.h"
 using namespace std;
+using namespace sidApi::offline;
 
 ClassImp(KpixSample)
 

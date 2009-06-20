@@ -27,6 +27,7 @@
 #include <TString.h>
 #include "KpixEventVar.h"
 using namespace std;
+using namespace sidApi::offline;
 
 ClassImp(KpixEventVar)
 

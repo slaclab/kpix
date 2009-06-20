@@ -18,12 +18,18 @@
 // 02/23/2009: Added changes required for status read.
 //-----------------------------------------------------------------------------
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <string>
 #include <fcntl.h>
 #include <unistd.h>
 #include "KpixRegisterTest.h"
+#include "KpixProgress.h"
+#include "../offline/KpixAsic.h"
 using namespace std;
+using namespace sidApi::online;
+using namespace sidApi::offline;
+
 
 // Register test class constructor
 // Pass the following values for construction

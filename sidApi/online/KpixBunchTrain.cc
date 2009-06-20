@@ -44,6 +44,8 @@
 #include "KpixBunchTrain.h"
 #include "SidLink.h"
 using namespace std;
+using namespace sidApi::online;
+using namespace sidApi::offline;
 
 
 // Function to compare entries in the sample list for sorting

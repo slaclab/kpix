@@ -29,75 +29,76 @@
 #ifndef __KPIX_BUNCH_TRAIN_H__
 #define __KPIX_BUNCH_TRAIN_H__
 
-#include <iostream>
-#include <sstream>
-#include <fstream>
-#include <string>
-#include <fcntl.h>
-#include <unistd.h>
-#include "../offline/KpixSample.h"
-#include "SidLink.h"
-#include <Rtypes.h>
-using namespace std;
+
+// Forward declarations
+namespace sidApi {
+   namespace online {
+      class SidLink;
+   }
+   namespace offline {
+      class KpixSample;
+   }
+}
 
 
-// KPIX Sample Data Class
-class KpixBunchTrain {
+namespace sidApi {
+   namespace online {
+      class KpixBunchTrain {
 
-      // Array of sample data sorted by sample time, pointers
-      KpixSample *samplesByTime[4*64*4];
+            // Array of sample data sorted by sample time, pointers
+            sidApi::offline::KpixSample *samplesByTime[4*64*4];
 
-      // Total number of samples
-      unsigned int totalCount;
+            // Total number of samples
+            unsigned int totalCount;
 
-      // Dead count & parity error count
-      unsigned int deadCount;
-      unsigned int parErrors;
+            // Dead count & parity error count
+            unsigned int deadCount;
+            unsigned int parErrors;
 
-      // Sequence Number
-      unsigned int trainNumber;
+            // Sequence Number
+            unsigned int trainNumber;
 
-      // Is last
-      bool lastTrain;
+            // Is last
+            bool lastTrain;
 
-   public:
+         public:
 
-      // Sample class constructor, received frame
-      // Pass the following values for construction
-      // link      = SID Link to receive data
-      // debug     = Debug flag
-      KpixBunchTrain ( SidLink *link, bool debug );
+            // Sample class constructor, received frame
+            // Pass the following values for construction
+            // link      = SID Link to receive data
+            // debug     = Debug flag
+            KpixBunchTrain ( sidApi::online::SidLink *link, bool debug );
 
-      // Method to return an sample by KPIX/channel/bucket
-      // Pass KPIX serial, channel number & bucket number
-      KpixSample * getSample ( unsigned short kpix, unsigned short channel, unsigned char bucket );
+            // Method to return an sample by KPIX/channel/bucket
+            // Pass KPIX serial, channel number & bucket number
+            sidApi::offline::KpixSample * getSample ( unsigned short kpix, unsigned short channel, unsigned char bucket );
 
-      // Method to return an sample list sorted by time
-      // Return pointer to array of 4*64*4 possible samples, unused locations point to NULL
-      KpixSample ** getSampleList ( );
+            // Method to return an sample list sorted by time
+            // Return pointer to array of 4*64*4 possible samples, unused locations point to NULL
+            sidApi::offline::KpixSample ** getSampleList ( );
 
-      // Method to return total sample count
-      unsigned int getSampleCount ( );
+            // Method to return total sample count
+            unsigned int getSampleCount ( );
 
-      // Method to return sample count for a kpix/channel
-      unsigned int getSampleCount ( unsigned short kpix, unsigned short channel );
+            // Method to return sample count for a kpix/channel
+            unsigned int getSampleCount ( unsigned short kpix, unsigned short channel );
 
-      // Get dead count
-      unsigned int getDeadCount ();
+            // Get dead count
+            unsigned int getDeadCount ();
 
-      // Get parity errors
-      unsigned int getParErrors ();
+            // Get parity errors
+            unsigned int getParErrors ();
 
-      // Get last train flag
-      bool getLastTrain ();
+            // Get last train flag
+            bool getLastTrain ();
 
-      // Get sequence number
-      unsigned int getTrainNumber();
+            // Get sequence number
+            unsigned int getTrainNumber();
 
-      // Deconstructor, Will delete all associated samples stored in this sample.
-      virtual ~KpixBunchTrain ( );
+            // Deconstructor, Will delete all associated samples stored in this sample.
+            virtual ~KpixBunchTrain ( );
 
-};
-
-
+      };
+   }
+}
 #endif

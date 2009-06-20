@@ -18,56 +18,54 @@
 // Modification history :
 // 12/18/2006: created
 // 03/19/2007: Changed variables to root specific types.
+// 06/18/2009: Added namespace
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_EVENT_VAR_H__
 #define __KPIX_EVENT_VAR_H__
 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
-#include <Rtypes.h>
 #include <TObject.h>
 #include <TString.h>
-using namespace std;
 
-// KPIX Event Data Class
-class KpixEventVar : public TObject {
 
-      // Variable number to match to sample records
-      Int_t varNumber;
+namespace sidApi {
+   namespace offline {
+      class KpixEventVar : public TObject {
 
-      // Variable Name
-      TString varName;
+            // Variable number to match to sample records
+            Int_t varNumber;
 
-      // Variable Description
-      TString varDesc;
+            // Variable Name
+            TString varName;
 
-   public:
+            // Variable Description
+            TString varDesc;
 
-      // Variable class constructor
-      KpixEventVar ( );
+         public:
 
-      // Variable class constructor
-      // Pass the following values for construction
-      // number    = Variable number
-      // name      = Variable name string
-      // desc      = Variable description string
-      KpixEventVar ( Int_t number, TString name, TString desc );
+            // Variable class constructor
+            KpixEventVar ( );
 
-      // Return variable name
-      TString name ();
+            // Variable class constructor
+            // Pass the following values for construction
+            // number    = Variable number
+            // name      = Variable name string
+            // desc      = Variable description string
+            KpixEventVar ( Int_t number, TString name, TString desc );
 
-      // Return variable description
-      TString description ();
+            // Return variable name
+            TString name ();
 
-      // Return variable number
-      Int_t number ();
+            // Return variable description
+            TString description ();
 
-      // Deconstructor 
-      virtual ~KpixEventVar();
+            // Return variable number
+            Int_t number ();
 
-      ClassDef(KpixEventVar,3)
-};
+            // Deconstructor 
+            virtual ~KpixEventVar();
 
+            ClassDef(KpixEventVar,3)
+      };
+   }
+}
 #endif

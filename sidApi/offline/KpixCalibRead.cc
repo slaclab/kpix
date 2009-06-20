@@ -24,11 +24,16 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <TH1F.h>
+#include <TF1.h>
+#include <TFile.h>
 #include <TDirectory.h>
 #include <TKey.h>
 #include <TGraph.h>
 #include "KpixCalibRead.h"
+#include "KpixRunRead.h"
+#include "KpixAsic.h"
 using namespace std;
+using namespace sidApi::offline;
 
 
 // Private functin to create plot name

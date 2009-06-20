@@ -26,33 +26,33 @@
 #ifndef __SID_LINK_H__
 #define __SID_LINK_H__
 
-#include <iostream>
-#include <sstream>
 #include <string>
-#include <fcntl.h>
-#include <unistd.h>
-#include <Rtypes.h>
 using namespace std;
 
+namespace sidApi {
+   namespace online {
+      class SidLink {
 
 // Read & Write Timeouts in mS
 #define SID_IO_TIMEOUT 100
 
+            // Values used for USB version 
+            int   usbDevice;
+            void *usbHandle;
 
-// Link class for communicating to KPIX
-class SidLink {
+            // Flag to control timeout
+            bool timeoutEn;
 
-      // Values used for USB version 
-      int   usbDevice;
-      void *usbHandle;
+            // Values used for serial version
+            string serDevice;
+            int    serFd;
+            int    serFdRd;
 
-      // Flag to control timeout
-      bool timeoutEn;
+            // Max count in buffer 
+            unsigned int maxRxSize;
 
-      // Values used for serial version
-      string serDevice;
-      int    serFd;
-      int    serFdRd;
+            // Debug flag
+            bool enDebug;
 
       // Max count in buffer 
       unsigned int maxRxSize;
@@ -60,77 +60,71 @@ class SidLink {
       // Debug flag
       bool enDebug;
 
-   public:
+            // Serial class constructor. This constructore
+            // does nothing but create the base object. Serial
+            // link must be opened before read/write access.
+            SidLink ( );
 
-      // Serial class constructor. This constructore
-      // does nothing but create the base object. Serial
-      // link must be opened before read/write access.
-      SidLink ( );
+            // Deconstructor, closes link if open
+            virtual ~SidLink ( );
 
-      // Deconstructor, closes link if open
-      virtual ~SidLink ( );
+            // Open link to SID Devices, VCP driver version
+            // Pass path to serial device for VCP driver, "/dev/ttyUSB0"
+            // Throws exception on device open failure
+            void linkOpen ( string device );
 
-      // Open link to SID Devices, VCP driver version
-      // Pass path to serial device for VCP driver, "/dev/ttyUSB0"
-      // Throws exception on device open failure
-      void linkOpen ( string device );
+            // Open link to SID Devices, direct driver version
+            // Pass device ID for direct drivers, 0,1,2 etc
+            // Throws exception on device open failure
+            // Do not use, not yet fully tested.
+            void linkOpen ( int device );
 
-      // Open link to SID Devices, direct driver version
-      // Pass device ID for direct drivers, 0,1,2 etc
-      // Throws exception on device open failure
-      // Do not use, not yet fully tested.
-      void linkOpen ( int device );
+            // Open link to SID Devices, Simulation Version
+            // Pass path to named pipes (read & write directions) for simulation
+            // Throws exception on device open failure
+            void linkOpen ( string rdPipe, string wrPipe );
 
-      // Open link to SID Devices, Simulation Version
-      // Pass path to named pipes (read & write directions) for simulation
-      // Throws exception on device open failure
-      void linkOpen ( string rdPipe, string wrPipe );
+            // Flush any pending data from the link.
+            // Returns number of bytes flushed
+            int linkFlush ( );
 
-      // Flush any pending data from the link.
-      // Returns number of bytes flushed
-      int linkFlush ( );
+            // Method to close the link
+            void linkClose ();
 
-      // Method to close the link
-      void linkClose ();
+            // Method to write a word array to a KPIX device, raw interface
+            // Pass word (16-bit) array and length
+            // Return number of words written
+            int linkRawWrite ( unsigned short int *data, short int size, unsigned char type, bool sof);
 
-      // Method to write a word array to a KPIX device, raw interface
-      // Pass word (16-bit) array and length
-      // Return number of words written
-      int linkRawWrite ( unsigned short int *data, short int size, unsigned char type, bool sof);
+            // Method to write a word array to a KPIX device
+            // Pass word (16-bit) array and length
+            // Return number of words written
+            int linkKpixWrite ( unsigned short int *data, short int size);
 
-      // Method to read a word array from a KPIX device, raw interface
-      // Pass word (16-bit) array and length
-      // Return number of words read
-      int linkRawRead ( unsigned short int *data, short int size, unsigned char type, bool sof);
+            // Method to read a word array from a KPIX device
+            // Pass word (16-bit) array and length
+            // Return number of words read
+            int linkKpixRead ( unsigned short int *data, short int size );
 
-      // Method to write a word array to a KPIX device
-      // Pass word (16-bit) array and length
-      // Return number of words written
-      int linkKpixWrite ( unsigned short int *data, short int size);
+            // Method to read a word array from a KPIX device, sample data
+            // Pass word (16-bit) array, length and first read flag
+            // Return number of words read
+            int linkDataRead ( unsigned short int *data, short int size, bool first );
 
-      // Method to read a word array from a KPIX device
-      // Pass word (16-bit) array and length
-      // Return number of words read
-      int linkKpixRead ( unsigned short int *data, short int size );
+            // Method to write a word array to the FPGA device
+            // Pass word (16-bit) array and length
+            // Return number of words written
+            int linkFpgaWrite ( unsigned short int *data, short int size);
 
-      // Method to read a word array from a KPIX device, sample data
-      // Pass word (16-bit) array, length and first read flag
-      // Return number of words read
-      int linkDataRead ( unsigned short int *data, short int size, bool first );
+            // Method to read a word array from the FPGA device
+            // Pass word (16-bit) array and length
+            // Return number of words read
+            int linkFpgaRead ( unsigned short int *data, short int size );
 
-      // Method to write a word array to the FPGA device
-      // Pass word (16-bit) array and length
-      // Return number of words written
-      int linkFpgaWrite ( unsigned short int *data, short int size);
-
-      // Method to read a word array from the FPGA device
-      // Pass word (16-bit) array and length
-      // Return number of words read
-      int linkFpgaRead ( unsigned short int *data, short int size );
-
-      // Turn on or off debugging for the class
-      void linkDebug ( bool debug );
-      
-};
-
+            // Turn on or off debugging for the class
+            void linkDebug ( bool debug );
+            
+      };
+   }
+}
 #endif

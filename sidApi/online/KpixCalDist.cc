@@ -45,8 +45,15 @@
 #include <unistd.h>
 #include "KpixCalDist.h"
 #include "KpixHistogram.h"
+#include "KpixRunWrite.h"
+#include "KpixBunchTrain.h"
+#include "KpixProgress.h"
 #include "../offline/KpixCalibRead.h"
+#include "../offline/KpixAsic.h"
+#include "../offline/KpixSample.h"
 using namespace std;
+using namespace sidApi::online;
+using namespace sidApi::offline;
 
 
 // Constructor for single KPIX. 
@@ -199,20 +206,20 @@ void KpixCalDist::runDistribution ( short channel ) {
    kpixRunWrite->setEventVar("calDistType",1.0);
 
    // Init modes
-   for (x=0; x < 1024; x++) modes[x] = DISABLE;
+   for (x=0; x < 1024; x++) modes[x] = KpixAsic::ChanDisable;
 
    // No Channels Enabled
    if ( channel == -2 ) kpixRunWrite->setEventVar("calDistMaskChan",-2.0);
 
    // All Channels Enabled
    else if ( channel == -1 ) {
-      for (x=0; x < 1024; x++) modes[x] = CAL_A;
+      for (x=0; x < 1024; x++) modes[x] = KpixAsic::ChanThreshACal;
       kpixRunWrite->setEventVar("calDistMaskChan",-1.0);
    }
 
    // One Channel Enabled
    else {
-      modes[channel] = CAL_A;
+      modes[channel] = KpixAsic::ChanThreshACal;
       kpixRunWrite->setEventVar("calDistMaskChan",(double)channel);
    }
 
@@ -479,7 +486,8 @@ void KpixCalDist::runDistribution ( short channel ) {
                   }
 
                   // Update Live Plots
-                  if (kpixProgress != NULL && plotCount != 0) kpixProgress->updateData(KPRG_TH1F,8,(void **)hist); 
+                  if (kpixProgress != NULL && plotCount != 0) 
+                     kpixProgress->updateData(KpixProgress::DataTH1F,8,(void **)hist); 
 
                   // Otherwise delete plots
                   else for ( bucket = 0; bucket < 8; bucket++ ) if ( hist[bucket] != NULL ) delete hist[bucket]; 
@@ -530,20 +538,20 @@ void KpixCalDist::runCalibration ( short channel ) {
    kpixRunWrite->setEventVar("calDistType",0.0);
 
    // Init modes
-   for (x=0; x < 1024; x++) modes[x] = DISABLE;
+   for (x=0; x < 1024; x++) modes[x] = KpixAsic::ChanDisable;
 
    // No Channels Enabled
    if ( channel == -2 ) kpixRunWrite->setEventVar("calDistMaskChan",-2.0);
 
    // All Channels Enabled
    else if ( channel == -1 ) {
-      for (x=0; x < 1024; x++) modes[x] = CAL_A;
+      for (x=0; x < 1024; x++) modes[x] = KpixAsic::ChanThreshACal;
       kpixRunWrite->setEventVar("calDistMaskChan",-1.0);
    }
 
    // One Channel Enabled
    else {
-      modes[channel] = CAL_A;
+      modes[channel] = KpixAsic::ChanThreshACal;
       kpixRunWrite->setEventVar("calDistMaskChan",(double)channel);
    }
 
@@ -814,7 +822,7 @@ void KpixCalDist::runCalibration ( short channel ) {
 
                   // Check For Valid, Update Live Plots
                   if ( kpixProgress != NULL && plotCount != 0 )
-                     kpixProgress->updateData(KPRG_TGRAPH,16,(void **)tg);
+                     kpixProgress->updateData(KpixProgress::DataTGraph,16,(void **)tg);
 
                   // Otherwise delete plots
                   else for ( bucket = 0; bucket < 16; bucket++ ) if ( tg[bucket] != NULL ) delete tg[bucket];

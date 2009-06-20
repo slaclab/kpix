@@ -47,6 +47,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <time.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TBranch.h>
+#include <TString.h>
 #include "KpixBunchTrain.h"
 #include "KpixRunWrite.h"
 #include "../offline/KpixSample.h"
@@ -55,7 +59,8 @@
 #include "../offline/KpixAsic.h"
 #include "../offline/KpixFpga.h"
 using namespace std;
-
+using namespace sidApi::online;
+using namespace sidApi::offline;
 
 // Function to generate and return current timestamp.
 string KpixRunWrite::genTimestamp () {

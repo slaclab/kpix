@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include "KpixRunVar.h"
 using namespace std;
+using namespace sidApi::offline;
 
 ClassImp(KpixRunVar)
 

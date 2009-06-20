@@ -15,59 +15,58 @@
 // Modification history :
 // 12/18/2006: created
 // 03/19/2007: Changed variables to root specific types.
+// 06/18/2009: Added namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_RUN_VAR_H__
 #define __KPIX_RUN_VAR_H__
 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
-#include <Rtypes.h>
 #include <TObject.h>
 #include <TString.h>
 using namespace std;
 
-// KPIX Event Data Class
-class KpixRunVar : public TObject {
 
-      // Char string containing name, NULL terminated
-      TString varName;
+namespace sidApi {
+   namespace offline {
+      class KpixRunVar : public TObject {
 
-      // Char string containing description, NULL terminated
-      TString varDesc;
+            // Char string containing name, NULL terminated
+            TString varName;
 
-      // Value
-      Double_t varValue;
+            // Char string containing description, NULL terminated
+            TString varDesc;
 
-   public:
+            // Value
+            Double_t varValue;
 
-      // Variable class constructor
-      KpixRunVar ( );
+         public:
 
-      // Variable class constructor
-      // Pass the following values for construction
-      // name      = Variable name string
-      // desc      = Variable description string
-      // value     = Initial value
-      KpixRunVar ( TString name, TString desc, Double_t value );
+            // Variable class constructor
+            KpixRunVar ( );
 
-      // Return variable name
-      TString name ();
+            // Variable class constructor
+            // Pass the following values for construction
+            // name      = Variable name string
+            // desc      = Variable description string
+            // value     = Initial value
+            KpixRunVar ( TString name, TString desc, Double_t value );
 
-      // Return variable description
-      TString description ();
+            // Return variable name
+            TString name ();
 
-      // Return Value
-      Double_t value();
+            // Return variable description
+            TString description ();
 
-      // Set Value
-      void value( Double_t value );
+            // Return Value
+            Double_t value();
 
-      // Deconstructor
-      virtual ~KpixRunVar (); 
+            // Set Value
+            void value( Double_t value );
 
-      ClassDef(KpixRunVar,2)
-};
+            // Deconstructor
+            virtual ~KpixRunVar (); 
 
+            ClassDef(KpixRunVar,2)
+      };
+   }
+}
 #endif

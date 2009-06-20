@@ -20,13 +20,18 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <TH1F.h>
+#include <TH2F.h>
+#include <TGraphAsymmErrors.h>
 #include <TF1.h>
+#include <TFile.h>
 #include <TH1D.h>
 #include <TDirectory.h>
 #include <TKey.h>
 #include <TGraph.h>
 #include "KpixThreshRead.h"
+#include "KpixRunRead.h"
 using namespace std;
+using namespace sidApi::offline;
 
 
 // Private functin to create plot name

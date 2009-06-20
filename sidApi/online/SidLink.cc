@@ -43,6 +43,7 @@
 #include "../ftdi/ftd2xx.h"
 #include "SidLink.h"
 using namespace std;
+using namespace sidApi::online;
 
 // Serial class constructor. This constructore
 // does nothing but create the base object. Serial

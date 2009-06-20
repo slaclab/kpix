@@ -13,27 +13,31 @@
 //-----------------------------------------------------------------------------
 // Modification history :
 // 09/26/2008: created
+// 06/18/2009: Added namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_PROGRESS_H__
 #define __KPIX_PROGRESS_H__
-using namespace std;
 
-// Plot Types
-#define KPRG_TH1F      0
-#define KPRG_TGRAPH    1
-#define KPRG_TGRAPH2D  2
-#define KPRG_TH2F      3
-#define KPRG_STRING    4
-#define KPRG_INT       5
-#define KPRG_UINT      6
-#define KPRG_DOUBLE    7
 
-// KPIX Progress Class
-class KpixProgress {
-   public:
-      virtual void updateProgress(unsigned int count, unsigned int total) = 0;
-      virtual void updateData(unsigned int type, unsigned int count, void **data) = 0;
-      virtual ~KpixProgress() {};
-};
 
+namespace sidApi {
+   namespace online {
+      class KpixProgress {
+         public:
+
+            static const unsigned int DataTH1F     = 0;
+            static const unsigned int DataTGraph   = 1;
+            static const unsigned int DataTGraph2D = 2;
+            static const unsigned int DataTH2F     = 3;
+            static const unsigned int DataString   = 4;
+            static const unsigned int DataInt      = 5;
+            static const unsigned int DataUInt     = 6;
+            static const unsigned int DataDouble   = 7;
+
+            virtual void updateProgress(unsigned int count, unsigned int total) = 0;
+            virtual void updateData(unsigned int type, unsigned int count, void **data) = 0;
+            virtual ~KpixProgress() {};
+      };
+   }
+}
 #endif

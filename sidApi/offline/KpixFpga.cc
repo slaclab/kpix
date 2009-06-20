@@ -40,9 +40,11 @@
 #include <stdlib.h>
 #include "KpixFpga.h"
 using namespace std;
+using namespace sidApi::offline;
 
 #ifdef ONLINE_EN
 #include "../online/SidLink.h"
+using namespace sidApi::online;
 #endif
 
 
