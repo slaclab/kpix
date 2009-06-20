@@ -422,6 +422,9 @@ void KpixGuiTop::run() {
          case CmdRescanKpix :
             cout << "ReScan Started" << endl;
 
+            // Flush the link
+            sidLink->linkFlush();
+
             // Delete ASICs
             for (x=0; x < asicCnt; x++) delete asic[x];
             asicCnt = 0;
@@ -446,9 +449,11 @@ void KpixGuiTop::run() {
                try {
 
                   // Send reset command
+                  cout << "Sending Reset" << endl;
                   asic[asicCnt]->cmdReset();
 
                   // Attempt to read from device
+                  cout << "Reading Status" << endl;
                   asic[asicCnt]->getStatus(&temp1,&temp2,&temp3,&temp4);
 
                   // If we got here asic was found

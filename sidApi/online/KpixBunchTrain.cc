@@ -75,7 +75,6 @@ int compareSamples ( const void *a, const void *b ) {
 KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
 
    // Local variables
-   unsigned short data[3];
    unsigned short checkSum;
    unsigned int   x;
    unsigned int   address;
@@ -88,18 +87,32 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
    unsigned int   trigType;
    unsigned int   empty;
    unsigned int   special;
+   unsigned short data[4*64*4*3*2];
    stringstream   error;
-
-   // Init sample count & pointers
-   for (x=0; x < (4*64*4); x++) samplesByTime[x] = NULL;
-   totalCount = 0;
-   deadCount  = 0;
 
    // Debug
    if ( debug ) cout << "KpixBunchTrain::KpixBunchTrain -> Creating new bunchTrain.\n";
 
    // Get header first
    link->linkDataRead(data,2,true);
+   totalCount = 0;
+
+   // Keep going until we got all of the samples
+   while ( 1 ) {
+
+      // Read three words
+      link->linkDataRead(&(data[totalCount*3+2]),3,false);
+
+      // Is this the end?
+      if ((data[totalCount*3+2] & 0x8000) != 0 ) break;
+
+      // Detect overrun of frame data
+      if ( totalCount == 64*4*4 ) {
+         totalCount = 0;
+         throw(string("KpixBunchTrain::KpixBunchTrain -> Sample Overrun"));
+      }
+      totalCount++;
+   }
 
    // Store train sequence number
    trainNumber  = data[0];
@@ -108,26 +121,19 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
    // Debug
    if ( debug ) cout << "KpixBunchTrain::KpixBunchTrain -> Got Header. Train Number=" << dec << trainNumber << endl;
 
-   // Init
-   checkSum   = data[0] + data[1];
-   totalCount = 0;
+   // Init checksum
+   checkSum = data[0] + data[1];
 
    // Keep going until we got all of the samples
-   while ( 1 ) {
-
-      // Read three words
-      link->linkDataRead(data,3,false);
-
-      // Is this the end?
-      if ((data[0] & 0x8000) != 0 ) break;
+   for (x=0; x<totalCount; x++) {
 
       // Add to checksum
-      checkSum += data[0];
-      checkSum += data[1];
-      checkSum += data[2];
+      checkSum += data[x*3+2+0];
+      checkSum += data[x*3+2+1];
+      checkSum += data[x*3+2+2];
 
       // Double check marker
-      if ( (data[0] & 0xC000) != 0x4000 ) {
+      if ( (data[x*3+2+0] & 0xC000) != 0x4000 ) {
          if ( debug ) cout << "KpixBunchTrain::KpixBunchTrain -> Found Bad Marker.\n";
          continue;
       }
@@ -135,67 +141,65 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
       // Extract sample data
 
       // Word 0
-      bucket   = (data[0] >> 12) & 0x0003;
-      address  = (data[0] >> 10) & 0x0003;
-      channel  = data[0] & 0x03FF;
+      bucket   = (data[x*3+2+0] >> 12) & 0x0003;
+      address  = (data[x*3+2+0] >> 10) & 0x0003;
+      channel  = data[x*3+2+0] & 0x03FF;
 
       // Word 1
-      special  = (data[1] >> 15) & 0x1;
-      range    = (data[1] >> 13) & 0x0001;
-      empty    = (data[1] >> 12) & 0x1;
-      time     = data[1] & 0x0FFF;
-      time    += (data[1] >> 2) & 0x1000; // Time Bit Expansion, Bit 14
+      special  = (data[x*3+2+1] >> 15) & 0x1;
+      range    = (data[x*3+2+1] >> 13) & 0x0001;
+      empty    = (data[x*3+2+1] >> 12) & 0x1;
+      time     = data[x*3+2+1] & 0x0FFF;
+      time    += (data[x*3+2+1] >> 2) & 0x1000; // Time Bit Expansion, Bit 14
 
       // Word 2
       //       = (data[2] >> 15) & 0x1; // Future
-      trigType = (data[2] >> 14) & 0x1;
-      badCount = (data[2] >> 13) & 0x1;
-      adc      = data[2] & 0x1FFF;
-
-      // Detect overrun of frame data
-      if ( totalCount == 64*4*4 ) {
-         for ( x=0; x < totalCount; x++) delete samplesByTime[x];
-         totalCount = 0;
-         throw(string("KpixBunchTrain::KpixBunchTrain -> Sample Overrun"));
-      }
+      trigType = (data[x*3+2+2] >> 14) & 0x1;
+      badCount = (data[x*3+2+2] >> 13) & 0x1;
+      adc      = data[x*3+2+2] & 0x1FFF;
 
       // Create a new Kpix Event
-      samplesByTime[totalCount] = 
+      samplesByTime[x] = 
          new KpixSample(address,channel,bucket,range,time,adc,trainNumber,empty,badCount,trigType,special,debug);
-      totalCount++;
    }
 
    // Add last two values to checksum
-   checkSum += data[0];
-   checkSum += data[1];
+   checkSum += data[totalCount*3+2+0];
+   checkSum += data[totalCount*3+2+1];
 
    // Check checksum
-   if ( checkSum != data[2] ) {
+   if ( checkSum != data[totalCount*3+2+2] ) {
+      error.str("");
+      error << "KpixBunchTrain::KpixBunchTrain -> Checksum Error. TotalCount=" << dec << totalCount;
       for ( x=0; x < totalCount; x++) delete samplesByTime[x];
       totalCount = 0;
-      throw(string("KpixBunchTrain::KpixBunchTrain -> Checksum Error"));
+      throw(error.str());
    }
 
    // Check count either 1x events (old fpag) or 3x events (new fpga)
-   if ( totalCount != (unsigned int)(data[0] & 0x7FFF) && (totalCount*3) != (unsigned int)(data[0] & 0x7FFF) ) {
+   if ( totalCount != (unsigned int)(data[totalCount*3+2+0] & 0x7FFF) && 
+        (totalCount*3) != (unsigned int)(data[totalCount*3+2+0] & 0x7FFF) ) {
       for ( x=0; x < totalCount; x++) delete samplesByTime[x];
       totalCount = 0;
       error.str("");
       error << "KpixBunchTrain::KpixBunchTrain -> Sample Count Mismatch. ";
-      error << "Got=" << dec << (unsigned int)(data[0] & 0x7FFF);
+      error << "Got=" << dec << (unsigned int)(data[totalCount*3+2+0] & 0x7FFF);
       error << ", Exp=" << dec << totalCount;
       error << " or " << dec << totalCount*3;
       throw(error.str());
    }
 
    // Dead time counter
-   deadCount = data[1] & 0x1FFF;
+   deadCount = data[totalCount*3+2+1] & 0x1FFF;
 
    // Parity error count
-   parErrors = (data[1] >> 13) & 0x1;
+   parErrors = (data[totalCount*3+2+1] >> 13) & 0x1;
 
    // last train flag
-   lastTrain = (data[1] & 0x8000) == 0;
+   lastTrain = (data[totalCount*3+2+1] & 0x8000) == 0;
+
+   // Set last entry to NULL
+   if ( totalCount != 64*4*4) samplesByTime[totalCount] = NULL;
 
    // Sort sample list by time
    if ( totalCount > 0 ) 

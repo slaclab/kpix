@@ -21,6 +21,7 @@
 // 04/27/2007: Modified for new communication protocol and add of fpga registers
 // 05/01/2007: Added flush command.
 // 08/03/2007: Adjusted timeout value
+// 06/18/2009: Removed link flush and byte write routines.
 //-----------------------------------------------------------------------------
 #ifndef __SID_LINK_H__
 #define __SID_LINK_H__
@@ -34,7 +35,7 @@
 using namespace std;
 
 
-// Read & Write Timeouts, 1ms
+// Read & Write Timeouts in mS
 #define SID_IO_TIMEOUT 100
 
 
@@ -52,6 +53,9 @@ class SidLink {
       string serDevice;
       int    serFd;
       int    serFdRd;
+
+      // Max count in buffer 
+      unsigned int maxRxSize;
 
       // Debug flag
       bool enDebug;
@@ -88,9 +92,6 @@ class SidLink {
 
       // Method to close the link
       void linkClose ();
-
-      // Method to write a single byte to the interface. Used for debug purposes
-      int linkByteWrite ( unsigned char data );
 
       // Method to write a word array to a KPIX device, raw interface
       // Pass word (16-bit) array and length
