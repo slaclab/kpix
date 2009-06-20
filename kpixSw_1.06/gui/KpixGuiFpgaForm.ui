@@ -1,0 +1,737 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>KpixGuiFpgaForm</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>KpixGuiFpgaForm</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>390</width>
+            <height>579</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>KPIX FPGA Settings</string>
+    </property>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_2_3_3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>220</x>
+                <y>130</y>
+                <width>40</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="left"&gt;Clks&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_4</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>50</x>
+                <y>100</y>
+                <width>100</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Ext Run Source: &lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QComboBox">
+        <item>
+            <property name="text">
+                <string>Disabled</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>NIM A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>NIM B</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>BNC A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>BNC B</string>
+            </property>
+        </item>
+        <property name="name">
+            <cstring>extRunSource</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>100</y>
+                <width>81</width>
+                <height>27</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>60</x>
+                <y>10</y>
+                <width>90</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;BNC A Out: &lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_5</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>50</x>
+                <y>130</y>
+                <width>100</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Ext Run Delay: &lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>extRunType</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>160</y>
+                <width>20</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string></string>
+        </property>
+    </widget>
+    <widget class="QSpinBox">
+        <property name="name">
+            <cstring>extRunDelay</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>130</y>
+                <width>60</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="maxValue">
+            <number>9999</number>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>60</x>
+                <y>40</y>
+                <width>90</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;BNC B Out: &lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QComboBox">
+        <item>
+            <property name="text">
+                <string>RegClock</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RegSel1</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RegSel0</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>PwrUpAcq</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>ResetLoad</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>LeakageNull</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>OffsetNull</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>ThreshOff</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>TrigInh</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>CalStrobe</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>PwerUpAcqDig</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>SelCell</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>DeselAllCells</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RampPeriod</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>PrechargeBus</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RegData</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RegWrEn</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>KpixClk</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>ForceTrig</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>TrigEnable</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>CalStrobeDly</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>NIM A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>NIM B</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>BNC A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>BNC B</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Bunch Clock Phase</string>
+            </property>
+        </item>
+        <property name="name">
+            <cstring>bncSourceA</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>10</y>
+                <width>146</width>
+                <height>27</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_3_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>160</y>
+                <width>150</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;External Run Calibrate: &lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>20</x>
+                <y>70</y>
+                <width>130</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Ext Record Source: &lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QComboBox">
+        <item>
+            <property name="text">
+                <string>Disabled</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>NIM A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>NIM B</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>BNC A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>BNC B</string>
+            </property>
+        </item>
+        <property name="name">
+            <cstring>extRecord</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>70</y>
+                <width>81</width>
+                <height>27</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QSpinBox">
+        <property name="name">
+            <cstring>calDelay</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>190</y>
+                <width>60</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="maxValue">
+            <number>255</number>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_2_3_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>220</x>
+                <y>190</y>
+                <width>40</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="left"&gt;Clks&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>rawData</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>220</y>
+                <width>20</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string></string>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>dropData</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>240</y>
+                <width>20</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string></string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_6_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>40</x>
+                <y>190</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Cal Strobe Delay: &lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_3_3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>60</x>
+                <y>220</y>
+                <width>90</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Raw Data: &lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QComboBox">
+        <item>
+            <property name="text">
+                <string>RegClock</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RegSel1</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RegSel0</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>PwrUpAcq</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>ResetLoad</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>LeakageNull</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>OffsetNull</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>ThreshOff</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>TrigInh</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>CalStrobe</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>PwerUpAcqDig</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>SelCell</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>DeselAllCells</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RampPeriod</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>PrechargeBus</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RegData</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RegWrEn</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>KpixClk</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>ForceTrig</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>TrigEnable</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>CalStrobeDly</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>NIM A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>NIM B</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>BNC A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>BNC B</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Bunch Clock Phase</string>
+            </property>
+        </item>
+        <property name="name">
+            <cstring>bncSourceB</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>40</y>
+                <width>146</width>
+                <height>27</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>60</x>
+                <y>240</y>
+                <width>90</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Drop Data: &lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_3_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>40</x>
+                <y>290</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Disable Kpix A: &lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>disKpixA</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>290</y>
+                <width>20</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string></string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_3_2_3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>40</x>
+                <y>320</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Disable Kpix B: &lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>disKpixB</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>320</y>
+                <width>20</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string></string>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>disKpixC</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>350</y>
+                <width>20</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string></string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_3_2_4</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>40</x>
+                <y>350</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Disable Kpix C: &lt;/p&gt;</string>
+        </property>
+    </widget>
+</widget>
+<includes>
+    <include location="local" impldecl="in implementation">KpixGuiFpgaForm.ui.h</include>
+</includes>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>
