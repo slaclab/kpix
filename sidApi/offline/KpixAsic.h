@@ -64,11 +64,12 @@
 class SidLink;
 #endif
 
-// Constants
+
 static const unsigned int ChanDisable     = 1;
 static const unsigned int ChanThreshACal  = 3;
 static const unsigned int ChanThreshA     = 2;
 static const unsigned int ChanThreshB     = 0;
+
 
 class KpixAsic : public TObject {
 
@@ -148,6 +149,11 @@ class KpixAsic : public TObject {
 
    public:
 
+      // Constants
+      //static const unsigned int ChanDisable     = 1;
+      //static const unsigned int ChanThreshACal  = 3;
+      //static const unsigned int ChanThreshA     = 2;
+      //static const unsigned int ChanThreshB     = 0;
 
       // Max Kpix Version
       static unsigned short maxVersion();
