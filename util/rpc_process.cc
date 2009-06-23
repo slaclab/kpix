@@ -7,20 +7,24 @@
 // Description :
 // Combine multiple run files into a single root file.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 06/09/2007: created
 // 03/03/2009: Added timestamps to stored data.
+// 06/22/2009: Added namespace.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
 #include <KpixRunRead.h>
 #include <KpixCalibRead.h>
+#include <KpixSample.h>
+#include <KpixAsic.h>
 #include <TFile.h>
 #include <TTree.h>
 using namespace std;
+using namespace sidApi::offline;
 
 // Main Function
 int main ( int argc, char **argv ) {

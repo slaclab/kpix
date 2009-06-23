@@ -7,17 +7,25 @@
 // Description :
 // Example file to demonstrate reading from a KPIX root file.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2008 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 10/31/2008: created
+// 06/22/2009: Added namespace.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
 #include <KpixRunRead.h>
 #include <KpixCalibRead.h>
+#include <KpixFpga.h>
+#include <KpixAsic.h>
+#include <KpixRunVar.h>
+#include <KpixSample.h>
+#include <KpixEventVar.h>
+#include <TFile.h>
 using namespace std;
+using namespace sidApi::offline;
 
 // Process the data
 // Pass root file to open as first and only arg.
