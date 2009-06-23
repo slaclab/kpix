@@ -9,61 +9,52 @@
 // This is a class which builds off of the class created in
 // KpixGuiCalibrateForm.ui
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_CALIBRATE_H__
 #define __KPIX_GUI_CALIBRATE_H__
 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
-#include <qwidget.h>
 #include "KpixGuiCalibrateForm.h"
-#include "KpixGuiError.h"
-#include <KpixAsic.h>
-#include <KpixFpga.h>
 #include <KpixProgress.h>
-#include <KpixCalDist.h>
-#include <qspinbox.h>
-#include <qcheckbox.h>
-#include <qlcdnumber.h>
-#include <qcombobox.h>
-#include <qpushbutton.h>
-#include <TMultiGraph.h>
-#include <qtable.h>
 #include <qthread.h>
-#include <qspinbox.h>
-#include <TQtWidget.h>
-#include <TCanvas.h>
-#include "KpixGuiEventStatus.h"
-#include "KpixGuiEventError.h"
-#include "KpixGuiEventData.h"
-#include "KpixGuiCalFit.h"
+#include <string>
 
+// Forward declarations
+namespace sidApi {
+   namespace offline {
+      class KpixAsic;
+      class KpixFpga;
+      class KpixRunVar;
+   }
+}
 class KpixGuiTop;
+class KpixGuiError;
+class TMultiGraph;
+class KpixGuiCalFit;
 
-class KpixGuiCalibrate : public KpixGuiCalibrateForm, public QThread, public KpixProgress {
+
+class KpixGuiCalibrate : public KpixGuiCalibrateForm, public QThread, public sidApi::online::KpixProgress {
 
       // ASIC & FPGA Containers
       unsigned int  asicCnt;
-      KpixAsic      **asic;
-      KpixFpga      *fpga;
-      KpixGuiTop    *parent;
-      KpixGuiError  *errorMsg;
-      bool          enRun;
-      bool          isRunning;
-      string        baseDir, desc, outDataDir, outDataFile;
-      void          *plots[16];
-      unsigned int  pType;
-      KpixRunVar    **runVars;
-      unsigned int  runVarCount;
-      TMultiGraph   *mGraph[2];
-      KpixGuiCalFit *calFit;
+      sidApi::offline::KpixAsic   **asic;
+      sidApi::offline::KpixFpga   *fpga;
+      KpixGuiTop                  *parent;
+      KpixGuiError                *errorMsg;
+      bool                        enRun;
+      bool                        isRunning;
+      std::string                 baseDir, desc, outDataDir, outDataFile;
+      void                        *plots[16];
+      unsigned int                pType;
+      sidApi::offline::KpixRunVar **runVars;
+      unsigned int                runVarCount;
+      TMultiGraph                 *mGraph[2];
+      KpixGuiCalFit               *calFit;
 
    public:
 
@@ -77,7 +68,8 @@ class KpixGuiCalibrate : public KpixGuiCalibrateForm, public QThread, public Kpi
       void setEnabled ( bool enable );
 
       // Set Configurations
-      void setAsics ( KpixAsic **asic, unsigned int asicCnt, KpixFpga *fpga );
+      void setAsics ( sidApi::offline::KpixAsic **asic, unsigned int asicCnt, 
+                      sidApi::offline::KpixFpga *fpga );
 
       // Update progress
       void updateProgress(unsigned int count, unsigned int total);

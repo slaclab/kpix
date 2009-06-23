@@ -9,49 +9,47 @@
 // This is a class which builds off of the class created in
 // KpixGuiTopForm.ui
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
 // 03/05/2009: Added rate limit function.
 // 04/29/2009: Added thread to handle IO functions
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_TOP_H__
 #define __KPIX_GUI_TOP_H__
 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
-#include <qwidget.h>
 #include "KpixGuiTopForm.h"
-#include <KpixAsic.h>
-#include <KpixFpga.h>
-#include <SidLink.h>
-#include <qspinbox.h>
-#include <qcheckbox.h>
-#include <qlcdnumber.h>
-#include <qcombobox.h>
-#include <qpushbutton.h>
-#include <qerrormessage.h>
-#include <qtable.h>
 #include <qthread.h>
-#include <qspinbox.h>
-#include "KpixGuiInject.h"
-#include "KpixGuiConfig.h"
-#include "KpixGuiError.h"
-#include "KpixGuiFpga.h"
-#include "KpixGuiMain.h"
-#include "KpixGuiTiming.h"
-#include "KpixGuiTrig.h"
-#include "KpixGuiStatus.h"
-#include "KpixGuiRegTest.h"
-#include "KpixGuiRun.h"
-#include "KpixGuiCalibrate.h"
-#include "KpixGuiThreshScan.h"
-#include "KpixGuiEventStatus.h"
-#include "KpixGuiEventError.h"
+#include <string>
+
+
+// Forward declarations
+namespace sidApi {
+   namespace offline {
+      class KpixAsic;
+      class KpixFpga;
+      class KpixRunRead;
+      class KpixRunVar;
+   }
+   namespace online {
+      class SidLink;
+   }
+}
+class KpixGuiError;
+class KpixGuiMain;
+class KpixGuiFpga;
+class KpixGuiConfig;
+class KpixGuiTiming;
+class KpixGuiStatus;
+class KpixGuiTrig;
+class KpixGuiInject;
+class KpixGuiRegTest;
+class KpixGuiCalibrate;
+class KpixGuiThreshScan;
+class KpixGuiRun;
 
 
 // Max support KPIX Address
@@ -61,15 +59,15 @@
 class KpixGuiTop : public KpixGuiTopForm, public QThread {
 
       // ASIC & FPGA Containers
-      unsigned int  asicCnt;
-      unsigned int  asicVersion;
-      unsigned int  defClkPeriod;
-      unsigned int  cmdType;
-      KpixAsic      *asic[KPIX_MAX_ADDR+1];
-      KpixFpga      *fpga;
-      KpixRunRead   *runRead;
-      SidLink       *sidLink;
-      KpixGuiError  *errorMsg;
+      unsigned int                 asicCnt;
+      unsigned int                 asicVersion;
+      unsigned int                 defClkPeriod;
+      unsigned int                 cmdType;
+      sidApi::offline::KpixAsic    *asic[KPIX_MAX_ADDR+1];
+      sidApi::offline::KpixFpga    *fpga;
+      sidApi::offline::KpixRunRead *runRead;
+      sidApi::online::SidLink      *sidLink;
+      KpixGuiError                 *errorMsg;
 
       // Widgets In the Tabs
       KpixGuiMain       *kpixGuiMain;
@@ -96,9 +94,9 @@ class KpixGuiTop : public KpixGuiTopForm, public QThread {
    public:
 
       // Creation Class
-      KpixGuiTop ( SidLink *sidLink, unsigned int clkPeriod, unsigned int version, 
-                   string baseDir, string calString, unsigned int rateLimit, 
-                   QWidget *parent=0 );
+      KpixGuiTop ( sidApi::online::SidLink *sidLink, unsigned int clkPeriod, 
+                   unsigned int version, std::string baseDir, std::string calString, 
+                   unsigned int rateLimit, QWidget *parent=0 );
 
       // Delete
       ~KpixGuiTop ( );
@@ -107,19 +105,19 @@ class KpixGuiTop : public KpixGuiTopForm, public QThread {
       void setEnabled ( bool enable );
 
       // Get Run Description
-      string getRunDescription();
+      std::string getRunDescription();
 
       // Get Base Directory
-      string getBaseDir();
+      std::string getBaseDir();
 
       // Get Run Variable List
-      KpixRunVar **getRunVarList(unsigned int *count);
+      sidApi::offline::KpixRunVar **getRunVarList(unsigned int *count);
 
       // Get rate limit value, zero for none
       unsigned int getRateLimit();
 
       // Get Calibration/Settings File Name
-      string getCalFile ();
+      std::string getCalFile ();
 
       // Window was closed
       void closeEvent(QCloseEvent *e);

@@ -7,13 +7,18 @@
 // Description :
 // Class to listen for remote commands on a socket.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 10/29/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 
+#include <sstream>
+#include <iostream>
+#include <string>
+#include <qsocket.h>
 #include "KpixGuiRunNetwork.h"
 using namespace std;
 

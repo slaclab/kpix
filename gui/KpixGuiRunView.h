@@ -7,37 +7,32 @@
 // Description :
 // Top Level GUI for viewing run data.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_RUN_VIEW_H__
 #define __KPIX_GUI_RUN_VIEW_H__
 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
-#include <qwidget.h>
 #include "KpixGuiRunViewForm.h"
-#include "KpixGuiError.h"
-#include "KpixGuiSampleView.h"
-#include "KpixGuiViewConfig.h"
-#include <KpixAsic.h>
-#include <KpixFpga.h>
-#include <KpixCalibRead.h>
-#include <KpixRunRead.h>
-#include <KpixRunWrite.h>
-#include <qspinbox.h>
-#include <qcheckbox.h>
-#include <qlcdnumber.h>
-#include <qcombobox.h>
-#include <qpushbutton.h>
-#include <qtable.h>
 #include <qthread.h>
-#include <TFile.h>
+#include <string>
+
+
+// Forward Declarations
+namespace sidApi {
+   namespace offline {
+      class KpixRunRead;
+      class KpixAsic;
+   }
+}
+class KpixGuiError;
+class KpixGuiViewConfig;
+class KpixGuiSampleView;
+class TH1F;
 
 
 class KpixGuiRunView : public KpixGuiRunViewForm, public QThread {
@@ -46,14 +41,14 @@ class KpixGuiRunView : public KpixGuiRunViewForm, public QThread {
       KpixGuiError  *errorMsg;
 
       // Input/Output Files
-      KpixRunRead *inFileRoot;
+      sidApi::offline::KpixRunRead *inFileRoot;
 
       // Display Windows
       KpixGuiViewConfig *kpixGuiViewConfig;
       KpixGuiSampleView *kpixGuiSampleView;
 
       // Default base directory
-      string baseDir;
+      std::string baseDir;
 
       // Histogram plots
       TH1F *hist[4];
@@ -62,8 +57,8 @@ class KpixGuiRunView : public KpixGuiRunViewForm, public QThread {
       bool isRunning;
 
       // List of KPIX serial numbers
-      unsigned int  asicCnt;
-      KpixAsic      **asic;
+      unsigned int              asicCnt;
+      sidApi::offline::KpixAsic **asic;
 
       // Command type
       unsigned int cmdType;
@@ -75,7 +70,7 @@ class KpixGuiRunView : public KpixGuiRunViewForm, public QThread {
    public:
 
       // Creation Class
-      KpixGuiRunView ( string baseDir, bool open=false);
+      KpixGuiRunView ( std::string baseDir, bool open=false);
 
       // Delete
       ~KpixGuiRunView ( );

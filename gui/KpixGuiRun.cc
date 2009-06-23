@@ -7,7 +7,7 @@
 // Description :
 // Class for running KPIX ASIC data runs.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -15,6 +15,7 @@
 // 03/05/2009: Added rate limit function.
 // 04/29/2009: Added support for all 4 buckets.
 // 05/11/2009: Added range check on address field.
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -27,20 +28,39 @@
 #include <TStyle.h>
 #include <TH2F.h>
 #include <TH1F.h>
+#include <qtable.h>
+#include <TQtWidget.h>
 #include <qprogressbar.h>
 #include <qapplication.h>
+#include <qspinbox.h>
+#include <qpushbutton.h>
+#include <qcombobox.h>
+#include <qcheckbox.h>
 #include <qlistbox.h>
 #include <sys/time.h>
 #include <KpixCalDist.h>
+#include <KpixAsic.h>
+#include <KpixFpga.h>
 #include "KpixGuiRun.h"
 #include "KpixGuiTop.h"
 #include <KpixRunWrite.h>
+#include <KpixRunRead.h>
+#include <KpixRunVar.h>
+#include "KpixGuiRunView.h"
+#include <KpixEventVar.h>
 #include <KpixBunchTrain.h>
 #include <KpixHistogram.h>
 #include <KpixCalibRead.h>
 #include <KpixSample.h>
+#include <KpixProgress.h>
 #include "KpixGuiRunNetwork.h"
+#include "KpixGuiEventData.h"
+#include "KpixGuiError.h"
+#include "KpixGuiEventError.h"
+#include "KpixGuiEventStatus.h"
 using namespace std;
+using namespace sidApi::offline;
+using namespace sidApi::online;
 
 
 // Constructor
@@ -533,7 +553,7 @@ void KpixGuiRun::run() {
                         *(eventVars[x]) = eventCmd[x];
                         kpixRunWrite->setEventVar(eventTable->text(x,0).ascii(),eventCmd[x]);
                      }
-                     data = new KpixGuiEventData(KPRG_DOUBLE,eventCnt,(void **)eventVars);
+                     data = new KpixGuiEventData(DataDouble,eventCnt,(void **)eventVars);
                      QApplication::postEvent(this,data);
                   }
                   netCount--;
@@ -699,7 +719,7 @@ void KpixGuiRun::run() {
                   }
 
                   // Pass Plots
-                  data = new KpixGuiEventData(KPRG_TH1F,32,(void **)plot);
+                  data = new KpixGuiEventData(DataTH1F,32,(void **)plot);
                   QApplication::postEvent(this,data);
                }
             } else rate++;
@@ -989,7 +1009,7 @@ void KpixGuiRun::customEvent ( QCustomEvent *event ) {
       eventPlots = (KpixGuiEventData *)event;
 
       // Variables
-      if ( eventPlots->id == KPRG_DOUBLE ) {
+      if ( eventPlots->id == DataDouble ) {
          for (x=0; x<eventPlots->count; x++) {
             temp.str("");
             temp << *((double *)(eventPlots->data[x]));
@@ -1012,7 +1032,7 @@ void KpixGuiRun::customEvent ( QCustomEvent *event ) {
 
          // Copy New Plots
          count = 0;
-         if ( eventPlots->id == KPRG_TH1F ) {
+         if ( eventPlots->id == DataTH1F ) {
             for (x=0; x<16; x++) {
                plots[x*2] = (TH1F *)eventPlots->data[x*2];
                plots[x*2+1] = (TH1F *)eventPlots->data[x*2+1];

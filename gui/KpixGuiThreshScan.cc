@@ -9,11 +9,12 @@
 // This is a class which builds off of the class created in
 // KpixGuiThreshScanForm.ui
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -24,10 +25,26 @@
 #include <qlineedit.h>
 #include <qprogressbar.h>
 #include <qapplication.h>
+#include <qpushbutton.h>
+#include <qspinbox.h>
+#include <TQtWidget.h>
+#include <qcheckbox.h>
+#include <TH2F.h>
+#include <KpixAsic.h>
+#include <KpixFpga.h>
+#include <KpixRunVar.h>
+#include <KpixRunWrite.h>
 #include <KpixThreshScan.h>
 #include "KpixGuiThreshScan.h"
+#include "KpixGuiThreshView.h"
 #include "KpixGuiTop.h"
+#include "KpixGuiError.h"
+#include "KpixGuiEventData.h"
+#include "KpixGuiEventError.h"
+#include "KpixGuiEventStatus.h"
 using namespace std;
+using namespace sidApi::offline;
+using namespace sidApi::online;
 
 
 // Constructor
@@ -334,7 +351,7 @@ void KpixGuiThreshScan::customEvent ( QCustomEvent *event ) {
       if ( plot != NULL ) delete plot;
 
       // Copy new plot
-      if ( eventData->count > 0 && eventData->id == KPRG_TH2F ) 
+      if ( eventData->count > 0 && eventData->id == DataTH2F ) 
          plot = (TH2F*)(eventData->data[0]);
 
       // Draw Plots

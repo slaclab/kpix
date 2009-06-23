@@ -7,11 +7,12 @@
 // Description :
 // Top Level GUI for threshold scan view GUI
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -22,15 +23,36 @@
 #include <qlineedit.h>
 #include <qfiledialog.h>
 #include <qprogressbar.h>
+#include <qapplication.h>
+#include <qpushbutton.h>
+#include <qcombobox.h>
+#include <qcheckbox.h>
+#include <qtable.h>
+#include <qspinbox.h>
 #include <qtabwidget.h>
 #include <TQtWidget.h>
 #include <TError.h>
+#include <TH1D.h>
+#include <TH2F.h>
+#include <TF1.h>
+#include <TStyle.h>
+#include <TGraphAsymmErrors.h>
 #include <math.h>
+#include <KpixAsic.h>
+#include <KpixThreshRead.h>
+#include <KpixRunRead.h>
+#include <KpixRunWrite.h>
+#include <KpixRunVar.h>
 #include "KpixGuiThreshView.h"
 #include "KpixGuiEventStatus.h"
 #include "KpixGuiEventError.h"
 #include "KpixGuiEventData.h"
+#include "KpixGuiError.h"
+#include "KpixGuiSampleView.h"
+#include "KpixGuiViewConfig.h"
 using namespace std;
+using namespace sidApi::offline;
+using namespace sidApi::online;
 
 // Convert histogram to error plot
 // Pass original histogram containing a bin for each threshold value.

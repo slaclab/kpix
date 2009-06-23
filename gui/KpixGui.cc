@@ -7,11 +7,12 @@
 // Description :
 // Top level for SID GUI (KPIX)
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 09/26/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -19,12 +20,16 @@
 #include <string>
 #include <signal.h>
 #include <unistd.h>
-#include <SidLink.h>
 #include <qapplication.h>
+#include <SidLink.h>
+#include <KpixAsic.h>
 #include "KpixGuiTop.h"
 #include "KpixGuiCalFit.h"
 #include "KpixGuiRunView.h"
+#include "KpixGuiThreshView.h"
 using namespace std;
+using namespace sidApi::offline;
+using namespace sidApi::online;
 
 
 // Print command line usage

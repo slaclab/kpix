@@ -9,40 +9,35 @@
 // This is a class which builds off of the class created in
 // KpixGuiMainForm.ui
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
 // 04/29/2009: Seperate methods for display update and data read.
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_MAIN_H__
 #define __KPIX_GUI_MAIN_H__
 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
-#include <qwidget.h>
 #include "KpixGuiMainForm.h"
-#include <KpixAsic.h>
-#include <KpixFpga.h>
-#include <KpixRunVar.h>
-#include <KpixRunRead.h>
-#include <qspinbox.h>
-#include <qcheckbox.h>
-#include <qlcdnumber.h>
-#include <qcombobox.h>
-#include <qpushbutton.h>
-#include <qtable.h>
-#include <qspinbox.h>
+
+// Forward declarations
+namespace sidApi {
+   namespace offline {
+      class KpixAsic;
+      class KpixRunRead;
+      class KpixRunVar;
+   }
+}
+class QComboBox;
 
 
 class KpixGuiMain : public KpixGuiMainForm {
 
       // ASIC & FPGA Containers
-      unsigned int asicCnt;
-      KpixAsic     **asic;
+      unsigned int              asicCnt;
+      sidApi::offline::KpixAsic **asic;
 
       // Threshold Table Entries
       QComboBox **posPixel;
@@ -56,19 +51,19 @@ class KpixGuiMain : public KpixGuiMainForm {
       ~KpixGuiMain();
 
       // Set Asics
-      void setAsics (KpixAsic **asic, unsigned int asicCnt);
+      void setAsics (sidApi::offline::KpixAsic **asic, unsigned int asicCnt);
 
       // Set Calib Read File For Run Var List
-      void setRunRead ( KpixRunRead *kpixRunRead );
+      void setRunRead ( sidApi::offline::KpixRunRead *kpixRunRead );
 
       // Control Enable Of Buttons/Edits
       void setEnabled ( bool enable, bool calEnable );
 
       // Get Run Description
-      string getRunDescription();
+      std::string getRunDescription();
 
       // Get Run Variable List
-      KpixRunVar **getRunVarList(unsigned int *count);
+      sidApi::offline::KpixRunVar **getRunVarList(unsigned int *count);
 
    private slots:
 

@@ -9,12 +9,13 @@
 // This is a class which builds off of the class created in
 // KpixGuiCalibrateForm.ui
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
 // 03/05/2009: Added rate limit function.
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -25,12 +26,28 @@
 #include <qlineedit.h>
 #include <qprogressbar.h>
 #include <qapplication.h>
+#include <qcheckbox.h>
+#include <qpushbutton.h>
+#include <qspinbox.h>
 #include <TGraph2D.h>
+#include <TGraph.h>
+#include <TH1F.h>
+#include <TQtWidget.h>
 #include <TMultiGraph.h>
 #include <KpixCalDist.h>
+#include <KpixAsic.h>
+#include <KpixRunWrite.h>
+#include <KpixRunVar.h>
 #include "KpixGuiCalibrate.h"
 #include "KpixGuiTop.h"
+#include "KpixGuiError.h"
+#include "KpixGuiEventData.h"
+#include "KpixGuiEventError.h"
+#include "KpixGuiEventStatus.h"
+#include "KpixGuiCalFit.h"
 using namespace std;
+using namespace sidApi::offline;
+using namespace sidApi::online;
 
 
 // Constructor
@@ -88,8 +105,8 @@ KpixGuiCalibrate::~KpixGuiCalibrate ( ) {
    for (x=0; x < 16; x++) {
       if ( plots[x] != NULL ) {
          switch (pType) {
-            case KPRG_TH1F:   delete ((TH1F *)plots[x]); break;
-            case KPRG_TGRAPH: delete ((TGraph *)plots[x]); break;
+            case DataTH1F:   delete ((TH1F *)plots[x]); break;
+            case DataTGraph: delete ((TGraph *)plots[x]); break;
             default: break;
          }
       }
@@ -531,8 +548,8 @@ void KpixGuiCalibrate::customEvent ( QCustomEvent *event ) {
          // Delete old
          if ( plots[x] != NULL ) {
             switch (pType) {
-               case KPRG_TH1F:   delete ((TH1F *)plots[x]); break;
-               case KPRG_TGRAPH: delete ((TGraph *)plots[x]); break;
+               case DataTH1F:   delete ((TH1F *)plots[x]); break;
+               case DataTGraph: delete ((TGraph *)plots[x]); break;
                default: 
                   throw(string("KpixGuiCalibrate::customEvent -> Invalid Plot Type"));
                   break;
@@ -549,7 +566,7 @@ void KpixGuiCalibrate::customEvent ( QCustomEvent *event ) {
       switch (pType) {
 
          // Histograms
-         case KPRG_TH1F:
+         case DataTH1F:
             liveDisplay->GetCanvas()->cd(1);
             if ( plots[0] != NULL ) ((TH1F*)plots[0])->Draw();
             liveDisplay->GetCanvas()->cd(2);
@@ -557,7 +574,7 @@ void KpixGuiCalibrate::customEvent ( QCustomEvent *event ) {
             break;
 
          // Graphs
-         case KPRG_TGRAPH:
+         case DataTGraph:
 
             // Value
             liveDisplay->GetCanvas()->cd(1);

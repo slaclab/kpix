@@ -7,11 +7,12 @@
 // Description :
 // Class for graphical representation of the KPIX ASIC Configuration
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -21,8 +22,22 @@
 #include <unistd.h>
 #include <qlineedit.h>
 #include <qtabwidget.h>
+#include "KpixGuiConfig.h"
+#include "KpixGuiTiming.h"
+#include "KpixGuiTrig.h"
+#include "KpixGuiInject.h"
+#include "KpixGuiList.h"
+#include "KpixGuiConfig.h"
+#include "KpixGuiTiming.h"
+#include "KpixGuiTrig.h"
+#include "KpixGuiInject.h"
+#include <KpixRunRead.h>
+#include <KpixFpga.h>
+#include <KpixAsic.h>
 #include "KpixGuiViewConfig.h"
 using namespace std;
+using namespace sidApi::offline;
+using namespace sidApi::online;
 
 
 // Constructor

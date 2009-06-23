@@ -7,11 +7,12 @@
 // Description :
 // Top Level GUI for calibration/dist fit GUI
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -22,13 +23,27 @@
 #include <qlineedit.h>
 #include <qfiledialog.h>
 #include <qapplication.h>
+#include <qpushbutton.h>
+#include <qcheckbox.h>
+#include <qcombobox.h>
+#include <qspinbox.h>
 #include <TQtWidget.h>
 #include <TError.h>
+#include <TH1F.h>
+#include <TStyle.h>
+#include <TFile.h>
+#include <KpixAsic.h>
+#include <KpixRunRead.h>
+#include "KpixGuiSampleView.h"
+#include "KpixGuiViewConfig.h"
 #include "KpixGuiRunView.h"
 #include "KpixGuiEventStatus.h"
 #include "KpixGuiEventError.h"
 #include "KpixGuiEventData.h"
+#include "KpixGuiError.h"
 using namespace std;
+using namespace sidApi::offline;
+using namespace sidApi::online;
 
 
 // Constructor

@@ -9,57 +9,52 @@
 // This is a class which builds off of the class created in
 // KpixGuiThreshScanForm.ui
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_THRESH_SCAN_H__
 #define __KPIX_GUI_THRESH_SCAN_H__
 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
-#include <qwidget.h>
 #include "KpixGuiThreshScanForm.h"
-#include "KpixGuiThreshView.h"
-#include "KpixGuiError.h"
-#include <KpixAsic.h>
-#include <KpixFpga.h>
 #include <KpixProgress.h>
-#include <KpixCalDist.h>
-#include <qspinbox.h>
-#include <qcheckbox.h>
-#include <qlcdnumber.h>
-#include <qcombobox.h>
-#include <qpushbutton.h>
-#include <qtable.h>
 #include <qthread.h>
-#include <qspinbox.h>
-#include <TQtWidget.h>
-#include <TCanvas.h>
-#include <TH2F.h>
+#include <string>
 
+
+// Forward Declarations
+namespace sidApi {
+   namespace offline {
+      class KpixAsic;
+      class KpixFpga;
+      class KpixRunVar;
+   }
+}
 class KpixGuiTop;
+class KpixGuiError;
+class KpixGuiThreshView;
+class TH2F;
 
-class KpixGuiThreshScan : public KpixGuiThreshScanForm, public QThread, public KpixProgress {
+
+class KpixGuiThreshScan : public KpixGuiThreshScanForm, public QThread, public sidApi::online::KpixProgress {
 
       // ASIC & FPGA Containers
-      unsigned int      asicCnt;
-      KpixAsic          **asic;
-      KpixFpga          *fpga;
-      KpixGuiTop        *parent;
-      KpixGuiError      *errorMsg;
-      bool              running;
-      bool              enRun;
-      bool              isRunning;
-      string            baseDir, desc, outDataDir, outDataFile;
-      KpixRunVar        **runVars;
-      unsigned int      runVarCount;
-      TH2F              *plot;
-      KpixGuiThreshView *threshView;
+      unsigned int                asicCnt;
+      sidApi::offline::KpixAsic   **asic;
+      sidApi::offline::KpixFpga   *fpga;
+      KpixGuiTop                  *parent;
+      KpixGuiError                *errorMsg;
+      bool                        running;
+      bool                        enRun;
+      bool                        isRunning;
+      std::string                 baseDir, desc, outDataDir, outDataFile;
+      sidApi::offline::KpixRunVar **runVars;
+      unsigned int                runVarCount;
+      TH2F                        *plot;
+      KpixGuiThreshView           *threshView;
 
    public:
 
@@ -73,7 +68,8 @@ class KpixGuiThreshScan : public KpixGuiThreshScanForm, public QThread, public K
       void setEnabled ( bool enable );
 
       // Set Configurations
-      void setAsics ( KpixAsic **asic, unsigned int asicCnt, KpixFpga *fpga );
+      void setAsics ( sidApi::offline::KpixAsic **asic, unsigned int asicCnt, 
+                      sidApi::offline::KpixFpga *fpga );
 
       // Update progress
       void updateProgress(unsigned int count, unsigned int total);

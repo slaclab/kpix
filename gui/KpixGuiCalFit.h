@@ -7,7 +7,7 @@
 // Description :
 // Top Level GUI for calibration/dist fit GUI
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -15,37 +15,36 @@
 // 12/12/2008: Added RMS extraction and plots for histogram.
 // 04/30/2009: Remove seperate hist and cal view classes. All functions now
 //             handled by this class. Added thread for read/fit operations.
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_CAL_FIT_H__
 #define __KPIX_GUI_CAL_FIT_H__
 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
-#include <qwidget.h>
 #include "KpixGuiCalFitForm.h"
-#include "KpixGuiError.h"
-#include "KpixGuiViewConfig.h"
-#include "KpixGuiSampleView.h"
-#include <KpixAsic.h>
-#include <KpixFpga.h>
-#include <KpixCalibRead.h>
-#include <KpixRunRead.h>
-#include <KpixRunWrite.h>
-#include <qspinbox.h>
-#include <qcheckbox.h>
-#include <qlcdnumber.h>
-#include <qcombobox.h>
-#include <qpushbutton.h>
-#include <qtable.h>
-#include <TFile.h>
 #include <qthread.h>
-#include <qapplication.h>
-#include <TMultiGraph.h>
+#include <string>
 
 // Number Of Directories
 #define DIR_COUNT 2
+
+
+// Forward declarations
+namespace sidApi {
+   namespace offline {
+      class KpixAsic;
+      class KpixCalibRead;
+   }
+   namespace online {
+      class KpixRunWrite;
+   }
+}
+class KpixGuiError;
+class KpixGuiViewConfig;
+class KpixGuiSampleView;
+class KpixGuiCalFitData;
+class TGraph;
+class TMultiGraph;
+class TH1F;
 
 
 // Class to hold calibration results
@@ -71,12 +70,12 @@ class KpixGuiCalFit : public KpixGuiCalFitForm , public QThread {
       KpixGuiError  *errorMsg;
 
       // Input/Output Files
-      KpixCalibRead *inFileRoot;
-      KpixRunWrite  *outFileRoot;
+      sidApi::offline::KpixCalibRead *inFileRoot;
+      sidApi::online::KpixRunWrite   *outFileRoot;
 
       // Asics
-      unsigned int  asicCnt;
-      KpixAsic      **asic;
+      unsigned int              asicCnt;
+      sidApi::offline::KpixAsic **asic;
 
       // Calibration/histogram data
       TGraph      *graph[8];
@@ -111,10 +110,10 @@ class KpixGuiCalFit : public KpixGuiCalFitForm , public QThread {
       KpixGuiCalFitData **calibData;
 
       // List of directories
-      string dirNames[DIR_COUNT];
+      std::string dirNames[DIR_COUNT];
 
       // Default base directory
-      string baseDir;
+      std::string baseDir;
 
       // Read data from file and fit if enabled, write if enabled
       void readFitData(unsigned int dirIndex, unsigned int gain, unsigned int serial, 
@@ -130,7 +129,7 @@ class KpixGuiCalFit : public KpixGuiCalFitForm , public QThread {
    public:
 
       // Creation Class
-      KpixGuiCalFit ( string baseDir, bool open=false);
+      KpixGuiCalFit ( std::string baseDir, bool open=false);
 
       // Delete
       ~KpixGuiCalFit ( );

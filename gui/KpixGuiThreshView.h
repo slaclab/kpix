@@ -7,40 +7,38 @@
 // Description :
 // Top Level GUI for threshold scan view GUI
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_THRESH_VIEW_H__
 #define __KPIX_GUI_THRESH_VIEW_H__
 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
-#include <qwidget.h>
 #include "KpixGuiThreshViewForm.h"
-#include "KpixGuiError.h"
-#include "KpixThreshRead.h"
-#include "KpixGuiViewConfig.h"
-#include "KpixGuiSampleView.h"
-#include <KpixAsic.h>
-#include <KpixFpga.h>
-#include <KpixCalibRead.h>
-#include <KpixRunRead.h>
-#include <KpixRunWrite.h>
-#include <qspinbox.h>
-#include <qcheckbox.h>
-#include <qlcdnumber.h>
-#include <qcombobox.h>
-#include <qpushbutton.h>
-#include <qtable.h>
-#include <TFile.h>
+#include <string>
 #include <qthread.h>
-#include <qapplication.h>
-#include <TMultiGraph.h>
+
+// Forward Declarations
+namespace sidApi {
+   namespace offline {
+      class KpixThreshRead;
+      class KpixAsic;
+   }
+   namespace online {
+      class KpixRunWrite;
+   }
+}
+class KpixGuiError;
+class KpixGuiViewConfig;
+class KpixGuiSampleView;
+class TGraphAsymmErrors;
+class TGraph;
+class TH1F;
+class TH1D;
+class TH2F;
 
 
 // Class to hold threshold results
@@ -60,12 +58,12 @@ class KpixGuiThreshView : public KpixGuiThreshViewForm , public QThread {
       KpixGuiError  *errorMsg;
 
       // Input/Output Files
-      KpixThreshRead *inFileRoot;
-      KpixRunWrite   *outFileRoot;
+      sidApi::offline::KpixThreshRead *inFileRoot;
+      sidApi::online::KpixRunWrite    *outFileRoot;
 
       // Asics
-      unsigned int  asicCnt;
-      KpixAsic      **asic;
+      unsigned int              asicCnt;
+      sidApi::offline::KpixAsic **asic;
 
       // Calibration/histogram data
       TH2F              *origHist[256];
@@ -114,7 +112,7 @@ class KpixGuiThreshView : public KpixGuiThreshViewForm , public QThread {
       KpixGuiThreshViewData **threshData;
 
       // Default base directory
-      string baseDir;
+      std::string baseDir;
 
       // Read data from file and fit if enabled, write if enabled
       void readFitData(unsigned int gain, unsigned int serial, unsigned int channel,  
@@ -138,7 +136,7 @@ class KpixGuiThreshView : public KpixGuiThreshViewForm , public QThread {
    public:
 
       // Creation Class
-      KpixGuiThreshView ( string baseDir, bool open=false);
+      KpixGuiThreshView ( std::string baseDir, bool open=false);
 
       // Delete
       ~KpixGuiThreshView ( );

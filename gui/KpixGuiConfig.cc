@@ -9,12 +9,13 @@
 // This is a class which builds off of the class created in
 // KpixGuiConfigForm.ui
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
 // 04/29/2009: Seperate methods for display update and data read.
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -23,8 +24,14 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <qlineedit.h>
+#include <qcombobox.h>
+#include <qcheckbox.h>
+#include <qspinbox.h>
+#include <KpixAsic.h>
 #include "KpixGuiConfig.h"
 using namespace std;
+using namespace sidApi::offline;
+using namespace sidApi::online;
 
 
 // Constructor

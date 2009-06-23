@@ -9,7 +9,7 @@
 // This is a class which builds off of the class created in
 // KpixGuiFpgaForm.ui
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -17,6 +17,7 @@
 // 04/29/2009: Seperate methods for display update and data read.
 // 05/13/2009: Changed name of accept source to extRecord 
 // 05/13/2009: Removed auto train generation.
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -25,8 +26,14 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <qlineedit.h>
+#include <qcheckbox.h>
+#include <qcombobox.h>
+#include <qspinbox.h>
+#include <KpixFpga.h>
 #include "KpixGuiFpga.h"
 using namespace std;
+using namespace sidApi::offline;
+using namespace sidApi::online;
 
 
 // Constructor

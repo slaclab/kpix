@@ -7,31 +7,23 @@
 // Description :
 // Class for graphical representation of the list of KPIX ASICs
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_LIST_H__
 #define __KPIX_GUI_LIST_H__
 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
-#include <qwidget.h>
 #include "KpixGuiListForm.h"
-#include <KpixAsic.h>
-#include <KpixFpga.h>
-#include <KpixRunRead.h>
-#include <qspinbox.h>
-#include <qcheckbox.h>
-#include <qlcdnumber.h>
-#include <qcombobox.h>
-#include <qpushbutton.h>
-#include <qtable.h>
 
+namespace sidApi {
+   namespace offline {
+      class KpixRunRead;
+   }
+}
 
 class KpixGuiList : public KpixGuiListForm {
 
@@ -41,7 +33,7 @@ class KpixGuiList : public KpixGuiListForm {
       KpixGuiList ( QWidget *parent = 0 );
 
       // Set Run Read
-      void setRunRead ( KpixRunRead *kpixRunRead );
+      void setRunRead ( sidApi::offline::KpixRunRead *kpixRunRead );
 
 };
 

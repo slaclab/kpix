@@ -7,7 +7,7 @@
 // Description :
 // Top Level GUI for calibration/dist fit GUI
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -15,6 +15,7 @@
 // 12/12/2008: Added RMS extraction and plots for histogram.
 // 04/30/2009: Remove seperate hist and cal view classes. All functions now
 //             handled by this class. Added thread for read/fit operations.
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -25,14 +26,34 @@
 #include <qlineedit.h>
 #include <qfiledialog.h>
 #include <qprogressbar.h>
+#include <qapplication.h>
+#include <qpushbutton.h>
+#include <qcombobox.h>
+#include <qcheckbox.h>
 #include <qtabwidget.h>
+#include <qspinbox.h>
+#include <qtable.h>
 #include <TQtWidget.h>
 #include <TError.h>
+#include <TH1F.h>
+#include <TMultiGraph.h>
+#include <TGraph.h>
+#include <TStyle.h>
+#include <KpixAsic.h>
+#include <KpixCalibRead.h>
+#include <KpixRunRead.h>
+#include <KpixRunVar.h>
+#include <KpixRunWrite.h>
 #include "KpixGuiCalFit.h"
+#include "KpixGuiError.h"
+#include "KpixGuiViewConfig.h"
+#include "KpixGuiSampleView.h"
 #include "KpixGuiEventStatus.h"
 #include "KpixGuiEventError.h"
 #include "KpixGuiEventData.h"
 using namespace std;
+using namespace sidApi::offline;
+using namespace sidApi::online;
 
 
 // Constructor

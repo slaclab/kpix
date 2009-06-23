@@ -9,11 +9,12 @@
 // This is a class which builds off of the class created in
 // KpixGuiRegTestForm.ui
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -24,10 +25,22 @@
 #include <qlineedit.h>
 #include <qprogressbar.h>
 #include <qapplication.h>
+#include <qpushbutton.h>
+#include <qcombobox.h>
+#include <qspinbox.h>
+#include <qcheckbox.h>
+#include <qtable.h>
+#include <KpixAsic.h>
 #include <KpixRegisterTest.h>
 #include "KpixGuiRegTest.h"
 #include "KpixGuiTop.h"
+#include "KpixGuiError.h"
+#include "KpixGuiEventStatus.h"
+#include "KpixGuiEventError.h"
+#include "KpixGuiEventData.h"
 using namespace std;
+using namespace sidApi::offline;
+using namespace sidApi::online;
 
 
 // Constructor
@@ -163,7 +176,7 @@ void KpixGuiRegTest::run() {
          eventData[1] = (void *)res;
          eventData[2] = (void *)regTest->getReadErrors();
          eventData[3] = (void *)regTest->getStatusErrors();
-         eData = new KpixGuiEventData(KPRG_UINT,4,eventData);
+         eData = new KpixGuiEventData(DataUInt,4,eventData);
          QApplication::postEvent(this,eData);
 
          // Cleanup
@@ -255,7 +268,7 @@ void KpixGuiRegTest::customEvent ( QCustomEvent *event ) {
    // Reg Test Update Event
    if ( event->type() == KPIX_GUI_EVENT_DATA ) {
       eventData = (KpixGuiEventData *)event;
-      if ( eventData->id == KPRG_UINT && eventData->count == 4 ) {
+      if ( eventData->id == DataUInt && eventData->count == 4 ) {
 
          // Extract data
          x = (unsigned int)eventData->data[0];

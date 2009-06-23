@@ -7,28 +7,20 @@
 // Description :
 // Class for generating plot update events.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 10/14/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_EVENT_DATA_H__
 #define __KPIX_GUI_EVENT_DATA_H__
 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
 #include <qevent.h>
-#include <TH1F.h>
-#include <TH2F.h>
-#include <TGraph.h>
-#include <TGraph2D.h>
-#include <KpixProgress.h>
-using namespace std;
 
 #define KPIX_GUI_EVENT_DATA 4003
+
 
 class KpixGuiEventData : public QCustomEvent {
 

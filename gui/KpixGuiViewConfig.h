@@ -7,38 +7,30 @@
 // Description :
 // Class for graphical representation of the KPIX ASIC Configuration
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 10/16/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_VIEW_CONFIG_H__
 #define __KPIX_GUI_VIEW_CONFIG_H__
 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
-#include <qwidget.h>
 #include "KpixGuiViewConfigForm.h"
-#include <KpixAsic.h>
-#include <KpixFpga.h>
-#include <SidLink.h>
-#include <qspinbox.h>
-#include <qcheckbox.h>
-#include <qlcdnumber.h>
-#include <qcombobox.h>
-#include <qpushbutton.h>
-#include <qerrormessage.h>
-#include <qtable.h>
-#include <qspinbox.h>
-#include "KpixGuiInject.h"
-#include "KpixGuiConfig.h"
-#include "KpixGuiError.h"
-#include "KpixGuiList.h"
-#include "KpixGuiTiming.h"
-#include "KpixGuiTrig.h"
+
+// Forward declarations
+class KpixGuiList;
+class KpixGuiConfig;
+class KpixGuiTiming;
+class KpixGuiTrig;
+class KpixGuiInject;
+
+namespace sidApi {
+   namespace offline {
+      class KpixRunRead;
+   }
+}
 
 
 class KpixGuiViewConfig : public KpixGuiViewConfigForm {
@@ -56,7 +48,7 @@ class KpixGuiViewConfig : public KpixGuiViewConfigForm {
       KpixGuiViewConfig ( );
 
       // Set Run Data
-      void setRunData ( KpixRunRead *kpixRunRead);
+      void setRunData ( sidApi::offline::KpixRunRead *kpixRunRead);
 
 };
 

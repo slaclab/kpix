@@ -9,12 +9,13 @@
 // This is a class which builds off of the class created in
 // KpixGuiTrigForm.ui
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
 // 04/29/2009: Seperate methods for display update and data read.
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -23,8 +24,16 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <qlineedit.h>
+#include <qtable.h>
+#include <qcombobox.h>
+#include <qpushbutton.h>
+#include <qspinbox.h>
+#include <qcheckbox.h>
+#include <KpixFpga.h>
+#include <KpixAsic.h>
 #include "KpixGuiTrig.h"
 using namespace std;
+using namespace sidApi::offline;
 
 
 // Constructor

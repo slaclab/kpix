@@ -9,45 +9,38 @@
 // This is a class which builds off of the class created in
 // KpixGuiRegTestForm.ui
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_REG_TEST_H__
 #define __KPIX_GUI_REG_TEST_H__
 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
-#include <qwidget.h>
 #include "KpixGuiRegTestForm.h"
-#include "KpixGuiError.h"
-#include <KpixAsic.h>
-#include <KpixFpga.h>
 #include <KpixProgress.h>
-#include <qspinbox.h>
-#include <qcheckbox.h>
-#include <qlcdnumber.h>
-#include <qcombobox.h>
-#include <qpushbutton.h>
-#include <qtable.h>
 #include <qthread.h>
-#include <qspinbox.h>
-#include "KpixGuiEventData.h"
 
+// Forward declarations
+namespace sidApi {
+   namespace offline {
+      class KpixAsic;
+   }
+}
+class KpixGuiTop;
+class KpixGuiError;
 class KpixGuiTop;
 
-class KpixGuiRegTest : public QThread, public KpixProgress, public KpixGuiRegTestForm {
+class KpixGuiRegTest : public QThread, public sidApi::online::KpixProgress, public KpixGuiRegTestForm {
 
       // ASIC & FPGA Containers
-      unsigned int asicCnt;
-      KpixAsic     **asic;
-      KpixGuiTop   *parent;
-      KpixGuiError *errorMsg;
-      bool         isRunning;
+      unsigned int              asicCnt;
+      sidApi::offline::KpixAsic **asic;
+      KpixGuiTop                *parent;
+      KpixGuiError              *errorMsg;
+      bool                      isRunning;
 
    public:
 
@@ -58,7 +51,7 @@ class KpixGuiRegTest : public QThread, public KpixProgress, public KpixGuiRegTes
       void setEnabled ( bool enable );
 
       // Set Asics
-      void setAsics ( KpixAsic **asic, unsigned int asicCnt );
+      void setAsics ( sidApi::offline::KpixAsic **asic, unsigned int asicCnt );
 
       // Update progress
       void updateProgress(unsigned int count, unsigned int total);

@@ -7,30 +7,29 @@
 // Description :
 // Class to listen for remote commands on a socket.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 10/29/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_RUN_NETWORK_H__
 #define __KPIX_GUI_RUN_NETWORK_H__
 
-#include <iostream>
-#include <sstream>
 #include <string>
-#include <unistd.h>
-#include <qevent.h>
-#include <qsocket.h>
 #include <qserversocket.h>
-using namespace std;
+
+// Forward declarations
+class QSocket;
+class QString;
 
 class KpixGuiRunNetwork : public QServerSocket {
 
       Q_OBJECT
-      QSocket *client;
-      QString message;
-      string  status;
+      QSocket     *client;
+      QString     message;
+      std::string status;
 
    public:
 
@@ -49,7 +48,7 @@ class KpixGuiRunNetwork : public QServerSocket {
       void ackCommand();
   
       // Get Status String
-      string getStatus();
+      std::string getStatus();
 
       // Process new connection
       void newConnection(int socket);

@@ -7,53 +7,39 @@
 // Description :
 // Class to view KPIX samples.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 10/16/2008: created
 // 05/11/2009: Added range checking on serial number lookup.
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_SAMPLE_VIEW_H__
 #define __KPIX_GUI_SAMPLE_VIEW_H__
 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
-#include <qwidget.h>
 #include "KpixGuiSampleViewForm.h"
-#include <KpixAsic.h>
-#include <KpixFpga.h>
-#include <KpixEventVar.h>
-#include <KpixRunRead.h>
-#include <KpixCalibRead.h>
-#include <SidLink.h>
-#include <qspinbox.h>
-#include <qcheckbox.h>
-#include <qlcdnumber.h>
-#include <qcombobox.h>
-#include <qpushbutton.h>
-#include <qerrormessage.h>
-#include <qtable.h>
-#include <qspinbox.h>
-#include "KpixGuiInject.h"
-#include "KpixGuiConfig.h"
-#include "KpixGuiError.h"
-#include "KpixGuiList.h"
-#include "KpixGuiTiming.h"
-#include "KpixGuiTrig.h"
+
+
+// Forward declarations
+namespace sidApi {
+   namespace offline {
+      class KpixRunRead;
+      class KpixCalibRead;
+      class KpixEventVar;
+   }
+}
 
 
 class KpixGuiSampleView : public KpixGuiSampleViewForm {
 
       // Run Reader
-      KpixRunRead   *kpixRunRead;
-      KpixCalibRead *kpixCalibRead;
+      sidApi::offline::KpixRunRead   *kpixRunRead;
+      sidApi::offline::KpixCalibRead *kpixCalibRead;
 
       // List of event variables
-      KpixEventVar **eventVar;
-      unsigned int eventCount;
+      sidApi::offline::KpixEventVar **eventVar;
+      unsigned int                  eventCount;
 
       // Lookup Table For Kpix Index
       unsigned int *kpixIdxLookup;
@@ -68,7 +54,7 @@ class KpixGuiSampleView : public KpixGuiSampleViewForm {
       ~KpixGuiSampleView ( );
 
       // Set Run Data
-      void setRunData ( KpixRunRead *kpixRunRead);
+      void setRunData ( sidApi::offline::KpixRunRead *kpixRunRead);
 
    public slots:
 

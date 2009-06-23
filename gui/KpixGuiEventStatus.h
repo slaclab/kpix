@@ -7,21 +7,18 @@
 // Description :
 // Class for generating status events to main thread.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 10/14/2008: created
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_EVENT_STATUS_H__
 #define __KPIX_GUI_EVENT_STATUS_H__
 
-#include <iostream>
-#include <sstream>
 #include <string>
-#include <unistd.h>
 #include <qevent.h>
-using namespace std;
 
 #define KPIX_GUI_EVENT_STATUS 4000
 
@@ -46,10 +43,10 @@ class KpixGuiEventStatus : public QCustomEvent {
       unsigned int iterations;
       unsigned int rate;
       unsigned int triggers;
-      string       statusMsg;
+      std::string  statusMsg;
 
       // Pass Message & Progress
-      KpixGuiEventStatus ( unsigned int statusType, string statusMsg, 
+      KpixGuiEventStatus ( unsigned int statusType, std::string statusMsg, 
                            unsigned int prgValue,   unsigned int prgTotal );
 
       // Pass Progress
@@ -57,10 +54,10 @@ class KpixGuiEventStatus : public QCustomEvent {
                            unsigned int prgValue,   unsigned int prgTotal );
 
       // Pass Message
-      KpixGuiEventStatus ( unsigned int statusType, string statusMsg );
+      KpixGuiEventStatus ( unsigned int statusType, std::string statusMsg );
 
       // Pass Message, ierations, rate & trigger count
-      KpixGuiEventStatus ( unsigned int statusType, string statusMsg,
+      KpixGuiEventStatus ( unsigned int statusType, std::string statusMsg,
                            unsigned int iterations, unsigned int rate,
                            unsigned int triggers );
 

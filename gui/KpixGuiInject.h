@@ -9,38 +9,32 @@
 // This is a class which builds off of the class created in
 // KpixGuiInjectForm.ui
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
 // 04/29/2009: Seperate methods for display update and data read.
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_INJECT_H__
 #define __KPIX_GUI_INJECT_H__
 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
-#include <qwidget.h>
 #include "KpixGuiInjectForm.h"
-#include <KpixAsic.h>
-#include <KpixFpga.h>
-#include <qspinbox.h>
-#include <qcheckbox.h>
-#include <qlcdnumber.h>
-#include <qcombobox.h>
-#include <qpushbutton.h>
-#include <qtable.h>
-#include <qspinbox.h>
+
+// Forward declarations
+namespace sidApi {
+   namespace offline {
+      class KpixAsic;
+   }
+}
 
 
 class KpixGuiInject : public KpixGuiInjectForm {
 
       // ASIC & FPGA Containers
-      unsigned int asicCnt;
-      KpixAsic     **asic;
+      unsigned int              asicCnt;
+      sidApi::offline::KpixAsic **asic;
 
    public:
 
@@ -48,7 +42,7 @@ class KpixGuiInject : public KpixGuiInjectForm {
       KpixGuiInject ( QWidget *parent = 0 );
 
       // Set Asics
-      void setAsics( KpixAsic **asic, unsigned int asicCnt );
+      void setAsics( sidApi::offline::KpixAsic **asic, unsigned int asicCnt );
 
       // Control Enable Of Buttons/Edits
       void setEnabled ( bool enable );
