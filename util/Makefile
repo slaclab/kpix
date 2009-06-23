@@ -1,5 +1,5 @@
 # Variables
-DEF     := 
+DEF     := -DONLINE_EN
 CFLAGS  := -Wall `root-config --cflags` -I ../sidApi/online -I ../sidApi/offline
 LFLAGS  := -L../bin -lsidapi `root-config --libs` -lMinuit -llockdev
 CC      := g++
