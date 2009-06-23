@@ -1,0 +1,520 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>KpixGuiRegTestForm</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>KpixGuiRegTestForm</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>380</width>
+            <height>569</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>KPIX Register Test</string>
+    </property>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>50</x>
+                <y>70</y>
+                <width>130</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Test Direction:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>80</x>
+                <y>10</y>
+                <width>100</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Test Iterations:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>50</x>
+                <y>40</y>
+                <width>130</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Test Read Count:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>endOnError</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>120</y>
+                <width>230</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>End Test On Errors</string>
+        </property>
+        <property name="checked">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QSpinBox">
+        <property name="name">
+            <cstring>readCount</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>190</x>
+                <y>40</y>
+                <width>52</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="maxValue">
+            <number>10000</number>
+        </property>
+        <property name="minValue">
+            <number>1</number>
+        </property>
+        <property name="value">
+            <number>2</number>
+        </property>
+    </widget>
+    <widget class="QComboBox">
+        <item>
+            <property name="text">
+                <string>Up</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Down</string>
+            </property>
+        </item>
+        <property name="name">
+            <cstring>testDirection</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>190</x>
+                <y>70</y>
+                <width>92</width>
+                <height>27</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QSpinBox">
+        <property name="name">
+            <cstring>iterations</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>190</x>
+                <y>10</y>
+                <width>52</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="maxValue">
+            <number>10000</number>
+        </property>
+        <property name="minValue">
+            <number>1</number>
+        </property>
+        <property name="value">
+            <number>10</number>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>showProgress</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>140</y>
+                <width>230</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Display Test Progress On Console</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_3_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>50</x>
+                <y>200</y>
+                <width>60</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Status:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QProgressBar">
+        <property name="name">
+            <cstring>runProgress</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>120</x>
+                <y>230</y>
+                <width>210</width>
+                <height>24</height>
+            </rect>
+        </property>
+        <property name="paletteForegroundColor">
+            <color>
+                <red>0</red>
+                <green>0</green>
+                <blue>127</blue>
+            </color>
+        </property>
+        <property name="paletteBackgroundColor">
+            <color>
+                <red>68</red>
+                <green>68</green>
+                <blue>68</blue>
+            </color>
+        </property>
+        <property name="frameShape">
+            <enum>NoFrame</enum>
+        </property>
+        <property name="margin">
+            <number>1</number>
+        </property>
+        <property name="progress">
+            <number>0</number>
+        </property>
+    </widget>
+    <widget class="QProgressBar">
+        <property name="name">
+            <cstring>totProgress</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>120</x>
+                <y>260</y>
+                <width>210</width>
+                <height>24</height>
+            </rect>
+        </property>
+        <property name="paletteForegroundColor">
+            <color>
+                <red>0</red>
+                <green>0</green>
+                <blue>127</blue>
+            </color>
+        </property>
+        <property name="paletteBackgroundColor">
+            <color>
+                <red>68</red>
+                <green>68</green>
+                <blue>68</blue>
+            </color>
+        </property>
+        <property name="frameShape">
+            <enum>NoFrame</enum>
+        </property>
+        <property name="margin">
+            <number>1</number>
+        </property>
+        <property name="progress">
+            <number>0</number>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>300</y>
+                <width>140</width>
+                <height>30</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="left"&gt;Register Test Result: &lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QTable">
+        <column>
+            <property name="text">
+                <string>Result</string>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Read Errors</string>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Status Errors</string>
+            </property>
+        </column>
+        <row>
+            <property name="text">
+                <string>Kpix 0</string>
+            </property>
+        </row>
+        <row>
+            <property name="text">
+                <string>Kpix 1</string>
+            </property>
+        </row>
+        <row>
+            <property name="text">
+                <string>Kpix 2</string>
+            </property>
+        </row>
+        <row>
+            <property name="text">
+                <string>Kpix 3</string>
+            </property>
+        </row>
+        <row>
+            <property name="text">
+                <string>Kpix 4</string>
+            </property>
+        </row>
+        <row>
+            <property name="text">
+                <string>Kpix 5</string>
+            </property>
+        </row>
+        <row>
+            <property name="text">
+                <string>Kpix 6</string>
+            </property>
+        </row>
+        <row>
+            <property name="text">
+                <string>Kpix 7</string>
+            </property>
+        </row>
+        <property name="name">
+            <cstring>resultTable</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>330</y>
+                <width>360</width>
+                <height>190</height>
+            </rect>
+        </property>
+        <property name="font">
+            <font>
+                <pointsize>8</pointsize>
+            </font>
+        </property>
+        <property name="numRows">
+            <number>8</number>
+        </property>
+        <property name="numCols">
+            <number>3</number>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>runTest</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>530</y>
+                <width>94</width>
+                <height>30</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Run Test</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>closeWindow</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>270</x>
+                <y>530</y>
+                <width>94</width>
+                <height>30</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Close</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_3_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>4</x>
+                <y>230</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Current Progress:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_3_2_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>14</x>
+                <y>260</y>
+                <width>100</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Total Progress:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>verbose</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>160</y>
+                <width>230</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Verbose Output</string>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>status</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>120</x>
+                <y>200</y>
+                <width>210</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>k8Dbg</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>270</x>
+                <y>100</y>
+                <width>170</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>K8 Dbg</string>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>testValue</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>250</x>
+                <y>160</y>
+                <width>120</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>false</bool>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>regValue</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>250</x>
+                <y>130</y>
+                <width>40</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>false</bool>
+        </property>
+    </widget>
+</widget>
+<connections>
+    <connection>
+        <sender>runTest</sender>
+        <signal>pressed()</signal>
+        <receiver>KpixGuiRegTestForm</receiver>
+        <slot>runTest_pressed()</slot>
+    </connection>
+    <connection>
+        <sender>closeWindow</sender>
+        <signal>pressed()</signal>
+        <receiver>KpixGuiRegTestForm</receiver>
+        <slot>close()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">KpixGuiRegTestForm.ui.h</include>
+</includes>
+<slots>
+    <slot>runTest_pressed()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>
