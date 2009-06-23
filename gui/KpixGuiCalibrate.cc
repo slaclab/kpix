@@ -104,8 +104,8 @@ KpixGuiCalibrate::~KpixGuiCalibrate ( ) {
    for (x=0; x < 16; x++) {
       if ( plots[x] != NULL ) {
          switch (pType) {
-            case DataTH1F:   delete ((TH1F *)plots[x]); break;
-            case DataTGraph: delete ((TGraph *)plots[x]); break;
+            case KpixDataTH1F:   delete ((TH1F *)plots[x]); break;
+            case KpixDataTGraph: delete ((TGraph *)plots[x]); break;
             default: break;
          }
       }
@@ -547,8 +547,8 @@ void KpixGuiCalibrate::customEvent ( QCustomEvent *event ) {
          // Delete old
          if ( plots[x] != NULL ) {
             switch (pType) {
-               case DataTH1F:   delete ((TH1F *)plots[x]); break;
-               case DataTGraph: delete ((TGraph *)plots[x]); break;
+               case KpixDataTH1F:   delete ((TH1F *)plots[x]); break;
+               case KpixDataTGraph: delete ((TGraph *)plots[x]); break;
                default: 
                   throw(string("KpixGuiCalibrate::customEvent -> Invalid Plot Type"));
                   break;
@@ -565,7 +565,7 @@ void KpixGuiCalibrate::customEvent ( QCustomEvent *event ) {
       switch (pType) {
 
          // Histograms
-         case DataTH1F:
+         case KpixDataTH1F:
             liveDisplay->GetCanvas()->cd(1);
             if ( plots[0] != NULL ) ((TH1F*)plots[0])->Draw();
             liveDisplay->GetCanvas()->cd(2);
@@ -573,7 +573,7 @@ void KpixGuiCalibrate::customEvent ( QCustomEvent *event ) {
             break;
 
          // Graphs
-         case DataTGraph:
+         case KpixDataTGraph:
 
             // Value
             liveDisplay->GetCanvas()->cd(1);

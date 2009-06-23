@@ -350,7 +350,7 @@ void KpixGuiThreshScan::customEvent ( QCustomEvent *event ) {
       if ( plot != NULL ) delete plot;
 
       // Copy new plot
-      if ( eventData->count > 0 && eventData->id == DataTH2F ) 
+      if ( eventData->count > 0 && eventData->id == KpixDataTH2F ) 
          plot = (TH2F*)(eventData->data[0]);
 
       // Draw Plots

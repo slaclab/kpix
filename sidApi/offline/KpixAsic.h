@@ -65,10 +65,10 @@ class SidLink;
 #endif
 
 
-static const unsigned int ChanDisable     = 1;
-static const unsigned int ChanThreshACal  = 3;
-static const unsigned int ChanThreshA     = 2;
-static const unsigned int ChanThreshB     = 0;
+static const unsigned int KpixChanDisable     = 1;
+static const unsigned int KpixChanThreshACal  = 3;
+static const unsigned int KpixChanThreshA     = 2;
+static const unsigned int KpixChanThreshB     = 0;
 
 
 class KpixAsic : public TObject {
@@ -148,12 +148,6 @@ class KpixAsic : public TObject {
                          bool readEn,              bool trigInhRaw );
 
    public:
-
-      // Constants
-      //static const unsigned int ChanDisable     = 1;
-      //static const unsigned int ChanThreshACal  = 3;
-      //static const unsigned int ChanThreshA     = 2;
-      //static const unsigned int ChanThreshB     = 0;
 
       // Max Kpix Version
       static unsigned short maxVersion();

@@ -175,7 +175,7 @@ void KpixGuiRegTest::run() {
          eventData[1] = (void *)res;
          eventData[2] = (void *)regTest->getReadErrors();
          eventData[3] = (void *)regTest->getStatusErrors();
-         eData = new KpixGuiEventData(DataUInt,4,eventData);
+         eData = new KpixGuiEventData(KpixDataUInt,4,eventData);
          QApplication::postEvent(this,eData);
 
          // Cleanup
@@ -267,7 +267,7 @@ void KpixGuiRegTest::customEvent ( QCustomEvent *event ) {
    // Reg Test Update Event
    if ( event->type() == KPIX_GUI_EVENT_DATA ) {
       eventData = (KpixGuiEventData *)event;
-      if ( eventData->id == DataUInt && eventData->count == 4 ) {
+      if ( eventData->id == KpixDataUInt && eventData->count == 4 ) {
 
          // Extract data
          x = (unsigned int)eventData->data[0];

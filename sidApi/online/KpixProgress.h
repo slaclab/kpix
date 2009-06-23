@@ -20,14 +20,14 @@
 #define __KPIX_PROGRESS_H__
 
 // Constants
-static const unsigned int DataTH1F     = 0;
-static const unsigned int DataTGraph   = 1;
-static const unsigned int DataTGraph2D = 2;
-static const unsigned int DataTH2F     = 3;
-static const unsigned int DataString   = 4;
-static const unsigned int DataInt      = 5;
-static const unsigned int DataUInt     = 6;
-static const unsigned int DataDouble   = 7;
+static const unsigned int KpixDataTH1F     = 0;
+static const unsigned int KpixDataTGraph   = 1;
+static const unsigned int KpixDataTGraph2D = 2;
+static const unsigned int KpixDataTH2F     = 3;
+static const unsigned int KpixDataString   = 4;
+static const unsigned int KpixDataInt      = 5;
+static const unsigned int KpixDataUInt     = 6;
+static const unsigned int KpixDataDouble   = 7;
 
 class KpixProgress {
    public:

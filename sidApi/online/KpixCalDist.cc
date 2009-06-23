@@ -206,20 +206,20 @@ void KpixCalDist::runDistribution ( short channel ) {
    kpixRunWrite->setEventVar("calDistType",1.0);
 
    // Init modes
-   for (x=0; x < 1024; x++) modes[x] = ChanDisable;
+   for (x=0; x < 1024; x++) modes[x] = KpixChanDisable;
 
    // No Channels Enabled
    if ( channel == -2 ) kpixRunWrite->setEventVar("calDistMaskChan",-2.0);
 
    // All Channels Enabled
    else if ( channel == -1 ) {
-      for (x=0; x < 1024; x++) modes[x] = ChanThreshACal;
+      for (x=0; x < 1024; x++) modes[x] = KpixChanThreshACal;
       kpixRunWrite->setEventVar("calDistMaskChan",-1.0);
    }
 
    // One Channel Enabled
    else {
-      modes[channel] = ChanThreshACal;
+      modes[channel] = KpixChanThreshACal;
       kpixRunWrite->setEventVar("calDistMaskChan",(double)channel);
    }
 
@@ -487,7 +487,7 @@ void KpixCalDist::runDistribution ( short channel ) {
 
                   // Update Live Plots
                   if (kpixProgress != NULL && plotCount != 0) 
-                     kpixProgress->updateData(DataTH1F,8,(void **)hist); 
+                     kpixProgress->updateData(KpixDataTH1F,8,(void **)hist); 
 
                   // Otherwise delete plots
                   else for ( bucket = 0; bucket < 8; bucket++ ) if ( hist[bucket] != NULL ) delete hist[bucket]; 
@@ -538,20 +538,20 @@ void KpixCalDist::runCalibration ( short channel ) {
    kpixRunWrite->setEventVar("calDistType",0.0);
 
    // Init modes
-   for (x=0; x < 1024; x++) modes[x] = ChanDisable;
+   for (x=0; x < 1024; x++) modes[x] = KpixChanDisable;
 
    // No Channels Enabled
    if ( channel == -2 ) kpixRunWrite->setEventVar("calDistMaskChan",-2.0);
 
    // All Channels Enabled
    else if ( channel == -1 ) {
-      for (x=0; x < 1024; x++) modes[x] = ChanThreshACal;
+      for (x=0; x < 1024; x++) modes[x] = KpixChanThreshACal;
       kpixRunWrite->setEventVar("calDistMaskChan",-1.0);
    }
 
    // One Channel Enabled
    else {
-      modes[channel] = ChanThreshACal;
+      modes[channel] = KpixChanThreshACal;
       kpixRunWrite->setEventVar("calDistMaskChan",(double)channel);
    }
 
@@ -822,7 +822,7 @@ void KpixCalDist::runCalibration ( short channel ) {
 
                   // Check For Valid, Update Live Plots
                   if ( kpixProgress != NULL && plotCount != 0 )
-                     kpixProgress->updateData(DataTGraph,16,(void **)tg);
+                     kpixProgress->updateData(KpixDataTGraph,16,(void **)tg);
 
                   // Otherwise delete plots
                   else for ( bucket = 0; bucket < 16; bucket++ ) if ( tg[bucket] != NULL ) delete tg[bucket];

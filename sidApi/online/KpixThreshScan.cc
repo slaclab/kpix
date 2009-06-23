@@ -199,16 +199,16 @@ void KpixThreshScan::runThreshold ( short channel ) {
    kpixRunWrite->addRunVar("threshOffset","Threshold Offset",threshOffset);
 
    // Init modes
-   for (x=0; x < 1024; x++) modes[x] = ChanDisable;
+   for (x=0; x < 1024; x++) modes[x] = KpixChanDisable;
 
    // Determine if calibration is enabled
    if (calEnable) {
       kpixRunWrite->setEventVar("calEnable",1.0);
-      mode = ChanThreshACal;
+      mode = KpixChanThreshACal;
    }
    else {
       kpixRunWrite->setEventVar("calEnable",0.0);
-      mode = ChanThreshA;
+      mode = KpixChanThreshA;
    }
 
    // All Channels Calibration Enabled
@@ -415,7 +415,7 @@ void KpixThreshScan::runThreshold ( short channel ) {
                hist[idx]->GetXaxis()->SetRangeUser(minX[idx],maxX[idx]);
                hist[idx]->GetYaxis()->SetRangeUser(minY[idx],maxY[idx]);
                hist[idx]->Write();
-               if ( kpixProgress != NULL ) kpixProgress->updateData(DataTH2F,1,(void**)(&(hist[idx])));
+               if ( kpixProgress != NULL ) kpixProgress->updateData(KpixDataTH2F,1,(void**)(&(hist[idx])));
                else delete hist[idx];
             }
             sleep(2);
