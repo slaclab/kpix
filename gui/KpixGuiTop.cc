@@ -9,13 +9,14 @@
 // This is a class which builds off of the class created in
 // KpixGuiTopForm.ui
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 07/02/2008: created
 // 03/05/2009: Added rate limit function.
 // 04/29/2009: Added thread to handle IO functions
+// 06/22/2009: Changed structure to support sidApi namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -28,13 +29,31 @@
 #include <TError.h>
 #include <qfiledialog.h>
 #include <qapplication.h>
+#include <qcheckbox.h>
+#include <qpushbutton.h>
+#include <KpixAsic.h>
+#include <KpixFpga.h>
+#include <SidLink.h>
 #include <KpixRunRead.h>
+#include "KpixGuiMain.h"
 #include "KpixGuiTop.h"
+#include "KpixGuiFpga.h"
+#include "KpixGuiTiming.h"
+#include "KpixGuiTrig.h"
+#include "KpixGuiRun.h"
+#include "KpixGuiInject.h"
+#include "KpixGuiStatus.h"
 #include "KpixGuiError.h"
+#include "KpixGuiMain.h"
+#include "KpixGuiConfig.h"
 #include "KpixGuiRegTest.h"
 #include "KpixGuiCalibrate.h"
 #include "KpixGuiThreshScan.h"
+#include "KpixGuiEventStatus.h"
+#include "KpixGuiEventError.h"
 using namespace std;
+using namespace sidApi::offline;
+using namespace sidApi::online;
 
 
 // Constructor
