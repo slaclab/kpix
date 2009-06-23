@@ -13,17 +13,14 @@
 // Modification history :
 // 07/02/2008: created
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_LIST_H__
 #define __KPIX_GUI_LIST_H__
 
 #include "KpixGuiListForm.h"
 
-namespace sidApi {
-   namespace offline {
-      class KpixRunRead;
-   }
-}
+class KpixRunRead;
 
 class KpixGuiList : public KpixGuiListForm {
 
@@ -33,7 +30,7 @@ class KpixGuiList : public KpixGuiListForm {
       KpixGuiList ( QWidget *parent = 0 );
 
       // Set Run Read
-      void setRunRead ( sidApi::offline::KpixRunRead *kpixRunRead );
+      void setRunRead ( KpixRunRead *kpixRunRead );
 
 };
 

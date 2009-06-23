@@ -35,6 +35,7 @@
 // 10/16/2008: Tree pointer is now public for external access.
 // 10/20/2008: Added support for calibration source dir.
 // 06/18/2009: Added namespace.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_RUN_READ_H__
 #define __KPIX_RUN_READ_H__
@@ -43,140 +44,132 @@
 #include <TString.h>
 
 // Forward declarations
-namespace sidApi {
-   namespace offline {
-      class KpixSample;
-      class KpixEventVar;
-      class KpixRunVar;
-      class KpixAsic;
-      class KpixFpga;
-   }
-}
+class KpixSample;
+class KpixEventVar;
+class KpixRunVar;
+class KpixAsic;
+class KpixFpga;
 class TFile;
 class TTree;
 class TBranch;
 
 
-namespace sidApi {
-   namespace offline {
-      class KpixRunRead {
+class KpixRunRead {
 
-            // Pointer To Tree & Branches
-            TTree   *asicTree;
-            TBranch *asicBranch;
-            TTree   *eventVarTree;
-            TBranch *eventVarBranch;
-            TTree   *runVarTree;
-            TBranch *runVarBranch;
-            TTree   *sampleTree;
-            TBranch *sampleBranch;
+      // Pointer To Tree & Branches
+      TTree   *asicTree;
+      TBranch *asicBranch;
+      TTree   *eventVarTree;
+      TBranch *eventVarBranch;
+      TTree   *runVarTree;
+      TBranch *runVarBranch;
+      TTree   *sampleTree;
+      TBranch *sampleBranch;
 
-            // Run variables
-            TString *runName;
-            TString *runTime;
-            TString *endTime;
-            TString *runDesc;
-            TString *runCalib;
+      // Run variables
+      TString *runName;
+      TString *runTime;
+      TString *endTime;
+      TString *runDesc;
+      TString *runCalib;
 
-            // Default TString
-            TString blankString;
+      // Default TString
+      TString blankString;
 
-            // Pointers to hold elements that will be returned
-            KpixSample   *kpixSample;
-            KpixRunVar   *kpixRunVar;
-            KpixEventVar *kpixEventVar;
+      // Pointers to hold elements that will be returned
+      KpixSample   *kpixSample;
+      KpixRunVar   *kpixRunVar;
+      KpixEventVar *kpixEventVar;
 
-            // Local copy of FPGA & Asics
-            KpixFpga *kpixFpga;
-            Int_t    asicCount;
-            KpixAsic **kpixAsic;
+      // Local copy of FPGA & Asics
+      KpixFpga *kpixFpga;
+      Int_t    asicCount;
+      KpixAsic **kpixAsic;
 
-            // Debug flag
-            bool enDebug;
+      // Debug flag
+      bool enDebug;
 
-         public:
+   public:
 
-            // Pointer to tree file structure
-            TFile *treeFile;
+      // Pointer to tree file structure
+      TFile *treeFile;
 
-            // Create run read object. Opens tree file for reading
-            // Pass the following values:
-            //   rootFile  = Root file containing data
-            //   debug     = Optional debug flag, true to enable debugging
-            KpixRunRead ( std::string rootFile, bool debug );
+      // Create run read object. Opens tree file for reading
+      // Pass the following values:
+      //   rootFile  = Root file containing data
+      //   debug     = Optional debug flag, true to enable debugging
+      KpixRunRead ( std::string rootFile, bool debug );
 
-            // Return pointer to tree in the data file
-            TTree * getAsicTree ();
-            TTree * getEventVarTree ();
-            TTree * getRunVarTree ();
-            TTree * getSampleTree ();
+      // Return pointer to tree in the data file
+      TTree * getAsicTree ();
+      TTree * getEventVarTree ();
+      TTree * getRunVarTree ();
+      TTree * getSampleTree ();
 
-            // Return pointer to branch in the data file
-            TBranch * getAsicBranch ();
-            TBranch * getEventVarBranch ();
-            TBranch * getRunVarBranch ();
-            TBranch * getSampleBranch ();
+      // Return pointer to branch in the data file
+      TBranch * getAsicBranch ();
+      TBranch * getEventVarBranch ();
+      TBranch * getRunVarBranch ();
+      TBranch * getSampleBranch ();
 
-            // Get Run Calibation Souce
-            TString getRunCalib ();
+      // Get Run Calibation Souce
+      TString getRunCalib ();
 
-            // Get Run Name
-            TString getRunName ();
+      // Get Run Name
+      TString getRunName ();
 
-            // Get Run Timestamp
-            TString getRunTime ();
+      // Get Run Timestamp
+      TString getRunTime ();
 
-            // Get End Timestamp
-            TString getEndTime ();
+      // Get End Timestamp
+      TString getEndTime ();
 
-            // Get Run Duration In Seconds
-            Int_t getRunDuration();
+      // Get Run Duration In Seconds
+      Int_t getRunDuration();
 
-            // Get Run Description
-            TString getRunDescription ();
+      // Get Run Description
+      TString getRunDescription ();
 
-            // Return number of ASIC objects
-            Int_t getAsicCount();
+      // Return number of ASIC objects
+      Int_t getAsicCount();
 
-            // Return ASIC by index
-            KpixAsic *getAsic( Int_t index );
+      // Return ASIC by index
+      KpixAsic *getAsic( Int_t index );
 
-            // Return ASIC List
-            KpixAsic **getAsicList( );
+      // Return ASIC List
+      KpixAsic **getAsicList( );
 
-            // Return FPGA
-            KpixFpga *getFpga( );
+      // Return FPGA
+      KpixFpga *getFpga( );
 
-            // Return number of sample objects
-            Int_t getSampleCount();
+      // Return number of sample objects
+      Int_t getSampleCount();
 
-            // Return sample by index
-            KpixSample *getSample( Int_t index );
+      // Return sample by index
+      KpixSample *getSample( Int_t index );
 
-            // Return number of Event Variables
-            Int_t getEventVarCount();
+      // Return number of Event Variables
+      Int_t getEventVarCount();
 
-            // Return Event Variable by index
-            KpixEventVar *getEventVar( Int_t index );
+      // Return Event Variable by index
+      KpixEventVar *getEventVar( Int_t index );
 
-            // Return Event Variable by name
-            KpixEventVar *getEventVar( std::string name );
+      // Return Event Variable by name
+      KpixEventVar *getEventVar( std::string name );
 
-            // Return number of Run Variables
-            Int_t getRunVarCount();
+      // Return number of Run Variables
+      Int_t getRunVarCount();
 
-            // Return Run Variable by index
-            KpixRunVar *getRunVar( Int_t index );
+      // Return Run Variable by index
+      KpixRunVar *getRunVar( Int_t index );
 
-            // Return Run Variable by name
-            KpixRunVar *getRunVar( std::string name );
+      // Return Run Variable by name
+      KpixRunVar *getRunVar( std::string name );
 
-            // Dump Run Data
-            void dumpRunData ( );
+      // Dump Run Data
+      void dumpRunData ( );
 
-            // Deconstructor
-            virtual ~KpixRunRead ( );
-      };
-   }
-}
+      // Deconstructor
+      virtual ~KpixRunRead ( );
+};
 #endif

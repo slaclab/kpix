@@ -4,11 +4,6 @@
 // Created       : 10/26/2006
 // Project       : SID Electronics API
 //-----------------------------------------------------------------------------
-// Description :
-// Header file for class to handle a KPIX sample. This class stored a single
-// sample at a specific time for a specific channel and bucket. The sample time,
-// value and range is stored.
-//-----------------------------------------------------------------------------
 // Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
@@ -24,6 +19,7 @@
 // 04/27/2009: Added trigger type flag.
 // 05/13/2009: Added special flag.
 // 06/18/2009: Added namespace.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_SAMPLE_H__
 #define __KPIX_SAMPLE_H__
@@ -31,120 +27,128 @@
 #include <TObject.h>
 
 
-// KPIX Event Data Class
-namespace sidApi {
-   namespace offline {
-      class KpixSample : public TObject {
+//! Kpix Sample Data Class.
+/*!
+   This class stores a single sample at a specific time for a specific channel and bucket. 
+   KpixSample is a subclass of TObject allowing it to be stored in a root file. This class
+   stores sample directly from Kpix pixels as well as thermal data from a Kpix and trigger
+   information from the FPGA. A flag is used to distinguish between a normal sample
+   and a "special" sample used to store thermal or trigger information. The original
+   sampleRange field of this class is now used to store a number of flags in addition
+   to the range flag of the sample.
+*/
+class KpixSample : public TObject {
 
-         public:
+   public:
 
-            // Serial number of the train this sample is related ot.
-            Int_t trainNum;
+      //! Serial number of the train in which this sample was stored.
+      Int_t trainNum;
 
-            // Event address, channel & bucket
-            Int_t kpixAddress;
-            Int_t kpixChannel;
-            Int_t kpixBucket;
+      //! Address of the Kpix which originated this sample.
+      Int_t kpixAddress;
 
-            // Sample Range Value, Used to map multiple bits
-            // Bit 0 = Range Flag, 0 = Normal, 1 = Low Gain
-            // Bit 1 = Empty Flag, 0 = Normal, 1 = Empty Record
-            // Bit 2 = Bad Count,  0 = Normal, 1 = Bad Count
-            // Bit 3 = Trigger,    1 = Local,  0 = External
-            // Bit 4 = Special,    0 = Normal, 1 = Special Record
-            Int_t sampleRange;
+      //! Channel number of the pixel which originated this sample.
+      Int_t kpixChannel;
 
-            // Event Data, time & amplitude
-            Int_t sampleTime;
-            Int_t sampleValue;
+      //! Sample bucket number within the pixel which originated this sample.
+      Int_t kpixBucket;
 
-            // Variables associated with the event, the name of the variable
-            // and its description are stored in the KpixVariable class
-            Int_t     varCount;
-            Double_t  *varValue; //[varCount] : Root Length definition
+      // Sample Range Value, Used to map multiple bits
+      // Bit 0 = Range Flag, 0 = Normal, 1 = Low Gain
+      // Bit 1 = Empty Flag, 0 = Normal, 1 = Empty Record
+      // Bit 2 = Bad Count,  0 = Normal, 1 = Bad Count
+      // Bit 3 = Trigger,    1 = Local,  0 = External
+      // Bit 4 = Special,    0 = Normal, 1 = Special Record
 
-            // Event class constructor
-            KpixSample ( );
+      //! Field containing sample flags
+      /*!
+         This field serves as a bit field broken down as follows:
+            Bit 0 = Range Flag, 0 = Normal, 1 = Low Gain
+            Bit 1 = Empty Flag, 0 = Normal, 1 = Empty Record
+            Bit 2 = Bad Count,  0 = Normal, 1 = Bad Count
+            Bit 3 = Trigger,    1 = Local,  0 = External
+            Bit 4 = Special,    0 = Normal, 1 = Special Record
+      */
+      Int_t sampleRange;
 
-            // Event class constructor
-            // Pass the following values for construction
-            // address      = KPIX Address
-            // channel      = KPIX Channel
-            // bucket       = KPIX Bucket
-            // range        = Range Flag
-            // time         = Timestamp
-            // value        = Value
-            // train        = Train Number
-            // empty        = Sample is empty
-            // badCount     = Channel counter was bad
-            // trigType     = 0=Local, 1=Neighbor
-            // special      = 0=Normal Data, 1=Special Data Type
-            KpixSample ( Int_t address, Int_t channel, Int_t bucket, Int_t range, 
-                         Int_t time, Int_t value, Int_t train, Int_t empty, Int_t badCount, 
-                         Int_t trigType, Int_t special, bool debug );
+      // Event Data, time & amplitude
+      Int_t sampleTime;
+      Int_t sampleValue;
 
-            // Set variable values
-            // Pass number of values to store and an array containing
-            // a list of those variables. The passed array pointer value
-            // should be persistant for the life of this event object.
-            void setVariables ( Int_t count, Double_t *values );
+      // Variables associated with the event, the name of the variable
+      // and its description are stored in the KpixVariable class
+      Int_t     varCount;
+      Double_t  *varValue; //[varCount] : Root Length definition
 
-            // Get train number
-            Int_t getTrainNum();
+      // Event class constructor
+      KpixSample ( );
 
-            // Get KPIX address
-            Int_t getKpixAddress();
+      // Event class constructor
+      // Pass the following values for construction
+      // address      = KPIX Address
+      // channel      = KPIX Channel
+      // bucket       = KPIX Bucket
+      // range        = Range Flag
+      // time         = Timestamp
+      // value        = Value
+      // train        = Train Number
+      // empty        = Sample is empty
+      // badCount     = Channel counter was bad
+      // trigType     = 0=Local, 1=Neighbor
+      // special      = 0=Normal Data, 1=Special Data Type
+      KpixSample ( Int_t address, Int_t channel, Int_t bucket, Int_t range, 
+                   Int_t time, Int_t value, Int_t train, Int_t empty, Int_t badCount, 
+                   Int_t trigType, Int_t special, bool debug );
 
-            // Get KPIX channel
-            Int_t getKpixChannel();
+      // Set variable values
+      // Pass number of values to store and an array containing
+      // a list of those variables. The passed array pointer value
+      // should be persistant for the life of this event object.
+      void setVariables ( Int_t count, Double_t *values );
 
-            // Get KPIX bucket
-            Int_t getKpixBucket();
+      // Get train number
+      Int_t getTrainNum();
 
-            // Get sample range, 0 = Normal, 1 = Low Gain
-            Int_t getSampleRange();
+      // Get KPIX address
+      Int_t getKpixAddress();
 
-            // Get sample time
-            Int_t getSampleTime();
+      // Get KPIX channel
+      Int_t getKpixChannel();
 
-            // Get sample value
-            Int_t getSampleValue();
+      // Get KPIX bucket
+      Int_t getKpixBucket();
 
-            // Get variable count
-            Int_t getVarCount();
+      // Get sample range, 0 = Normal, 1 = Low Gain
+      Int_t getSampleRange();
 
-            // Get empty flag, 0 = Normal, 1 = Empty Record
-            Int_t getEmpty();
+      // Get sample time
+      Int_t getSampleTime();
 
-            // Get badCount flag, 0 = Normal, 1 = Bad Count
-            Int_t getBadCount();
+      // Get sample value
+      Int_t getSampleValue();
 
-            // Get trigger type flag, 1 = Local, 0 = External or neighbor
-            Int_t getTrigType();
+      // Get variable count
+      Int_t getVarCount();
 
-            // Get special flag, 0 = Normal, 1 = Special Data
-            Int_t getSpecial();
+      // Get empty flag, 0 = Normal, 1 = Empty Record
+      Int_t getEmpty();
 
-            // Get variable value
-            Double_t getVarValue(Int_t var);
+      // Get badCount flag, 0 = Normal, 1 = Bad Count
+      Int_t getBadCount();
 
-            // Deconstructor
-            virtual ~KpixSample();
+      // Get trigger type flag, 1 = Local, 0 = External or neighbor
+      Int_t getTrigType();
 
-            ClassDef(KpixSample,2)
-      };
-   }
-}
+      // Get special flag, 0 = Normal, 1 = Special Data
+      Int_t getSpecial();
 
-//#ifdef __MAKECINT__
-//#pragma link off all globals;
-//#pragma link off all classes;
-//#pragma link off all functions;
-//#pragma link C++ nestedclasses;
-//#pragma link C++ nestedtypedefs;
-//#pragma link C++ namespace sidApi;
-//#pragma link C++ namespace sidApi::offline;
-//#pragma link C++ class sidApi::offline::KpixSample;
-//#endif
+      // Get variable value
+      Double_t getVarValue(Int_t var);
+
+      // Deconstructor
+      virtual ~KpixSample();
+
+      ClassDef(KpixSample,2)
+};
 
 #endif

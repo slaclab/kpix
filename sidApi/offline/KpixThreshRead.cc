@@ -13,6 +13,7 @@
 // Modification history :
 // 10/27/2008: created
 // 06/22/2009: Added namespaces.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -32,7 +33,6 @@
 #include "KpixThreshRead.h"
 #include "KpixRunRead.h"
 using namespace std;
-using namespace sidApi::offline;
 
 
 // Private functin to create plot name

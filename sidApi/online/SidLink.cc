@@ -31,6 +31,7 @@
 // 03/09/2009: Added echo read for simulation mode.
 // 06/18/2009: Changed read and write functions to save CPU cycles.
 // 06/22/2009: Added namespaces.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -44,7 +45,6 @@
 #include "../ftdi/ftd2xx.h"
 #include "SidLink.h"
 using namespace std;
-using namespace sidApi::online;
 
 // Serial class constructor. This constructore
 // does nothing but create the base object. Serial

@@ -29,6 +29,7 @@
 //             iteration count variable.
 // 10/26/2008: Added support for plot generation.
 // 06/22/2009: Added namespaces.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <fstream>
@@ -47,8 +48,6 @@
 #include "KpixRunWrite.h"
 #include "KpixProgress.h"
 using namespace std;
-using namespace sidApi::online;
-using namespace sidApi::offline;
 
 
 // Constructor for single KPIX. 

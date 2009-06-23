@@ -17,6 +17,7 @@
 // 03/05/2009: Added rate limit function.
 // 04/29/2009: Added thread to handle IO functions
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed sidApi namespace.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -52,8 +53,6 @@
 #include "KpixGuiEventStatus.h"
 #include "KpixGuiEventError.h"
 using namespace std;
-using namespace sidApi::offline;
-using namespace sidApi::online;
 
 
 // Constructor

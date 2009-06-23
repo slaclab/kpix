@@ -16,6 +16,7 @@
 // 07/02/2008: created
 // 04/29/2009: Seperate methods for display update and data read.
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_STATUS_H__
 #define __KPIX_GUI_STATUS_H__
@@ -23,20 +24,16 @@
 #include "KpixGuiStatusForm.h"
 
 // Forward Declarations
-namespace sidApi {
-   namespace offline {
-      class KpixAsic;
-      class KpixFpga;
-   }
-}
+class KpixAsic;
+class KpixFpga;
 
 
 class KpixGuiStatus : public KpixGuiStatusForm {
 
       // ASIC & FPGA Containers
-      unsigned int              asicCnt;
-      sidApi::offline::KpixAsic **asic;
-      sidApi::offline::KpixFpga *fpga;
+      unsigned int asicCnt;
+      KpixAsic     **asic;
+      KpixFpga     *fpga;
 
    public:
 
@@ -44,8 +41,7 @@ class KpixGuiStatus : public KpixGuiStatusForm {
       KpixGuiStatus ( QWidget *parent = 0 );
 
       // Set FPGA
-      void setAsics (sidApi::offline::KpixAsic **asic, unsigned int asicCnt, 
-                     sidApi::offline::KpixFpga *fpga);
+      void setAsics (KpixAsic **asic, unsigned int asicCnt, KpixFpga *fpga);
 
    private slots:
 

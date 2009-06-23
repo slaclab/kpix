@@ -14,6 +14,7 @@
 // 10/16/2008: created
 // 05/11/2009: Added range checking on serial number lookup.
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_SAMPLE_VIEW_H__
 #define __KPIX_GUI_SAMPLE_VIEW_H__
@@ -22,24 +23,20 @@
 
 
 // Forward declarations
-namespace sidApi {
-   namespace offline {
-      class KpixRunRead;
-      class KpixCalibRead;
-      class KpixEventVar;
-   }
-}
+class KpixRunRead;
+class KpixCalibRead;
+class KpixEventVar;
 
 
 class KpixGuiSampleView : public KpixGuiSampleViewForm {
 
       // Run Reader
-      sidApi::offline::KpixRunRead   *kpixRunRead;
-      sidApi::offline::KpixCalibRead *kpixCalibRead;
+      KpixRunRead   *kpixRunRead;
+      KpixCalibRead *kpixCalibRead;
 
       // List of event variables
-      sidApi::offline::KpixEventVar **eventVar;
-      unsigned int                  eventCount;
+      KpixEventVar **eventVar;
+      unsigned int eventCount;
 
       // Lookup Table For Kpix Index
       unsigned int *kpixIdxLookup;
@@ -54,7 +51,7 @@ class KpixGuiSampleView : public KpixGuiSampleViewForm {
       ~KpixGuiSampleView ( );
 
       // Set Run Data
-      void setRunData ( sidApi::offline::KpixRunRead *kpixRunRead);
+      void setRunData ( KpixRunRead *kpixRunRead);
 
    public slots:
 

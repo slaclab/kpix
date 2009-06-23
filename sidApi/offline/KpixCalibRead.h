@@ -18,6 +18,7 @@
 // 04/29/2009: Histograms copied along with calibration data.
 //             Parameter errors now read as well.
 // 06/18/2009: Added namespace.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_CALIB_READ_H__
 #define __KPIX_CALIB_READ_H__
@@ -26,82 +27,73 @@
 
 
 // Forward Declarations
-namespace sidApi {
-   namespace offline {
-      class KpixRunRead;
-      class KpixAsic;
-   }
-}
+class KpixRunRead;
+class KpixAsic;
 class TFile;
 class TGraph;
 class TH1;
 class TH1F;
 
+class KpixCalibRead {
 
-namespace sidApi {
-   namespace offline {
-      class KpixCalibRead {
+      // Flag to delete runRead
+      bool delRunRead;
 
-            // Flag to delete runRead
-            bool delRunRead;
+   public:
 
-         public:
+      // Run Read Class
+      KpixRunRead *kpixRunRead;
 
-            // Run Read Class
-            KpixRunRead *kpixRunRead;
+      // Calib Data Class Constructor
+      // Pass path to calibration data or
+      KpixCalibRead ( std::string calibFile, bool debug = false );
 
-            // Calib Data Class Constructor
-            // Pass path to calibration data or
-            KpixCalibRead ( std::string calibFile, bool debug = false );
+      // Calib Data Class Constructor
+      // Pass already open run read class
+      KpixCalibRead ( KpixRunRead *kpixRunRead );
 
-            // Calib Data Class Constructor
-            // Pass already open run read class
-            KpixCalibRead ( KpixRunRead *kpixRunRead );
+      // Calib Data Class DeConstructor
+      ~KpixCalibRead ( );
 
-            // Calib Data Class DeConstructor
-            ~KpixCalibRead ( );
+      // Function to create plot name
+      static std::string genPlotName ( int gain, int kpix, int channel, int bucket, std::string prefix, int range=-1 );
 
-            // Function to create plot name
-            static std::string genPlotName ( int gain, int kpix, int channel, int bucket, std::string prefix, int range=-1 );
+      // Function to create plot title
+      static std::string genPlotTitle ( int gain, int kpix, int channel, int bucket, std::string prefix, int range=-1 );
 
-            // Function to create plot title
-            static std::string genPlotTitle ( int gain, int kpix, int channel, int bucket, std::string prefix, int range=-1 );
+      // Get and make copy of Value Histogam
+      TH1F *getHistValue ( std::string dir, int gain, int kpix, int channel, int bucket );
 
-            // Get and make copy of Value Histogam
-            TH1F *getHistValue ( std::string dir, int gain, int kpix, int channel, int bucket );
+      // Get and make copy of Time Histogam
+      TH1F *getHistTime ( std::string dir, int gain, int kpix, int channel, int bucket );
 
-            // Get and make copy of Time Histogam
-            TH1F *getHistTime ( std::string dir, int gain, int kpix, int channel, int bucket );
+      // Get and make copy of Value Graph
+      TGraph *getGraphValue ( std::string dir, int gain, int kpix, int channel, int bucket, int range=-1 );
 
-            // Get and make copy of Value Graph
-            TGraph *getGraphValue ( std::string dir, int gain, int kpix, int channel, int bucket, int range=-1 );
+      // Get and make copy of Time Graph
+      TGraph *getGraphTime ( std::string dir, int gain, int kpix, int channel, int bucket, int range=-1 );
 
-            // Get and make copy of Time Graph
-            TGraph *getGraphTime ( std::string dir, int gain, int kpix, int channel, int bucket, int range=-1 );
+      // Get and make copy of Time Graph
+      TGraph *getGraphResid ( std::string dir, int gain, int kpix, int channel, int bucket, int range=-1 );
 
-            // Get and make copy of Time Graph
-            TGraph *getGraphResid ( std::string dir, int gain, int kpix, int channel, int bucket, int range=-1 );
+      // Get and make copy of Filtered Graph
+      TGraph *getGraphFilt ( std::string dir, int gain, int kpix, int channel, int bucket, int range=-1 );
 
-            // Get and make copy of Filtered Graph
-            TGraph *getGraphFilt ( std::string dir, int gain, int kpix, int channel, int bucket, int range=-1 );
+      // Get Calibration Graph Fit Results If They Exist
+      bool getCalibData ( double *fitGain, double *fitIntercept, 
+                          std::string dir, int gain, int kpix, int channel, int bucket,
+                          double *fitGainErr=NULL, double *fitInterceptErr=NULL );
 
-            // Get Calibration Graph Fit Results If They Exist
-            bool getCalibData ( double *fitGain, double *fitIntercept, 
-                                std::string dir, int gain, int kpix, int channel, int bucket,
-                                double *fitGainErr=NULL, double *fitInterceptErr=NULL );
+      // Get Calibration Graph Fit RMS Value
+      bool getCalibRms  ( double *rms, 
+                          std::string dir, int gain, int kpix, int channel, int bucket);
 
-            // Get Calibration Graph Fit RMS Value
-            bool getCalibRms  ( double *rms, 
-                                std::string dir, int gain, int kpix, int channel, int bucket);
+      // Get Histogram Graph Fit Results If They Exist
+      bool getHistData ( double *mean, double *sigma, double *rms,
+                         std::string dir, int gain, int kpix, int channel, int bucket,
+                         double *meanErr=NULL, double *sigmaErr=NULL);
 
-            // Get Histogram Graph Fit Results If They Exist
-            bool getHistData ( double *mean, double *sigma, double *rms,
-                               std::string dir, int gain, int kpix, int channel, int bucket,
-                               double *meanErr=NULL, double *sigmaErr=NULL);
-
-            // Copy calibration data to a new root file
-            void copyCalibData ( TFile *newFile, std::string directory, KpixAsic **asic, int asicCnt );
-      };
-   }
-}
+      // Copy calibration data to a new root file
+      void copyCalibData ( TFile *newFile, std::string directory, KpixAsic **asic, int asicCnt );
+};
 #endif

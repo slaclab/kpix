@@ -25,7 +25,6 @@
 #include <KpixEventVar.h>
 #include <TFile.h>
 using namespace std;
-using namespace sidApi::offline;
 
 // Process the data
 // Pass root file to open as first and only arg.

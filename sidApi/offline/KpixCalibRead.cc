@@ -17,6 +17,7 @@
 // 04/29/2009: Histograms copied along with calibration data.
 //             Parameter errors now read as well.
 // 06/22/2009: Added namespaces.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -34,7 +35,6 @@
 #include "KpixRunRead.h"
 #include "KpixAsic.h"
 using namespace std;
-using namespace sidApi::offline;
 
 
 // Private functin to create plot name

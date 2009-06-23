@@ -16,6 +16,7 @@
 // 07/02/2008: created
 // 03/05/2009: Added rate limit function.
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed sidApi namespace.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -46,8 +47,6 @@
 #include "KpixGuiEventStatus.h"
 #include "KpixGuiCalFit.h"
 using namespace std;
-using namespace sidApi::offline;
-using namespace sidApi::online;
 
 
 // Constructor

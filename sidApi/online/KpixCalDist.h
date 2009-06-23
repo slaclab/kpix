@@ -24,6 +24,7 @@
 // 05/11/2009: Added range checking on serial number lookup.
 // 05/15/2009: Added feature to support random histogram time generation.
 // 06/18/2009: Added namespace.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_CAL_DIST_H__
 #define __KPIX_CAL_DIST_H__
@@ -31,142 +32,131 @@
 #include <string>
 
 // Forward declarations
-namespace sidApi {
-   namespace online {
-      class KpixProgress;
-      class KpixRunWrite;
-   }
-   namespace offline {
-      class KpixAsic;
-   }
-}
+class KpixProgress;
+class KpixRunWrite;
+class KpixAsic;
 
 
-namespace sidApi {
-   namespace online {
-
-      // Class to store calibration plots
-      class KpixCalDistData {
-         public:
-            unsigned int count;
-            double       xData[256];   
-            double       vData[256];   
-            double       tData[256];   
-            KpixCalDistData() { count = 0; }
-      };
+// Class to store calibration plots
+class KpixCalDistData {
+   public:
+      unsigned int count;
+      double       xData[256];   
+      double       vData[256];   
+      double       tData[256];   
+      KpixCalDistData() { count = 0; }
+};
 
 
-      // KPIX Event Data Class
-      class KpixCalDist {
+// KPIX Event Data Class
+class KpixCalDist {
 
-            // Locations to store asic and run objects to use
-            sidApi::offline::KpixAsic     *tempAsic;
-            sidApi::offline::KpixAsic     **kpixAsic;
-            sidApi::online::KpixRunWrite  *kpixRunWrite;
+      // Locations to store asic and run objects to use
+      KpixAsic     *tempAsic;
+      KpixAsic     **kpixAsic;
+      KpixRunWrite *kpixRunWrite;
 
-            // Numer of Kpix devices
-            unsigned int kpixCount;
+      // Numer of Kpix devices
+      unsigned int kpixCount;
 
-            // Enable debug
-            bool enDebug;
+      // Enable debug
+      bool enDebug;
 
-            // Enables for each gain range
-            bool enNormal;
-            bool enDouble;
-            bool enLow;
+      // Enables for each gain range
+      bool enNormal;
+      bool enDouble;
+      bool enLow;
 
-            // Raw data and plot enables
-            bool rawDataEn;
-            bool plotEn;
+      // Raw data and plot enables
+      bool rawDataEn;
+      bool plotEn;
 
-            // Range for calibration
-            unsigned char calStart;
-            unsigned char calEnd;
-            unsigned char calStep;
+      // Range for calibration
+      unsigned char calStart;
+      unsigned char calEnd;
+      unsigned char calStep;
 
-            // Distribution counts and charge
-            unsigned int  distCount;
-            unsigned char distCalDac;
+      // Distribution counts and charge
+      unsigned int  distCount;
+      unsigned char distCalDac;
 
-            // Lookup Table For Kpix Index
-            unsigned int *kpixIdxLookup;
-            unsigned int maxAddress;
+      // Lookup Table For Kpix Index
+      unsigned int *kpixIdxLookup;
+      unsigned int maxAddress;
 
-            // Rate Limit In uS
-            unsigned int rateLimit;
+      // Rate Limit In uS
+      unsigned int rateLimit;
 
-            // Enable and range for random histogram time generation
-            static const unsigned int distTimeMin = 100; // Buckets from 0
-            static const unsigned int distTimeMax = 100; // Buckets from max
-            bool randDistTimeEn;
+      // Enable and range for random histogram time generation
+      static const unsigned int distTimeMin = 100; // Buckets from 0
+      static const unsigned int distTimeMax = 100; // Buckets from max
+      bool randDistTimeEn;
 
-            // Plot information
-            std::string plotDir;
+      // Plot information
+      std::string plotDir;
 
-            // Progress class for reporting status
-            sidApi::online::KpixProgress *kpixProgress;
+      // Progress class for reporting status
+      KpixProgress *kpixProgress;
 
-         public:
+   public:
 
-            // Constructor for single KPIX. 
-            // Pass a pointer to the Kpix Asic and the Run object
-            KpixCalDist ( sidApi::offline::KpixAsic *asic, sidApi::online::KpixRunWrite *run );
+      // Constructor for single KPIX. 
+      // Pass a pointer to the Kpix Asic and the Run object
+      KpixCalDist ( KpixAsic *asic, KpixRunWrite *run );
 
-            // Constructor for multiple KPIX devices. 
-            // Pass a pointer to the Kpix Asic and the Run object
-            KpixCalDist ( sidApi::offline::KpixAsic **asic, unsigned int count, sidApi::online::KpixRunWrite *run );
+      // Constructor for multiple KPIX devices. 
+      // Pass a pointer to the Kpix Asic and the Run object
+      KpixCalDist ( KpixAsic **asic, unsigned int count, KpixRunWrite *run );
 
-            // Set calibration DAC value for distribution
-            void setDistCalDac ( unsigned char value );
+      // Set calibration DAC value for distribution
+      void setDistCalDac ( unsigned char value );
 
-            // Set number of distribution iterations
-            void setDistCount ( unsigned int count );
+      // Set number of distribution iterations
+      void setDistCount ( unsigned int count );
 
-            // Set calibration DAC steps for calibration run
-            void setCalibRange ( unsigned char start, unsigned char end, unsigned char step );
+      // Set calibration DAC steps for calibration run
+      void setCalibRange ( unsigned char start, unsigned char end, unsigned char step );
 
-            // Enable/Disable normal gain iteration
-            void enNormalGain ( bool enable );
+      // Enable/Disable normal gain iteration
+      void enNormalGain ( bool enable );
 
-            // Enable/Disable double gain iteration
-            void enDoubleGain ( bool enable );
+      // Enable/Disable double gain iteration
+      void enDoubleGain ( bool enable );
 
-            // Enable/Disable low gain iteration
-            void enLowGain ( bool enable );
+      // Enable/Disable low gain iteration
+      void enLowGain ( bool enable );
 
-            // Turn on or off debugging for the class
-            void calDistDebug ( bool debug );
+      // Turn on or off debugging for the class
+      void calDistDebug ( bool debug );
 
-            // Enable raw data
-            void enableRawData( bool enable );
+      // Enable raw data
+      void enableRawData( bool enable );
 
-            // Enable plot generation
-            void enablePlots( bool enable );
+      // Enable plot generation
+      void enablePlots( bool enable );
 
-            // Pass name of the TFile directory in which to store the plots
-            void setPlotDir( std::string plotDir );
+      // Pass name of the TFile directory in which to store the plots
+      void setPlotDir( std::string plotDir );
 
-            // Set Rate Limit
-            void setRateLimit( unsigned int rateLimit );
+      // Set Rate Limit
+      void setRateLimit( unsigned int rateLimit );
 
-            // Enable random histogram time
-            void enableRandDistTime ( bool enable );
+      // Enable random histogram time
+      void enableRandDistTime ( bool enable );
 
-            // Execute distribution, pass channel to enable calibration mask for
-            // Or pass -1 to set cal mask for all channels or -2 to set mask for no channels
-            void runDistribution ( short channel );
+      // Execute distribution, pass channel to enable calibration mask for
+      // Or pass -1 to set cal mask for all channels or -2 to set mask for no channels
+      void runDistribution ( short channel );
 
-            // Execute calibration, pass channel to enable calibration mask for
-            // Or pass -1 to set cal mask for all channels or -2 to set mask for no channels
-            void runCalibration ( short channel );
+      // Execute calibration, pass channel to enable calibration mask for
+      // Or pass -1 to set cal mask for all channels or -2 to set mask for no channels
+      void runCalibration ( short channel );
 
-            // Deconstructor
-            virtual ~KpixCalDist ();
+      // Deconstructor
+      virtual ~KpixCalDist ();
 
-            // Set progress Callback
-            void setKpixProgress(sidApi::online::KpixProgress *progress);
+      // Set progress Callback
+      void setKpixProgress(KpixProgress *progress);
 
-      };
-   }
-}
+};
 #endif

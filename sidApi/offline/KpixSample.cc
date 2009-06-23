@@ -4,11 +4,6 @@
 // Created       : 10/26/2006
 // Project       : SID Electronics API
 //-----------------------------------------------------------------------------
-// Description :
-// Header file for class to handle a KPIX sample. This class stored a single
-// sample at a specific time for a specific channel and bucket. The sample time,
-// value and range is stored.
-//-----------------------------------------------------------------------------
 // Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
@@ -25,6 +20,7 @@
 // 04/27/2009: Added trigger type flag.
 // 05/13/2009: Added special flag.
 // 06/22/2009: Added namespaces.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -34,7 +30,6 @@
 #include <unistd.h>
 #include "KpixSample.h"
 using namespace std;
-using namespace sidApi::offline;
 
 ClassImp(KpixSample)
 

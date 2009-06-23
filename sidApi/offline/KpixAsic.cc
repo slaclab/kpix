@@ -58,6 +58,7 @@
 // 06/09/2009: Added constructor flag to enable dummy kpix.
 // 06/10/2009: Added method to convert temp adc value to a celcias value
 // 06/22/2009: Added namespaces.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -68,11 +69,9 @@
 #include <math.h>
 #include "KpixAsic.h"
 using namespace std;
-using namespace sidApi::offline;
 
 #ifdef ONLINE_EN
 #include "../online/SidLink.h"
-using namespace sidApi::online;
 #endif
 
 

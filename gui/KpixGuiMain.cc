@@ -16,6 +16,7 @@
 // 07/02/2008: created
 // 04/29/2009: Seperate methods for display update and data read.
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed sidApi namespace.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -33,7 +34,6 @@
 #include <KpixRunRead.h>
 #include "KpixGuiMain.h"
 using namespace std;
-using namespace sidApi::offline;
 
 
 // Constructor

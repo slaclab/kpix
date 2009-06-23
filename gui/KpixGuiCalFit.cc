@@ -16,6 +16,7 @@
 // 04/30/2009: Remove seperate hist and cal view classes. All functions now
 //             handled by this class. Added thread for read/fit operations.
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed sidApi namespace.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -52,8 +53,6 @@
 #include "KpixGuiEventError.h"
 #include "KpixGuiEventData.h"
 using namespace std;
-using namespace sidApi::offline;
-using namespace sidApi::online;
 
 
 // Constructor

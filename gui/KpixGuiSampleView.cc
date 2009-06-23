@@ -15,6 +15,7 @@
 // 04/29/2009: Added new sample fields.
 // 05/11/2009: Added range checking on serial number lookup.
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed sidApi namespace.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -33,8 +34,6 @@
 #include <KpixSample.h>
 #include "KpixGuiSampleView.h"
 using namespace std;
-using namespace sidApi::offline;
-using namespace sidApi::online;
 
 
 // Constructor

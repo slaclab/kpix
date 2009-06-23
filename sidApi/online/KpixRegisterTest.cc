@@ -17,6 +17,7 @@
 // 09/26/2008: Added support for progress updates to calling class.
 // 02/23/2009: Added changes required for status read.
 // 06/22/2009: Added namespaces.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -28,8 +29,6 @@
 #include "KpixProgress.h"
 #include "../offline/KpixAsic.h"
 using namespace std;
-using namespace sidApi::online;
-using namespace sidApi::offline;
 
 
 // Register test class constructor

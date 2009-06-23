@@ -13,6 +13,7 @@
 // Modification history :
 // 09/26/2008: created
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed sidApi namespace.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -28,8 +29,6 @@
 #include "KpixGuiRunView.h"
 #include "KpixGuiThreshView.h"
 using namespace std;
-using namespace sidApi::offline;
-using namespace sidApi::online;
 
 
 // Print command line usage

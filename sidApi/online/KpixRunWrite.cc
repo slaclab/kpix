@@ -39,6 +39,7 @@
 // 10/21/2008: Added support for run times to be passed along.
 // 10/22/2008: Removed close function.
 // 06/22/2009: Added namespaces.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -60,8 +61,6 @@
 #include "../offline/KpixAsic.h"
 #include "../offline/KpixFpga.h"
 using namespace std;
-using namespace sidApi::online;
-using namespace sidApi::offline;
 
 // Function to generate and return current timestamp.
 string KpixRunWrite::genTimestamp () {

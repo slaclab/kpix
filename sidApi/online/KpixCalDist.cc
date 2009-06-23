@@ -29,6 +29,7 @@
 // 05/11/2009: Added range checking on serial number lookup.
 // 05/15/2009: Added feature to support random histogram time generation.
 // 06/22/2009: Added namespaces.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <fstream>
@@ -53,8 +54,6 @@
 #include "../offline/KpixAsic.h"
 #include "../offline/KpixSample.h"
 using namespace std;
-using namespace sidApi::online;
-using namespace sidApi::offline;
 
 
 // Constructor for single KPIX. 

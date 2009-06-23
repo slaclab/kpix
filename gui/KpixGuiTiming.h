@@ -17,6 +17,7 @@
 // 03/05/2009: Added rate limit function.
 // 04/29/2009: Seperate methods for display update and data read.
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_TIMING_H__
 #define __KPIX_GUI_TIMING_H__
@@ -24,20 +25,16 @@
 #include "KpixGuiTimingForm.h"
 
 // Forward Declarations
-namespace sidApi {
-   namespace offline {
-      class KpixAsic;
-      class KpixFpga;
-   }
-}
+class KpixAsic;
+class KpixFpga;
 
 
 class KpixGuiTiming : public KpixGuiTimingForm {
 
       // ASIC & FPGA Containers
-      unsigned int              asicCnt;
-      sidApi::offline::KpixAsic **asic;
-      sidApi::offline::KpixFpga *fpga;
+      unsigned int asicCnt;
+      KpixAsic     **asic;
+      KpixFpga     *fpga;
 
    public:
 
@@ -45,8 +42,7 @@ class KpixGuiTiming : public KpixGuiTimingForm {
       KpixGuiTiming ( unsigned int rateLimit, QWidget *parent = 0 );
 
       // Set Asics
-      void setAsics (sidApi::offline::KpixAsic **asic, unsigned int asicCnt, 
-                     sidApi::offline::KpixFpga *fpga);
+      void setAsics (KpixAsic **asic, unsigned int asicCnt, KpixFpga *fpga);
 
       // Control Enable Of Buttons/Edits
       void setEnabled ( bool enable, bool calEnable );

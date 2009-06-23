@@ -19,6 +19,7 @@
 // 12/18/2006: created
 // 03/19/2007: Changed variables to root specific types.
 // 06/22/2009: Added namespaces.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -28,7 +29,6 @@
 #include <TString.h>
 #include "KpixEventVar.h"
 using namespace std;
-using namespace sidApi::offline;
 
 ClassImp(KpixEventVar)
 

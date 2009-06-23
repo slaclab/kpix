@@ -14,11 +14,11 @@
 // 10/15/2008: created
 // 03/03/2009: changed container values to unsigned int
 // 06/22/2009: Added namespaces.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #include <string>
 #include "KpixHistogram.h"
 using namespace std;
-using namespace sidApi::online;
 
 
 // Constructor

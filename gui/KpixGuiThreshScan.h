@@ -15,6 +15,7 @@
 // Modification history :
 // 07/02/2008: created
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_THRESH_SCAN_H__
 #define __KPIX_GUI_THRESH_SCAN_H__
@@ -26,35 +27,31 @@
 
 
 // Forward Declarations
-namespace sidApi {
-   namespace offline {
-      class KpixAsic;
-      class KpixFpga;
-      class KpixRunVar;
-   }
-}
+class KpixAsic;
+class KpixFpga;
+class KpixRunVar;
 class KpixGuiTop;
 class KpixGuiError;
 class KpixGuiThreshView;
 class TH2F;
 
 
-class KpixGuiThreshScan : public KpixGuiThreshScanForm, public QThread, public sidApi::online::KpixProgress {
+class KpixGuiThreshScan : public KpixGuiThreshScanForm, public QThread, public KpixProgress {
 
       // ASIC & FPGA Containers
-      unsigned int                asicCnt;
-      sidApi::offline::KpixAsic   **asic;
-      sidApi::offline::KpixFpga   *fpga;
-      KpixGuiTop                  *parent;
-      KpixGuiError                *errorMsg;
-      bool                        running;
-      bool                        enRun;
-      bool                        isRunning;
-      std::string                 baseDir, desc, outDataDir, outDataFile;
-      sidApi::offline::KpixRunVar **runVars;
-      unsigned int                runVarCount;
-      TH2F                        *plot;
-      KpixGuiThreshView           *threshView;
+      unsigned int      asicCnt;
+      KpixAsic          **asic;
+      KpixFpga          *fpga;
+      KpixGuiTop        *parent;
+      KpixGuiError      *errorMsg;
+      bool              running;
+      bool              enRun;
+      bool              isRunning;
+      std::string       baseDir, desc, outDataDir, outDataFile;
+      KpixRunVar        **runVars;
+      unsigned int      runVarCount;
+      TH2F              *plot;
+      KpixGuiThreshView *threshView;
 
    public:
 
@@ -68,8 +65,7 @@ class KpixGuiThreshScan : public KpixGuiThreshScanForm, public QThread, public s
       void setEnabled ( bool enable );
 
       // Set Configurations
-      void setAsics ( sidApi::offline::KpixAsic **asic, unsigned int asicCnt, 
-                      sidApi::offline::KpixFpga *fpga );
+      void setAsics ( KpixAsic **asic, unsigned int asicCnt, KpixFpga *fpga );
 
       // Update progress
       void updateProgress(unsigned int count, unsigned int total);

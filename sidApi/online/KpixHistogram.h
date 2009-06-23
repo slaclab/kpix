@@ -14,50 +14,47 @@
 // 10/15/2008: created
 // 03/03/2009: changed container values to unsigned int
 // 06/18/2009: Added namespace.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_HISTOGRAM_H__
 #define __KPIX_HISTOGRAM_H__
 
-namespace sidApi {
-   namespace online {
-      class KpixHistogram {
+class KpixHistogram {
 
-            // Histogram contents
-            unsigned int *data;
+      // Histogram contents
+      unsigned int *data;
 
-            // Number of entries in histogram
-            unsigned int entries;
+      // Number of entries in histogram
+      unsigned int entries;
 
-            // Min Value
-            unsigned int min;
-            unsigned int max;
+      // Min Value
+      unsigned int min;
+      unsigned int max;
 
-         public:
+   public:
 
-            // Constructor
-            KpixHistogram ( );
+      // Constructor
+      KpixHistogram ( );
 
-            // Constructor
-            ~KpixHistogram ( );
+      // Constructor
+      ~KpixHistogram ( );
 
-            // Add an entry
-            void fill(unsigned int value);
+      // Add an entry
+      void fill(unsigned int value);
 
-            // Get Number Of Entries
-            unsigned int binCount();
+      // Get Number Of Entries
+      unsigned int binCount();
 
-            // Get Min Value
-            unsigned int minValue();
+      // Get Min Value
+      unsigned int minValue();
 
-            // Get Max Value
-            unsigned int maxValue();
+      // Get Max Value
+      unsigned int maxValue();
 
-            // Get Bin Value
-            unsigned int value(unsigned int bin);
+      // Get Bin Value
+      unsigned int value(unsigned int bin);
 
-            // Get Bin Count
-            unsigned int count(unsigned int bin);
-      };
-   }
-}
+      // Get Bin Count
+      unsigned int count(unsigned int bin);
+};
 #endif

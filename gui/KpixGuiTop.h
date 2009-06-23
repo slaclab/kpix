@@ -17,6 +17,7 @@
 // 03/05/2009: Added rate limit function.
 // 04/29/2009: Added thread to handle IO functions
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_TOP_H__
 #define __KPIX_GUI_TOP_H__
@@ -27,17 +28,11 @@
 
 
 // Forward declarations
-namespace sidApi {
-   namespace offline {
-      class KpixAsic;
-      class KpixFpga;
-      class KpixRunRead;
-      class KpixRunVar;
-   }
-   namespace online {
-      class SidLink;
-   }
-}
+class KpixAsic;
+class KpixFpga;
+class KpixRunRead;
+class KpixRunVar;
+class SidLink;
 class KpixGuiError;
 class KpixGuiMain;
 class KpixGuiFpga;
@@ -59,15 +54,15 @@ class KpixGuiRun;
 class KpixGuiTop : public KpixGuiTopForm, public QThread {
 
       // ASIC & FPGA Containers
-      unsigned int                 asicCnt;
-      unsigned int                 asicVersion;
-      unsigned int                 defClkPeriod;
-      unsigned int                 cmdType;
-      sidApi::offline::KpixAsic    *asic[KPIX_MAX_ADDR+1];
-      sidApi::offline::KpixFpga    *fpga;
-      sidApi::offline::KpixRunRead *runRead;
-      sidApi::online::SidLink      *sidLink;
-      KpixGuiError                 *errorMsg;
+      unsigned int asicCnt;
+      unsigned int asicVersion;
+      unsigned int defClkPeriod;
+      unsigned int cmdType;
+      KpixAsic     *asic[KPIX_MAX_ADDR+1];
+      KpixFpga     *fpga;
+      KpixRunRead  *runRead;
+      SidLink      *sidLink;
+      KpixGuiError *errorMsg;
 
       // Widgets In the Tabs
       KpixGuiMain       *kpixGuiMain;
@@ -94,7 +89,7 @@ class KpixGuiTop : public KpixGuiTopForm, public QThread {
    public:
 
       // Creation Class
-      KpixGuiTop ( sidApi::online::SidLink *sidLink, unsigned int clkPeriod, 
+      KpixGuiTop ( SidLink *sidLink, unsigned int clkPeriod, 
                    unsigned int version, std::string baseDir, std::string calString, 
                    unsigned int rateLimit, QWidget *parent=0 );
 
@@ -111,7 +106,7 @@ class KpixGuiTop : public KpixGuiTopForm, public QThread {
       std::string getBaseDir();
 
       // Get Run Variable List
-      sidApi::offline::KpixRunVar **getRunVarList(unsigned int *count);
+      KpixRunVar **getRunVarList(unsigned int *count);
 
       // Get rate limit value, zero for none
       unsigned int getRateLimit();

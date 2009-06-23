@@ -16,6 +16,7 @@
 // 07/02/2008: created
 // 04/29/2009: Seperate methods for display update and data read.
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_MAIN_H__
 #define __KPIX_GUI_MAIN_H__
@@ -23,21 +24,17 @@
 #include "KpixGuiMainForm.h"
 
 // Forward declarations
-namespace sidApi {
-   namespace offline {
-      class KpixAsic;
-      class KpixRunRead;
-      class KpixRunVar;
-   }
-}
+class KpixAsic;
+class KpixRunRead;
+class KpixRunVar;
 class QComboBox;
 
 
 class KpixGuiMain : public KpixGuiMainForm {
 
       // ASIC & FPGA Containers
-      unsigned int              asicCnt;
-      sidApi::offline::KpixAsic **asic;
+      unsigned int asicCnt;
+      KpixAsic     **asic;
 
       // Threshold Table Entries
       QComboBox **posPixel;
@@ -51,10 +48,10 @@ class KpixGuiMain : public KpixGuiMainForm {
       ~KpixGuiMain();
 
       // Set Asics
-      void setAsics (sidApi::offline::KpixAsic **asic, unsigned int asicCnt);
+      void setAsics (KpixAsic **asic, unsigned int asicCnt);
 
       // Set Calib Read File For Run Var List
-      void setRunRead ( sidApi::offline::KpixRunRead *kpixRunRead );
+      void setRunRead ( KpixRunRead *kpixRunRead );
 
       // Control Enable Of Buttons/Edits
       void setEnabled ( bool enable, bool calEnable );
@@ -63,7 +60,7 @@ class KpixGuiMain : public KpixGuiMainForm {
       std::string getRunDescription();
 
       // Get Run Variable List
-      sidApi::offline::KpixRunVar **getRunVarList(unsigned int *count);
+      KpixRunVar **getRunVarList(unsigned int *count);
 
    private slots:
 

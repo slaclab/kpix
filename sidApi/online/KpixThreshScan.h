@@ -26,6 +26,7 @@
 //             iteration count variable.
 // 10/26/2008: Added support for plot generation.
 // 06/18/2009: Added namespace.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_THRESH_SCAN_H__
 #define __KPIX_THRESH_SCAN_H__
@@ -33,125 +34,115 @@
 #include <string>
 
 // Forward declarations
-namespace sidApi {
-   namespace online {
-      class KpixRunWrite;
-      class KpixProgress;
-   }
-   namespace offline {
-      class KpixAsic;
-   }
-}
+class KpixRunWrite;
+class KpixProgress;
+class KpixAsic;
 
 
-namespace sidApi {
-   namespace online {
-      class KpixThreshScan {
+class KpixThreshScan {
 
-            // Locations to store asic and run objects to use
-            sidApi::offline::KpixAsic     *tempAsic;
-            sidApi::offline::KpixAsic     **kpixAsic;
-            sidApi::online::KpixRunWrite  *kpixRunWrite;
+      // Locations to store asic and run objects to use
+      KpixAsic     *tempAsic;
+      KpixAsic     **kpixAsic;
+      KpixRunWrite *kpixRunWrite;
 
-            // Numer of Kpix devices
-            int kpixCount;
+      // Numer of Kpix devices
+      int kpixCount;
 
-            // Enable debug
-            bool enDebug;
+      // Enable debug
+      bool enDebug;
 
-            // Enables for each gain range
-            bool enNormal;
-            bool enDouble;
-            bool enLow;
+      // Enables for each gain range
+      bool enNormal;
+      bool enDouble;
+      bool enLow;
 
-            // Plot and raw data enable
-            bool rawEn;
-            bool plotEn;
+      // Plot and raw data enable
+      bool rawEn;
+      bool plotEn;
 
-            // Plot Directory
-            std::string plotDir;
+      // Plot Directory
+      std::string plotDir;
 
-            // Calibration charge enable
-            bool calEnable;
+      // Calibration charge enable
+      bool calEnable;
 
-            // Range for calibration
-            unsigned char calStart;
-            unsigned char calEnd;
-            unsigned char calStep;
+      // Range for calibration
+      unsigned char calStart;
+      unsigned char calEnd;
+      unsigned char calStep;
 
-            // Range for threshold
-            unsigned char threshStart;
-            unsigned char threshEnd;
-            unsigned char threshStep;
-            int           threshCount;
+      // Range for threshold
+      unsigned char threshStart;
+      unsigned char threshEnd;
+      unsigned char threshStep;
+      int           threshCount;
 
-            // Pre-trigger threshold offset
-            char threshOffset;
+      // Pre-trigger threshold offset
+      char threshOffset;
 
-            // Progress class for reporting status
-            KpixProgress *kpixProgress;
+      // Progress class for reporting status
+      KpixProgress *kpixProgress;
 
-         public:
+   public:
 
-            // Constructor for single KPIX. 
-            // Pass a pointer to the Kpix Asic and the Run object
-            KpixThreshScan ( sidApi::offline::KpixAsic *asic, sidApi::online::KpixRunWrite *run );
+      // Constructor for single KPIX. 
+      // Pass a pointer to the Kpix Asic and the Run object
+      KpixThreshScan ( KpixAsic *asic, KpixRunWrite *run );
 
-            // Constructor for multiple KPIX devices. 
-            // Pass a pointer to the Kpix Asic and the Run object
-            KpixThreshScan ( sidApi::offline::KpixAsic **asic, unsigned int count, sidApi::online::KpixRunWrite *run );
+      // Constructor for multiple KPIX devices. 
+      // Pass a pointer to the Kpix Asic and the Run object
+      KpixThreshScan ( KpixAsic **asic, unsigned int count, KpixRunWrite *run );
 
-            // Enable disable charge injection
-            void setCalibEn ( bool enable );
+      // Enable disable charge injection
+      void setCalibEn ( bool enable );
 
-            // Set calibration DAC steps for threshold scan
-            void setCalibRange ( unsigned char start, unsigned char end, unsigned char step );
+      // Set calibration DAC steps for threshold scan
+      void setCalibRange ( unsigned char start, unsigned char end, unsigned char step );
 
-            // Set threshold steps for threshold scan
-            void setThreshRange (unsigned char start, unsigned char end, unsigned char step);
+      // Set threshold steps for threshold scan
+      void setThreshRange (unsigned char start, unsigned char end, unsigned char step);
 
-            // Set pre-trigger threshold offset
-            // Set a negative value to track the pre-trigger threshold below
-            // the trigger threshold. Set to zero to keep the same as
-            // the trigger threshold. Set to a positive value to set 
-            // pre-trigger to always be 0xB0.
-            void setPreTrigger ( char diff );
+      // Set pre-trigger threshold offset
+      // Set a negative value to track the pre-trigger threshold below
+      // the trigger threshold. Set to zero to keep the same as
+      // the trigger threshold. Set to a positive value to set 
+      // pre-trigger to always be 0xB0.
+      void setPreTrigger ( char diff );
 
-            // Set number of iterations to run at each step
-            void setThreshCount ( int count );
+      // Set number of iterations to run at each step
+      void setThreshCount ( int count );
 
-            // Enable/Disable normal gain iteration
-            void enNormalGain ( bool enable );
+      // Enable/Disable normal gain iteration
+      void enNormalGain ( bool enable );
 
-            // Enable/Disable double gain iteration
-            void enDoubleGain ( bool enable );
+      // Enable/Disable double gain iteration
+      void enDoubleGain ( bool enable );
 
-            // Enable/Disable low gain iteration
-            void enLowGain ( bool enable );
+      // Enable/Disable low gain iteration
+      void enLowGain ( bool enable );
 
-            // Turn on or off debugging for the class
-            void threshDebug ( bool debug );
+      // Turn on or off debugging for the class
+      void threshDebug ( bool debug );
 
-            // Enable raw data
-            void enableRawData( bool enable );
+      // Enable raw data
+      void enableRawData( bool enable );
 
-            // Enable plot generation
-            void enablePlots( bool enable );
+      // Enable plot generation
+      void enablePlots( bool enable );
 
-            // Pass name of the TFile directory in which to store the plots
-            void setPlotDir( std::string plotDir );
+      // Pass name of the TFile directory in which to store the plots
+      void setPlotDir( std::string plotDir );
 
-            // Execute threshold scan, pass target channel
-            // Or pass -1 to enable all channels
-            void runThreshold ( short channel );
+      // Execute threshold scan, pass target channel
+      // Or pass -1 to enable all channels
+      void runThreshold ( short channel );
 
-            // Deconstructor
-            virtual ~KpixThreshScan ();
+      // Deconstructor
+      virtual ~KpixThreshScan ();
 
-            // Set progress Callback
-            void setKpixProgress(sidApi::online::KpixProgress *progress);
+      // Set progress Callback
+      void setKpixProgress(KpixProgress *progress);
 
-      };
-   }
-}
+};
 #endif

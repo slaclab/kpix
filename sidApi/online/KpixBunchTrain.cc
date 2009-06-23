@@ -33,6 +33,7 @@
 // 05/13/2009: Added special data flag for Temp value and trigger log.
 // 05/13/2009: Removed Accept Flag.
 // 06/22/2009: Added namespaces.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -45,8 +46,6 @@
 #include "KpixBunchTrain.h"
 #include "SidLink.h"
 using namespace std;
-using namespace sidApi::online;
-using namespace sidApi::offline;
 
 
 // Function to compare entries in the sample list for sorting

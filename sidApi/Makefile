@@ -26,7 +26,8 @@ OFF_DEPS := $(patsubst $(OBJ)/%.o,$(DEP)/%.d,$(OFF_OBJ))
 ROOT_DIR   := $(PWD)/root
 ROOT_SRC   := $(wildcard $(ROOT_DIR)/*.cc)
 ROOT_BIN   := $(patsubst $(ROOT_DIR)/%.cc,$(OUT)/%,$(ROOT_SRC))
-ROOT_DEF   := $(PWD)/root/LinkDef.h
+#ROOT_DEF   := $(PWD)/root/LinkDef.h
+ROOT_DEF   := 
 ROOT_FLAGS := -L$(OUT) -lsidapi 
 
 # Default

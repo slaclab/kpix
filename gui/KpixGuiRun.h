@@ -13,6 +13,7 @@
 // Modification history :
 // 07/02/2008: created
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_RUN_H__
 #define __KPIX_GUI_RUN_H__
@@ -22,14 +23,10 @@
 #include <qthread.h>
 
 // Forward Declarations
-namespace sidApi {
-   namespace offline {
-      class KpixAsic;
-      class KpixFpga;
-      class KpixRunVar;
-      class KpixRunRead;
-   }
-}
+class KpixAsic;
+class KpixFpga;
+class KpixRunVar;
+class KpixRunRead;
 class KpixGuiTop;
 class KpixGuiTop;
 class KpixGuiError;
@@ -40,21 +37,21 @@ class TH1F;
 class KpixGuiRun : public KpixGuiRunForm, public QThread {
 
       // ASIC & FPGA Containers
-      unsigned int                asicCnt;
-      sidApi::offline::KpixAsic   **asic;
-      sidApi::offline::KpixFpga   *fpga;
-      KpixGuiTop                  *parent;
-      KpixGuiError                *errorMsg;
-      bool                        enRun;
-      bool                        pRun;
-      bool                        isRunning;
-      std::string                 baseDir, desc, outDataDir, outDataFile, calFile;
-      TH1F                        *plots[32];
-      sidApi::offline::KpixRunVar **runVars;
-      unsigned int                runVarCount;
-      int                         dispKpix[16];
-      int                         dispChan[16];
-      int                         dispBucket[16];
+      unsigned int  asicCnt;
+      KpixAsic      **asic;
+      KpixFpga      *fpga;
+      KpixGuiTop    *parent;
+      KpixGuiError  *errorMsg;
+      bool          enRun;
+      bool          pRun;
+      bool          isRunning;
+      std::string   baseDir, desc, outDataDir, outDataFile, calFile;
+      TH1F          *plots[32];
+      KpixRunVar    **runVars;
+      unsigned int  runVarCount;
+      int           dispKpix[16];
+      int           dispChan[16];
+      int           dispBucket[16];
 
    public:
 
@@ -68,8 +65,7 @@ class KpixGuiRun : public KpixGuiRunForm, public QThread {
       void setEnabled ( bool enable );
 
       // Set Configurations
-      void setAsics ( sidApi::offline::KpixAsic **asic, unsigned int asicCnt, 
-                      sidApi::offline::KpixFpga *fpga, sidApi::offline::KpixRunRead *runRead=NULL );
+      void setAsics ( KpixAsic **asic, unsigned int asicCnt, KpixFpga *fpga, KpixRunRead *runRead=NULL );
 
       // Window was closed
       void closeEvent(QCloseEvent *e);

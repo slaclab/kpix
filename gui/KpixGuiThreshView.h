@@ -13,6 +13,7 @@
 // Modification history :
 // 07/02/2008: created
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_THRESH_VIEW_H__
 #define __KPIX_GUI_THRESH_VIEW_H__
@@ -22,15 +23,9 @@
 #include <qthread.h>
 
 // Forward Declarations
-namespace sidApi {
-   namespace offline {
-      class KpixThreshRead;
-      class KpixAsic;
-   }
-   namespace online {
-      class KpixRunWrite;
-   }
-}
+class KpixThreshRead;
+class KpixAsic;
+class KpixRunWrite;
 class KpixGuiError;
 class KpixGuiViewConfig;
 class KpixGuiSampleView;
@@ -58,12 +53,12 @@ class KpixGuiThreshView : public KpixGuiThreshViewForm , public QThread {
       KpixGuiError  *errorMsg;
 
       // Input/Output Files
-      sidApi::offline::KpixThreshRead *inFileRoot;
-      sidApi::online::KpixRunWrite    *outFileRoot;
+      KpixThreshRead *inFileRoot;
+      KpixRunWrite   *outFileRoot;
 
       // Asics
-      unsigned int              asicCnt;
-      sidApi::offline::KpixAsic **asic;
+      unsigned int asicCnt;
+      KpixAsic     **asic;
 
       // Calibration/histogram data
       TH2F              *origHist[256];

@@ -13,6 +13,7 @@
 // Modification history :
 // 07/02/2008: created
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_RUN_VIEW_H__
 #define __KPIX_GUI_RUN_VIEW_H__
@@ -23,12 +24,8 @@
 
 
 // Forward Declarations
-namespace sidApi {
-   namespace offline {
-      class KpixRunRead;
-      class KpixAsic;
-   }
-}
+class KpixRunRead;
+class KpixAsic;
 class KpixGuiError;
 class KpixGuiViewConfig;
 class KpixGuiSampleView;
@@ -41,7 +38,7 @@ class KpixGuiRunView : public KpixGuiRunViewForm, public QThread {
       KpixGuiError  *errorMsg;
 
       // Input/Output Files
-      sidApi::offline::KpixRunRead *inFileRoot;
+      KpixRunRead *inFileRoot;
 
       // Display Windows
       KpixGuiViewConfig *kpixGuiViewConfig;
@@ -57,8 +54,8 @@ class KpixGuiRunView : public KpixGuiRunViewForm, public QThread {
       bool isRunning;
 
       // List of KPIX serial numbers
-      unsigned int              asicCnt;
-      sidApi::offline::KpixAsic **asic;
+      unsigned int asicCnt;
+      KpixAsic     **asic;
 
       // Command type
       unsigned int cmdType;

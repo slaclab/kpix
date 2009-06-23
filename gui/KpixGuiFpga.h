@@ -16,6 +16,7 @@
 // 07/02/2008: created
 // 04/29/2009: Seperate methods for display update and data read.
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_FPGA_H__
 #define __KPIX_GUI_FPGA_H__
@@ -23,17 +24,13 @@
 #include "KpixGuiFpgaForm.h"
 
 // Forward declarations
-namespace sidApi {
-   namespace offline {
-      class KpixFpga;
-   }
-}
+class KpixFpga;
 
 
 class KpixGuiFpga : public KpixGuiFpgaForm {
 
       // ASIC & FPGA Containers
-      sidApi::offline::KpixFpga *fpga;
+      KpixFpga *fpga;
 
    public:
 
@@ -41,7 +38,7 @@ class KpixGuiFpga : public KpixGuiFpgaForm {
       KpixGuiFpga ( QWidget *parent = 0 );
 
       // Set FPGA
-      void setFpga ( sidApi::offline::KpixFpga *fpga );
+      void setFpga ( KpixFpga *fpga );
 
       // Control Enable Of Buttons/Edits
       void setEnabled ( bool enable );

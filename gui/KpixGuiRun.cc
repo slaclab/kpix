@@ -16,6 +16,7 @@
 // 04/29/2009: Added support for all 4 buckets.
 // 05/11/2009: Added range check on address field.
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed sidApi namespace.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -59,8 +60,6 @@
 #include "KpixGuiEventError.h"
 #include "KpixGuiEventStatus.h"
 using namespace std;
-using namespace sidApi::offline;
-using namespace sidApi::online;
 
 
 // Constructor

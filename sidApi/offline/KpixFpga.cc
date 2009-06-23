@@ -32,6 +32,7 @@
 // 05/13/2009: Changed name of accept source to extRecord 
 // 05/13/2009: Removed auto train generation logic.
 // 06/22/2009: Added namespaces.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -41,11 +42,9 @@
 #include <stdlib.h>
 #include "KpixFpga.h"
 using namespace std;
-using namespace sidApi::offline;
 
 #ifdef ONLINE_EN
 #include "../online/SidLink.h"
-using namespace sidApi::online;
 #endif
 
 

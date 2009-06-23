@@ -15,6 +15,7 @@
 // Modification history :
 // 07/02/2008: created
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_REG_TEST_H__
 #define __KPIX_GUI_REG_TEST_H__
@@ -24,23 +25,19 @@
 #include <qthread.h>
 
 // Forward declarations
-namespace sidApi {
-   namespace offline {
-      class KpixAsic;
-   }
-}
+class KpixAsic;
 class KpixGuiTop;
 class KpixGuiError;
 class KpixGuiTop;
 
-class KpixGuiRegTest : public QThread, public sidApi::online::KpixProgress, public KpixGuiRegTestForm {
+class KpixGuiRegTest : public QThread, public KpixProgress, public KpixGuiRegTestForm {
 
       // ASIC & FPGA Containers
-      unsigned int              asicCnt;
-      sidApi::offline::KpixAsic **asic;
-      KpixGuiTop                *parent;
-      KpixGuiError              *errorMsg;
-      bool                      isRunning;
+      unsigned int  asicCnt;
+      KpixAsic      **asic;
+      KpixGuiTop    *parent;
+      KpixGuiError  *errorMsg;
+      bool          isRunning;
 
    public:
 
@@ -51,7 +48,7 @@ class KpixGuiRegTest : public QThread, public sidApi::online::KpixProgress, publ
       void setEnabled ( bool enable );
 
       // Set Asics
-      void setAsics ( sidApi::offline::KpixAsic **asic, unsigned int asicCnt );
+      void setAsics ( KpixAsic **asic, unsigned int asicCnt );
 
       // Update progress
       void updateProgress(unsigned int count, unsigned int total);

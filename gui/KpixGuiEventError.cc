@@ -13,6 +13,7 @@
 // Modification history :
 // 10/14/2008: created
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed sidApi namespace.
 //-----------------------------------------------------------------------------
 
 #include "KpixGuiEventError.h"

@@ -24,7 +24,6 @@
 #include <TFile.h>
 #include <TTree.h>
 using namespace std;
-using namespace sidApi::offline;
 
 // Main Function
 int main ( int argc, char **argv ) {

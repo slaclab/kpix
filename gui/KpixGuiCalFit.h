@@ -16,6 +16,7 @@
 // 04/30/2009: Remove seperate hist and cal view classes. All functions now
 //             handled by this class. Added thread for read/fit operations.
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_CAL_FIT_H__
 #define __KPIX_GUI_CAL_FIT_H__
@@ -29,15 +30,9 @@
 
 
 // Forward declarations
-namespace sidApi {
-   namespace offline {
-      class KpixAsic;
-      class KpixCalibRead;
-   }
-   namespace online {
-      class KpixRunWrite;
-   }
-}
+class KpixAsic;
+class KpixCalibRead;
+class KpixRunWrite;
 class KpixGuiError;
 class KpixGuiViewConfig;
 class KpixGuiSampleView;
@@ -70,12 +65,12 @@ class KpixGuiCalFit : public KpixGuiCalFitForm , public QThread {
       KpixGuiError  *errorMsg;
 
       // Input/Output Files
-      sidApi::offline::KpixCalibRead *inFileRoot;
-      sidApi::online::KpixRunWrite   *outFileRoot;
+      KpixCalibRead *inFileRoot;
+      KpixRunWrite   *outFileRoot;
 
       // Asics
-      unsigned int              asicCnt;
-      sidApi::offline::KpixAsic **asic;
+      unsigned int asicCnt;
+      KpixAsic     **asic;
 
       // Calibration/histogram data
       TGraph      *graph[8];

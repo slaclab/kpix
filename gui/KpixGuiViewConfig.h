@@ -13,6 +13,7 @@
 // Modification history :
 // 10/16/2008: created
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_VIEW_CONFIG_H__
 #define __KPIX_GUI_VIEW_CONFIG_H__
@@ -25,12 +26,7 @@ class KpixGuiConfig;
 class KpixGuiTiming;
 class KpixGuiTrig;
 class KpixGuiInject;
-
-namespace sidApi {
-   namespace offline {
-      class KpixRunRead;
-   }
-}
+class KpixRunRead;
 
 
 class KpixGuiViewConfig : public KpixGuiViewConfigForm {
@@ -48,7 +44,7 @@ class KpixGuiViewConfig : public KpixGuiViewConfigForm {
       KpixGuiViewConfig ( );
 
       // Set Run Data
-      void setRunData ( sidApi::offline::KpixRunRead *kpixRunRead);
+      void setRunData ( KpixRunRead *kpixRunRead);
 
 };
 

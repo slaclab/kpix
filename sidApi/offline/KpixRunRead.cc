@@ -36,6 +36,7 @@
 // 07/31/2007: Fixed bug in routine to get run variable by index.
 // 10/20/2008: Added support for calibration source dir.
 // 06/22/2009: Added namespaces.
+// 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -54,7 +55,6 @@
 #include "KpixEventVar.h"
 #include "KpixRunRead.h"
 using namespace std;
-using namespace sidApi::offline;
 
 // Create run read object. Opens tree file for reading
 // Pass the following values:

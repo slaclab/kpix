@@ -16,6 +16,7 @@
 // 07/02/2008: created
 // 04/29/2009: Seperate methods for display update and data read.
 // 06/22/2009: Changed structure to support sidApi namespaces.
+// 06/23/2009: Removed namespace.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_GUI_CONFIG_H__
 #define __KPIX_GUI_CONFIG_H__
@@ -23,18 +24,14 @@
 #include "KpixGuiConfigForm.h"
 
 // Forward declarations
-namespace sidApi {
-   namespace offline {
-      class KpixAsic;
-   }
-}
+class KpixAsic;
 
 
 class KpixGuiConfig : public KpixGuiConfigForm {
 
       // ASIC & FPGA Containers
-      unsigned int              asicCnt;
-      sidApi::offline::KpixAsic **asic;
+      unsigned int  asicCnt;
+      KpixAsic      **asic;
 
    public:
 
@@ -42,7 +39,7 @@ class KpixGuiConfig : public KpixGuiConfigForm {
       KpixGuiConfig ( QWidget *parent = 0 );
 
       // Set Asics
-      void setAsics (sidApi::offline::KpixAsic **asic, unsigned int asicCnt);
+      void setAsics (KpixAsic **asic, unsigned int asicCnt);
 
       // Control Enable Of Buttons/Edits
       void setEnabled ( bool enable, bool calEnable );
