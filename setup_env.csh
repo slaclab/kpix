@@ -11,7 +11,7 @@ setenv ROOTSYS /afs/slac/g/reseng/root/root_5.20
 #setenv KPIX_DEVICE   /dev/ttyUSB0
 setenv KPIX_DEVICE   0
 setenv KPIX_BASE_DIR /u1/w_si/samples/
-setenv KPIX_VERSION  7
+setenv KPIX_VERSION  8
 setenv KPIX_CLK_PER  50
 setenv KPIX_CAL_FILE
 
