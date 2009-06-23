@@ -9,7 +9,7 @@
 // sample at a specific time for a specific channel and bucket. The sample time,
 // value and range is stored.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -29,7 +29,6 @@
 #define __KPIX_SAMPLE_H__
 
 #include <TObject.h>
-using namespace std;
 
 
 // KPIX Event Data Class
@@ -136,4 +135,16 @@ namespace sidApi {
       };
    }
 }
+
+//#ifdef __MAKECINT__
+//#pragma link off all globals;
+//#pragma link off all classes;
+//#pragma link off all functions;
+//#pragma link C++ nestedclasses;
+//#pragma link C++ nestedtypedefs;
+//#pragma link C++ namespace sidApi;
+//#pragma link C++ namespace sidApi::offline;
+//#pragma link C++ class sidApi::offline::KpixSample;
+//#endif
+
 #endif

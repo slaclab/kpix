@@ -15,7 +15,7 @@
 //    known working stty settings:
 //    stty --file=/dev/ttyUSB0 raw
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -30,6 +30,7 @@
 // 01/10/2007: Added IOCTL call to set proper parameters to usb VCP interface.
 // 03/09/2009: Added echo read for simulation mode.
 // 06/18/2009: Changed read and write functions to save CPU cycles.
+// 06/22/2009: Added namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -237,7 +238,7 @@ int SidLink::linkFlush ( ) {
 
          // How many bytes are ready
          if ((ftStatus = FT_GetStatus((FT_HANDLE)usbHandle,&rxBytes,&txBytes,&eventWord)) != FT_OK ) {
-            error << "SidLink::linkRawRead -> Error getting status from direct USB device ";
+            error << "SidLink::linkFlush -> Error getting status from direct USB device ";
             error << usbDevice << ", status=" << ftStatus;
             throw error.str();
          }
@@ -248,7 +249,7 @@ int SidLink::linkFlush ( ) {
 
             // Read from usb device
             if((ftStatus = FT_Read((FT_HANDLE)usbHandle, buffer, rxBytes, &rcount)) != FT_OK) {
-               error << "SidLink::linkRawRead -> Error reading from direct USB device ";
+               error << "SidLink::linkFlush -> Error reading from direct USB device ";
                error << usbDevice << ", status=" << ftStatus;
                throw error.str();
             }
@@ -259,7 +260,7 @@ int SidLink::linkFlush ( ) {
    maxRxSize = 0;
 
    // Debug
-   if ( enDebug ) cout << "SidLink::linkOpen -> Flushed " << total << " bytes\n";
+   if ( enDebug ) cout << "SidLink::linkFlush -> Flushed " << total << " bytes\n";
    return(total);
 }
 
@@ -506,7 +507,7 @@ int SidLink::linkRawRead ( unsigned short *data, short int size, unsigned char t
       // Check for timeout
       else if ( timeoutEn ) {
          toCount++;
-         if ( toCount >= SID_IO_TIMEOUT ) {
+         if ( toCount >= Timeout ) {
             free(byteData);
 
             // Flush the link

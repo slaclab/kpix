@@ -22,7 +22,7 @@
 //    EventTree /    = Tree/Branch containing objects of KpixSample class which 
 //    EventBranch      contain the actual data stored in the run.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -38,6 +38,7 @@
 // 10/20/2008: Added support for calibration file string.
 // 10/21/2008: Added support for run times to be passed along.
 // 10/22/2008: Removed close function.
+// 06/22/2009: Added namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>

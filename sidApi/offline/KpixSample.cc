@@ -9,7 +9,7 @@
 // sample at a specific time for a specific channel and bucket. The sample time,
 // value and range is stored.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -24,6 +24,7 @@
 // 02/27/2008: Added ability to store/read empty & bad count flags.
 // 04/27/2009: Added trigger type flag.
 // 05/13/2009: Added special flag.
+// 06/22/2009: Added namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>

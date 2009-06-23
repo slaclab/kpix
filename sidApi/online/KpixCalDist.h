@@ -7,7 +7,7 @@
 // Description :
 // Header file for class to perform calibrations and distributions
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -28,11 +28,7 @@
 #ifndef __KPIX_CAL_DIST_H__
 #define __KPIX_CAL_DIST_H__
 
-
-
 #include <string>
-using namespace std;
-
 
 // Forward declarations
 namespace sidApi {
@@ -105,7 +101,7 @@ namespace sidApi {
             bool randDistTimeEn;
 
             // Plot information
-            string plotDir;
+            std::string plotDir;
 
             // Progress class for reporting status
             sidApi::online::KpixProgress *kpixProgress;
@@ -148,7 +144,7 @@ namespace sidApi {
             void enablePlots( bool enable );
 
             // Pass name of the TFile directory in which to store the plots
-            void setPlotDir( string plotDir );
+            void setPlotDir( std::string plotDir );
 
             // Set Rate Limit
             void setRateLimit( unsigned int rateLimit );

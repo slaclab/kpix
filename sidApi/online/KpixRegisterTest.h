@@ -7,16 +7,16 @@
 // Description :
 // Header file for class to perform a basic register test of the KPIX ASIC.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 12/19/2006: created
 // 09/26/2008: Added support for progress updates to calling class.
+// 06/22/2009: Added namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_REGISTER_TEST_H__
 #define __KPIX_REGISTER_TEST_H__
-
 
 
 // Forward declarations

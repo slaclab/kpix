@@ -22,7 +22,7 @@
 //    EventTree /    = Tree/Branch containing objects of KpixSample class which 
 //    EventBranch      contain the actual data stored in the run.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -41,10 +41,8 @@
 #ifndef __KPIX_RUN_WRITE_H__
 #define __KPIX_RUN_WRITE_H__
 
-
 #include <string>
 #include <TString.h>
-using namespace std;
 
 // Forward declarations
 namespace sidApi {
@@ -110,7 +108,7 @@ namespace sidApi {
             TFile *treeFile;
 
             // Function to generate and return timestamp.
-            static string genTimestamp (); 
+            static std::string genTimestamp (); 
 
             // Create run write structure. Opens tree file for writing
             // Run timestamp is generated internally.
@@ -122,7 +120,7 @@ namespace sidApi {
             //   runTime   = Optional run timestamp to pass along.
             //   endTime   = Optional end timestamp to pass along.
             //   debug     = Optional debug flag, true to enable debugging
-            KpixRunWrite ( string runFile, TString runName, TString runDesc, 
+            KpixRunWrite ( std::string runFile, TString runName, TString runDesc, 
                            TString runCalib = "", TString runTime = "",
                            TString endTime = "", bool debug=false );
 
@@ -158,7 +156,7 @@ namespace sidApi {
 
             // Set current directory for storing plots
             // Directory is created if it does not exist
-            void setDir ( string directory );
+            void setDir ( std::string directory );
 
             // Deconstructor.
             virtual ~KpixRunWrite ();

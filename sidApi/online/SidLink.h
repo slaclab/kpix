@@ -12,7 +12,7 @@
 // chips used to flow traffic between the ASIC and the data flow PC.
 // Link to the KPIX low level simulation is also supported.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -22,19 +22,19 @@
 // 05/01/2007: Added flush command.
 // 08/03/2007: Adjusted timeout value
 // 06/18/2009: Removed link flush and byte write routines.
+// 06/22/2009: Added namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __SID_LINK_H__
 #define __SID_LINK_H__
 
 #include <string>
-using namespace std;
 
 namespace sidApi {
    namespace online {
       class SidLink {
 
-// Read & Write Timeouts in mS
-#define SID_IO_TIMEOUT 100
+            // Timeout Value
+            static const unsigned int Timeout = 125;
 
             // Values used for USB version 
             int   usbDevice;
@@ -44,7 +44,7 @@ namespace sidApi {
             bool timeoutEn;
 
             // Values used for serial version
-            string serDevice;
+            std::string serDevice;
             int    serFd;
             int    serFdRd;
 
@@ -54,11 +54,7 @@ namespace sidApi {
             // Debug flag
             bool enDebug;
 
-      // Max count in buffer 
-      unsigned int maxRxSize;
-
-      // Debug flag
-      bool enDebug;
+         public:
 
             // Serial class constructor. This constructore
             // does nothing but create the base object. Serial
@@ -71,7 +67,7 @@ namespace sidApi {
             // Open link to SID Devices, VCP driver version
             // Pass path to serial device for VCP driver, "/dev/ttyUSB0"
             // Throws exception on device open failure
-            void linkOpen ( string device );
+            void linkOpen ( std::string device );
 
             // Open link to SID Devices, direct driver version
             // Pass device ID for direct drivers, 0,1,2 etc
@@ -82,7 +78,7 @@ namespace sidApi {
             // Open link to SID Devices, Simulation Version
             // Pass path to named pipes (read & write directions) for simulation
             // Throws exception on device open failure
-            void linkOpen ( string rdPipe, string wrPipe );
+            void linkOpen ( std::string rdPipe, std::string wrPipe );
 
             // Flush any pending data from the link.
             // Returns number of bytes flushed
@@ -95,6 +91,11 @@ namespace sidApi {
             // Pass word (16-bit) array and length
             // Return number of words written
             int linkRawWrite ( unsigned short int *data, short int size, unsigned char type, bool sof);
+
+            // Method to read a word array from a KPIX device, raw interface
+            // Pass word (16-bit) array and length
+            // Return number of words read
+            int linkRawRead ( unsigned short int *data, short int size, unsigned char type, bool sof);
 
             // Method to write a word array to a KPIX device
             // Pass word (16-bit) array and length

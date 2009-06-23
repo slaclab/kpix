@@ -10,7 +10,7 @@
 // Threshold range A is scanned while a pulse is injected into the selected
 // channel. 
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -28,6 +28,7 @@
 // 10/10/2008: Added support for progress updates to calling class. Added
 //             iteration count variable.
 // 10/26/2008: Added support for plot generation.
+// 06/22/2009: Added namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <fstream>
@@ -199,16 +200,16 @@ void KpixThreshScan::runThreshold ( short channel ) {
    kpixRunWrite->addRunVar("threshOffset","Threshold Offset",threshOffset);
 
    // Init modes
-   for (x=0; x < 1024; x++) modes[x] = KpixAsic::ChanDisable;
+   for (x=0; x < 1024; x++) modes[x] = ChanDisable;
 
    // Determine if calibration is enabled
    if (calEnable) {
       kpixRunWrite->setEventVar("calEnable",1.0);
-      mode = KpixAsic::ChanThreshACal;
+      mode = ChanThreshACal;
    }
    else {
       kpixRunWrite->setEventVar("calEnable",0.0);
-      mode = KpixAsic::ChanThreshA;
+      mode = ChanThreshA;
    }
 
    // All Channels Calibration Enabled
@@ -415,7 +416,7 @@ void KpixThreshScan::runThreshold ( short channel ) {
                hist[idx]->GetXaxis()->SetRangeUser(minX[idx],maxX[idx]);
                hist[idx]->GetYaxis()->SetRangeUser(minY[idx],maxY[idx]);
                hist[idx]->Write();
-               if ( kpixProgress != NULL ) kpixProgress->updateData(KpixProgress::DataTH2F,1,(void**)(&(hist[idx])));
+               if ( kpixProgress != NULL ) kpixProgress->updateData(DataTH2F,1,(void**)(&(hist[idx])));
                else delete hist[idx];
             }
             sleep(2);

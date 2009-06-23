@@ -12,7 +12,7 @@
 // pubilic fpgaRegister array.
 // This class can be serialized into a root tree
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -31,6 +31,7 @@
 // 04/29/2009: Added readEn flag to some read calls.
 // 05/13/2009: Changed name of accept source to extRecord 
 // 05/13/2009: Removed auto train generation logic.
+// 06/22/2009: Added namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>

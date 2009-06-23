@@ -23,10 +23,11 @@ OFF_OBJ  := $(patsubst $(OFF_DIR)/%.cc,$(OBJ)/%.o,$(OFF_SRC))
 OFF_DEPS := $(patsubst $(OBJ)/%.o,$(DEP)/%.d,$(OFF_OBJ))
 
 # Root Sources
-ROOT_DIR  := $(PWD)/root
-ROOT_SRC  := $(wildcard $(ROOT_DIR)/*.cc)
-ROOT_BIN  := $(patsubst $(ROOT_DIR)/%.cc,$(OUT)/%,$(ROOT_SRC))
-ROOT_DEF  := $(PWD)/root/SidApiLinkDef.h
+ROOT_DIR   := $(PWD)/root
+ROOT_SRC   := $(wildcard $(ROOT_DIR)/*.cc)
+ROOT_BIN   := $(patsubst $(ROOT_DIR)/%.cc,$(OUT)/%,$(ROOT_SRC))
+ROOT_DEF   := $(PWD)/root/LinkDef.h
+ROOT_FLAGS := -L$(OUT) -lsidapi 
 
 # Default
 all: dirs $(TAR) $(ROOT_BIN)
@@ -61,7 +62,7 @@ $(OBJ)/%.o: $(OFF_DIR)/%.cc
 
 # Rule to compile sources in the root directory
 $(OUT)/%: $(ROOT_DIR)/%.cc
-	$(CC) $(CFLAGS) $(LFLAGS) $(DEF) -o $@ $<
+	$(CC) $(CFLAGS) $(LFLAGS) $(ROOT_FLAGS) $(DEF) -o $@ $<
 
 # Generate dependencies
 dep: $(ON_SRC) $(OFF_SRC) $(ON_HDR) $(OFF_HDR)

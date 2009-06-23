@@ -12,7 +12,7 @@
 // pubilic kpixRegister array.
 // This class can be serialized into a root tree
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -57,6 +57,7 @@
 // 05/15/2009: Added method to get bunch clock count.
 // 06/09/2009: Added constructor flag to enable dummy kpix.
 // 06/10/2009: Added method to convert temp adc value to a celcias value
+// 06/22/2009: Added namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>

@@ -22,7 +22,7 @@
 //    EventTree /    = Tree/Branch containing objects of KpixSample class which 
 //    EventBranch      contain the actual data stored in the run.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -39,6 +39,7 @@
 #ifndef __KPIX_RUN_READ_H__
 #define __KPIX_RUN_READ_H__
 
+#include <string>
 #include <TString.h>
 
 // Forward declarations
@@ -102,7 +103,7 @@ namespace sidApi {
             // Pass the following values:
             //   rootFile  = Root file containing data
             //   debug     = Optional debug flag, true to enable debugging
-            KpixRunRead ( string rootFile, bool debug );
+            KpixRunRead ( std::string rootFile, bool debug );
 
             // Return pointer to tree in the data file
             TTree * getAsicTree ();
@@ -159,7 +160,7 @@ namespace sidApi {
             KpixEventVar *getEventVar( Int_t index );
 
             // Return Event Variable by name
-            KpixEventVar *getEventVar( string name );
+            KpixEventVar *getEventVar( std::string name );
 
             // Return number of Run Variables
             Int_t getRunVarCount();
@@ -168,7 +169,7 @@ namespace sidApi {
             KpixRunVar *getRunVar( Int_t index );
 
             // Return Run Variable by name
-            KpixRunVar *getRunVar( string name );
+            KpixRunVar *getRunVar( std::string name );
 
             // Dump Run Data
             void dumpRunData ( );

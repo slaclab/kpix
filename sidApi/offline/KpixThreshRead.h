@@ -7,7 +7,7 @@
 // Description :
 // This class is used to read threshold scan plots.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -18,7 +18,6 @@
 #define __KPIX_THREAH_READ_H__
 
 #include <string>
-using namespace std;
 
 // Forward declarations
 namespace sidApi {
@@ -45,7 +44,7 @@ namespace sidApi {
 
             // Calib Data Class Constructor
             // Pass path to calibration data or
-            KpixThreshRead ( string threshFile, bool debug = false );
+            KpixThreshRead ( std::string threshFile, bool debug = false );
 
             // Calib Data Class Constructor
             // Pass already open run read class
@@ -55,28 +54,28 @@ namespace sidApi {
             ~KpixThreshRead ( );
 
             // Function to create plot name
-            static string genPlotName ( string prefix, int gain, int kpix, int channel, int cal=-1 );
+            static std::string genPlotName ( std::string prefix, int gain, int kpix, int channel, int cal=-1 );
 
             // Function to create plot title
-            static string genPlotTitle ( string prefix, int gain, int kpix, int channel, int cal=-1 );
+            static std::string genPlotTitle ( std::string prefix, int gain, int kpix, int channel, int cal=-1 );
 
             // Get Threshold Scan Histogram
-            TH2F *getThreshScan ( string dir, int gain, int kpix, int channel, int cal );
+            TH2F *getThreshScan ( std::string dir, int gain, int kpix, int channel, int cal );
 
             // Get Threshold Curve
-            TGraphAsymmErrors *getThreshCurve ( string dir, int gain, int kpix, int channel);
+            TGraphAsymmErrors *getThreshCurve ( std::string dir, int gain, int kpix, int channel);
 
             // Get Threshold Cal
-            TGraphAsymmErrors *getThreshCal ( string dir, int gain, int kpix, int channel, int cal);
+            TGraphAsymmErrors *getThreshCal ( std::string dir, int gain, int kpix, int channel, int cal);
 
             // Get Threshold Gain
-            TGraph *getThreshGain ( string dir, int gain, int kpix, int channel);
+            TGraph *getThreshGain ( std::string dir, int gain, int kpix, int channel);
 
             // Get Threshold Data
-            bool getThreshData (double *meanVal, double *sigmaVal, double *gainVal, string dir,int gain,int serNum,int channel);
+            bool getThreshData (double *meanVal, double *sigmaVal, double *gainVal, std::string dir,int gain,int serNum,int channel);
 
             // Get Calibration Sigma Value
-            bool getCalSigma (double *sigmaVal,string dir,int gain,int serNum,int channel, int cal);
+            bool getCalSigma (double *sigmaVal,std::string dir,int gain,int serNum,int channel, int cal);
 
       };
    }

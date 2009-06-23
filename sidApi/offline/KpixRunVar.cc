@@ -9,12 +9,13 @@
 // All values will be stored as Double_ts. 
 // This object can be stored in a root tree
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
 // 12/18/2006: created
 // 03/19/2007: Changed variables to root specific types.
+// 06/22/2009: Added namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>

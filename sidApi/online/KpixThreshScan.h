@@ -10,7 +10,7 @@
 // Threshold range A is scanned while a pulse is injected into the selected
 // channel. 
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -30,10 +30,7 @@
 #ifndef __KPIX_THRESH_SCAN_H__
 #define __KPIX_THRESH_SCAN_H__
 
-
-
 #include <string>
-using namespace std;
 
 // Forward declarations
 namespace sidApi {
@@ -72,7 +69,7 @@ namespace sidApi {
             bool plotEn;
 
             // Plot Directory
-            string plotDir;
+            std::string plotDir;
 
             // Calibration charge enable
             bool calEnable;
@@ -142,7 +139,7 @@ namespace sidApi {
             void enablePlots( bool enable );
 
             // Pass name of the TFile directory in which to store the plots
-            void setPlotDir( string plotDir );
+            void setPlotDir( std::string plotDir );
 
             // Execute threshold scan, pass target channel
             // Or pass -1 to enable all channels

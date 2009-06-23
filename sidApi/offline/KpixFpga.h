@@ -12,7 +12,7 @@
 // pubilic fpgaRegister array.
 // This class can be serialized into a root tree
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -36,8 +36,8 @@
 #ifndef __KPIX_FPGA_H__
 #define __KPIX_FPGA_H__
 
+#include <string>
 #include <TObject.h>
-using namespace std;
 
 
 #ifdef ONLINE_EN
@@ -131,7 +131,7 @@ namespace sidApi {
 
             // Method to return register name
             // Pass the register address
-            string regGetName ( unsigned char address );
+            std::string regGetName ( unsigned char address );
 
             // Method to return register writable flag
             // Pass the register address

@@ -12,7 +12,7 @@
 // pubilic kpixRegister array.
 // This class can be serialized into a root tree
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -58,7 +58,6 @@
 
 #include <string>
 #include <TObject.h>
-using namespace std;
 
 #ifdef ONLINE_EN
 namespace sidApi {
@@ -68,9 +67,15 @@ namespace sidApi {
 }
 #endif
 
-
 namespace sidApi {
    namespace offline {
+
+      // Constants
+      static const unsigned int ChanDisable     = 1;
+      static const unsigned int ChanThreshACal  = 3;
+      static const unsigned int ChanThreshA     = 2;
+      static const unsigned int ChanThreshB     = 0;
+
       class KpixAsic : public TObject {
 
             // Address of Kpix ASIC
@@ -149,12 +154,7 @@ namespace sidApi {
 
          public:
 
-            // Constants for channel mode
-            static const unsigned int ChanDisable     = 1;
-            static const unsigned int ChanThreshACal  = 3;
-            static const unsigned int ChanThreshA     = 2;
-            static const unsigned int ChanThreshB     = 0;
-;
+
             // Max Kpix Version
             static unsigned short maxVersion();
 
@@ -221,7 +221,7 @@ namespace sidApi {
 
             // Method to return register name
             // Pass the register address
-            string regGetName ( unsigned char address );
+            std::string regGetName ( unsigned char address );
 
             // Method to return register writable flag
             // Pass the register address

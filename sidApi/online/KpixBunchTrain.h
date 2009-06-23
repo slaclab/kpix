@@ -10,7 +10,7 @@
 // can be retrieved either by direct channel/bucket addressing or by
 // getting an list of samples sorted by time. 
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -25,6 +25,7 @@
 // 08/13/2007: Added external accept flag.
 // 05/13/2009: Added special data flag for Temp value and trigger log.
 // 05/13/2009: Removed Accept Flag.
+// 06/22/2009: Added namespaces.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_BUNCH_TRAIN_H__
 #define __KPIX_BUNCH_TRAIN_H__

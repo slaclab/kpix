@@ -10,7 +10,7 @@
 // can be retrieved either by direct channel/bucket addressing or by
 // getting an list of samples sorted by time. 
 //-----------------------------------------------------------------------------
-// Copyright (c) 2006 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -32,6 +32,7 @@
 //             values are stored in the created sample.
 // 05/13/2009: Added special data flag for Temp value and trigger log.
 // 05/13/2009: Removed Accept Flag.
+// 06/22/2009: Added namespaces.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>

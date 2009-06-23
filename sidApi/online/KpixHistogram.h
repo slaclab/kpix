@@ -7,7 +7,7 @@
 // Description :
 // Class to track histograms generated in KPIX runs.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2008 by SLAC. All rights reserved.
+// Copyright (c) 2009 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -17,8 +17,6 @@
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_HISTOGRAM_H__
 #define __KPIX_HISTOGRAM_H__
-
-
 
 namespace sidApi {
    namespace online {
