@@ -1,5 +1,5 @@
 File: Readme.txt
-Version: 1.05
+Version: 2.00
 
 Introduction:
 
@@ -123,7 +123,7 @@ Directories:
       ftdi:
          This directory contains the ftdi direct USB access library.
 
-      nohw:
+      offline:
          This directory contains the classes which can be used without
          any hardware dependencies. Some of these classes are stored
          in the root files to store the system configuration. Other
@@ -132,21 +132,23 @@ Directories:
          used within root outside of this API. This is usefull when 
          processing root files on other platforms.
 
-      hw:
+      online:
          This directory contains all other classes used in the SidApi.
          These classes can not be used outside of the SidApi 
          infrastructure. 
+
+      root:
+         This directory contains source code to generate a version of
+         the root binary (root_sidapi) which is compiled
+         with support for the SidApi classes.
 
    bin:
       This is the directory for compiled binaries and libraries.
 
    util:
       This directory contains utilities which are compiled using
-      the SidApi libraries. Included in this directory is a
-      version of the root binary (root_sidapi) which is compiled
-      with support for the SidApi classes. Also included is an 
-      example file which demonstrates how to read raw event data 
-      from a generated root file. New custom files can be added
-      to this directoy and compiled against the SidApi using the 
-      existing makefile.
+      the SidApi libraries. Included is an example file which demonstrates 
+      how to read raw event data from a generated root file. New custom 
+      files can be added to this directoy and compiled against the SidApi 
+      using the existing makefile.
 
