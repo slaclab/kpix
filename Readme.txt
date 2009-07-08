@@ -1,5 +1,5 @@
 File: Readme.txt
-Version: 2.00
+Version: 2.02
 
 Introduction:
 
