@@ -675,38 +675,6 @@
             <string>&lt;p align="right"&gt;Raw Trigger Inhibit Time: &lt;/p&gt;</string>
         </property>
     </widget>
-    <widget class="QLabel">
-        <property name="name">
-            <cstring>textLabel2_3_2_2_2_2_3_2_2_2_2_3_2</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>50</x>
-                <y>480</y>
-                <width>160</width>
-                <height>20</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>&lt;p align="right"&gt;Disable Timing Checks: &lt;/p&gt;</string>
-        </property>
-    </widget>
-    <widget class="QCheckBox">
-        <property name="name">
-            <cstring>disChecks</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>210</x>
-                <y>480</y>
-                <width>85</width>
-                <height>21</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string></string>
-        </property>
-    </widget>
     <widget class="QCheckBox">
         <property name="name">
             <cstring>rawTrigInh</cstring>
@@ -785,6 +753,70 @@
         </property>
         <property name="text">
             <string>Bunches</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_2_3_2_2_2_2_3_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>50</x>
+                <y>480</y>
+                <width>160</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Disable Timing Checks: &lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>disChecks</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>210</x>
+                <y>480</y>
+                <width>85</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string></string>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>k8Read</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>190</x>
+                <y>550</y>
+                <width>85</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string></string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_2_3_2_2_2_2_3_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>550</y>
+                <width>160</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Enable Kpix 8 Reads: &lt;/p&gt;</string>
         </property>
     </widget>
 </widget>

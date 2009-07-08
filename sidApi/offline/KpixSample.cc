@@ -117,19 +117,19 @@ Int_t KpixSample::getTrainNum() { return(trainNum); }
 Int_t KpixSample::getKpixAddress() { return(kpixAddress); }
 
 // Get KPIX channel
-Int_t KpixSample::getKpixChannel() { return(kpixChannel); }
+Int_t KpixSample::getKpixChannel() { return(kpixChannel & 0x3FF); }
 
 // Get KPIX bucket
-Int_t KpixSample::getKpixBucket() { return(kpixBucket); }
+Int_t KpixSample::getKpixBucket() { return(kpixBucket & 0x3); }
 
 // Get sample range
 Int_t KpixSample::getSampleRange() { return(sampleRange & 0x1); }
 
 // Get sample time
-Int_t KpixSample::getSampleTime() { return(sampleTime); }
+Int_t KpixSample::getSampleTime() { return(sampleTime & 0x1FFF); }
 
 // Get sample value
-Int_t KpixSample::getSampleValue() { return(sampleValue); }
+Int_t KpixSample::getSampleValue() { return(sampleValue & 0x1FFF); }
 
 // Get variable count
 Int_t KpixSample::getVarCount() { return(varCount); }

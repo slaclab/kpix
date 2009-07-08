@@ -59,6 +59,7 @@
 // 06/10/2009: Added method to convert temp adc value to a celcias value
 // 06/22/2009: Added namespaces.
 // 06/23/2009: Removed namespaces.
+// 07/07/2009: Fixed bug in getCntrlDisPwrCycle.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -1613,7 +1614,7 @@ void KpixAsic::setCntrlDisPwrCycle ( bool disPwrCycle, bool writeEn ) {
 // the device.
 bool KpixAsic::getCntrlDisPwrCycle (  bool readEn ) {
    if ( kpixVersion > 7 ) {
-      bool ret = regGetBit(0x30,12,readEn);
+      bool ret = regGetBit(0x30,24,readEn);
       if ( enDebug ) {
          cout << "KpixAsic::getCntrlDisPwrCycle -> Get DisPwrCycle = " << ret;
          cout << ", ReadEn=" << readEn << ".\n";

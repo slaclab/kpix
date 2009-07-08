@@ -183,7 +183,9 @@ void KpixGuiTiming::updateDisplay() {
                            false, rawTrigInh->isChecked());
 
       // Force some values in kpix 8
-      if ( asic[0]->getVersion() == 8 ) {
+      if ( asic[0]->getVersion() == 8 && ! k8Read->isChecked()) {
+
+         // Corrected Values
          //resetOn->setValue(0x003F*clkPeriodVal);     // Old=700nS (0xE), New=3150nS (0x3F)
          //resetOff->setValue(0x0960*clkPeriodVal);    // 120000nS (0x0960)
          deselDly->setValue(0x8A*clkPeriodVal);      // 6900nS (0x8A)
@@ -192,6 +194,7 @@ void KpixGuiTiming::updateDisplay() {
          //leakNullOff->setValue(0x0008*clkPeriodVal); // 0x0004 shifted left by one = 200nS
          //offNullOff->setValue(0x0FB4*clkPeriodVal);  // 0x07DA shifted left by one = 100500nS
 
+         // Old Values
          resetOn->setValue(0x000E*clkPeriodVal);     // Old=700nS (0xE), New=3150nS (0x3F)
          resetOff->setValue(0x0960*clkPeriodVal);    // 120000nS (0x0960)
          //deselDly->setValue(0x8A*clkPeriodVal);      // 6900nS (0x8A)
@@ -249,7 +252,7 @@ void KpixGuiTiming::readConfig() {
       asic[0]->getTiming ( &clkPeriodVal,  &resetOnVal,     &resetOffVal,   &leakNullOffVal,
                            &offNullOffVal, &threshOffVal,   &trigInhOffVal, &pwrUpOnVal,
                            &deselDlyVal,   &bunchClkDlyVal, &digDelayVal,   &bunchCountVal,
-                           (asic[0]->getVersion() != 8), rawTrigInh->isChecked());
+                           (asic[0]->getVersion() != 8 || k8Read->isChecked()), rawTrigInh->isChecked());
    }
 }
 

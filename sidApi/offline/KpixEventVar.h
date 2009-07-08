@@ -27,7 +27,11 @@
 #include <TObject.h>
 #include <TString.h>
 
-
+/** \ingroup offline */
+//! Class to hold event variable information.
+/*!
+   Blah blah blah
+*/
 class KpixEventVar : public TObject {
 
       // Variable number to match to sample records
