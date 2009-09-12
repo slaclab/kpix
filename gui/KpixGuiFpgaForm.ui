@@ -47,44 +47,6 @@
             <string>&lt;p align="right"&gt;Ext Run Source: &lt;/p&gt;</string>
         </property>
     </widget>
-    <widget class="QComboBox">
-        <item>
-            <property name="text">
-                <string>Disabled</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>NIM A</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>NIM B</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>BNC A</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>BNC B</string>
-            </property>
-        </item>
-        <property name="name">
-            <cstring>extRunSource</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>150</x>
-                <y>100</y>
-                <width>81</width>
-                <height>27</height>
-            </rect>
-        </property>
-    </widget>
     <widget class="QLabel">
         <property name="name">
             <cstring>textLabel2_3_2</cstring>
@@ -338,44 +300,6 @@
         </property>
         <property name="text">
             <string>&lt;p align="right"&gt;Ext Record Source: &lt;/p&gt;</string>
-        </property>
-    </widget>
-    <widget class="QComboBox">
-        <item>
-            <property name="text">
-                <string>Disabled</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>NIM A</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>NIM B</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>BNC A</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>BNC B</string>
-            </property>
-        </item>
-        <property name="name">
-            <cstring>extRecord</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>150</x>
-                <y>70</y>
-                <width>81</width>
-                <height>27</height>
-            </rect>
         </property>
     </widget>
     <widget class="QSpinBox">
@@ -727,6 +651,87 @@
         </property>
         <property name="text">
             <string>&lt;p align="right"&gt;Disable Kpix C: &lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QComboBox">
+        <item>
+            <property name="text">
+                <string>Disabled</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>NIM A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>NIM B</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>BNC A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>BNC B</string>
+            </property>
+        </item>
+        <property name="name">
+            <cstring>extRunSource</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>100</y>
+                <width>81</width>
+                <height>27</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QComboBox">
+        <item>
+            <property name="text">
+                <string>Disabled</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>NIM A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>NIM B</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>BNC A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>BNC B</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>CalStrobe</string>
+            </property>
+        </item>
+        <property name="name">
+            <cstring>extRecord</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>70</y>
+                <width>81</width>
+                <height>27</height>
+            </rect>
         </property>
     </widget>
 </widget>

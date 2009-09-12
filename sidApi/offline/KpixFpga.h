@@ -33,6 +33,7 @@
 // 05/13/2009: Removed auto train generation logic.
 // 06/18/2009: Added namespace.
 // 06/23/2009: Removed namespace.
+// 09/11/2009: Added cal strobe as trig record source.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_FPGA_H__
 #define __KPIX_FPGA_H__
@@ -360,6 +361,7 @@ class KpixFpga : public TObject {
       //  0x2 = NIMB Input
       //  0x3 = BncA Input
       //  0x4 = BncB Input
+      //  0x5 = CalStrobe
       // Set writeEn to false to disable real write to KPIX
       void setExtRecord ( unsigned char value, bool writeEn=true );
 

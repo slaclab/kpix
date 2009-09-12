@@ -27,6 +27,7 @@
 // 05/13/2009: Removed Accept Flag.
 // 06/22/2009: Added namespaces.
 // 06/23/2009: Removed namespaces.
+// 09/11/2009: Added max sample constant.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_BUNCH_TRAIN_H__
 #define __KPIX_BUNCH_TRAIN_H__
@@ -39,8 +40,11 @@ class KpixSample;
 
 class KpixBunchTrain {
 
+      // Define max number of samples that can be received
+      static const unsigned int MaxSamples = 1024+8192+3;
+
       // Array of sample data sorted by sample time, pointers
-      KpixSample *samplesByTime[4*64*4];
+      KpixSample *samplesByTime[MaxSamples];
 
       // Total number of samples
       unsigned int totalCount;

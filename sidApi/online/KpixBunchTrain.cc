@@ -34,6 +34,7 @@
 // 05/13/2009: Removed Accept Flag.
 // 06/22/2009: Added namespaces.
 // 06/23/2009: Removed namespaces.
+// 09/11/2009: Added max sample constant.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -89,7 +90,7 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
    unsigned int   trigType;
    unsigned int   empty;
    unsigned int   special;
-   unsigned short data[4*64*4*3*2];
+   unsigned short data[MaxSamples*3*2];
    stringstream   error;
 
    // Debug
@@ -109,7 +110,7 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
       if ((data[totalCount*3+2] & 0x8000) != 0 ) break;
 
       // Detect overrun of frame data
-      if ( totalCount == 64*4*4 ) {
+      if ( totalCount == MaxSamples ) {
          totalCount = 0;
          throw(string("KpixBunchTrain::KpixBunchTrain -> Sample Overrun"));
       }
@@ -182,12 +183,12 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
    if ( totalCount != (unsigned int)(data[totalCount*3+2+0] & 0x7FFF) && 
         (totalCount*3) != (unsigned int)(data[totalCount*3+2+0] & 0x7FFF) ) {
       for ( x=0; x < totalCount; x++) delete samplesByTime[x];
-      totalCount = 0;
       error.str("");
       error << "KpixBunchTrain::KpixBunchTrain -> Sample Count Mismatch. ";
       error << "Got=" << dec << (unsigned int)(data[totalCount*3+2+0] & 0x7FFF);
       error << ", Exp=" << dec << totalCount;
       error << " or " << dec << totalCount*3;
+      totalCount = 0;
       throw(error.str());
    }
 

@@ -33,6 +33,7 @@
 // 05/13/2009: Removed auto train generation logic.
 // 06/22/2009: Added namespaces.
 // 06/23/2009: Removed namespaces.
+// 09/11/2009: Added cal strobe as trig record source.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -1043,7 +1044,7 @@ bool KpixFpga::getExtRunType ( bool readEn ) {
 void KpixFpga::setExtRecord ( unsigned char value, bool writeEn ) {
 
    // Verify range
-   if ( value > 4 ) throw string("KpixFpga::setExtRecord -> Invalid Value");
+   if ( value > 5 ) throw string("KpixFpga::setExtRecord -> Invalid Value");
 
    // Output value
    if ( enDebug ) {
