@@ -44,9 +44,10 @@ KpixGuiTiming::KpixGuiTiming ( unsigned int rateLimit, QWidget *parent ) : KpixG
    // Set default rate limit
    switch(rateLimit) {
       case  0: this->rateLimit->setCurrentItem(0); break;
-      case 10: this->rateLimit->setCurrentItem(1); break;
-      case 15: this->rateLimit->setCurrentItem(2); break;
-      case 20: this->rateLimit->setCurrentItem(3); break;
+      case  5: this->rateLimit->setCurrentItem(1); break;
+      case 10: this->rateLimit->setCurrentItem(2); break;
+      case 15: this->rateLimit->setCurrentItem(3); break;
+      case 20: this->rateLimit->setCurrentItem(4); break;
       default: this->rateLimit->setCurrentItem(0); break;
    }
    setEnabled(false,false);
@@ -284,9 +285,10 @@ void KpixGuiTiming::writeConfig() {
 unsigned int KpixGuiTiming::getRateLimit() {
    switch(rateLimit->currentItem()) {
       case 0:  return(0);      
-      case 1:  return(100000); // 10Hz
-      case 2:  return(66666);  // 15Hz
-      case 3:  return(50000);  // 20Hz
+      case 1:  return(200000); // 5Hz
+      case 2:  return(100000); // 10Hz
+      case 3:  return(66666);  // 15Hz
+      case 4:  return(50000);  // 20Hz
       default: return(0);
    }
 }

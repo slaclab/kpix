@@ -591,42 +591,6 @@
             <number>8191</number>
         </property>
     </widget>
-    <widget class="QComboBox">
-        <item>
-            <property name="text">
-                <string>No Limit</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>10 Hz</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>15 Hz</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>20 Hz</string>
-            </property>
-        </item>
-        <property name="name">
-            <cstring>rateLimit</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>210</x>
-                <y>520</y>
-                <width>85</width>
-                <height>23</height>
-            </rect>
-        </property>
-        <property name="currentItem">
-            <number>1</number>
-        </property>
-    </widget>
     <widget class="QLabel">
         <property name="name">
             <cstring>textLabel2_3_2_2_2_2_3_2_2_2_2_2</cstring>
@@ -817,6 +781,47 @@
         </property>
         <property name="text">
             <string>&lt;p align="right"&gt;Enable Kpix 8 Reads: &lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QComboBox">
+        <item>
+            <property name="text">
+                <string>No Limit</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>5 Hz</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>10 Hz</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>15 Hz</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>20 Hz</string>
+            </property>
+        </item>
+        <property name="name">
+            <cstring>rateLimit</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>210</x>
+                <y>520</y>
+                <width>85</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="currentItem">
+            <number>1</number>
         </property>
     </widget>
 </widget>

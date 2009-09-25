@@ -17,6 +17,7 @@
 // 05/11/2009: Added range check on address field.
 // 06/22/2009: Changed structure to support sidApi namespaces.
 // 06/23/2009: Removed sidApi namespace.
+// 09/24/2009: Attempt to recover from single errors during run.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -251,6 +252,7 @@ void KpixGuiRun::viewData_pressed() {
 // Thread for register test
 void KpixGuiRun::run() {
    unsigned int       x,y,z,r,idx;
+   unsigned int       errCnt;
    KpixRunWrite       *kpixRunWrite;
    KpixBunchTrain     *train;
    KpixSample         *sample;
@@ -576,13 +578,28 @@ void KpixGuiRun::run() {
                acqTime.tv_sec  = curTime.tv_sec; 
                acqTime.tv_usec = curTime.tv_usec; 
 
-               // Send start command
-               if ( runCmd ) asic[0]->cmdCalibrate(true);
-               else asic[0]->cmdAcquire(true);
-               iters++;
+               // Catch single error and attempt to continue
+               errCnt = 0;
+               while (1) {
+                  try {
 
-               // Get bunch train data
-               train = new KpixBunchTrain ( asic[0]->getSidLink(), false );
+                     // Send start command
+                     if ( runCmd ) asic[0]->cmdCalibrate(true);
+                     else asic[0]->cmdAcquire(true);
+
+                     // Get bunch train data
+                     train = new KpixBunchTrain ( asic[0]->getSidLink(), false );
+                     break;
+
+                  } catch ( string error ) {
+                     cout << "KpixGuiRun::run -> Caught Error: " << error << "\n";
+                     errCnt++;
+                     if ( errCnt == 5 ) 
+                        throw(string("KpixGuiRun::run -> Too many errors. Giving Up"));
+                  }
+                  usleep(100);
+               }
+               iters++;
 
                // Add sample to run
                if ( enRaw ) kpixRunWrite->addBunchTrain(train);
