@@ -18,6 +18,7 @@
 // 04/29/2009: Seperate methods for display update and data read.
 // 06/22/2009: Changed structure to support sidApi namespaces.
 // 06/23/2009: Removed sidApi namespace.
+// 12/07/2009: Moved KPIX8 adjustments to API.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -183,39 +184,13 @@ void KpixGuiTiming::updateDisplay() {
                            &deselDlyVal,   &bunchClkDlyVal, &digDelayVal,   &bunchCountVal,
                            false, rawTrigInh->isChecked());
 
-      // Force some values in kpix 8
-      if ( asic[0]->getVersion() == 8 && ! k8Read->isChecked()) {
-
-         // Corrected Values
-         //resetOn->setValue(0x003F*clkPeriodVal);     // Old=700nS (0xE), New=3150nS (0x3F)
-         //resetOff->setValue(0x0960*clkPeriodVal);    // 120000nS (0x0960)
-         deselDly->setValue(0x8A*clkPeriodVal);      // 6900nS (0x8A)
-         bunchClkDly->setValue(0xc000*clkPeriodVal); // Old=467500nS (0x2486), New=2457600nS (0xC000)
-         digDelay->setValue(0xff*clkPeriodVal);      // Old=10000nS  (0xC8),   New=12750nS   (0xFF)
-         //leakNullOff->setValue(0x0008*clkPeriodVal); // 0x0004 shifted left by one = 200nS
-         //offNullOff->setValue(0x0FB4*clkPeriodVal);  // 0x07DA shifted left by one = 100500nS
-
-         // Old Values
-         resetOn->setValue(0x000E*clkPeriodVal);     // Old=700nS (0xE), New=3150nS (0x3F)
-         resetOff->setValue(0x0960*clkPeriodVal);    // 120000nS (0x0960)
-         //deselDly->setValue(0x8A*clkPeriodVal);      // 6900nS (0x8A)
-         //bunchClkDly->setValue(0x2486*clkPeriodVal); // Old=467500nS (0x2486), New=2457600nS (0xC000)
-         //digDelay->setValue(0xc8*clkPeriodVal);      // Old=10000nS  (0xC8),   New=12750nS   (0xFF)
-         leakNullOff->setValue(0x0004*clkPeriodVal); // 0x0004 = 200nS
-         offNullOff->setValue(0x07DA*clkPeriodVal);  // 0x07DA = 100500nS
-         disChecks->setChecked(true);
-      }
-      else {
-         resetOn->setValue(resetOnVal);
-         resetOff->setValue(resetOffVal);
-         leakNullOff->setValue(leakNullOffVal);
-         offNullOff->setValue(offNullOffVal);
-         deselDly->setValue(deselDlyVal);
-         bunchClkDly->setValue(bunchClkDlyVal);
-         digDelay->setValue(digDelayVal);
-      }
-
-      // Set Values
+      resetOn->setValue(resetOnVal);
+      resetOff->setValue(resetOffVal);
+      leakNullOff->setValue(leakNullOffVal);
+      offNullOff->setValue(offNullOffVal);
+      deselDly->setValue(deselDlyVal);
+      bunchClkDly->setValue(bunchClkDlyVal);
+      digDelay->setValue(digDelayVal);
       threshOff->setValue(threshOffVal);
       trigInhOff->setValue(trigInhOffVal);
       pwrUpOn->setValue(pwrUpOnVal);
@@ -253,7 +228,7 @@ void KpixGuiTiming::readConfig() {
       asic[0]->getTiming ( &clkPeriodVal,  &resetOnVal,     &resetOffVal,   &leakNullOffVal,
                            &offNullOffVal, &threshOffVal,   &trigInhOffVal, &pwrUpOnVal,
                            &deselDlyVal,   &bunchClkDlyVal, &digDelayVal,   &bunchCountVal,
-                           (asic[0]->getVersion() != 8 || k8Read->isChecked()), rawTrigInh->isChecked());
+                           true,rawTrigInh->isChecked());
    }
 }
 

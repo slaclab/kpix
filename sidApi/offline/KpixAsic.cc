@@ -60,6 +60,7 @@
 // 06/22/2009: Added namespaces.
 // 06/23/2009: Removed namespaces.
 // 07/07/2009: Fixed bug in getCntrlDisPwrCycle.
+// 07/07/2009: Added support for KPIX9, put in forced timing values for Kpix 8.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -444,6 +445,26 @@ void KpixAsic::setTimingV8 ( unsigned int clkPeriod,  unsigned int resetOn,
    int i;
    stringstream error;
 
+   // Overwrite some values for KPIX8
+   if ( kpixVersion == 8 ) {
+      deselDly    = 0x8A;
+      bunchClkDly = 0xC000;
+      digDelay    = 0xFF;
+      resetOn     = 0x000E;
+      resetOff    = 0x0960;
+      leakNullOff = 0x0004;
+      offNullOff  = 0x07DA;
+      enChecking  = false;
+      cout << "KpixAsic::setTiming -> Warning! Overwriting passed timing values for KPIX 8. Disabling checks.\n";
+      cout << "                       resetOn      = " << dec << resetOn      << "\n";
+      cout << "                       resetOff     = " << dec << resetOff     << "\n";
+      cout << "                       leakNullOff  = " << dec << leakNullOff  << "\n";
+      cout << "                       offNullOff   = " << dec << offNullOff   << "\n";
+      cout << "                       deselDly     = " << dec << deselDly     << "\n";
+      cout << "                       bunchClkDly  = " << dec << bunchClkDly  << "\n";
+      cout << "                       digDelay     = " << dec << digDelay     << "\n";
+   }
+
    // Store clock period
    this->clkPeriod = clkPeriod;
 
@@ -531,6 +552,11 @@ void KpixAsic::getTimingV8 ( unsigned int *clkPeriod,  unsigned int *resetOn,
    // Local variables
    unsigned int temp[6];
    int i;
+
+   if ( readEn && kpixVersion == 8 ) {
+      cout << "KpixAsic::getTiming -> Warning! Readback not allowed in KPIX 8.\n";
+      readEn = false;
+   }
 
    // Store clock period
    *clkPeriod = this->clkPeriod;
@@ -2744,7 +2770,8 @@ void KpixAsic::dumpSettings () {
 // Get Channel COunt
 unsigned int KpixAsic::getChCount() { 
    if ( kpixVersion < 8 ) return(64);
-   else return(256);
+   if ( kpixVersion < 9 ) return(256);
+   else return(512);
 }
 
 
