@@ -715,13 +715,13 @@ KpixAsic::KpixAsic ( SidLink *sidLink, unsigned short version, unsigned short ad
       regWidth[0x30]     = ((version<3)?8:((version<8)?16:32));
 
       // Calibration Mask Register
-      for (i=0; i< ((version<8)?2:8); i++) {
+      for (i=0; i< (getChCount()/32); i++) {
          regWriteable[0x40+i] = true;
          regWidth[0x40+i]     = 32;
       }
 
       // Range Select Register
-      for (i=0; i< ((version<8)?2:8); i++) {
+      for (i=0; i< (getChCount()/32); i++) {
          regWriteable[0x60+i] = true;
          regWidth[0x60+i]     = 32;
       }
@@ -738,7 +738,7 @@ void KpixAsic::setSidLink ( SidLink *sidLink ) {
 
 
 // Max Kpix Version
-unsigned short KpixAsic::maxVersion() { return(8); }
+unsigned short KpixAsic::maxVersion() { return(9); }
 
 
 // Send reset command to KPIX
