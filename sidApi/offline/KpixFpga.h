@@ -34,6 +34,7 @@
 // 06/18/2009: Added namespace.
 // 06/23/2009: Removed namespace.
 // 09/11/2009: Added cal strobe as trig record source.
+// 04/22/2010: Added idle clock rate.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_FPGA_H__
 #define __KPIX_FPGA_H__
@@ -152,6 +153,17 @@ class KpixFpga : public TObject {
       // Method to get FPGA scratchpad register contents.
       // Set readEn to false to disable real read from FPGA.
       unsigned int getScratchPad ( bool readEn=true );
+
+      // Method to set FPGA idle clock register.
+      // Default value = 50ns (20Mhz)
+      // Pass value containing the desired clock period. Valid values are
+      // multiples of 10ns from 10ns to 320 ns.
+      // Set writeEn to false to disable real write to KPIX
+      void setClockPeriodIdle ( unsigned short period, bool writeEn=true );
+
+      // Method to set FPGA idle clock period.
+      // Set readEn to false to disable real read from FPGA.
+      unsigned short getClockPeriodIdle ( bool readEn=true );
 
       // Method to set FPGA clock control register.
       // Default value = 50ns (20Mhz)

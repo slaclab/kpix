@@ -18,6 +18,7 @@
 // 02/23/2009: Added changes required for status read.
 // 06/22/2009: Added namespaces.
 // 06/23/2009: Removed namespaces.
+// 04/23/2010: Forced dc mode for KPIX 9 register test.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -85,6 +86,12 @@ bool KpixRegisterTest::runTest () {
    // Log start of test
    if ( showProgress ) cout << "Register Test Starting.\n";
 
+   // Force dc mode for KPIX 9
+   if (kpixAsic->getVersion() == 9 ) {
+      cout << "KpixRegisterTest::runTest -> Forcing power cycle to be disabled for KPIX 9" << endl;
+      kpixAsic->setCntrlDisPwrCycle ( true, true );
+   }
+
    // Loop through iterations
    for (i=0; i < iterations; i++) {
 
@@ -100,7 +107,11 @@ bool KpixRegisterTest::runTest () {
 
          // Register exists
          if ( kpixAsic->regGetWriteable(x) ) {
-            kpixAsic->regSetValue(x,rand(),true);
+
+            // Kpix 9, force disable power cycle to be set
+            if ( kpixAsic->getVersion() == 9 && x == 0x30 ) kpixAsic->regSetValue(x,rand()|0x01000000,true);
+            else kpixAsic->regSetValue(x,rand(),true);
+
             if ( enDebug ) cout << "KpixRegisterTest::runTest -> Writing Register 0x" 
                << setw(2) << setfill('0') << hex << x << ". Value 0x"
                << setw(8) << setfill('0') << hex << kpixAsic->regGetValue(x,false)

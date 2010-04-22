@@ -61,6 +61,7 @@
 // 06/23/2009: Removed namespaces.
 // 07/07/2009: Fixed bug in getCntrlDisPwrCycle.
 // 07/07/2009: Added support for KPIX9, put in forced timing values for Kpix 8.
+// 04/22/2010: Added force power on for DAC accesses in KPIX 9.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -2072,6 +2073,14 @@ void KpixAsic::getCalibTime ( unsigned int *calCount,  unsigned int *cal0Delay,
 void KpixAsic::setDacThreshRangeA ( unsigned char rstTholdA, unsigned char trigTholdA,
                                     bool writeEn ) {
 
+   bool oldPwr;
+
+   // Force power on for Kpix 9
+   if ( writeEn && kpixVersion == 9 ) {
+      oldPwr = getCntrlDisPwrCycle  ( false );
+      setCntrlDisPwrCycle  ( true , true );
+   }
+
    // Debug if enabled
    if ( enDebug ) {
       cout << "KpixAsic::setDacThreshRangeA -> setting thresholds: \n";
@@ -2084,6 +2093,9 @@ void KpixAsic::setDacThreshRangeA ( unsigned char rstTholdA, unsigned char trigT
    // Set registers
    regSetValue(0x20,rstTholdA,writeEn);
    regSetValue(0x28,trigTholdA,writeEn);
+
+   // Restore power for Kpix 9
+   if ( writeEn && kpixVersion == 9 ) setCntrlDisPwrCycle ( oldPwr, true );
 }
 
 
@@ -2094,6 +2106,14 @@ void KpixAsic::setDacThreshRangeA ( unsigned char rstTholdA, unsigned char trigT
 // Set readEn to false to disable real read from KPIX
 void KpixAsic::getDacThreshRangeA ( unsigned char *rstTholdA, unsigned char *trigTholdA,
                                     bool readEn ) {
+
+   bool oldPwr;
+
+   // Force power on for Kpix 9
+   if ( readEn && kpixVersion == 9 ) {
+      oldPwr = getCntrlDisPwrCycle  ( false );
+      setCntrlDisPwrCycle  ( true, true );
+   }
 
    // Read registers
    *rstTholdA  = regGetValue(0x20,readEn);
@@ -2107,6 +2127,9 @@ void KpixAsic::getDacThreshRangeA ( unsigned char *rstTholdA, unsigned char *tri
       cout << "                                trigTholdA = 0x" << setw(2) << setfill('0');
       cout << hex << (int)*trigTholdA << "\n";
    }
+
+   // Restore power for Kpix 9
+   if ( readEn && kpixVersion == 9 ) setCntrlDisPwrCycle ( oldPwr, true );
 }
 
 
@@ -2117,6 +2140,14 @@ void KpixAsic::getDacThreshRangeA ( unsigned char *rstTholdA, unsigned char *tri
 // Set writeEn to false to disable real write to KPIX
 void KpixAsic::setDacThreshRangeB ( unsigned char rstTholdB, unsigned char trigTholdB,
                                     bool writeEn ) {
+
+   bool oldPwr;
+
+   // Force power on for Kpix 9
+   if ( writeEn && kpixVersion == 9 ) {
+      oldPwr = getCntrlDisPwrCycle  ( false );
+      setCntrlDisPwrCycle  ( true, true );
+   }
 
    // Debug if enabled
    if ( enDebug ) {
@@ -2130,6 +2161,9 @@ void KpixAsic::setDacThreshRangeB ( unsigned char rstTholdB, unsigned char trigT
    // Set registers
    regSetValue(0x21,rstTholdB,writeEn);
    regSetValue(0x29,trigTholdB,writeEn);
+
+   // Restore power for Kpix 9
+   if ( writeEn && kpixVersion == 9 ) setCntrlDisPwrCycle ( oldPwr, true );
 }
 
 
@@ -2140,6 +2174,14 @@ void KpixAsic::setDacThreshRangeB ( unsigned char rstTholdB, unsigned char trigT
 // Set readEn to false to disable real read from KPIX
 void KpixAsic::getDacThreshRangeB ( unsigned char *rstTholdB, unsigned char *trigTholdB,
                                     bool readEn ) {
+
+   bool oldPwr;
+
+   // Force power on for Kpix 9
+   if ( readEn && kpixVersion == 9 ) {
+      oldPwr = getCntrlDisPwrCycle  ( false );
+      setCntrlDisPwrCycle  ( true, true );
+   }
 
    // Read registers
    *rstTholdB  = regGetValue(0x21,readEn);
@@ -2153,6 +2195,9 @@ void KpixAsic::getDacThreshRangeB ( unsigned char *rstTholdB, unsigned char *tri
       cout << "                                trigTholdB = 0x" << setw(2) << setfill('0');
       cout << hex << (int)*trigTholdB << "\n";
    }
+
+   // Restore power for Kpix 9
+   if ( readEn && kpixVersion == 9 ) setCntrlDisPwrCycle ( oldPwr, true );
 }
 
 
@@ -2162,6 +2207,14 @@ void KpixAsic::getDacThreshRangeB ( unsigned char *rstTholdB, unsigned char *tri
 // Set writeEn to false to disable real write to KPIX
 void KpixAsic::setDacCalib ( unsigned char calValue, bool writeEn ) {
 
+   bool oldPwr;
+
+   // Force power on for Kpix 9
+   if ( writeEn && kpixVersion == 9 ) {
+      oldPwr = getCntrlDisPwrCycle  ( false );
+      setCntrlDisPwrCycle  ( true, true );
+   }
+
    // Debug if enabled
    if ( enDebug ) {
       cout << "KpixAsic::setDacCalib -> writing calib value=0x"<< setw(2) << setfill('0');
@@ -2170,6 +2223,9 @@ void KpixAsic::setDacCalib ( unsigned char calValue, bool writeEn ) {
 
    // Set registers
    regSetValue(0x24,calValue,writeEn);
+
+   // Restore power for Kpix 9
+   if ( writeEn && kpixVersion == 9 ) setCntrlDisPwrCycle ( oldPwr, true );
 }
 
 
@@ -2178,6 +2234,13 @@ void KpixAsic::setDacCalib ( unsigned char calValue, bool writeEn ) {
 unsigned char KpixAsic::getDacCalib ( bool readEn ) {
 
    unsigned char ret;
+   bool oldPwr;
+
+   // Force power on for Kpix 9
+   if ( readEn && kpixVersion == 9 ) {
+      oldPwr = getCntrlDisPwrCycle  ( false );
+      setCntrlDisPwrCycle  ( true, true );
+   }
 
    // Read registers
    ret = regGetValue(0x24,readEn);
@@ -2187,6 +2250,9 @@ unsigned char KpixAsic::getDacCalib ( bool readEn ) {
       cout << "KpixAsic::getDacCalib -> read calib value=0x" << setw(2) << setfill('0');
       cout << hex << (int)ret << "\n";
    }
+
+   // Restore power for Kpix 9
+   if ( readEn && kpixVersion == 9 ) setCntrlDisPwrCycle ( oldPwr, true );
    return(ret);
 }
 
@@ -2197,6 +2263,14 @@ unsigned char KpixAsic::getDacCalib ( bool readEn ) {
 // Set writeEn to false to disable real write to KPIX
 void KpixAsic::setDacRampThresh ( unsigned char dacValue, bool writeEn ) {
 
+   bool oldPwr;
+
+   // Force power on for Kpix 9
+   if ( writeEn && kpixVersion == 9 ) {
+      oldPwr = getCntrlDisPwrCycle  ( false );
+      setCntrlDisPwrCycle  ( true, true );
+   }
+
    // Debug if enabled
    if ( enDebug ) {
       cout << "KpixAsic::setDacRampThresh -> writing value=0x"<< setw(2) << setfill('0');
@@ -2205,6 +2279,9 @@ void KpixAsic::setDacRampThresh ( unsigned char dacValue, bool writeEn ) {
 
    // Set registers
    regSetValue(0x22,dacValue,writeEn);
+
+   // Restore power for Kpix 9
+   if ( writeEn && kpixVersion == 9 ) setCntrlDisPwrCycle ( oldPwr, true );
 }
 
 
@@ -2213,6 +2290,13 @@ void KpixAsic::setDacRampThresh ( unsigned char dacValue, bool writeEn ) {
 unsigned char KpixAsic::getDacRampThresh ( bool readEn ) {
 
    unsigned char ret;
+   bool oldPwr;
+
+   // Force power on for Kpix 9
+   if ( readEn && kpixVersion == 9 ) {
+      oldPwr = getCntrlDisPwrCycle  ( false );
+      setCntrlDisPwrCycle  ( true, true );
+   }
 
    // Read registers
    ret = regGetValue(0x22,readEn);
@@ -2222,6 +2306,10 @@ unsigned char KpixAsic::getDacRampThresh ( bool readEn ) {
       cout << "KpixAsic::getDacRampThresh -> read value=0x" << setw(2) << setfill('0');
       cout << hex << (int)ret << "\n";
    }
+
+   // Restore power for Kpix 9
+   if ( readEn && kpixVersion == 9 ) setCntrlDisPwrCycle ( oldPwr, true );
+
    return(ret);
 }
 
@@ -2232,6 +2320,14 @@ unsigned char KpixAsic::getDacRampThresh ( bool readEn ) {
 // Set writeEn to false to disable real write to KPIX
 void KpixAsic::setDacRangeThresh ( unsigned char dacValue, bool writeEn ) {
 
+   bool oldPwr;
+
+   // Force power on for Kpix 9
+   if ( writeEn && kpixVersion == 9 ) {
+      oldPwr = getCntrlDisPwrCycle  ( false );
+      setCntrlDisPwrCycle  ( true, true );
+   }
+
    // Debug if enabled
    if ( enDebug ) {
       cout << "KpixAsic::setDacRangeThresh -> writing value=0x"<< setw(2) << setfill('0');
@@ -2240,6 +2336,9 @@ void KpixAsic::setDacRangeThresh ( unsigned char dacValue, bool writeEn ) {
 
    // Set registers
    regSetValue(0x23,dacValue,writeEn);
+
+   // Restore power for Kpix 9
+   if ( writeEn && kpixVersion == 9 ) setCntrlDisPwrCycle ( oldPwr, true );
 }
 
 
@@ -2248,6 +2347,13 @@ void KpixAsic::setDacRangeThresh ( unsigned char dacValue, bool writeEn ) {
 unsigned char KpixAsic::getDacRangeThresh ( bool readEn ) {
 
    unsigned char ret;
+   bool oldPwr;
+
+   // Force power on for Kpix 9
+   if ( readEn && kpixVersion == 9 ) {
+      oldPwr = getCntrlDisPwrCycle  ( false );
+      setCntrlDisPwrCycle  ( true, true );
+   }
 
    // Read registers
    ret = regGetValue(0x23,readEn);
@@ -2257,6 +2363,9 @@ unsigned char KpixAsic::getDacRangeThresh ( bool readEn ) {
       cout << "KpixAsic::getDacRangeThresh -> read value=0x" << setw(2) << setfill('0');
       cout << hex << (int)ret << "\n";
    }
+
+   // Restore power for Kpix 9
+   if ( readEn && kpixVersion == 9 ) setCntrlDisPwrCycle ( oldPwr, true );
    return(ret);
 }
 
@@ -2267,6 +2376,14 @@ unsigned char KpixAsic::getDacRangeThresh ( bool readEn ) {
 // Set writeEn to false to disable real write to KPIX
 void KpixAsic::setDacEventThreshRef ( unsigned char dacValue, bool writeEn ) {
 
+   bool oldPwr;
+
+   // Force power on for Kpix 9
+   if ( writeEn && kpixVersion == 9 ) {
+      oldPwr = getCntrlDisPwrCycle  ( false );
+      setCntrlDisPwrCycle  ( true, true );
+   }
+
    // Debug if enabled
    if ( enDebug ) {
       cout << "KpixAsic::setDacEventThreshRef -> writing value=0x"<< setw(2) << setfill('0');
@@ -2275,6 +2392,9 @@ void KpixAsic::setDacEventThreshRef ( unsigned char dacValue, bool writeEn ) {
 
    // Set registers
    regSetValue(0x25,dacValue,writeEn);
+
+   // Restore power for Kpix 9
+   if ( writeEn && kpixVersion == 9 ) setCntrlDisPwrCycle ( oldPwr, true );
 }
 
 
@@ -2284,6 +2404,13 @@ void KpixAsic::setDacEventThreshRef ( unsigned char dacValue, bool writeEn ) {
 unsigned char KpixAsic::getDacEventThreshRef ( bool readEn ) {
 
    unsigned char ret;
+   bool oldPwr;
+
+   // Force power on for Kpix 9
+   if ( readEn && kpixVersion == 9 ) {
+      oldPwr = getCntrlDisPwrCycle  ( false );
+      setCntrlDisPwrCycle  ( true, true );
+   }
 
    // Read registers
    ret = regGetValue(0x25,readEn);
@@ -2293,6 +2420,9 @@ unsigned char KpixAsic::getDacEventThreshRef ( bool readEn ) {
       cout << "KpixAsic::getDacEventThreshRef -> read value=0x" << setw(2) << setfill('0');
       cout << hex << (int)ret << "\n";
    }
+
+   // Restore power for Kpix 9
+   if ( readEn && kpixVersion == 9 ) setCntrlDisPwrCycle ( oldPwr, true );
    return(ret);
 }
 
@@ -2303,6 +2433,14 @@ unsigned char KpixAsic::getDacEventThreshRef ( bool readEn ) {
 // Set writeEn to false to disable real write to KPIX
 void KpixAsic::setDacShaperBias ( unsigned char dacValue, bool writeEn ) {
 
+   bool oldPwr;
+
+   // Force power on for Kpix 9
+   if ( writeEn && kpixVersion == 9 ) {
+      oldPwr = getCntrlDisPwrCycle  ( false );
+      setCntrlDisPwrCycle  ( true, true );
+   }
+
    // Debug if enabled
    if ( enDebug ) {
       cout << "KpixAsic::setDacShaperBias -> writing value=0x"<< setw(2) << setfill('0');
@@ -2311,6 +2449,9 @@ void KpixAsic::setDacShaperBias ( unsigned char dacValue, bool writeEn ) {
 
    // Set registers
    regSetValue(0x26,dacValue,writeEn);
+
+   // Restore power for Kpix 9
+   if ( writeEn && kpixVersion == 9 ) setCntrlDisPwrCycle ( oldPwr, true );
 }
 
 
@@ -2319,6 +2460,13 @@ void KpixAsic::setDacShaperBias ( unsigned char dacValue, bool writeEn ) {
 unsigned char KpixAsic::getDacShaperBias ( bool readEn ) {
 
    unsigned char ret;
+   bool oldPwr;
+
+   // Force power on for Kpix 9
+   if ( readEn && kpixVersion == 9 ) {
+      oldPwr = getCntrlDisPwrCycle  ( false );
+      setCntrlDisPwrCycle  ( true, true );
+   }
 
    // Read registers
    ret = regGetValue(0x26,readEn);
@@ -2328,6 +2476,9 @@ unsigned char KpixAsic::getDacShaperBias ( bool readEn ) {
       cout << "KpixAsic::getDacShaperBias -> read value=0x" << setw(2) << setfill('0');
       cout << hex << (int)ret << "\n";
    }
+
+   // Restore power for Kpix 9
+   if ( readEn && kpixVersion == 9 ) setCntrlDisPwrCycle ( oldPwr, true );
    return(ret);
 }
 
@@ -2338,6 +2489,14 @@ unsigned char KpixAsic::getDacShaperBias ( bool readEn ) {
 // Set writeEn to false to disable real write to KPIX
 void KpixAsic::setDacDefaultAnalog ( unsigned char dacValue, bool writeEn ) {
 
+   bool oldPwr;
+
+   // Force power on for Kpix 9
+   if ( writeEn && kpixVersion == 9 ) {
+      oldPwr = getCntrlDisPwrCycle  ( false );
+      setCntrlDisPwrCycle  ( true, true );
+   }
+
    // Debug if enabled
    if ( enDebug ) {
       cout << "KpixAsic::setDacDefaultAnalog -> writing value=0x"<< setw(2) << setfill('0');
@@ -2346,6 +2505,9 @@ void KpixAsic::setDacDefaultAnalog ( unsigned char dacValue, bool writeEn ) {
 
    // Set registers
    regSetValue(0x27,dacValue,writeEn);
+
+   // Restore power for Kpix 9
+   if ( writeEn && kpixVersion == 9 ) setCntrlDisPwrCycle ( oldPwr, true );
 }
 
 
@@ -2354,6 +2516,13 @@ void KpixAsic::setDacDefaultAnalog ( unsigned char dacValue, bool writeEn ) {
 unsigned char KpixAsic::getDacDefaultAnalog ( bool readEn ) {
 
    unsigned char ret;
+   bool oldPwr;
+
+   // Force power on for Kpix 9
+   if ( readEn && kpixVersion == 9 ) {
+      oldPwr = getCntrlDisPwrCycle  ( false );
+      setCntrlDisPwrCycle  ( true, true );
+   }
 
    // Read registers
    ret = regGetValue(0x27,readEn);
@@ -2363,6 +2532,9 @@ unsigned char KpixAsic::getDacDefaultAnalog ( bool readEn ) {
       cout << "KpixAsic::getDacDefaultAnalog -> read value=0x" << setw(2) << setfill('0');
       cout << hex << (int)ret << "\n";
    }
+
+   // Restore power for Kpix 9
+   if ( readEn && kpixVersion == 9 ) setCntrlDisPwrCycle ( oldPwr, true );
    return(ret);
 }
 

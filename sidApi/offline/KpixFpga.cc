@@ -34,6 +34,7 @@
 // 06/22/2009: Added namespaces.
 // 06/23/2009: Removed namespaces.
 // 09/11/2009: Added cal strobe as trig record source.
+// 04/22/2010: Added idle clock rate.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -474,6 +475,61 @@ unsigned short KpixFpga::getClockPeriod ( bool readEn ) {
    // Debug
    if ( enDebug ) {
       cout << "KpixFpga::getClockPeriod -> ClockPeriod=";
+      cout << hex << setfill('0') << setw(1) << ret << ".\n";
+   }
+   return(ret);
+}
+
+
+// Method to set FPGA idle clock control register.
+// Default value = 50ns (20Mhz)
+// Pass value containing the desired clock period. Valid values are
+// multiples of 10ns from 10ns to 320 ns.
+// Set writeEn to false to disable real write to KPIX
+void KpixFpga::setClockPeriodIdle ( unsigned short period, bool writeEn ) {
+
+   unsigned int set;
+   unsigned int value;
+
+   // Get register
+   value = regGetValue(0x03,false);
+
+   // Verify range
+   if ( period < 10 || period > 320 || (period % 10) != 0 ) 
+      throw string("KpixFpga::setClockPeriodIdle -> Invalid Value");
+
+   // Output value
+   if ( enDebug ) {
+      cout << "KpixFpga::setClockPeriodIdle -> Set ClockPeriodIdle=";
+      cout << setw(3) << setfill('0') << dec << period << " ns";
+      cout << ", WriteEn=" << writeEn << ".\n";
+   }
+
+   // Convert value
+   set = ((period / 10) - 1);
+
+   // Set proper bits
+   value &= 0x00FFFFFF;
+   value |= ((set << 24) & 0xFF000000);
+
+   // Set register
+   regSetValue(0x03,value,writeEn);
+}
+
+
+// Method to set FPGA idle clock period.
+// Set readEn to false to disable real read from FPGA.
+unsigned short KpixFpga::getClockPeriodIdle ( bool readEn ) {
+
+   // Get Value
+   unsigned int val = regGetValue ( 0x03, readEn );
+
+   // Convert value
+   unsigned short ret = (((val>>24)&0xFF) + 1) * 10;
+
+   // Debug
+   if ( enDebug ) {
+      cout << "KpixFpga::getClockPeriodIdle -> ClockPeriodIdle=";
       cout << hex << setfill('0') << setw(1) << ret << ".\n";
    }
    return(ret);
@@ -1341,6 +1397,7 @@ void KpixFpga::setDefaults ( unsigned int clkPeriod, bool kpixVer, bool writeEn 
    setClockPeriod(clkPeriod,writeEn );
    setClockPeriodDig(clkPeriod,writeEn );
    setClockPeriodRead(clkPeriod,writeEn );
+   setClockPeriodIdle(clkPeriod*2,writeEn );
    if ( writeEn ) cmdResetKpix();
 
    // Other defaults
@@ -1379,6 +1436,7 @@ void KpixFpga::dumpSettings () {
    cout << "       ClockPeriod = " << getClockPeriod(false) << "\n";
    cout << "    ClockPeriodDig = " << getClockPeriodDig(false)  << "\n";
    cout << "   ClockPeriodRead = " << getClockPeriodRead(false) << "\n";
+   cout << "   ClockPeriodIdle = " << getClockPeriodIdle(false) << "\n";
    cout << "        BncSourceA = " << (int)getBncSourceA(false) << "\n";
    cout << "        BncSourceB = " << (int)getBncSourceB(false) << "\n";
    cout << "           KpixVer = " << getKpixVer(false)  << "\n";

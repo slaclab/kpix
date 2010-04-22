@@ -19,6 +19,7 @@
 // 06/22/2009: Changed structure to support sidApi namespaces.
 // 06/23/2009: Removed sidApi namespace.
 // 12/07/2009: Moved KPIX8 adjustments to API.
+// 04/22/2010: Added idle clock rate
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -70,6 +71,7 @@ void KpixGuiTiming::setEnabled ( bool enable, bool calEnable ) {
    if ( asicCnt != 0 && asic[0]->getVersion() == 8 ) {  
       acqClkPeriod->setEnabled(false);
       digClkPeriod->setEnabled(false);
+      idleClkPeriod->setEnabled(false);
       readClkPeriod->setEnabled(false);
       resetOn->setEnabled(false);
       resetOff->setEnabled(false);
@@ -82,6 +84,7 @@ void KpixGuiTiming::setEnabled ( bool enable, bool calEnable ) {
       acqClkPeriod->setEnabled(enable&&calEnable);
       digClkPeriod->setEnabled(enable&&calEnable);
       readClkPeriod->setEnabled(enable);
+      idleClkPeriod->setEnabled(enable);
       resetOn->setEnabled(enable&&calEnable);
       resetOff->setEnabled(enable&&calEnable);
       leakNullOff->setEnabled(enable&&calEnable);
@@ -109,19 +112,20 @@ void KpixGuiTiming::timeValueChanged() {
    valOld[0]  = acqClkPeriod->value();
    valOld[1]  = digClkPeriod->value();
    valOld[2]  = readClkPeriod->value();
-   valOld[3]  = resetOn->value();
-   valOld[4]  = resetOff->value();
-   valOld[5]  = leakNullOff->value();
-   valOld[6]  = offNullOff->value();
-   valOld[7]  = threshOff->value();
-   valOld[8]  = pwrUpOn->value();
-   valOld[9]  = deselDly->value();
-   valOld[10] = bunchClkDly->value();
-   valOld[11] = digDelay->value();
+   valOld[3]  = idleClkPeriod->value();
+   valOld[4]  = resetOn->value();
+   valOld[5]  = resetOff->value();
+   valOld[6]  = leakNullOff->value();
+   valOld[7]  = offNullOff->value();
+   valOld[8]  = threshOff->value();
+   valOld[9]  = pwrUpOn->value();
+   valOld[10] = deselDly->value();
+   valOld[11] = bunchClkDly->value();
+   valOld[12] = digDelay->value();
 
    // Process clock period values
    // Valid clock period values are 10ns - 320ns in 10ns increments
-   for (x=0; x < 3; x++) {
+   for (x=0; x < 4; x++) {
       round = (valOld[x] / 10) * 10;
       if ( (valOld[x] - round) < 5 && valOld[x] != round ) valNew[x] = round + 10;
       else valNew[x] = round;
@@ -131,7 +135,7 @@ void KpixGuiTiming::timeValueChanged() {
 
    // Process timing settings
    // Must be a multiple of the acquisition clock period delay
-   for (x=3; x < 12; x++) {
+   for (x=4; x < 13; x++) {
       round = (valOld[x] / valNew[0]) * valNew[0];
       if ( (valOld[x] - round) < 5 && valOld[x] != round ) valNew[x] = round + valNew[0];
       else valNew[x] = round;
@@ -141,15 +145,17 @@ void KpixGuiTiming::timeValueChanged() {
    if ( valOld[0]  != valNew[0]  ) acqClkPeriod->setValue(valNew[0]);
    if ( valOld[1]  != valNew[1]  ) digClkPeriod->setValue(valNew[1]);
    if ( valOld[2]  != valNew[2]  ) readClkPeriod->setValue(valNew[2]);
-   if ( valOld[3]  != valNew[3]  ) resetOn->setValue(valNew[3]);
-   if ( valOld[4]  != valNew[4]  ) resetOff->setValue(valNew[4]);
-   if ( valOld[5]  != valNew[5]  ) leakNullOff->setValue(valNew[5]);
-   if ( valOld[6]  != valNew[6]  ) offNullOff->setValue(valNew[6]);
-   if ( valOld[7]  != valNew[7]  ) threshOff->setValue(valNew[7]);
-   if ( valOld[8]  != valNew[8]  ) pwrUpOn->setValue(valNew[8]);
-   if ( valOld[9]  != valNew[9]  ) deselDly->setValue(valNew[9]);
-   if ( valOld[10] != valNew[10] ) bunchClkDly->setValue(valNew[10]);
-   if ( valOld[11] != valNew[11] ) digDelay->setValue(valNew[11]);
+   if ( valOld[3]  != valNew[3]  ) idleClkPeriod->setValue(valNew[3]);
+
+   if ( valOld[4]  != valNew[4]  ) resetOn->setValue(valNew[4]);
+   if ( valOld[5]  != valNew[5]  ) resetOff->setValue(valNew[5]);
+   if ( valOld[6]  != valNew[6]  ) leakNullOff->setValue(valNew[6]);
+   if ( valOld[7]  != valNew[7]  ) offNullOff->setValue(valNew[7]);
+   if ( valOld[8]  != valNew[8]  ) threshOff->setValue(valNew[8]);
+   if ( valOld[9]  != valNew[9]  ) pwrUpOn->setValue(valNew[9]);
+   if ( valOld[10] != valNew[10] ) deselDly->setValue(valNew[10]);
+   if ( valOld[11] != valNew[11] ) bunchClkDly->setValue(valNew[11]);
+   if ( valOld[12] != valNew[12] ) digDelay->setValue(valNew[12]);
 }
 
 
@@ -174,6 +180,7 @@ void KpixGuiTiming::updateDisplay() {
       acqClkPeriod->setValue(fpga->getClockPeriod(false));
       digClkPeriod->setValue(fpga->getClockPeriodDig(false));
       readClkPeriod->setValue(fpga->getClockPeriodRead(false));
+      idleClkPeriod->setValue(fpga->getClockPeriodIdle(false));
    }
 
    if ( asicCnt != 0 ) {
@@ -220,6 +227,7 @@ void KpixGuiTiming::readConfig() {
       fpga->getClockPeriod();
       fpga->getClockPeriodDig();
       fpga->getClockPeriodRead();
+      fpga->getClockPeriodIdle();
    }
 
    if ( asicCnt != 0 ) {
@@ -243,6 +251,7 @@ void KpixGuiTiming::writeConfig() {
       fpga->setClockPeriod(acqClkPeriod->value());
       fpga->setClockPeriodDig(digClkPeriod->value());
       fpga->setClockPeriodRead(readClkPeriod->value());
+      fpga->setClockPeriodIdle(idleClkPeriod->value());
    }
 
    // Asic
