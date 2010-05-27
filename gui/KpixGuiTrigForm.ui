@@ -9,7 +9,7 @@
             <x>0</x>
             <y>0</y>
             <width>390</width>
-            <height>578</height>
+            <height>530</height>
         </rect>
     </property>
     <property name="caption">
@@ -141,7 +141,6 @@
         </property>
         <property name="font">
             <font>
-                <pointsize>8</pointsize>
             </font>
         </property>
         <property name="readOnly">
@@ -216,71 +215,6 @@
             </rect>
         </property>
     </widget>
-    <widget class="QComboBox">
-        <item>
-            <property name="text">
-                <string>Thresh B</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>Disable</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>Thresh A</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>Calibrate</string>
-            </property>
-        </item>
-        <property name="name">
-            <cstring>setAllValue</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>150</x>
-                <y>540</y>
-                <width>84</width>
-                <height>27</height>
-            </rect>
-        </property>
-    </widget>
-    <widget class="QPushButton">
-        <property name="name">
-            <cstring>setAll</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>40</x>
-                <y>540</y>
-                <width>94</width>
-                <height>30</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Set All</string>
-        </property>
-    </widget>
-    <widget class="QLabel">
-        <property name="name">
-            <cstring>textLabel2_3_2_2_2_3_2</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>10</x>
-                <y>340</y>
-                <width>100</width>
-                <height>20</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>&lt;p align="left"&gt;Channel Mode: &lt;/p&gt;</string>
-        </property>
-    </widget>
     <widget class="QLabel">
         <property name="name">
             <cstring>textLabel2_3_2_2_3</cstring>
@@ -329,6 +263,22 @@
             <string>&lt;p align="right"&gt;External Trigger Mask: &lt;/p&gt;</string>
         </property>
     </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_2_2_2_2_2_2_2_2_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>10</y>
+                <width>170</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Nearest Neighbor Trigger: &lt;/p&gt;</string>
+        </property>
+    </widget>
     <widget class="QTable">
         <row>
             <property name="text">
@@ -363,12 +313,11 @@
                 <x>10</x>
                 <y>180</y>
                 <width>370</width>
-                <height>150</height>
+                <height>130</height>
             </rect>
         </property>
         <property name="font">
             <font>
-                <pointsize>8</pointsize>
             </font>
         </property>
         <property name="numRows">
@@ -381,6 +330,22 @@
             <bool>false</bool>
         </property>
     </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_3_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>310</y>
+                <width>100</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="left"&gt;Channel Mode: &lt;/p&gt;</string>
+        </property>
+    </widget>
     <widget class="QTable">
         <property name="name">
             <cstring>channelMode</cstring>
@@ -388,14 +353,13 @@
         <property name="geometry">
             <rect>
                 <x>10</x>
-                <y>360</y>
+                <y>310</y>
                 <width>370</width>
                 <height>170</height>
             </rect>
         </property>
         <property name="font">
             <font>
-                <pointsize>8</pointsize>
             </font>
         </property>
         <property name="numRows">
@@ -408,20 +372,53 @@
             <bool>true</bool>
         </property>
     </widget>
-    <widget class="QLabel">
+    <widget class="QPushButton">
         <property name="name">
-            <cstring>textLabel2_3_2_2_2_2_2_2_2_2_2_2_2_2_2</cstring>
+            <cstring>setAll</cstring>
         </property>
         <property name="geometry">
             <rect>
-                <x>0</x>
-                <y>10</y>
-                <width>170</width>
-                <height>20</height>
+                <x>40</x>
+                <y>490</y>
+                <width>94</width>
+                <height>30</height>
             </rect>
         </property>
         <property name="text">
-            <string>&lt;p align="right"&gt;Nearest Neighbor Trigger: &lt;/p&gt;</string>
+            <string>Set All</string>
+        </property>
+    </widget>
+    <widget class="QComboBox">
+        <item>
+            <property name="text">
+                <string>Thresh B</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Disable</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Thresh A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Calibrate</string>
+            </property>
+        </item>
+        <property name="name">
+            <cstring>setAllValue</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>490</y>
+                <width>84</width>
+                <height>27</height>
+            </rect>
         </property>
     </widget>
 </widget>

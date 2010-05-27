@@ -62,6 +62,7 @@
 // 07/07/2009: Fixed bug in getCntrlDisPwrCycle.
 // 07/07/2009: Added support for KPIX9, put in forced timing values for Kpix 8.
 // 04/22/2010: Added force power on for DAC accesses in KPIX 9.
+// 05/18/2010: Adjusted default calibration spacing.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -2817,10 +2818,10 @@ void KpixAsic::setDefaults ( unsigned int clkPeriod, bool writeEn ) {
 
    // Setup calibration strobes
    setCalibTime ( 4,      // Calibration Count
-                  0xA00,  // Calibration 0 Delay
-                  0x20,   // Calibration 1 Delay
-                  0x20,   // Calibration 2 Delay
-                  0x20,   // Calibration 3 Delay
+                  0x5dc,  // Calibration 0 Delay
+                  0xC8,   // Calibration 1 Delay
+                  0xC8,   // Calibration 2 Delay
+                  0xC8,   // Calibration 3 Delay
                   writeEn);
 }
 

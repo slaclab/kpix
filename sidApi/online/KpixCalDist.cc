@@ -30,6 +30,7 @@
 // 05/15/2009: Added feature to support random histogram time generation.
 // 06/22/2009: Added namespaces.
 // 06/23/2009: Removed namespaces.
+// 05/27/2010: First 100 iterations are dropped in distribution run histogram
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <fstream>
@@ -366,7 +367,8 @@ void KpixCalDist::runDistribution ( short channel ) {
          }
 
          // Fill histogram for each channel we have received data for
-         if ( plotEn ) {
+         // Don't use data from first 100 iterations
+         if ( plotEn && x >= 100 ) {
             for (y=0; y < train->getSampleCount(); y++) {
                sample   = train->getSampleList()[y];
                kpixAddr = sample->getKpixAddress();
