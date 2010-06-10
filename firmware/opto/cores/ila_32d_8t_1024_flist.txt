@@ -1,0 +1,9 @@
+# Output products list for <ila_32d_8t_1024>
+ila_32d_8t_1024.cdc
+ila_32d_8t_1024.ncf
+ila_32d_8t_1024.ngc
+ila_32d_8t_1024.vhd
+ila_32d_8t_1024.vho
+ila_32d_8t_1024.xco
+ila_32d_8t_1024_flist.txt
+ila_32d_8t_1024_xmdf.tcl

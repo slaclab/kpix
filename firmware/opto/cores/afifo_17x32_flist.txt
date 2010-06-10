@@ -1,0 +1,8 @@
+# Output products list for <afifo_17x32>
+afifo_17x32.ngc
+afifo_17x32.vhd
+afifo_17x32.vho
+afifo_17x32.xco
+afifo_17x32_fifo_generator_v4_4_xst_1.ngc_xst.xrpt
+afifo_17x32_flist.txt
+afifo_17x32_xmdf.tcl

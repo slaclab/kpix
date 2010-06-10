@@ -1,0 +1,8 @@
+# Output products list for <fifo_13x1k>
+fifo_13x1k.ngc
+fifo_13x1k.vhd
+fifo_13x1k.vho
+fifo_13x1k.xco
+fifo_13x1k_fifo_generator_v4_4_xst_1.ngc_xst.xrpt
+fifo_13x1k_flist.txt
+fifo_13x1k_xmdf.tcl

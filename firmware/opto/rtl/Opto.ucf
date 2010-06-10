@@ -1,0 +1,239 @@
+#-----------------------------------------------------------------------------
+# Title         : Optical Interface FPGA Constraints File
+# Project       : W_SI KPIX Test FPGA
+#-----------------------------------------------------------------------------
+# File          : Opto.ucf
+# Author        : Ryan Herbst, rherbst@slac.stanford.edu
+# Created       : 12/12/2005
+#-----------------------------------------------------------------------------
+# Description:
+# This file contains all of the user constraints required to implement the
+# Optical Interface FPGA.
+#-----------------------------------------------------------------------------
+# Copyright (c) 2004 by Ryan Herbst. All rights reserved.
+#-----------------------------------------------------------------------------
+# Modification history
+# 12/12/2004: created.
+#-----------------------------------------------------------------------------
+CONFIG PART = xc3s400-pq208-4;
+
+#-----------------------------------------------------------------------------
+#-------------------------- Timing Constraints -------------------------------
+#-----------------------------------------------------------------------------
+# This section contains the timing constraints for the FPGA
+#-----------------------------------------------------------------------------
+
+# Define system clocks
+NET dllClk20  TNM_NET = FFS dllClk20;
+NET dllClk200 TNM_NET = FFS dllClk200;
+NET divClk    TNM_NET = FFS divClk;
+
+# 20 Mhz System Clock
+TIMESPEC TS_dllClk20  = PERIOD dllClk20  20  Mhz HIGH 50%;
+TIMESPEC TS_dllClk200 = PERIOD dllClk200 200 Mhz HIGH 50%;
+TIMESPEC TS_divClk    = PERIOD divClk    60  Mhz HIGH 50%;
+
+# Nets to ignore for timing
+NET "iFpgaRstL"      TIG;
+
+# Define time groups for inter-clock constraints
+TIMEGRP TG_dllClk20_r  = RISING  dllClk20;
+TIMEGRP TG_dllClk200_r = RISING  dllClk200;
+TIMEGRP TG_divClk_r    = RISING  divClk;
+TIMEGRP TG_divClk_f    = FALLING divClk;
+
+# Inter Domain Constraints
+TIMESPEC TS_dllClk20_divClk   = FROM TG_dllClk20_r TO TG_divClk_r     8ns;
+TIMESPEC TS_divClk_dllClk20   = FROM TG_divClk_r   TO TG_dllClk20_r   8ns;
+TIMESPEC TS_divClk_dllClk200  = FROM TG_divClk_r   TO TG_dllClk200_r  8ns;
+
+# From To Delay Controls For Trigger Logic
+TIMEGRP  TG_TRIG_SRC = PADS("iNimInA") PADS("iNimInB") PADS("iBncInA") PADS("iBncInB");
+TIMEGRP  TG_TRIG_DST = PADS("oForceTrig");
+TIMESPEC TS_TRIG_IN  = FROM TG_TRIG_SRC TO FFS         6ns;
+TIMESPEC TS_TRIG_OUT = FROM FFS         TO TG_TRIG_DST 6ns;
+
+#-----------------------------------------------------------------------------
+#-------------------------- Global Clock & DCM Constraints -------------------
+#-----------------------------------------------------------------------------
+# This section defines how the global clocks in the design are allocated
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+#-------------------------- DCM Configurations -------------------------------
+#-----------------------------------------------------------------------------
+# This section defines parameters for the DCMs in this design
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+#-------------------------- Pin Location Constraints -------------------------
+#-----------------------------------------------------------------------------
+# This section contains the pin location constraints for the design
+#-----------------------------------------------------------------------------
+
+NET "iFpgaRstL"       LOC = "P67";
+NET "iSysClk20"       LOC = "P180";
+NET "iJumpL(3)"       LOC = "P78";
+NET "iJumpL(2)"       LOC = "P58";
+NET "iJumpL(1)"       LOC = "P57";
+NET "iJumpL(0)"       LOC = "P62";
+NET "oLedL(3)"        LOC = "P137";
+NET "oLedL(2)"        LOC = "P135";
+NET "oLedL(1)"        LOC = "P133";
+NET "oLedL(0)"        LOC = "P132";
+NET "oDebug(31)"      LOC = "P189";
+NET "oDebug(30)"      LOC = "P197";
+NET "oDebug(29)"      LOC = "P200";
+NET "oDebug(28)"      LOC = "P205";
+NET "oDebug(27)"      LOC = "P204";
+NET "oDebug(26)"      LOC = "P203";
+NET "oDebug(25)"      LOC = "P199";
+NET "oDebug(24)"      LOC = "P198";
+NET "oDebug(23)"      LOC = "P196";
+NET "oDebug(22)"      LOC = "P194";
+NET "oDebug(21)"      LOC = "P191";
+NET "oDebug(20)"      LOC = "P190";
+NET "oDebug(19)"      LOC = "P187";
+NET "oDebug(18)"      LOC = "P185";
+NET "oDebug(17)"      LOC = "P184";
+NET "oDebug(16)"      LOC = "P183";
+NET "oDebug(15)"      LOC = "P167";
+NET "oDebug(14)"      LOC = "P175";
+NET "oDebug(13)"      LOC = "P182";
+NET "oDebug(12)"      LOC = "P162";
+NET "oDebug(11)"      LOC = "P161";
+NET "oDebug(10)"      LOC = "P166";
+NET "oDebug(9)"       LOC = "P165";
+NET "oDebug(8)"       LOC = "P169";
+NET "oDebug(7)"       LOC = "P168";
+NET "oDebug(6)"       LOC = "P172";
+NET "oDebug(5)"       LOC = "P171";
+NET "oDebug(4)"       LOC = "P178";
+NET "oDebug(3)"       LOC = "P176";
+NET "oDebug(2)"       LOC = "P181";
+NET "oDebug(1)"       LOC = "P138";
+NET "oDebug(0)"       LOC = "P139";
+NET "oDbgClk"         LOC = "P26";
+NET "oForceTrig"      LOC = "P40";
+NET "ioUsbData(7)"    LOC = "P147";
+NET "ioUsbData(6)"    LOC = "P148";
+NET "ioUsbData(5)"    LOC = "P149";
+NET "ioUsbData(4)"    LOC = "P150";
+NET "ioUsbData(3)"    LOC = "P152";
+NET "ioUsbData(2)"    LOC = "P155";
+NET "ioUsbData(1)"    LOC = "P156";
+NET "ioUsbData(0)"    LOC = "P154";
+NET "oUsbRdL"         LOC = "P146";
+NET "oUsbWr"          LOC = "P144";
+NET "iUsbTxeL"        LOC = "P143";
+NET "iUsbRxfL"        LOC = "P141";
+NET "iUsbPwrEnL"      LOC = "P140";
+NET "oSysclk"         LOC = "P44";
+NET "oReset"          LOC = "P42";
+NET "oCommandA"       LOC = "P37";
+NET "oCommandB"       LOC = "P39";
+NET "oCommandC"       LOC = "P36";
+NET "iDataA"          LOC = "P52";
+NET "iDataB"          LOC = "P51";
+NET "iDataC"          LOC = "P48";
+NET "iBncInA"         LOC = "P125";
+NET "iBncInB"         LOC = "P122";
+NET "oBncOutA"        LOC = "P18";
+NET "oBncOutB"        LOC = "P19";
+NET "iNimInA"         LOC = "P131";
+NET "iNimInB"         LOC = "P124";
+NET "oDacDin"         LOC = "P7";
+NET "oDacCsL"         LOC = "P10";
+NET "oDacSclk"        LOC = "P11";
+NET "oDacClrL"        LOC = "P13";
+
+
+#-----------------------------------------------------------------------------
+#-------------------------- IO Standard Constraints --------------------------
+#-----------------------------------------------------------------------------
+# This section defines the IO types, IO delays and other IO parameters 
+#-----------------------------------------------------------------------------
+
+NET "iFpgaRstL"       IOSTANDARD = "LVCMOS33";
+NET "iSysClk20"       IOSTANDARD = "LVCMOS33";
+NET "iJumpL(3)"       IOSTANDARD = "LVCMOS33";
+NET "iJumpL(2)"       IOSTANDARD = "LVCMOS33";
+NET "iJumpL(1)"       IOSTANDARD = "LVCMOS33";
+NET "iJumpL(0)"       IOSTANDARD = "LVCMOS33";
+NET "oLedL(3)"        IOSTANDARD = "LVCMOS33";
+NET "oLedL(2)"        IOSTANDARD = "LVCMOS33";
+NET "oLedL(1)"        IOSTANDARD = "LVCMOS33";
+NET "oLedL(0)"        IOSTANDARD = "LVCMOS33";
+NET "oDebug(31)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(30)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(29)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(28)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(27)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(26)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(25)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(24)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(23)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(22)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(21)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(20)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(19)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(18)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(17)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(16)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(15)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(14)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(13)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(12)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(11)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(10)"      IOSTANDARD = "LVCMOS33";
+NET "oDebug(9)"       IOSTANDARD = "LVCMOS33";
+NET "oDebug(8)"       IOSTANDARD = "LVCMOS33";
+NET "oDebug(7)"       IOSTANDARD = "LVCMOS33";
+NET "oDebug(6)"       IOSTANDARD = "LVCMOS33";
+NET "oDebug(5)"       IOSTANDARD = "LVCMOS33";
+NET "oDebug(4)"       IOSTANDARD = "LVCMOS33";
+NET "oDebug(3)"       IOSTANDARD = "LVCMOS33";
+NET "oDebug(2)"       IOSTANDARD = "LVCMOS33";
+NET "oDebug(1)"       IOSTANDARD = "LVCMOS33";
+NET "oDebug(0)"       IOSTANDARD = "LVCMOS33";
+NET "oDbgClk"         IOSTANDARD = "LVCMOS33";
+NET "oForceTrig"      IOSTANDARD = "LVCMOS33";
+NET "ioUsbData(7)"    IOSTANDARD = "LVCMOS33";
+NET "ioUsbData(6)"    IOSTANDARD = "LVCMOS33";
+NET "ioUsbData(5)"    IOSTANDARD = "LVCMOS33";
+NET "ioUsbData(4)"    IOSTANDARD = "LVCMOS33";
+NET "ioUsbData(3)"    IOSTANDARD = "LVCMOS33";
+NET "ioUsbData(2)"    IOSTANDARD = "LVCMOS33";
+NET "ioUsbData(1)"    IOSTANDARD = "LVCMOS33";
+NET "ioUsbData(0)"    IOSTANDARD = "LVCMOS33";
+NET "oUsbRdL"         IOSTANDARD = "LVCMOS33" | SLEW=SLOW | DRIVE=2;
+NET "oUsbWr"          IOSTANDARD = "LVCMOS33" | SLEW=SLOW | DRIVE=2;
+NET "iUsbTxeL"        IOSTANDARD = "LVCMOS33";
+NET "iUsbRxfL"        IOSTANDARD = "LVCMOS33";
+NET "iUsbPwrEnL"      IOSTANDARD = "LVCMOS33";
+#NET "oSysclk"         IOSTANDARD = "LVCMOS33" | CLOCK_DEDICATED_ROUTE = FALSE;
+NET "oSysclk"         IOSTANDARD = "LVCMOS33";
+NET "oReset"          IOSTANDARD = "LVCMOS33";
+NET "oCommandA"       IOSTANDARD = "LVCMOS33";
+NET "oCommandB"       IOSTANDARD = "LVCMOS33";
+NET "oCommandC"       IOSTANDARD = "LVCMOS33";
+NET "iDataA"          IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iDataB"          IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iDataC"          IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iBncInA"         IOSTANDARD = "LVCMOS33";
+NET "iBncInB"         IOSTANDARD = "LVCMOS33";
+NET "oBncOutA"        IOSTANDARD = "LVCMOS33";
+NET "oBncOutB"        IOSTANDARD = "LVCMOS33";
+NET "iNimInA"         IOSTANDARD = "LVCMOS33";
+NET "iNimInB"         IOSTANDARD = "LVCMOS33";
+NET "oDacDin"         IOSTANDARD = "LVCMOS33";
+NET "oDacCsL"         IOSTANDARD = "LVCMOS33";
+NET "oDacSclk"        IOSTANDARD = "LVCMOS33";
+NET "oDacClrL"        IOSTANDARD = "LVCMOS33";
+
+#-----------------------------------------------------------------------------
+#-------------------------- Logic Location Constraints -----------------------
+#-----------------------------------------------------------------------------
+# This section defines constraints for various logic locations
+#-----------------------------------------------------------------------------
+
