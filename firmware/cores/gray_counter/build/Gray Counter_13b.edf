@@ -1,0 +1,1048 @@
+(edif gray_counter 
+ (edifVersion 2 0 0)
+ (edifLevel 0)
+ (keywordMap (keywordLevel 0))
+ (status 
+  (written 
+   (timestamp 2005 03 28 20 43 30)
+   (program "LeonardoSpectrum Level 3" (version "2004a.63"))
+   (author "Mentor Graphics")))
+ (external PRIMITIVES 
+  (edifLevel 0)
+  (technology (numberDefinition )))
+ (external tsmm025DL 
+  (edifLevel 0)
+  (technology (numberDefinition ))
+  (cell DFFP (cellType GENERIC)
+   (view NETLIST  (viewType NETLIST)
+    (interface 
+     (port D (direction INPUT))
+     (port CLK (direction INPUT))
+     (port PRB (direction INPUT))
+     (port Q (direction OUTPUT))
+     (port QB (direction OUTPUT)))))
+  (cell DFFC (cellType GENERIC)
+   (view NETLIST  (viewType NETLIST)
+    (interface 
+     (port D (direction INPUT))
+     (port CLK (direction INPUT))
+     (port CLR (direction INPUT))
+     (port Q (direction OUTPUT))
+     (port QB (direction OUTPUT)))))
+  (cell Nor2 (cellType GENERIC)
+   (view NETLIST  (viewType NETLIST)
+    (interface 
+     (port A (direction INPUT))
+     (port B (direction INPUT))
+     (port OUT (direction OUTPUT)))))
+  (cell Nor3 (cellType GENERIC)
+   (view NETLIST  (viewType NETLIST)
+    (interface 
+     (port A (direction INPUT))
+     (port B (direction INPUT))
+     (port C (direction INPUT))
+     (port OUT (direction OUTPUT)))))
+  (cell Nand3 (cellType GENERIC)
+   (view NETLIST  (viewType NETLIST)
+    (interface 
+     (port A (direction INPUT))
+     (port B (direction INPUT))
+     (port C (direction INPUT))
+     (port OUT (direction OUTPUT)))))
+  (cell Nand2 (cellType GENERIC)
+   (view NETLIST  (viewType NETLIST)
+    (interface 
+     (port A (direction INPUT))
+     (port B (direction INPUT))
+     (port OUT (direction OUTPUT)))))
+  (cell Xnor2 (cellType GENERIC)
+   (view NETLIST  (viewType NETLIST)
+    (interface 
+     (port A (direction INPUT))
+     (port B (direction INPUT))
+     (port out (direction OUTPUT)))))
+  (cell Xor2 (cellType GENERIC)
+   (view NETLIST  (viewType NETLIST)
+    (interface 
+     (port A (direction INPUT))
+     (port B (direction INPUT))
+     (port out (direction OUTPUT)))))
+  (cell Inv (cellType GENERIC)
+   (view NETLIST  (viewType NETLIST)
+    (interface 
+     (port A (direction INPUT))
+     (port OUT (direction OUTPUT)))))
+  (cell BufI4 (cellType GENERIC)
+   (view NETLIST  (viewType NETLIST)
+    (interface 
+     (port A (direction INPUT))
+     (port OUT (direction OUTPUT)))))
+  (cell Nand4 (cellType GENERIC)
+   (view NETLIST  (viewType NETLIST)
+    (interface 
+     (port A (direction INPUT))
+     (port B (direction INPUT))
+     (port C (direction INPUT))
+     (port D (direction INPUT))
+     (port OUT (direction OUTPUT)))))
+  (cell AOI22 (cellType GENERIC)
+   (view NETLIST  (viewType NETLIST)
+    (interface 
+     (port A (direction INPUT))
+     (port B (direction INPUT))
+     (port C (direction INPUT))
+     (port D (direction INPUT))
+     (port OUT (direction OUTPUT))))))
+ (library work 
+  (edifLevel 0)
+  (technology (numberDefinition ))
+  (cell gray_counter (cellType GENERIC)
+   (view arch_gray_counter  (viewType NETLIST)
+    (interface 
+     (port a_reset (direction INPUT))
+     (port ck (direction INPUT))
+     (port (array (rename q "q(13:0)") 14 )(direction INOUT)))
+    (property attx14 (string ""))
+    (property attx15 (string ""))
+    (property attx16 (string ""))
+    (property attx17 (string ""))
+    (property attx18 (string ""))
+    (property attx19 (string ""))
+    (property attx20 (string ""))
+    (property attx21 (string ""))
+    (property attx22 (string ""))
+    (property attx23 (string ""))
+    (property attx24 (string ""))
+    (property attx25 (string ""))
+    (property attx26 (string ""))
+    (property attx27 (string ""))
+    (contents 
+     (instance (rename reg_q_0_ "reg_q(0)") (viewRef NETLIST  (cellRef DFFP (libraryRef tsmm025DL ))))
+     (instance gray_lsb_1_creatbit_reg_qout (viewRef NETLIST  (cellRef DFFC (libraryRef tsmm025DL ))))
+     (instance ix9 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance gray_lsb_2_creatbit_reg_qout (viewRef NETLIST  (cellRef DFFC (libraryRef tsmm025DL ))))
+     (instance ix33 (viewRef NETLIST  (cellRef Nor3 (libraryRef tsmm025DL ))))
+     (instance gray_lsb_3_creatbit_reg_qout (viewRef NETLIST  (cellRef DFFC (libraryRef tsmm025DL ))))
+     (instance gray_lsb_4_creatbit_reg_qout (viewRef NETLIST  (cellRef DFFC (libraryRef tsmm025DL ))))
+     (instance ix160 (viewRef NETLIST  (cellRef Nand3 (libraryRef tsmm025DL ))))
+     (instance ix25 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance gray_lsb_5_creatbit_reg_qout (viewRef NETLIST  (cellRef DFFC (libraryRef tsmm025DL ))))
+     (instance ix167 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance gray_lsb_6_creatbit_reg_qout (viewRef NETLIST  (cellRef DFFC (libraryRef tsmm025DL ))))
+     (instance ix89 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance gray_lsb_7_creatbit_reg_qout (viewRef NETLIST  (cellRef DFFC (libraryRef tsmm025DL ))))
+     (instance gray_lsb_8_creatbit_reg_qout (viewRef NETLIST  (cellRef DFFC (libraryRef tsmm025DL ))))
+     (instance gray_lsb_9_creatbit_reg_qout (viewRef NETLIST  (cellRef DFFC (libraryRef tsmm025DL ))))
+     (instance gray_lsb_10_creatbit_reg_qout (viewRef NETLIST  (cellRef DFFC (libraryRef tsmm025DL ))))
+     (instance gray_lsb_11_creatbit_reg_qout (viewRef NETLIST  (cellRef DFFC (libraryRef tsmm025DL ))))
+     (instance gray_lsb_12_creatbit_reg_qout (viewRef NETLIST  (cellRef DFFC (libraryRef tsmm025DL ))))
+     (instance gray_msb_reg_qout (viewRef NETLIST  (cellRef DFFC (libraryRef tsmm025DL ))))
+     (instance ix15 (viewRef NETLIST  (cellRef Xnor2 (libraryRef tsmm025DL ))))
+     (instance ix27 (viewRef NETLIST  (cellRef Xor2 (libraryRef tsmm025DL ))))
+     (instance ix35 (viewRef NETLIST  (cellRef Xor2 (libraryRef tsmm025DL ))))
+     (instance ix47 (viewRef NETLIST  (cellRef Xor2 (libraryRef tsmm025DL ))))
+     (instance ix63 (viewRef NETLIST  (cellRef Xor2 (libraryRef tsmm025DL ))))
+     (instance ix91 (viewRef NETLIST  (cellRef Xor2 (libraryRef tsmm025DL ))))
+     (instance ix221 (viewRef NETLIST  (cellRef Inv (libraryRef tsmm025DL ))))
+     (instance ix221_0_XREP1 (viewRef NETLIST  (cellRef Inv (libraryRef tsmm025DL ))))
+     (instance ix138 (viewRef NETLIST  (cellRef Inv (libraryRef tsmm025DL ))))
+     (instance ix138_0_XREP3 (viewRef NETLIST  (cellRef Inv (libraryRef tsmm025DL ))))
+     (instance ix339 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix340 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance ix341 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix342 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix343 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix344 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance ix345 (viewRef NETLIST  (cellRef Nand4 (libraryRef tsmm025DL ))))
+     (instance ix346 (viewRef NETLIST  (cellRef Nor3 (libraryRef tsmm025DL ))))
+     (instance ix347 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix348 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix349 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance nx176 (viewRef NETLIST  (cellRef Nand3 (libraryRef tsmm025DL ))))
+     (instance ix350 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix351 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix352 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix353 (viewRef NETLIST  (cellRef Nor3 (libraryRef tsmm025DL ))))
+     (instance ix354 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance ix355 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix356 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix357 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance nx58 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix358 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix359 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix360 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix361 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix362 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix363 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix364 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix365 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix366 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix367 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix368 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix369 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix370 (viewRef NETLIST  (cellRef AOI22 (libraryRef tsmm025DL ))))
+     (instance nx138 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix371 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance nx114 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix372 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix373 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix374 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix375 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix376 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix377 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix378 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix379 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance ix380 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance nx82 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix381 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix382 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix383 (viewRef NETLIST  (cellRef Nor3 (libraryRef tsmm025DL ))))
+     (instance ix384 (viewRef NETLIST  (cellRef Nand3 (libraryRef tsmm025DL ))))
+     (instance ix385 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix386 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix387 (viewRef NETLIST  (cellRef Nor3 (libraryRef tsmm025DL ))))
+     (instance ix388 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix389 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix390 (viewRef NETLIST  (cellRef AOI22 (libraryRef tsmm025DL ))))
+     (instance nx122 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix391 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance nx180 (viewRef NETLIST  (cellRef Nand3 (libraryRef tsmm025DL ))))
+     (instance ix392 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix393 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance ix394 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance ix395 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix396 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance ix397 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance ix398 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix399 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix400 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix401 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix402 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix403 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix404 (viewRef NETLIST  (cellRef Nand4 (libraryRef tsmm025DL ))))
+     (instance ix405 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix406 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance nx146 (viewRef NETLIST  (cellRef Nand3 (libraryRef tsmm025DL ))))
+     (instance ix407 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix408 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix409 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix410 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix411 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix412 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix413 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix414 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix415 (viewRef NETLIST  (cellRef Nand4 (libraryRef tsmm025DL ))))
+     (instance ix416 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance ix417 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance ix418 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix419 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix420 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix421 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix422 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix423 (viewRef NETLIST  (cellRef Nand3 (libraryRef tsmm025DL ))))
+     (instance ix424 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix425 (viewRef NETLIST  (cellRef Nand3 (libraryRef tsmm025DL ))))
+     (instance ix426 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix427 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix428 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix429 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance ix430 (viewRef NETLIST  (cellRef AOI22 (libraryRef tsmm025DL ))))
+     (instance nx162 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance nx202 (viewRef NETLIST  (cellRef Nand4 (libraryRef tsmm025DL ))))
+     (instance ix431 (viewRef NETLIST  (cellRef Nor3 (libraryRef tsmm025DL ))))
+     (instance ix432 (viewRef NETLIST  (cellRef Nor3 (libraryRef tsmm025DL ))))
+     (instance ix433 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance ix434 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix435 (viewRef NETLIST  (cellRef Nand4 (libraryRef tsmm025DL ))))
+     (instance ix436 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance ix437 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix438 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix439 (viewRef NETLIST  (cellRef Nor2 (libraryRef tsmm025DL ))))
+     (instance ix440 (viewRef NETLIST  (cellRef Nand4 (libraryRef tsmm025DL ))))
+     (instance ix441 (viewRef NETLIST  (cellRef BufI4 (libraryRef tsmm025DL ))))
+     (instance ix442 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (instance nx118 (viewRef NETLIST  (cellRef Nand3 (libraryRef tsmm025DL ))))
+     (instance ix443 (viewRef NETLIST  (cellRef Nand2 (libraryRef tsmm025DL ))))
+     (net a_reset 
+      (joined 
+       (portRef a_reset )
+       (portRef A (instanceRef ix221 ))
+       (portRef A (instanceRef ix221_0_XREP1 ))
+       (portRef A (instanceRef ix138 ))
+       (portRef A (instanceRef ix138_0_XREP3 ))))
+     (net ck 
+      (joined 
+       (portRef ck )
+       (portRef CLK (instanceRef reg_q_0_ ))
+       (portRef CLK (instanceRef gray_lsb_1_creatbit_reg_qout ))
+       (portRef CLK (instanceRef gray_lsb_2_creatbit_reg_qout ))
+       (portRef CLK (instanceRef gray_lsb_3_creatbit_reg_qout ))
+       (portRef CLK (instanceRef gray_lsb_4_creatbit_reg_qout ))
+       (portRef CLK (instanceRef gray_lsb_5_creatbit_reg_qout ))
+       (portRef CLK (instanceRef gray_lsb_6_creatbit_reg_qout ))
+       (portRef CLK (instanceRef gray_lsb_7_creatbit_reg_qout ))
+       (portRef CLK (instanceRef gray_lsb_8_creatbit_reg_qout ))
+       (portRef CLK (instanceRef gray_lsb_9_creatbit_reg_qout ))
+       (portRef CLK (instanceRef gray_lsb_10_creatbit_reg_qout ))
+       (portRef CLK (instanceRef gray_lsb_11_creatbit_reg_qout ))
+       (portRef CLK (instanceRef gray_lsb_12_creatbit_reg_qout ))
+       (portRef CLK (instanceRef gray_msb_reg_qout ))))
+     (net (rename q_13_ "q(13)") 
+      (joined 
+       (portRef (member q 0))
+       (portRef Q (instanceRef gray_msb_reg_qout ))
+       (portRef A (instanceRef ix344 ))
+       (portRef A (instanceRef ix348 ))
+       (portRef A (instanceRef ix349 ))))
+     (net (rename q_12_ "q(12)") 
+      (joined 
+       (portRef (member q 1))
+       (portRef Q (instanceRef gray_lsb_12_creatbit_reg_qout ))
+       (portRef A (instanceRef ix343 ))
+       (portRef A (instanceRef ix393 ))
+       (portRef A (instanceRef ix426 ))
+       (portRef A (instanceRef ix430 ))))
+     (net (rename q_11_ "q(11)") 
+      (joined 
+       (portRef (member q 2))
+       (portRef Q (instanceRef gray_lsb_11_creatbit_reg_qout ))
+       (portRef A (instanceRef ix340 ))
+       (portRef B (instanceRef ix346 ))
+       (portRef A (instanceRef ix402 ))
+       (portRef A (instanceRef ix405 ))
+       (portRef A (instanceRef ix406 ))))
+     (net (rename q_10_ "q(10)") 
+      (joined 
+       (portRef (member q 3))
+       (portRef Q (instanceRef gray_lsb_10_creatbit_reg_qout ))
+       (portRef B (instanceRef ix340 ))
+       (portRef A (instanceRef ix346 ))
+       (portRef B (instanceRef ix354 ))
+       (portRef B (instanceRef ix393 ))))
+     (net (rename q_9_ "q(9)") 
+      (joined 
+       (portRef (member q 4))
+       (portRef Q (instanceRef gray_lsb_9_creatbit_reg_qout ))
+       (portRef A (instanceRef ix360 ))
+       (portRef A (instanceRef ix366 ))))
+     (net (rename q_8_ "q(8)") 
+      (joined 
+       (portRef (member q 5))
+       (portRef Q (instanceRef gray_lsb_8_creatbit_reg_qout ))
+       (portRef B (instanceRef ix433 ))
+       (portRef B (instanceRef ix440 ))))
+     (net (rename q_7_ "q(7)") 
+      (joined 
+       (portRef (member q 6))
+       (portRef Q (instanceRef gray_lsb_7_creatbit_reg_qout ))
+       (portRef B (instanceRef ix91 ))
+       (portRef A (instanceRef ix352 ))
+       (portRef A (instanceRef ix400 ))
+       (portRef B (instanceRef ix432 ))
+       (portRef A (instanceRef ix439 ))))
+     (net (rename q_6_ "q(6)") 
+      (joined 
+       (portRef (member q 7))
+       (portRef Q (instanceRef gray_lsb_6_creatbit_reg_qout ))
+       (portRef A (instanceRef ix355 ))
+       (portRef A (instanceRef ix383 ))
+       (portRef A (instanceRef ix387 ))
+       (portRef A (instanceRef ix394 ))
+       (portRef A (instanceRef ix432 ))
+       (portRef A (instanceRef ix438 ))))
+     (net (rename q_5_ "q(5)") 
+      (joined 
+       (portRef (member q 8))
+       (portRef Q (instanceRef gray_lsb_5_creatbit_reg_qout ))
+       (portRef A (instanceRef ix374 ))
+       (portRef A (instanceRef ix377 ))))
+     (net (rename q_4_ "q(4)") 
+      (joined 
+       (portRef (member q 9))
+       (portRef Q (instanceRef gray_lsb_4_creatbit_reg_qout ))
+       (portRef B (instanceRef ix167 ))))
+     (net (rename q_3_ "q(3)") 
+      (joined 
+       (portRef (member q 10))
+       (portRef Q (instanceRef gray_lsb_3_creatbit_reg_qout ))
+       (portRef A (instanceRef ix160 ))
+       (portRef B (instanceRef ix35 ))
+       (portRef A (instanceRef ix396 ))
+       (portRef A (instanceRef ix414 ))
+       (portRef B (instanceRef ix417 ))))
+     (net (rename q_2_ "q(2)") 
+      (joined 
+       (portRef (member q 11))
+       (portRef Q (instanceRef gray_lsb_2_creatbit_reg_qout ))
+       (portRef B (instanceRef ix27 ))
+       (portRef A (instanceRef ix397 ))
+       (portRef A (instanceRef ix410 ))
+       (portRef B (instanceRef ix416 ))))
+     (net (rename q_1_ "q(1)") 
+      (joined 
+       (portRef (member q 12))
+       (portRef Q (instanceRef gray_lsb_1_creatbit_reg_qout ))
+       (portRef A (instanceRef ix33 ))
+       (portRef A (instanceRef ix25 ))
+       (portRef B (instanceRef ix396 ))
+       (portRef A (instanceRef ix408 ))
+       (portRef A (instanceRef ix416 ))))
+     (net (rename q_0_ "q(0)") 
+      (joined 
+       (portRef (member q 13))
+       (portRef Q (instanceRef reg_q_0_ ))
+       (portRef B (instanceRef ix9 ))
+       (portRef B (instanceRef ix33 ))
+       (portRef B (instanceRef ix25 ))
+       (portRef B (instanceRef ix15 ))
+       (portRef B (instanceRef ix397 ))
+       (portRef A (instanceRef ix412 ))
+       (portRef A (instanceRef ix417 ))))
+     (net (rename NOT__629_ "NOT_[629]") 
+      (joined 
+       (portRef QB (instanceRef reg_q_0_ ))
+       (portRef D (instanceRef reg_q_0_ ))))
+     (net nx8 
+      (joined 
+       (portRef OUT (instanceRef ix9 ))
+       (portRef A (instanceRef ix27 ))))
+     (net nx14 
+      (joined 
+       (portRef out (instanceRef ix15 ))
+       (portRef D (instanceRef gray_lsb_1_creatbit_reg_qout ))))
+     (net nx24 
+      (joined 
+       (portRef OUT (instanceRef ix25 ))
+       (portRef B (instanceRef ix160 ))))
+     (net nx26 
+      (joined 
+       (portRef out (instanceRef ix27 ))
+       (portRef D (instanceRef gray_lsb_2_creatbit_reg_qout ))))
+     (net nx32 
+      (joined 
+       (portRef OUT (instanceRef ix33 ))
+       (portRef A (instanceRef ix35 ))))
+     (net nx34 
+      (joined 
+       (portRef out (instanceRef ix35 ))
+       (portRef D (instanceRef gray_lsb_3_creatbit_reg_qout ))))
+     (net nx46 
+      (joined 
+       (portRef out (instanceRef ix47 ))
+       (portRef D (instanceRef gray_lsb_4_creatbit_reg_qout ))))
+     (net nx62 
+      (joined 
+       (portRef out (instanceRef ix63 ))
+       (portRef D (instanceRef gray_lsb_5_creatbit_reg_qout ))))
+     (net nx88 
+      (joined 
+       (portRef OUT (instanceRef ix89 ))
+       (portRef A (instanceRef ix91 ))))
+     (net nx90 
+      (joined 
+       (portRef out (instanceRef ix91 ))
+       (portRef D (instanceRef gray_lsb_7_creatbit_reg_qout ))))
+     (net nx142 
+      (joined 
+       (portRef QB (instanceRef gray_lsb_1_creatbit_reg_qout ))
+       (portRef A (instanceRef ix9 ))
+       (portRef A (instanceRef ix15 ))))
+     (net nx147 
+      (joined 
+       (portRef QB (instanceRef gray_lsb_2_creatbit_reg_qout ))
+       (portRef C (instanceRef ix33 ))
+       (portRef C (instanceRef ix160 ))))
+     (net nx159 
+      (joined 
+       (portRef OUT (instanceRef ix160 ))
+       (portRef B (instanceRef ix47 ))))
+     (net nx163 
+      (joined 
+       (portRef QB (instanceRef gray_lsb_4_creatbit_reg_qout ))
+       (portRef A (instanceRef ix47 ))
+       (portRef A (instanceRef ix339 ))
+       (portRef A (instanceRef ix350 ))
+       (portRef B (instanceRef ix372 ))
+       (portRef B (instanceRef ix377 ))))
+     (net nx166 
+      (joined 
+       (portRef OUT (instanceRef ix167 ))
+       (portRef A (instanceRef ix63 ))))
+     (net nx169 
+      (joined 
+       (portRef QB (instanceRef gray_lsb_5_creatbit_reg_qout ))
+       (portRef B (instanceRef ix63 ))
+       (portRef B (instanceRef ix339 ))
+       (portRef A (instanceRef ix351 ))))
+     (net nx175 
+      (joined 
+       (portRef QB (instanceRef gray_lsb_6_creatbit_reg_qout ))
+       (portRef B (instanceRef ix89 ))
+       (portRef A (instanceRef ix372 ))
+       (portRef B (instanceRef ix379 ))
+       (portRef A (instanceRef ix407 ))
+       (portRef A (instanceRef ix409 ))
+       (portRef A (instanceRef ix411 ))
+       (portRef A (instanceRef ix413 ))))
+     (net nx182 
+      (joined 
+       (portRef QB (instanceRef gray_lsb_7_creatbit_reg_qout ))
+       (portRef A (instanceRef ix381 ))
+       (portRef C (instanceRef ix387 ))))
+     (net nx187 
+      (joined 
+       (portRef QB (instanceRef gray_lsb_8_creatbit_reg_qout ))
+       (portRef A (instanceRef ix341 ))
+       (portRef B (instanceRef ix358 ))
+       (portRef B (instanceRef ix366 ))
+       (portRef A (instanceRef ix382 ))
+       (portRef A (instanceRef ix386 ))
+       (portRef A (instanceRef ix389 ))))
+     (net nx193 
+      (joined 
+       (portRef QB (instanceRef gray_lsb_9_creatbit_reg_qout ))
+       (portRef B (instanceRef ix341 ))
+       (portRef A (instanceRef ix433 ))
+       (portRef B (instanceRef ix436 ))
+       (portRef A (instanceRef ix441 ))))
+     (net nx198 
+      (joined 
+       (portRef QB (instanceRef gray_lsb_10_creatbit_reg_qout ))
+       (portRef A (instanceRef ix358 ))
+       (portRef A (instanceRef ix365 ))
+       (portRef A (instanceRef ix369 ))
+       (portRef A (instanceRef ix403 ))
+       (portRef B (instanceRef ix405 ))))
+     (net nx204 
+      (joined 
+       (portRef QB (instanceRef gray_lsb_11_creatbit_reg_qout ))
+       (portRef A (instanceRef ix354 ))
+       (portRef B (instanceRef ix394 ))))
+     (net nx222 
+      (joined 
+       (portRef OUT (instanceRef ix221 ))
+       (portRef CLR (instanceRef gray_lsb_4_creatbit_reg_qout ))
+       (portRef CLR (instanceRef gray_lsb_5_creatbit_reg_qout ))
+       (portRef CLR (instanceRef gray_lsb_6_creatbit_reg_qout ))
+       (portRef CLR (instanceRef gray_lsb_7_creatbit_reg_qout ))
+       (portRef CLR (instanceRef gray_lsb_8_creatbit_reg_qout ))))
+     (net nx222_XX0_XREP1 
+      (joined 
+       (portRef OUT (instanceRef ix221_0_XREP1 ))
+       (portRef PRB (instanceRef reg_q_0_ ))
+       (portRef CLR (instanceRef gray_lsb_1_creatbit_reg_qout ))
+       (portRef CLR (instanceRef gray_lsb_2_creatbit_reg_qout ))
+       (portRef CLR (instanceRef gray_lsb_3_creatbit_reg_qout ))))
+     (net nx137 
+      (joined 
+       (portRef OUT (instanceRef ix138 ))
+       (portRef CLR (instanceRef gray_lsb_11_creatbit_reg_qout ))
+       (portRef CLR (instanceRef gray_lsb_12_creatbit_reg_qout ))
+       (portRef CLR (instanceRef gray_msb_reg_qout ))))
+     (net nx137_XX0_XREP3 
+      (joined 
+       (portRef OUT (instanceRef ix138_0_XREP3 ))
+       (portRef CLR (instanceRef gray_lsb_9_creatbit_reg_qout ))
+       (portRef CLR (instanceRef gray_lsb_10_creatbit_reg_qout ))))
+     (net nx234 
+      (joined 
+       (portRef OUT (instanceRef ix339 ))
+       (portRef B (instanceRef ix383 ))
+       (portRef B (instanceRef ix387 ))
+       (portRef A (instanceRef ix391 ))
+       (portRef C (instanceRef ix432 ))
+       (portRef B (instanceRef ix439 ))))
+     (net nx235 
+      (joined 
+       (portRef OUT (instanceRef ix340 ))
+       (portRef C (instanceRef ix345 ))))
+     (net nx236 
+      (joined 
+       (portRef OUT (instanceRef ix341 ))
+       (portRef A (instanceRef ix342 ))
+       (portRef C (instanceRef ix346 ))
+       (portRef B (instanceRef ix353 ))
+       (portRef A (instanceRef ix356 ))))
+     (net nx237 
+      (joined 
+       (portRef OUT (instanceRef ix342 ))
+       (portRef B (instanceRef ix343 ))))
+     (net nx238 
+      (joined 
+       (portRef OUT (instanceRef ix343 ))
+       (portRef B (instanceRef ix344 ))))
+     (net nx239 
+      (joined 
+       (portRef OUT (instanceRef ix344 ))
+       (portRef D (instanceRef ix345 ))))
+     (net nx240 
+      (joined 
+       (portRef OUT (instanceRef ix345 ))
+       (portRef A (instanceRef nx176 ))))
+     (net nx241 
+      (joined 
+       (portRef OUT (instanceRef ix346 ))
+       (portRef A (instanceRef ix347 ))))
+     (net nx242 
+      (joined 
+       (portRef OUT (instanceRef ix347 ))
+       (portRef B (instanceRef ix348 ))))
+     (net nx243 
+      (joined 
+       (portRef OUT (instanceRef ix348 ))
+       (portRef B (instanceRef nx176 ))))
+     (net nx244 
+      (joined 
+       (portRef OUT (instanceRef ix349 ))
+       (portRef C (instanceRef nx176 ))))
+     (net nx176 
+      (joined 
+       (portRef OUT (instanceRef nx176 ))
+       (portRef D (instanceRef gray_msb_reg_qout ))))
+     (net nx245 
+      (joined 
+       (portRef OUT (instanceRef ix350 ))
+       (portRef A (instanceRef ix353 ))
+       (portRef A (instanceRef ix401 ))))
+     (net nx246 
+      (joined 
+       (portRef OUT (instanceRef ix351 ))
+       (portRef C (instanceRef ix353 ))
+       (portRef A (instanceRef ix357 ))))
+     (net nx247 
+      (joined 
+       (portRef OUT (instanceRef ix352 ))
+       (portRef A (instanceRef ix392 ))))
+     (net nx248 
+      (joined 
+       (portRef OUT (instanceRef ix353 ))
+       (portRef B (instanceRef ix392 ))))
+     (net nx249 
+      (joined 
+       (portRef OUT (instanceRef ix354 ))
+       (portRef B (instanceRef ix427 ))))
+     (net nx250 
+      (joined 
+       (portRef OUT (instanceRef ix355 ))
+       (portRef A (instanceRef ix404 ))
+       (portRef A (instanceRef ix427 ))
+       (portRef A (instanceRef nx202 ))))
+     (net nx251 
+      (joined 
+       (portRef OUT (instanceRef ix356 ))
+       (portRef B (instanceRef ix423 ))))
+     (net nx252 
+      (joined 
+       (portRef OUT (instanceRef ix357 ))
+       (portRef A (instanceRef ix421 ))))
+     (net nx58 
+      (joined 
+       (portRef OUT (instanceRef nx58 ))
+       (portRef A (instanceRef ix364 ))))
+     (net nx253 
+      (joined 
+       (portRef OUT (instanceRef ix358 ))
+       (portRef A (instanceRef ix359 ))))
+     (net nx254 
+      (joined 
+       (portRef OUT (instanceRef ix359 ))
+       (portRef B (instanceRef ix360 ))))
+     (net nx255 
+      (joined 
+       (portRef OUT (instanceRef ix360 ))
+       (portRef A (instanceRef ix361 ))))
+     (net nx256 
+      (joined 
+       (portRef OUT (instanceRef ix361 ))
+       (portRef B (instanceRef ix362 ))))
+     (net nx257 
+      (joined 
+       (portRef OUT (instanceRef ix362 ))
+       (portRef A (instanceRef ix363 ))))
+     (net nx258 
+      (joined 
+       (portRef OUT (instanceRef ix363 ))
+       (portRef B (instanceRef ix364 ))))
+     (net nx259 
+      (joined 
+       (portRef OUT (instanceRef ix364 ))
+       (portRef A (instanceRef nx138 ))))
+     (net nx260 
+      (joined 
+       (portRef OUT (instanceRef ix365 ))
+       (portRef B (instanceRef ix370 ))))
+     (net nx261 
+      (joined 
+       (portRef OUT (instanceRef ix366 ))
+       (portRef A (instanceRef ix367 ))))
+     (net nx262 
+      (joined 
+       (portRef OUT (instanceRef ix367 ))
+       (portRef B (instanceRef ix368 ))))
+     (net nx263 
+      (joined 
+       (portRef OUT (instanceRef ix368 ))
+       (portRef C (instanceRef ix370 ))))
+     (net nx264 
+      (joined 
+       (portRef OUT (instanceRef ix369 ))
+       (portRef D (instanceRef ix370 ))))
+     (net nx265 
+      (joined 
+       (portRef OUT (instanceRef ix370 ))
+       (portRef B (instanceRef nx138 ))))
+     (net nx138 
+      (joined 
+       (portRef OUT (instanceRef nx138 ))
+       (portRef D (instanceRef gray_lsb_10_creatbit_reg_qout ))))
+     (net nx266 
+      (joined 
+       (portRef OUT (instanceRef ix371 ))
+       (portRef B (instanceRef nx114 ))))
+     (net nx114 
+      (joined 
+       (portRef OUT (instanceRef nx114 ))
+       (portRef B (instanceRef ix349 ))))
+     (net nx267 
+      (joined 
+       (portRef OUT (instanceRef ix372 ))
+       (portRef A (instanceRef ix373 ))))
+     (net nx268 
+      (joined 
+       (portRef OUT (instanceRef ix373 ))
+       (portRef B (instanceRef ix374 ))))
+     (net nx269 
+      (joined 
+       (portRef OUT (instanceRef ix374 ))
+       (portRef A (instanceRef ix375 ))))
+     (net nx270 
+      (joined 
+       (portRef OUT (instanceRef ix375 ))
+       (portRef B (instanceRef ix376 ))))
+     (net nx271 
+      (joined 
+       (portRef OUT (instanceRef ix376 ))
+       (portRef A (instanceRef nx82 ))))
+     (net nx272 
+      (joined 
+       (portRef OUT (instanceRef ix377 ))
+       (portRef A (instanceRef ix378 ))))
+     (net nx273 
+      (joined 
+       (portRef OUT (instanceRef ix378 ))
+       (portRef A (instanceRef ix379 ))))
+     (net nx274 
+      (joined 
+       (portRef OUT (instanceRef ix379 ))
+       (portRef A (instanceRef ix380 ))))
+     (net nx275 
+      (joined 
+       (portRef OUT (instanceRef ix380 ))
+       (portRef B (instanceRef nx82 ))))
+     (net nx82 
+      (joined 
+       (portRef OUT (instanceRef nx82 ))
+       (portRef D (instanceRef gray_lsb_6_creatbit_reg_qout ))))
+     (net nx276 
+      (joined 
+       (portRef OUT (instanceRef ix381 ))
+       (portRef B (instanceRef ix382 ))))
+     (net nx277 
+      (joined 
+       (portRef OUT (instanceRef ix382 ))
+       (portRef C (instanceRef ix383 ))))
+     (net nx278 
+      (joined 
+       (portRef OUT (instanceRef ix383 ))
+       (portRef C (instanceRef ix384 ))))
+     (net nx279 
+      (joined 
+       (portRef OUT (instanceRef ix384 ))
+       (portRef A (instanceRef nx122 ))))
+     (net nx280 
+      (joined 
+       (portRef OUT (instanceRef ix385 ))
+       (portRef A (instanceRef ix390 ))))
+     (net nx281 
+      (joined 
+       (portRef OUT (instanceRef ix386 ))
+       (portRef B (instanceRef ix390 ))))
+     (net nx282 
+      (joined 
+       (portRef OUT (instanceRef ix387 ))
+       (portRef B (instanceRef ix388 ))))
+     (net nx283 
+      (joined 
+       (portRef OUT (instanceRef ix388 ))
+       (portRef C (instanceRef ix390 ))))
+     (net nx284 
+      (joined 
+       (portRef OUT (instanceRef ix389 ))
+       (portRef D (instanceRef ix390 ))))
+     (net nx285 
+      (joined 
+       (portRef OUT (instanceRef ix390 ))
+       (portRef B (instanceRef nx122 ))))
+     (net nx122 
+      (joined 
+       (portRef OUT (instanceRef nx122 ))
+       (portRef D (instanceRef gray_lsb_8_creatbit_reg_qout ))))
+     (net nx286 
+      (joined 
+       (portRef OUT (instanceRef ix391 ))
+       (portRef C (instanceRef nx180 ))))
+     (net nx180 
+      (joined 
+       (portRef OUT (instanceRef nx180 ))
+       (portRef A (instanceRef ix89 ))))
+     (net nx287 
+      (joined 
+       (portRef OUT (instanceRef ix392 ))
+       (portRef A (instanceRef ix428 ))))
+     (net nx288 
+      (joined 
+       (portRef OUT (instanceRef ix393 ))
+       (portRef A (instanceRef ix395 ))))
+     (net nx289 
+      (joined 
+       (portRef OUT (instanceRef ix394 ))
+       (portRef B (instanceRef ix395 ))))
+     (net nx290 
+      (joined 
+       (portRef OUT (instanceRef ix395 ))
+       (portRef B (instanceRef ix429 ))))
+     (net nx291 
+      (joined 
+       (portRef OUT (instanceRef ix396 ))
+       (portRef A (instanceRef ix384 ))
+       (portRef A (instanceRef ix385 ))
+       (portRef A (instanceRef nx180 ))
+       (portRef A (instanceRef ix398 ))))
+     (net nx292 
+      (joined 
+       (portRef OUT (instanceRef ix397 ))
+       (portRef B (instanceRef ix384 ))
+       (portRef A (instanceRef ix388 ))
+       (portRef B (instanceRef nx180 ))
+       (portRef A (instanceRef ix399 ))))
+     (net nx293 
+      (joined 
+       (portRef OUT (instanceRef ix398 ))
+       (portRef A (instanceRef ix419 ))
+       (portRef A (instanceRef ix431 ))))
+     (net nx294 
+      (joined 
+       (portRef OUT (instanceRef ix399 ))
+       (portRef A (instanceRef ix420 ))
+       (portRef B (instanceRef ix431 ))))
+     (net nx295 
+      (joined 
+       (portRef OUT (instanceRef ix400 ))
+       (portRef A (instanceRef ix423 ))))
+     (net nx296 
+      (joined 
+       (portRef OUT (instanceRef ix401 ))
+       (portRef B (instanceRef ix421 ))))
+     (net nx297 
+      (joined 
+       (portRef OUT (instanceRef ix402 ))
+       (portRef C (instanceRef ix404 ))))
+     (net nx298 
+      (joined 
+       (portRef OUT (instanceRef ix403 ))
+       (portRef D (instanceRef ix404 ))))
+     (net nx299 
+      (joined 
+       (portRef OUT (instanceRef ix404 ))
+       (portRef A (instanceRef nx146 ))))
+     (net nx300 
+      (joined 
+       (portRef OUT (instanceRef ix405 ))
+       (portRef B (instanceRef nx146 ))))
+     (net nx301 
+      (joined 
+       (portRef OUT (instanceRef ix406 ))
+       (portRef C (instanceRef nx146 ))))
+     (net nx146 
+      (joined 
+       (portRef OUT (instanceRef nx146 ))
+       (portRef D (instanceRef gray_lsb_11_creatbit_reg_qout ))))
+     (net nx302 
+      (joined 
+       (portRef OUT (instanceRef ix407 ))
+       (portRef B (instanceRef ix408 ))))
+     (net nx303 
+      (joined 
+       (portRef OUT (instanceRef ix408 ))
+       (portRef A (instanceRef ix415 ))))
+     (net nx304 
+      (joined 
+       (portRef OUT (instanceRef ix409 ))
+       (portRef B (instanceRef ix410 ))))
+     (net nx305 
+      (joined 
+       (portRef OUT (instanceRef ix410 ))
+       (portRef B (instanceRef ix415 ))))
+     (net nx306 
+      (joined 
+       (portRef OUT (instanceRef ix411 ))
+       (portRef B (instanceRef ix412 ))))
+     (net nx307 
+      (joined 
+       (portRef OUT (instanceRef ix412 ))
+       (portRef C (instanceRef ix415 ))))
+     (net nx308 
+      (joined 
+       (portRef OUT (instanceRef ix413 ))
+       (portRef B (instanceRef ix414 ))))
+     (net nx309 
+      (joined 
+       (portRef OUT (instanceRef ix414 ))
+       (portRef D (instanceRef ix415 ))))
+     (net nx310 
+      (joined 
+       (portRef OUT (instanceRef ix415 ))
+       (portRef B (instanceRef ix380 ))))
+     (net nx311 
+      (joined 
+       (portRef OUT (instanceRef ix416 ))
+       (portRef A (instanceRef ix435 ))
+       (portRef A (instanceRef ix436 ))
+       (portRef A (instanceRef ix443 ))))
+     (net nx312 
+      (joined 
+       (portRef OUT (instanceRef ix417 ))
+       (portRef B (instanceRef ix435 ))
+       (portRef A (instanceRef ix440 ))
+       (portRef B (instanceRef ix443 ))))
+     (net nx313 
+      (joined 
+       (portRef OUT (instanceRef ix418 ))
+       (portRef A (instanceRef ix167 ))
+       (portRef A (instanceRef ix345 ))
+       (portRef A (instanceRef ix376 ))))
+     (net nx314 
+      (joined 
+       (portRef OUT (instanceRef ix419 ))
+       (portRef A (instanceRef ix425 ))
+       (portRef B (instanceRef nx202 ))))
+     (net nx315 
+      (joined 
+       (portRef OUT (instanceRef ix420 ))
+       (portRef B (instanceRef ix425 ))
+       (portRef C (instanceRef nx202 ))))
+     (net nx316 
+      (joined 
+       (portRef OUT (instanceRef ix421 ))
+       (portRef A (instanceRef ix422 ))))
+     (net nx317 
+      (joined 
+       (portRef OUT (instanceRef ix422 ))
+       (portRef C (instanceRef ix423 ))))
+     (net nx318 
+      (joined 
+       (portRef OUT (instanceRef ix423 ))
+       (portRef A (instanceRef ix424 ))
+       (portRef C (instanceRef ix431 ))))
+     (net nx319 
+      (joined 
+       (portRef OUT (instanceRef ix424 ))
+       (portRef C (instanceRef ix425 ))
+       (portRef D (instanceRef nx202 ))))
+     (net nx320 
+      (joined 
+       (portRef OUT (instanceRef ix425 ))
+       (portRef B (instanceRef ix426 ))))
+     (net nx321 
+      (joined 
+       (portRef OUT (instanceRef ix426 ))
+       (portRef A (instanceRef nx162 ))))
+     (net nx322 
+      (joined 
+       (portRef OUT (instanceRef ix427 ))
+       (portRef B (instanceRef ix430 ))))
+     (net nx323 
+      (joined 
+       (portRef OUT (instanceRef ix428 ))
+       (portRef C (instanceRef ix430 ))))
+     (net nx324 
+      (joined 
+       (portRef OUT (instanceRef ix429 ))
+       (portRef D (instanceRef ix430 ))))
+     (net nx325 
+      (joined 
+       (portRef OUT (instanceRef ix430 ))
+       (portRef B (instanceRef nx162 ))))
+     (net nx162 
+      (joined 
+       (portRef OUT (instanceRef nx162 ))
+       (portRef D (instanceRef gray_lsb_12_creatbit_reg_qout ))))
+     (net nx202 
+      (joined 
+       (portRef OUT (instanceRef nx202 ))
+       (portRef B (instanceRef ix406 ))))
+     (net nx326 
+      (joined 
+       (portRef OUT (instanceRef ix431 ))
+       (portRef B (instanceRef ix404 ))))
+     (net nx327 
+      (joined 
+       (portRef OUT (instanceRef ix432 ))
+       (portRef B (instanceRef ix345 ))
+       (portRef A (instanceRef ix362 ))
+       (portRef A (instanceRef ix368 ))
+       (portRef A (instanceRef nx114 ))
+       (portRef C (instanceRef ix435 ))))
+     (net nx328 
+      (joined 
+       (portRef OUT (instanceRef ix433 ))
+       (portRef A (instanceRef ix434 ))))
+     (net nx329 
+      (joined 
+       (portRef OUT (instanceRef ix434 ))
+       (portRef D (instanceRef ix435 ))))
+     (net nx330 
+      (joined 
+       (portRef OUT (instanceRef ix435 ))
+       (portRef A (instanceRef nx118 ))))
+     (net nx331 
+      (joined 
+       (portRef OUT (instanceRef ix436 ))
+       (portRef A (instanceRef ix437 ))))
+     (net nx332 
+      (joined 
+       (portRef OUT (instanceRef ix437 ))
+       (portRef B (instanceRef nx118 ))))
+     (net nx333 
+      (joined 
+       (portRef OUT (instanceRef ix438 ))
+       (portRef C (instanceRef ix440 ))))
+     (net nx334 
+      (joined 
+       (portRef OUT (instanceRef ix439 ))
+       (portRef D (instanceRef ix440 ))))
+     (net nx335 
+      (joined 
+       (portRef OUT (instanceRef ix440 ))
+       (portRef A (instanceRef ix442 ))))
+     (net nx336 
+      (joined 
+       (portRef OUT (instanceRef ix441 ))
+       (portRef B (instanceRef ix442 ))))
+     (net nx337 
+      (joined 
+       (portRef OUT (instanceRef ix442 ))
+       (portRef C (instanceRef nx118 ))))
+     (net nx118 
+      (joined 
+       (portRef OUT (instanceRef nx118 ))
+       (portRef D (instanceRef gray_lsb_9_creatbit_reg_qout ))))
+     (net nx338 
+      (joined 
+       (portRef OUT (instanceRef ix443 ))
+       (portRef A (instanceRef nx58 ))
+       (portRef A (instanceRef ix370 ))
+       (portRef A (instanceRef ix371 ))
+       (portRef A (instanceRef ix418 ))
+       (portRef A (instanceRef ix429 ))))))))
+ (design gray_counter (cellRef gray_counter (libraryRef work ))))

@@ -1,0 +1,424 @@
+
+
+
+                        Clock Frequency Report
+
+	Clock                : Frequency
+      ------------------------------------
+
+	sysclk               : 690.4 MHz
+
+
+                        Critical Path Report
+
+
+Critical path #1, (path slack = -1418.4):
+
+NAME                                                        GATE              ARRIVAL              LOAD
+-------------------------------------------------------------------------------------------------------
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+U_analog_control_reg_cal_dly(9)/CLK                         DFFC              0.00 (rising edge)
+
+
+default arrival at blackbox outputs                                  20.00
+U_analog_control_reg_cal_dly(9)/Q                           DFFC        0.00  511.90 up             3.93
+ix12140/OUT                                                 Inv         29.97  541.86 dn             0.98
+ix12262/OUT                                                 Nand3       68.83  610.70 up             0.98
+ix12264/OUT                                                 Nand4       78.84  689.54 dn             0.98
+ix12267/OUT                                                 Nand3       62.33  751.87 up             0.98
+ix12268/OUT                                                 Nor3        32.35  784.22 dn             2.95
+ix12323/OUT                                                 Nand3       82.16  866.38 up             4.92
+reg_nx3251/OUT                                              Nand2       41.68  908.06 dn             1.97
+ix12792/OUT                                                 Buf4        146.79  1054.85 dn             8.85
+reg_nx10925_XX0_XREP397/OUT                                 Nor2        75.72  1130.58 up             0.98
+ix7250/OUT                                                  Mux2        234.73  1363.38 dn             0.98
+reg_U_analog_control_cal_cnt(3)/D                           DFFC        0.00  1363.38 dn             0.00
+data arrival time                                                             1363.38
+
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+reg_U_analog_control_cal_cnt(3)/CLK                         DFFC              0.00 (rising edge)
+clock cycle                                                                   25.00
+library setup time                                                           (85.00)
+
+data required time  (default specified - setup time)                           -55.00
+-------------------------------------------------------------------------------------------------------
+data required time                                                            -55.00
+data arrival time                                                             1363.38
+                                                                           ----------
+slack                                                                        -1418.38
+-------------------------------------------------------------------------------------------------------
+
+
+
+
+Critical path #2, (path slack = -1402.9):
+
+NAME                                                        GATE              ARRIVAL              LOAD
+-------------------------------------------------------------------------------------------------------
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+U_analog_control_reg_mst_state(1)/CLK                       DFFC              0.00 (rising edge)
+
+
+default arrival at blackbox outputs                                  20.00
+U_analog_control_reg_mst_state(1)/Q                         DFFC        0.00  519.45 up             5.90
+ix12265/OUT                                                 Nand4       78.84  598.29 dn             0.98
+ix12266/OUT                                                 Nor3        66.37  664.66 up             0.98
+ix12267/OUT                                                 Nand3       52.49  560.34 up             0.98
+ix12268/OUT                                                 Nor3        32.35  592.70 dn             2.95
+ix12323/OUT                                                 Nand3       82.16  674.86 up             4.92
+reg_nx3251/OUT                                              Nand2       41.68  716.54 dn             1.97
+ix12792/OUT                                                 Buf4        146.79  863.33 dn             8.85
+reg_nx10925_XX0_XREP397/OUT                                 Nor2        75.72  939.05 up             0.98
+ix7250/OUT                                                  Mux2        234.73  1347.88 dn             0.98
+reg_U_analog_control_cal_cnt(3)/D                           DFFC        0.00  1347.88 dn             0.00
+data arrival time                                                             1347.88
+
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+reg_U_analog_control_cal_cnt(3)/CLK                         DFFC              0.00 (rising edge)
+clock cycle                                                                   25.00
+library setup time                                                           (85.00)
+
+data required time  (default specified - setup time)                           -55.00
+-------------------------------------------------------------------------------------------------------
+data required time                                                            -55.00
+data arrival time                                                             1347.88
+                                                                           ----------
+slack                                                                        -1402.88
+-------------------------------------------------------------------------------------------------------
+
+
+
+
+Critical path #3, (path slack = -1394.3):
+
+NAME                                                        GATE              ARRIVAL              LOAD
+-------------------------------------------------------------------------------------------------------
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+U_analog_control_reg_cal_dly(7)/CLK                         DFFC              0.00 (rising edge)
+
+
+default arrival at blackbox outputs                                  20.00
+U_analog_control_reg_cal_dly(7)/Q                           DFFC        0.00  511.90 up             3.93
+ix12144/OUT                                                 Nor3        27.52  539.42 dn             0.98
+ix12263/OUT                                                 Nand2       43.53  582.95 up             0.98
+ix12264/OUT                                                 Nand4       82.56  665.51 dn             0.98
+ix12267/OUT                                                 Nand3       62.33  727.84 up             0.98
+ix12268/OUT                                                 Nor3        32.35  760.19 dn             2.95
+ix12323/OUT                                                 Nand3       82.16  842.36 up             4.92
+reg_nx3251/OUT                                              Nand2       41.68  884.04 dn             1.97
+ix12792/OUT                                                 Buf4        146.79  1030.83 dn             8.85
+reg_nx10925_XX0_XREP397/OUT                                 Nor2        75.72  1106.55 up             0.98
+ix7250/OUT                                                  Mux2        234.73  1339.35 dn             0.98
+reg_U_analog_control_cal_cnt(3)/D                           DFFC        0.00  1339.35 dn             0.00
+data arrival time                                                             1339.35
+
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+reg_U_analog_control_cal_cnt(3)/CLK                         DFFC              0.00 (rising edge)
+clock cycle                                                                   25.00
+library setup time                                                           (85.00)
+
+data required time  (default specified - setup time)                           -55.00
+-------------------------------------------------------------------------------------------------------
+data required time                                                            -55.00
+data arrival time                                                             1339.35
+                                                                           ----------
+slack                                                                        -1394.35
+-------------------------------------------------------------------------------------------------------
+
+
+
+
+Critical path #4, (path slack = -1381.9):
+
+NAME                                                        GATE              ARRIVAL              LOAD
+-------------------------------------------------------------------------------------------------------
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+U_analog_control_reg_cal_dly(9)/CLK                         DFFC              0.00 (rising edge)
+
+
+default arrival at blackbox outputs                                  20.00
+U_analog_control_reg_cal_dly(9)/Q                           DFFC        0.00  511.90 up             3.93
+ix12139/OUT                                                 Nor3        27.52  539.42 dn             0.98
+ix12261/OUT                                                 Inv         40.07  579.49 up             0.98
+ix12264/OUT                                                 Nand4       73.54  653.03 dn             0.98
+ix12267/OUT                                                 Nand3       62.33  715.36 up             0.98
+ix12268/OUT                                                 Nor3        32.35  747.71 dn             2.95
+ix12323/OUT                                                 Nand3       82.16  829.87 up             4.92
+reg_nx3251/OUT                                              Nand2       41.68  871.55 dn             1.97
+ix12792/OUT                                                 Buf4        146.79  1018.34 dn             8.85
+reg_nx10925_XX0_XREP397/OUT                                 Nor2        75.72  1094.06 up             0.98
+ix7250/OUT                                                  Mux2        234.73  1326.86 dn             0.98
+reg_U_analog_control_cal_cnt(3)/D                           DFFC        0.00  1326.86 dn             0.00
+data arrival time                                                             1326.86
+
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+reg_U_analog_control_cal_cnt(3)/CLK                         DFFC              0.00 (rising edge)
+clock cycle                                                                   25.00
+library setup time                                                           (85.00)
+
+data required time  (default specified - setup time)                           -55.00
+-------------------------------------------------------------------------------------------------------
+data required time                                                            -55.00
+data arrival time                                                             1326.86
+                                                                           ----------
+slack                                                                        -1381.86
+-------------------------------------------------------------------------------------------------------
+
+
+
+
+Critical path #5, (path slack = -1380.1):
+
+NAME                                                        GATE              ARRIVAL              LOAD
+-------------------------------------------------------------------------------------------------------
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+U_analog_control_reg_cal_dly(7)/CLK                         DFFC              0.00 (rising edge)
+
+
+default arrival at blackbox outputs                                  20.00
+U_analog_control_reg_cal_dly(7)/Q                           DFFC        0.00  511.90 up             3.93
+ix12262/OUT                                                 Nand3       62.33  465.92 up             0.98
+ix12264/OUT                                                 Nand4       78.84  544.76 dn             0.98
+ix12267/OUT                                                 Nand3       62.33  607.09 up             0.98
+ix12268/OUT                                                 Nor3        32.35  639.44 dn             2.95
+ix12323/OUT                                                 Nand3       82.16  721.60 up             4.92
+reg_nx3251/OUT                                              Nand2       41.68  763.28 dn             1.97
+ix12792/OUT                                                 Buf4        146.79  910.08 dn             8.85
+reg_nx10925_XX0_XREP397/OUT                                 Nor2        75.72  985.80 up             0.98
+ix7250/OUT                                                  Mux2        234.73  1325.10 dn             0.98
+reg_U_analog_control_cal_cnt(3)/D                           DFFC        0.00  1325.10 dn             0.00
+data arrival time                                                             1325.10
+
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+reg_U_analog_control_cal_cnt(3)/CLK                         DFFC              0.00 (rising edge)
+clock cycle                                                                   25.00
+library setup time                                                           (85.00)
+
+data required time  (default specified - setup time)                           -55.00
+-------------------------------------------------------------------------------------------------------
+data required time                                                            -55.00
+data arrival time                                                             1325.10
+                                                                           ----------
+slack                                                                        -1380.10
+-------------------------------------------------------------------------------------------------------
+
+
+
+
+Critical path #6, (path slack = -1337.5):
+
+NAME                                                        GATE              ARRIVAL              LOAD
+-------------------------------------------------------------------------------------------------------
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+reg_U_analog_control_cal_cnt(9)/CLK                         DFFC              0.00 (rising edge)
+
+
+default arrival at blackbox outputs                                  20.00
+reg_U_analog_control_cal_cnt(9)/QB                          DFFC        0.00  406.01 dn             7.86
+ix12141/OUT                                                 Inv         40.07  446.08 up             0.98
+ix12142/OUT                                                 Nor2        31.27  477.35 dn             0.98
+ix12262/OUT                                                 Nand3       52.49  529.85 up             0.98
+ix12264/OUT                                                 Nand4       78.84  608.69 dn             0.98
+ix12267/OUT                                                 Nand3       62.33  671.02 up             0.98
+ix12268/OUT                                                 Nor3        32.35  703.37 dn             2.95
+ix12323/OUT                                                 Nand3       82.16  785.53 up             4.92
+reg_nx3251/OUT                                              Nand2       41.68  827.21 dn             1.97
+ix12792/OUT                                                 Buf4        146.79  974.00 dn             8.85
+reg_nx10925_XX0_XREP397/OUT                                 Nor2        75.72  1049.72 up             0.98
+ix7250/OUT                                                  Mux2        234.73  1282.52 dn             0.98
+reg_U_analog_control_cal_cnt(3)/D                           DFFC        0.00  1282.52 dn             0.00
+data arrival time                                                             1282.52
+
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+reg_U_analog_control_cal_cnt(3)/CLK                         DFFC              0.00 (rising edge)
+clock cycle                                                                   25.00
+library setup time                                                           (85.00)
+
+data required time  (default specified - setup time)                           -55.00
+-------------------------------------------------------------------------------------------------------
+data required time                                                            -55.00
+data arrival time                                                             1282.52
+                                                                           ----------
+slack                                                                        -1337.52
+-------------------------------------------------------------------------------------------------------
+
+
+
+
+Critical path #7, (path slack = -1335.0):
+
+NAME                                                        GATE              ARRIVAL              LOAD
+-------------------------------------------------------------------------------------------------------
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+reg_U_analog_control_cal_cnt(7)/CLK                         DFFC              0.00 (rising edge)
+
+
+default arrival at blackbox outputs                                  20.00
+reg_U_analog_control_cal_cnt(7)/QB                          DFFC        0.00  391.94 dn             4.92
+ix12142/OUT                                                 Nor2        24.50  350.48 dn             0.98
+ix12262/OUT                                                 Nand3       52.49  402.97 up             0.98
+ix12264/OUT                                                 Nand4       78.84  481.82 dn             0.98
+ix12267/OUT                                                 Nand3       62.33  544.14 up             0.98
+ix12268/OUT                                                 Nor3        32.35  576.50 dn             2.95
+ix12323/OUT                                                 Nand3       82.16  658.66 up             4.92
+reg_nx3251/OUT                                              Nand2       41.68  700.34 dn             1.97
+ix12792/OUT                                                 Buf4        146.79  847.13 dn             8.85
+reg_nx10925_XX0_XREP397/OUT                                 Nor2        75.72  922.85 up             0.98
+ix7250/OUT                                                  Mux2        234.73  1280.05 dn             0.98
+reg_U_analog_control_cal_cnt(3)/D                           DFFC        0.00  1280.05 dn             0.00
+data arrival time                                                             1280.05
+
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+reg_U_analog_control_cal_cnt(3)/CLK                         DFFC              0.00 (rising edge)
+clock cycle                                                                   25.00
+library setup time                                                           (85.00)
+
+data required time  (default specified - setup time)                           -55.00
+-------------------------------------------------------------------------------------------------------
+data required time                                                            -55.00
+data arrival time                                                             1280.05
+                                                                           ----------
+slack                                                                        -1335.05
+-------------------------------------------------------------------------------------------------------
+
+
+
+
+Critical path #8, (path slack = -1326.3):
+
+NAME                                                        GATE              ARRIVAL              LOAD
+-------------------------------------------------------------------------------------------------------
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+reg_U_analog_control_cal_cnt(11)/CLK                        DFFC              0.00 (rising edge)
+
+
+default arrival at blackbox outputs                                  20.00
+reg_U_analog_control_cal_cnt(11)/QB                         DFFC        0.00  387.26 dn             3.93
+ix12155/OUT                                                 Inv         40.07  427.33 up             0.98
+ix12157/OUT                                                 AOI22       84.59  436.22 up             0.98
+ix12265/OUT                                                 Nand4       80.72  516.94 dn             0.98
+ix12266/OUT                                                 Nor3        66.37  583.31 up             0.98
+ix12267/OUT                                                 Nand3       52.49  659.78 up             0.98
+ix12268/OUT                                                 Nor3        32.35  692.14 dn             2.95
+ix12323/OUT                                                 Nand3       82.16  774.30 up             4.92
+reg_nx3251/OUT                                              Nand2       41.68  815.98 dn             1.97
+ix12792/OUT                                                 Buf4        146.79  962.77 dn             8.85
+reg_nx10925_XX0_XREP397/OUT                                 Nor2        75.72  1038.49 up             0.98
+ix7250/OUT                                                  Mux2        234.73  1271.29 dn             0.98
+reg_U_analog_control_cal_cnt(3)/D                           DFFC        0.00  1271.29 dn             0.00
+data arrival time                                                             1271.29
+
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+reg_U_analog_control_cal_cnt(3)/CLK                         DFFC              0.00 (rising edge)
+clock cycle                                                                   25.00
+library setup time                                                           (85.00)
+
+data required time  (default specified - setup time)                           -55.00
+-------------------------------------------------------------------------------------------------------
+data required time                                                            -55.00
+data arrival time                                                             1271.29
+                                                                           ----------
+slack                                                                        -1326.29
+-------------------------------------------------------------------------------------------------------
+
+
+
+
+Critical path #9, (path slack = -1316.9):
+
+NAME                                                        GATE              ARRIVAL              LOAD
+-------------------------------------------------------------------------------------------------------
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+U_analog_control_reg_cal_dly(11)/CLK                        DFFC              0.00 (rising edge)
+
+
+default arrival at blackbox outputs                                  20.00
+U_analog_control_reg_cal_dly(11)/QB                         DFFC        0.00  377.88 dn             1.97
+ix12156/OUT                                                 Inv         40.07  417.95 up             0.98
+ix12157/OUT                                                 AOI22       84.59  427.59 up             0.98
+ix12265/OUT                                                 Nand4       80.72  508.31 dn             0.98
+ix12266/OUT                                                 Nor3        66.37  574.68 up             0.98
+ix12267/OUT                                                 Nand3       52.49  650.40 up             0.98
+ix12268/OUT                                                 Nor3        32.35  682.76 dn             2.95
+ix12323/OUT                                                 Nand3       82.16  764.92 up             4.92
+reg_nx3251/OUT                                              Nand2       41.68  806.60 dn             1.97
+ix12792/OUT                                                 Buf4        146.79  953.39 dn             8.85
+reg_nx10925_XX0_XREP397/OUT                                 Nor2        75.72  1029.11 up             0.98
+ix7250/OUT                                                  Mux2        234.73  1261.91 dn             0.98
+reg_U_analog_control_cal_cnt(3)/D                           DFFC        0.00  1261.91 dn             0.00
+data arrival time                                                             1261.91
+
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+reg_U_analog_control_cal_cnt(3)/CLK                         DFFC              0.00 (rising edge)
+clock cycle                                                                   25.00
+library setup time                                                           (85.00)
+
+data required time  (default specified - setup time)                           -55.00
+-------------------------------------------------------------------------------------------------------
+data required time                                                            -55.00
+data arrival time                                                             1261.91
+                                                                           ----------
+slack                                                                        -1316.91
+-------------------------------------------------------------------------------------------------------
+
+
+
+
+Critical path #10, (path slack = -1316.7):
+
+NAME                                                        GATE              ARRIVAL              LOAD
+-------------------------------------------------------------------------------------------------------
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+reg_U_analog_control_cal_cnt(7)/CLK                         DFFC              0.00 (rising edge)
+
+
+default arrival at blackbox outputs                                  20.00
+reg_U_analog_control_cal_cnt(7)/QB                          DFFC        0.00  391.94 dn             4.92
+ix12143/OUT                                                 Inv         40.07  432.02 up             0.98
+ix12144/OUT                                                 Nor3        29.74  461.75 dn             0.98
+ix12263/OUT                                                 Nand2       43.53  505.29 up             0.98
+ix12264/OUT                                                 Nand4       82.56  587.85 dn             0.98
+ix12267/OUT                                                 Nand3       62.33  650.17 up             0.98
+ix12268/OUT                                                 Nor3        32.35  682.53 dn             2.95
+ix12323/OUT                                                 Nand3       82.16  764.69 up             4.92
+reg_nx3251/OUT                                              Nand2       41.68  806.37 dn             1.97
+ix12792/OUT                                                 Buf4        146.79  953.16 dn             8.85
+reg_nx10925_XX0_XREP397/OUT                                 Nor2        75.72  1028.88 up             0.98
+ix7250/OUT                                                  Mux2        234.73  1261.68 dn             0.98
+reg_U_analog_control_cal_cnt(3)/D                           DFFC        0.00  1261.68 dn             0.00
+data arrival time                                                             1261.68
+
+sysclk (offset)                                                             0.00 (rising edge)
+delay thru clock network                                                      0.00 (ideal)
+reg_U_analog_control_cal_cnt(3)/CLK                         DFFC              0.00 (rising edge)
+clock cycle                                                                   25.00
+library setup time                                                           (85.00)
+
+data required time  (default specified - setup time)                           -55.00
+-------------------------------------------------------------------------------------------------------
+data required time                                                            -55.00
+data arrival time                                                             1261.68
+                                                                           ----------
+slack                                                                        -1316.68
+-------------------------------------------------------------------------------------------------------
+
+

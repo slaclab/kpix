@@ -1,0 +1,39 @@
+# Commands for exemplar synthesis
+
+set process typical
+set_working_dir /u/ey/rherbst/projects/w_si/cores/dig_core/rtl/out
+
+set temp 25
+set voltage 2.5
+set max_fanout_load "0.000000"
+load_library tsmm025DL
+set encoding Gray
+
+read -dont_elaborate -technology "tsmm025DL"  { /u/ey/rherbst/projects/w_si/cores/dig_core/rtl/reg_rw_32.vhd 
+                                                /u/ey/rherbst/projects/w_si/cores/dig_core/rtl/analog_control.vhd 
+                                                /u/ey/rherbst/projects/w_si/cores/dig_core/rtl/command_control.vhd 
+                                                /u/ey/rherbst/projects/w_si/cores/dig_core/rtl/readout_control.vhd 
+                                                /u/ey/rherbst/projects/w_si/cores/dig_core/rtl/memory_array_control.vhd }
+elaborate memory_array_control -architecture memory_array_control
+
+pre_optimize .work.memory_array_control.memory_array_control -common_logic -unused_logic -boundary -xor_comparator_optimize 
+pre_optimize .work.memory_array_control.memory_array_control -extract
+
+set entity memory_array_control
+set architecture memory_array_control
+
+set input2register 10.000000
+set register2output 10.000000
+set register2register 30.000000
+set_clock -name .work.memory_array_control.memory_array_control.sysclk -clock_cycle "25.000000"
+set_clock -name .work.memory_array_control.memory_array_control.sysclk -pulse_width "12.500000"
+
+optimize .work.memory_array_control.memory_array_control -target tsmm025DL -macro -area -effort standard -hierarchy flatten
+optimize_timing .work.memory_array_control.memory_array_control 
+
+report_area report_area.txt -cell_usage -all_leafs
+report_delay report_time.txt -num_paths 10 -longest_path -clock_frequency
+
+auto_write -format Verilog memory_array_control.v
+auto_write -format EDIF memory_array_control.edf
+

@@ -1,0 +1,18 @@
+# Template for spice circuits
+# Replace NMOS with NM
+# Replace NMD  with NM
+# Replace PMOS with PM
+# Replace PMD  with PM
+
+# Place this at top of file
+.inc 'olib_tsmc025.cir'
+
+# Place this towards the end of file above non-subcircuit section.
+.SUBCKT KPIX EXT_CLK RESET_C TRIG COMMAND_C RDBACK_P
+
+.inc 'w_si_chip_driver.cir'
+
+.ENDS
+
+# Replace $G_ with G_
+.GLOBAL G_DVDD,G_DGND,G_SUB,G_SUB2

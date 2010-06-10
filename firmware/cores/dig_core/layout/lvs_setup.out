@@ -1,0 +1,87 @@
+File written by LVS 11.10 as a result of: "" on Tue Sep 06 13:10:50 2005
+
+Command line:
+lvs C:\projects\w_si\tanner\Dig_Core.spc H:\viewdraw\w_si\verify\dig_core_phys_a.cir -o C:\projects\w_si\tanner\lvs_setup.out -l C:\projects\w_si\tanner\lvs_setup.lst -PPSPICE -nrcl 
+
+Engine configuration report:
+Layout netlist file.............................................. C:\projects\w_si\tanner\Dig_Core.spc
+Layout netlist file format....................................... P-Spice
+Schematic netlist file........................................... H:\viewdraw\w_si\verify\dig_core_phys_a.cir
+Schematic netlist file format.................................... P-Spice
+Consider Bulk nodes.............................................. ON
+Consider Resistors as polarized elements......................... OFF
+Consider Capacitors as polarized elements........................ OFF
+Consider Inductors as polarized elements......................... OFF
+Merge series and parallel R...................................... OFF
+Merge series and parallel C...................................... OFF
+Merge series and parallel L...................................... OFF
+Merge parallel M................................................. OFF
+Merge stacked M.................................................. OFF
+Merge parallel D................................................. OFF
+Merge parallel B................................................. OFF
+Merge parallel J................................................. OFF
+Merge parallel Z................................................. OFF
+Merge parallel Q................................................. OFF
+Merge series MOSFETs............................................. OFF
+Find series MOSFETs that differ in order or parameter value...... OFF
+Remove shorted devices........................................... OFF
+Remove disconnected devices...................................... OFF
+Fast Iteration................................................... OFF
+
+
+Parsing file C:\projects\w_si\tanner\Dig_Core.spc...
+Warning: Dig_Core.spc(22744) Implicit .model definition PMOS
+Warning: Dig_Core.spc(25754) Implicit .model definition NMOS
+Flattening netlist...
+
+Parsing file H:\viewdraw\w_si\verify\dig_core_phys_a.cir...
+Warning: dig_core_phys_a.cir(9) Implicit .model definition PMOS
+Warning: dig_core_phys_a.cir(11) Implicit .model definition NMOS
+Flattening netlist...
+
+Device                    Dig_Core.spc dig_core_phys_a.cir   Status            
+---------------        ---------------   ---------------   ---------------     
+M_NMOS                           16799             16799
+M_PMOS                           16701             16701
+                          ------------      ------------
+Total elements                   33500             33500
+Total nodes                      18002             18002
+
+
+Iterating...
+  5% done.
+ 10% done.
+ 15% done.
+ 20% done.
+ 25% done.
+ 30% done.
+ 35% done.
+ 40% done.
+ 45% done.
+ 50% done.
+ 55% done.
+ 60% done.
+ 65% done.
+ 70% done.
+ 75% done.
+ 80% done.
+ 85% done.
+ 90% done.
+ 95% done.
+32176 perfectly matched element classes (out of a possible 33500).
+42 automorphic element classes.
+17705 perfectly matched node classes (out of a possible 18002).
+2 automorphic node classes.
+
+
+Doing detailed trial matching... Step 1 (Match by parameters)
+Doing detailed trial matching... Step 2 (Random matches)
+100% done.
+
+************************** FINAL RESULT *****************************
+
+Circuits are equal.
+Run time: 0:43 (min:sec)
+
+0 errors, 4 warnings
+
