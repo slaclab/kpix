@@ -147,7 +147,7 @@ int main ( int argc, char **argv ) {
    // "ForceTrig" is the common directory for stored calibration plots.
    // We will read the values for each gain mode.
    cout << endl << "Reading Calibration Data" << endl;
-   for (x=0; x<3; x++) { // 0=Low Gain, 1=Double Gain, 2=Low Gain
+   for (x=0; x<3; x++) { // 0=Normal Gain, 1=Double Gain, 2=Low Gain
       status = calibRead->getCalibData(&gain,&icept,"Force_Trig",x,
                                        runRead->getAsic(0)->getSerial(),
                                        0,0); // Channel=0, bucket=0
