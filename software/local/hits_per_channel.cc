@@ -15,9 +15,16 @@
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <KpixSample.h>
+#include <KpixAsic.h>
 #include <KpixRunRead.h>
 #include <KpixCalibRead.h>
 #include <TFile.h>
+#include <TGraph.h>
+#include <TH1F.h>
 #include <TTree.h>
 #include <TApplication.h>
 using namespace std;

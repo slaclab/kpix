@@ -1,7 +1,7 @@
 # Variables
 DEF     := 
 CFLAGS  := -Wall `root-config --cflags` -I $(KPIX_SW)/sidApi/offline -I $(KPIX_SW)/sidApi/online
-LFLAGS  := -L$(KPIX_SW)/bin -lsidapi `root-config --libs` -lMinuit -llockdev
+LFLAGS  := -L$(PWD)/../bin -lsidapi `root-config --libs` -lMinuit -llockdev
 CC      := g++
 OUT     := $(PWD)/../bin
 

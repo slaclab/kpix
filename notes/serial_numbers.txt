@@ -1,0 +1,11 @@
+Kpix Serial Numbers
+704 = Test - Wire Bonds
+705 = Test - Wire Bonds
+706 = RPC
+707 = RPC
+709 = GEM
+720 = RPC
+721 = GEM
+770 = Test - Wire Bonds
+780 = Test - No Wire Bonds
+

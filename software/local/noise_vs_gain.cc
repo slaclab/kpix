@@ -16,8 +16,10 @@
 #include <iostream>
 #include <iomanip>
 #include <KpixRunRead.h>
+#include <KpixAsic.h>
 #include <KpixCalibRead.h>
 #include <TFile.h>
+#include <TGraph.h>
 #include <TTree.h>
 #include <TApplication.h>
 using namespace std;
