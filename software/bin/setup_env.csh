@@ -18,15 +18,15 @@ setenv KPIX_CAL_FILE
 
 # Setup path
 if ($?PATH) then
-   setenv PATH ${QTDIR}/bin:${ROOTSYS}/bin:${KPIX_SW}/bin:${PATH}
+   setenv PATH ${QTDIR}/bin:${ROOTSYS}/bin:${KPIX_SW}/../bin:${PATH}
 else
-   setenv PATH ${QTDIR}/bin:${ROOTSYS}/bin:${KPIX_SW}/bin
+   setenv PATH ${QTDIR}/bin:${ROOTSYS}/bin:${KPIX_SW}/../bin
 endif
 
 # Setup library path
 if ($?LD_LIBRARY_PATH) then
-   setenv LD_LIBRARY_PATH ${QTDIR}/lib:${ROOTSYS}/lib:${KPIX_SW}/bin:${LD_LIBRARY_PATH}
+   setenv LD_LIBRARY_PATH ${QTDIR}/lib:${ROOTSYS}/lib:${KPIX_SW}/../bin:${LD_LIBRARY_PATH}
 else
-   setenv LD_LIBRARY_PATH ${QTDIR}/lib:${ROOTSYS}/lib:${KPIX_SW}/bin
+   setenv LD_LIBRARY_PATH ${QTDIR}/lib:${ROOTSYS}/lib:${KPIX_SW}/../bin
 endif
 

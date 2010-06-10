@@ -6,6 +6,11 @@ Kpix Serial Numbers
 709 = GEM
 720 = RPC
 721 = GEM
+730 = Israel
+731 = GEM UTA
 770 = Test - Wire Bonds
 780 = Test - No Wire Bonds
 
+900 = SLAC
+901 = Oregon
+902 = Oregon
