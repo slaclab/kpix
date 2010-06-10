@@ -38,6 +38,7 @@
 -- 02/03/2009: Updated interfaces to 
 -- 02/05/2009: Added read state tracking for FPGA core. Not In Real Asic.
 -- 02/06/2009: Removed sparse data mode.
+-- 04/22/2010: Added more detail in analog state tracking for FPGA core.
 -------------------------------------------------------------------------------
 
 use work.all;
@@ -93,8 +94,9 @@ entity memory_array_control is port (
       precharge_bus     : out std_logic;
 
       -- State Outputs
-      analog_state      : out std_logic; -- Comment for core generation
-      read_state        : out std_logic; -- Comment for core generation
+      analog_state0     : out std_logic;
+      analog_state1     : out std_logic;
+      read_state        : out std_logic;
 
       -- Configuration
       reg_data          : out std_logic;
@@ -171,7 +173,7 @@ architecture memory_array_control of memory_array_control is
          cd0_data          : in  std_logic_vector(31 downto 0);
          cd1_data          : in  std_logic_vector(31 downto 0);
          readout_start     : out std_logic;
-         analog_state      : out std_logic
+         analog_state      : out std_logic_vector(1  downto 0)
       );
    end component;
 
@@ -226,8 +228,6 @@ architecture memory_array_control of memory_array_control is
    signal load_shift_reg      : std_logic;
    signal int_rdback          : std_logic;
    signal temp_id_int         : std_logic_vector(7 downto 0);
-   --signal analog_state        : std_logic; -- Uncomment for core generation
-   --signal read_state          : std_logic; -- Uncomment for core generation
 
 begin
 
@@ -359,7 +359,7 @@ begin
       tc3_data          => tc3_data,           tc4_data          => tc4_data,
       tc5_data          => tc5_data,           cd0_data          => cd0_data,
       cd1_data          => cd1_data,           readout_start     => readout_start,
-      analog_state      => analog_state
+      analog_state(0)   => analog_state0,      analog_state(1)   => analog_state1
    );
 
 

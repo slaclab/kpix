@@ -96,7 +96,7 @@ int main ( int argc, char **argv ) {
       kpixAsic[0]->setCntrlHoldTime     ( 7,      true  ); // Only write control register once
 
       // Setup DACs
-      kpixAsic[0]->setDacCalib          ( (unsigned char)0x80, true ); // was 0x00, new 0x80
+      kpixAsic[0]->setDacCalib          ( (unsigned char)0x40, true ); // was 0x80, new 0x40
       kpixAsic[0]->setDacRampThresh     ( (unsigned char)0xE0, true );
       kpixAsic[0]->setDacRangeThresh    ( (unsigned char)0x3E, true );
       kpixAsic[0]->setDacDefaultAnalog  ( (unsigned char)0xBD, true );
@@ -113,9 +113,19 @@ int main ( int argc, char **argv ) {
 
       // Init Channel Modes
       for(x=0; x < 1024; x++) {
-         if ( x == 0x0A0  ) modes[x] = KpixChanDisable;
-         else modes[x] = KpixChanThreshACal;
+         modes[x] = KpixChanThreshACal;
       }
+      modes[31]  = KpixChanDisable;
+      modes[62]  = KpixChanDisable;
+      modes[95]  = KpixChanDisable;
+      modes[126] = KpixChanDisable;
+      modes[159] = KpixChanDisable;
+      modes[191] = KpixChanDisable;
+      modes[223] = KpixChanDisable;
+      modes[255] = KpixChanDisable;
+      modes[286] = KpixChanDisable;
+      modes[319] = KpixChanDisable;
+      modes[350] = KpixChanDisable;
       kpixAsic[0]->setChannelModeArray(modes,true);
 
       // Setup calibration strobes

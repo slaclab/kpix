@@ -45,7 +45,8 @@ endif
 #NET = kpix_9.cir
 #NET = kpix_9_32.cir
 #NET = kpix_9_32_hier_P.cir
-NET = kpix_9_32_hier_split_P.cir
+#NET = kpix_9_32_hier_split_P.cir
+NET = kpix_9_136_hier_P.cir
 INC = $(SIM_SRC)/olib_tsmc025.cir \
       $(SIM_SRC)/w_si_chip_driver.cir \
       $(SIM_SRC)/nanosim_cfg.txt \

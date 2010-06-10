@@ -33,6 +33,7 @@
 -- 08/30/2005: Changed reset polarity
 -- 08/30/2005: Changed delay between deselect_all_cells and select_cell to ~500ns
 -- 02/05/2009: Added analog state tracking for FPGA core. Not in real ASIC.
+-- 04/22/2010: Added more detail in state tracking for FPGA core.
 -------------------------------------------------------------------------------
 
 use work.all;
@@ -91,8 +92,8 @@ entity analog_control_v7 is port (
       -- Readout signals
       readout_start     : out std_logic;
 
-      -- State Output
-      analog_state      : out std_logic
+      -- State output
+      analog_state      : out std_logic_vector(1 downto 0)
 
    );
 
@@ -130,7 +131,7 @@ architecture analog_control_v7 of analog_control_v7 is
    signal cal_dly               : std_logic_vector(11 downto 0); -- Reg: 
    signal cal_en                : std_logic;                     -- Reg: 
    signal cal_assert_en         : std_logic;                     -- Sig: 
-   signal nxt_analog_state      : std_logic;                     -- Sig;
+   signal nxt_analog_state      : std_logic_vector(1  downto 0); -- Sig;
 
 
    -- Master state
@@ -202,7 +203,7 @@ begin
          sft_desel_all_cells   <= (others=>'0') after 1 ns;
          int_bunch_clock       <= '0'           after 1 ns;
          int_cur_cell          <= "0000"        after 1 ns;
-         analog_state          <= '0'           after 1 ns;
+         analog_state          <= "00"          after 1 ns;
 
       elsif rising_edge(sysclk) then
          mst_state             <= nxt_mst_state         after 1 ns;
@@ -247,7 +248,7 @@ begin
             bunch_clock_en        <= '0';
             nxt_precharge_ana_bus <= '0';
             cal_assert_en         <= '0';
-            nxt_analog_state      <= '0';
+            nxt_analog_state      <= "00";
 
             -- Sequence start
             if ( start_sequence = '1' ) then
@@ -269,7 +270,7 @@ begin
             bunch_clock_en        <= '0';
             nxt_precharge_ana_bus <= '0';
             cal_assert_en         <= '0';
-            nxt_analog_state      <= '0';
+            nxt_analog_state      <= "01";
 
             -- Assert de-select all cells after a defined delay            
             -- Signal stays asserted for 100ns.
@@ -305,7 +306,7 @@ begin
             nxt_desel_all_cells   <= '0';
             nxt_sel_cell          <= '0';
             cal_assert_en         <= '1';
-            nxt_analog_state      <= '0';
+            nxt_analog_state      <= "01";
 
             -- Control early bunch clock
             if ( sub_cnt(2 downto 0) = "100" ) then
@@ -340,7 +341,7 @@ begin
             nxt_sel_cell          <= '0';
             nxt_bunch_clock       <= '0';
             cal_assert_en         <= '0';
-            nxt_analog_state      <= '1';
+            nxt_analog_state      <= "10";
 
             -- End of state at define delay
             if ( sub_cnt = tc7_data(31 downto 24) ) then
@@ -365,7 +366,7 @@ begin
             bunch_clock_en        <= '0';
             nxt_bunch_clock       <= '0';
             cal_assert_en         <= '0';
-            nxt_analog_state      <= '1';
+            nxt_analog_state      <= "10";
 
             -- End of cycle, 8192 + 18
             if ( sub_cnt(15 downto 0) = X"2011" ) then
@@ -429,7 +430,7 @@ begin
             nxt_precharge_ana_bus <= '0';
             cal_assert_en         <= '0';
             readout_start         <= '1';
-            nxt_analog_state      <= '0';
+            nxt_analog_state      <= "00";
             nxt_mst_state         <= MS_IDLE;
 
 
@@ -446,7 +447,7 @@ begin
             nxt_precharge_ana_bus <= '0';
             cal_assert_en         <= '0';
             readout_start         <= '0';
-            nxt_analog_state      <= '0';
+            nxt_analog_state      <= "00";
             nxt_mst_state         <= MS_IDLE;
 
       end case;

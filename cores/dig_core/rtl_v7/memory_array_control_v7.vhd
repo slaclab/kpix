@@ -34,6 +34,7 @@
 -- 08/30/2005: Changed reset polarity
 -- 08/30/2005: Moved register of incoming read data to top level
 -- 02/05/2009: Added read state tracking for FPGA core. Not in real asic.
+-- 04/22/2010: Added more detail in analog state tracking for FPGA core.
 -------------------------------------------------------------------------------
 
 use work.all;
@@ -78,7 +79,8 @@ entity memory_array_control_v7 is port (
       precharge_bus     : out std_logic;
 
       -- State Outputs
-      analog_state      : out std_logic;
+      analog_state0     : out std_logic;
+      analog_state1     : out std_logic;
       read_state        : out std_logic;
 
       -- Configuration
@@ -157,7 +159,7 @@ architecture memory_array_control_v7 of memory_array_control_v7 is
          cd0_data          : in  std_logic_vector(31 downto 0);
          cd1_data          : in  std_logic_vector(31 downto 0);
          readout_start     : out std_logic;
-         analog_state      : out std_logic
+         analog_state      : out std_logic_vector(1  downto 0)
       );
    end component;
 
@@ -333,7 +335,7 @@ begin
       tc4_data          => tc4_data,           tc5_data          => tc5_data,
       tc6_data          => tc6_data,           tc7_data          => tc7_data,
       cd0_data          => cd0_data,           cd1_data          => cd1_data,
-      analog_state      => analog_state
+      analog_state(0)   => analog_state0,      analog_state(1)   => analog_state1
    );
 
    -- Readout controller
