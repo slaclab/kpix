@@ -14,13 +14,13 @@
 ##-----------------------------------------------------------------------------
 
 # Set SIM Source Directory
-SIM_SRC=/u/ey/rherbst/projects/w_si/sim
+SIM_SRC=$(PWD)
 
 # Set FGPA Directory
-FPGA=/u/ey/rherbst/projects/w_si/fpgas
+FPGA=$(PWD)/../firmware/
 
 # Set Core Directory
-CORES=/u/ey/rherbst/projects/w_si/cores
+CORES=$(PWD)/../cores
 
 # Set Main Netlist Directory
 NET_DIR=/u/ey/rherbst/projects/w_si/netlists
