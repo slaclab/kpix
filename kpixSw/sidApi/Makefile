@@ -1,7 +1,7 @@
 # Variables
 DEF     := -DONLINE_EN
 CC      := g++
-OUT     := $(PWD)/../bin
+OUT     := $(PWD)/../../bin
 OBJ     := $(PWD)/.obj
 DEP     := $(PWD)/.dep
 TAR     := $(OUT)/libsidapi.so
