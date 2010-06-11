@@ -3,11 +3,7 @@ LANGUAGE	= C++
 
 CONFIG	+= qt warn_on release thread
 
-LIBS	   += -L../../bin -lsidapi -lMinuit
-
-QMAKE_CFLAGS   += -m32
-QMAKE_CXXFLAGS += -m32
-QMAKE_LFLAGS   += -m32
+LIBS	+= -L../../bin -lsidapi -lMinuit
 
 DEFINES	+= ONLINE_EN
 
@@ -112,6 +108,16 @@ IMAGES	= images/editcopy \
 	images/editcopy_2 \
 	images/editpaste_2 \
 	images/searchfind_2
+
+QMAKE_CFLAGS   += -m32
+QMAKE_CXXFLAGS += -m32
+QMAKE_LFLAGS   += -m32
+
+
+
+
+
+
 
 TARGET  = kpixGui
 DESTDIR = ../../bin
