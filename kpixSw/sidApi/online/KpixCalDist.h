@@ -67,9 +67,10 @@ class KpixCalDist {
       bool enDouble;
       bool enLow;
 
-      // Raw data and plot enables
+      // Raw data, plot and double calibration enables
       bool rawDataEn;
       bool plotEn;
+      bool doubleCalEn;
 
       // Range for calibration
       unsigned char calStart;
@@ -134,6 +135,9 @@ class KpixCalDist {
 
       // Enable plot generation
       void enablePlots( bool enable );
+
+      // Enable double calibration
+      void enableDoubleCal( bool enable );
 
       // Pass name of the TFile directory in which to store the plots
       void setPlotDir( std::string plotDir );
