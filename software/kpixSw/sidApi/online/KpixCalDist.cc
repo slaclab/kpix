@@ -156,6 +156,9 @@ void KpixCalDist::enableRawData( bool enable ) { this->rawDataEn = enable; }
 // Enable plots
 void KpixCalDist::enablePlots( bool enable ) { this->plotEn = enable; }
 
+// Enable double calibration
+void KpixCalDist::enableDoubleCal( bool enable ) { this->doubleCalEn = enable; }
+
 
 // TFile directory in which to store the plots
 void KpixCalDist::setPlotDir(string plotDir ) { this->plotDir = plotDir; }
@@ -343,6 +346,31 @@ void KpixCalDist::runDistribution ( short channel ) {
          } while ( rateLimit != 0 && diff < rateLimit );
          acqTime.tv_sec  = curTime.tv_sec; 
          acqTime.tv_usec = curTime.tv_usec; 
+
+         // Start an extra Calibration run if double calibration is enabled
+         if( doubleCalEn ) {
+            errCnt = 0;
+            while (1) {
+               try {
+                  kpixAsic[0]->cmdCalibrate(kpixCount>1); // Broadcast if count != 1
+                  train = new KpixBunchTrain (kpixAsic[0]->getSidLink(), kpixAsic[0]->kpixDebug());
+                  break;
+               } catch (string error) {
+                  if ( enDebug ) {
+
+                     // Display error
+                     cout << "KpixCalDist::runDistribution -> ";
+                     cout << "Caught Error: " << error << "\n";
+                  }
+
+                  // Count errors
+                  errCnt++;
+                  if ( errCnt == 5 )
+                     throw(string("KpixCalDist::runDistribution -> Too many errors. Giving Up"));
+               }
+            }
+            delete train;
+         }
 
          // Start Calibration
          errCnt = 0;
