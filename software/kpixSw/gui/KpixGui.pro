@@ -3,7 +3,11 @@ LANGUAGE	= C++
 
 CONFIG	+= qt warn_on release thread
 
-LIBS	+= -L../../bin -lsidapi -lMinuit
+LIBS	   += -L../../bin -lsidapi -lMinuit
+
+QMAKE_CFLAGS   += -m32
+QMAKE_CXXFLAGS += -m32
+QMAKE_LFLAGS   += -m32
 
 DEFINES	+= ONLINE_EN
 
