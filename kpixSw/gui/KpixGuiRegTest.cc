@@ -270,14 +270,14 @@ void KpixGuiRegTest::customEvent ( QCustomEvent *event ) {
       if ( eventData->id == KpixDataUInt && eventData->count == 4 ) {
 
          // Extract data
-         x = (unsigned int)eventData->data[0];
-         if ( (unsigned int)eventData->data[1] == 1 ) resultTable->setText(x,0,"Pass");
+         x = (unsigned long)eventData->data[0];
+         if ( (unsigned long)eventData->data[1] == 1 ) resultTable->setText(x,0,"Pass");
          else resultTable->setText(x,0,"Fail");
          temp.str("");
-         temp << dec << (unsigned int)eventData->data[2];
+         temp << dec << (unsigned long)eventData->data[2];
          resultTable->setText(x,1,temp.str());
          temp.str("");
-         temp << dec << (unsigned int)eventData->data[3];
+         temp << dec << (unsigned long)eventData->data[3];
          resultTable->setText(x,2,temp.str());
          update();
       }
