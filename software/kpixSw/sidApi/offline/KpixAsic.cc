@@ -2799,7 +2799,7 @@ void KpixAsic::setDefaults ( unsigned int clkPeriod, bool writeEn ) {
    // Setup DACs
    setDacCalib          ( (unsigned char)0x00, writeEn );
    setDacRampThresh     ( (unsigned char)0xE0, writeEn );
-   setDacRangeThresh    ( (unsigned char)0x3E, writeEn );
+   setDacRangeThresh    ( (unsigned char)0x00, writeEn );
    setDacDefaultAnalog  ( (unsigned char)0xBD, writeEn );
    setDacEventThreshRef ( (unsigned char)0x50, writeEn );
    setDacShaperBias     ( (unsigned char)0x78, writeEn );
