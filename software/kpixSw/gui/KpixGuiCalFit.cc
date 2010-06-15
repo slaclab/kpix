@@ -1215,10 +1215,6 @@ void KpixGuiCalFit::run() {
             delete outFileRoot;
             updateSummary();
 
-            cout << "XML Stream Generated: " << endl;
-            cout << xmlStream.str();
-            cout << "XML Stream Length: " << dec << xmlStream.str().length() << endl;
-
             break;
       }
    }
