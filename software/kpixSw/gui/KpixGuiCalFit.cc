@@ -1051,6 +1051,7 @@ void KpixGuiCalFit::run() {
    unsigned int       channel;
    unsigned int       bucket;
    unsigned int       calA, calB, calC, calD;
+   stringstream       xmlStream;
 
    // Get current entries
    dirIndex = selDir->currentItem();
@@ -1138,6 +1139,8 @@ void KpixGuiCalFit::run() {
                                            inFileRoot->kpixRunRead->getRunTime(),
                                            inFileRoot->kpixRunRead->getEndTime());
             gErrorIgnoreLevel = 5000; 
+            xmlStream.str("");
+            xmlStream << "<calib_data>" << endl;
 
             // Set Run Variables
             for (x=0; x < (unsigned int)inFileRoot->kpixRunRead->getRunVarCount(); x++) {
@@ -1155,20 +1158,55 @@ void KpixGuiCalFit::run() {
             // Loop through types
             total = DIR_COUNT*3*asicCnt*asic[0]->getChCount();
             for (dirIndex=0; dirIndex < DIR_COUNT; dirIndex++) {
+               xmlStream << "<type id=\"" << dirNames[dirIndex] << "\">" << endl;
                for (gain=0; gain < 3; gain++) {
+                  xmlStream << "<gain id=\"" << dec << gain << "\">" << endl;
                   for (serial=0; serial < asicCnt; serial++) {
+                     xmlStream << "<asic id=\"" << dec << asic[serial]->getSerial() << "\">" << endl;
                      for (channel=0; channel < asic[0]->getChCount(); channel++) {
-                        for (bucket=0; bucket < 4; bucket++) 
+                        xmlStream << "<channel id=\"" << dec << channel << "\">" << endl;
+                        for (bucket=0; bucket < 4; bucket++) {
+                           xmlStream << "<bucket id=\"" << dec << bucket << "\">" << endl;
                            readFitData(dirIndex,gain,serial,channel,bucket,true,true, false);
+
+                           // Add fit results to XML
+                           xmlStream << "<fitGain>";
+                           xmlStream << calibData[serial]->calGain[dirIndex][gain][channel][bucket][gain==2?1:0];
+                           xmlStream << "</fitGain>" << endl;
+                           xmlStream << "<fitIntercept>";
+                           xmlStream << calibData[serial]->calIntercept[dirIndex][gain][channel][bucket][gain==2?1:0];
+                           xmlStream << "</fitIntercept>" << endl;
+                           xmlStream << "<fitRms>";
+                           xmlStream << calibData[serial]->calRms[dirIndex][gain][channel][bucket][gain==2?1:0];
+                           xmlStream << "</fitRms>" << endl;
+                           xmlStream << "<histMean>";
+                           xmlStream << calibData[serial]->distMean[dirIndex][gain][channel][bucket];
+                           xmlStream << "</histMean>" << endl;
+                           xmlStream << "<histSigma>";
+                           xmlStream << calibData[serial]->distSigma[dirIndex][gain][channel][bucket];
+                           xmlStream << "</histSigma>" << endl;
+                           xmlStream << "<histRms>";
+                           xmlStream << calibData[serial]->distRms[dirIndex][gain][channel][bucket];
+                           xmlStream << "</histRms>" << endl;
+                           xmlStream << "</bucket>" << endl;
+                        }
+
                         curr = (dirIndex*3*asicCnt*asic[0]->getChCount()) +
                                (gain*asicCnt*asic[0]->getChCount()) +
                                (serial*asic[0]->getChCount()) + channel;
                         event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusPrgMain,curr,total);
                         QApplication::postEvent(this,event);
+                        xmlStream << "</channel>" << endl;
                      }
+                     xmlStream << "</asic>" << endl;
                   } 
+                  xmlStream << "</gain>" << endl;
                }
+               xmlStream << "</type>" << endl;
             }
+            xmlStream << "</calib_data>" << endl;
+            outFileRoot->addCalibData(xmlStream.str());
+
             dirIndex = 0;
             gain     = 0;
             serial   = 0;
@@ -1176,6 +1214,11 @@ void KpixGuiCalFit::run() {
             bucket   = 0;
             delete outFileRoot;
             updateSummary();
+
+            cout << "XML Stream Generated: " << endl;
+            cout << xmlStream.str();
+            cout << "XML Stream Length: " << dec << xmlStream.str().length() << endl;
+
             break;
       }
    }

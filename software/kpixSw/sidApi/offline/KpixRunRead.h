@@ -36,6 +36,7 @@
 // 10/20/2008: Added support for calibration source dir.
 // 06/18/2009: Added namespace.
 // 06/23/2009: Removed namespace.
+// 06/15/2010: Added calibration data string to run file
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_RUN_READ_H__
 #define __KPIX_RUN_READ_H__
@@ -72,6 +73,7 @@ class KpixRunRead {
       TString *endTime;
       TString *runDesc;
       TString *runCalib;
+      TString *calibData;
 
       // Default TString
       TString blankString;
@@ -123,6 +125,9 @@ class KpixRunRead {
 
       // Get End Timestamp
       TString getEndTime ();
+
+      // Get Calibration Data
+      TString getCalibData ();
 
       // Get Run Duration In Seconds
       Int_t getRunDuration();

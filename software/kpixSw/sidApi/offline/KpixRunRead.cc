@@ -37,6 +37,7 @@
 // 10/20/2008: Added support for calibration source dir.
 // 06/22/2009: Added namespaces.
 // 06/23/2009: Removed namespaces.
+// 06/15/2010: Added calibration data string to run file
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -99,13 +100,15 @@ KpixRunRead::KpixRunRead ( string rootFile, bool debug ) {
    treeFile->GetObject("EndTime",endTime);
    treeFile->GetObject("RunDesc",runDesc);
    treeFile->GetObject("RunCalib",runCalib);
+   treeFile->GetObject("CalibData",calibData);
 
    // Missing strings
-   if ( runName  == NULL ) runName  = &blankString;
-   if ( runTime  == NULL ) runTime  = &blankString;
-   if ( endTime  == NULL ) endTime  = &blankString;
-   if ( runDesc  == NULL ) runDesc  = &blankString;
-   if ( runCalib == NULL ) runCalib = &blankString;
+   if ( runName   == NULL ) runName   = &blankString;
+   if ( runTime   == NULL ) runTime   = &blankString;
+   if ( endTime   == NULL ) endTime   = &blankString;
+   if ( runDesc   == NULL ) runDesc   = &blankString;
+   if ( runCalib  == NULL ) runCalib  = &blankString;
+   if ( calibData == NULL ) calibData = &blankString;
 
    // Debug open attempt
    if ( enDebug ) {
@@ -176,6 +179,10 @@ TString KpixRunRead::getRunTime () { return(*runTime); }
 
 // Get End Timestamp
 TString KpixRunRead::getEndTime () { return(*endTime); }
+
+
+// Get Calibration Data
+TString KpixRunRead::getCalibData () { return(*calibData); }
 
 
 // Get Run Duration In Seconds
