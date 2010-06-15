@@ -506,6 +506,7 @@ void KpixGuiCalFit::readFitData(unsigned int dirIndex, unsigned int gain, unsign
       // Fit Range 0, Value Plot, Non-Filtered
       if ( tGraph[0] != NULL && tGraph[6] == NULL ) {
          tGraph[0]->Fit("pol1","q","",minFit,maxFit);
+         tGraph[0]->GetFunction("pol1")->SetLineWidth(1);
 
          // Delete old RMS Plot
          if ( tGraph[4] != NULL ) delete tGraph[4];
@@ -529,6 +530,7 @@ void KpixGuiCalFit::readFitData(unsigned int dirIndex, unsigned int gain, unsign
       // Fit Range 0, Value Plot, Filtered
       if ( tGraph[6] != NULL ) {
          tGraph[6]->Fit("pol1","q","",minFit,maxFit);
+         tGraph[6]->GetFunction("pol1")->SetLineWidth(1);
 
          // Delete old RMS Plot
          if ( tGraph[4] != NULL ) delete tGraph[4];
@@ -552,6 +554,7 @@ void KpixGuiCalFit::readFitData(unsigned int dirIndex, unsigned int gain, unsign
       // Fit Range 1, Value Plot, Non-Filtered
       if ( tGraph[1] != NULL && tGraph[7] == NULL ) {
          tGraph[1]->Fit("pol1","q","",minFit,maxFit);
+         tGraph[1]->GetFunction("pol1")->SetLineWidth(1);
 
          // Delete old RMS Plot
          if ( tGraph[5] != NULL ) delete tGraph[4];
@@ -575,6 +578,7 @@ void KpixGuiCalFit::readFitData(unsigned int dirIndex, unsigned int gain, unsign
       // Fit Range 0, Value Plot, Filtered
       if ( tGraph[7] != NULL ) {
          tGraph[7]->Fit("pol1","q","",minFit,maxFit);
+         tGraph[7]->GetFunction("pol1")->SetLineWidth(1);
 
          // Delete old RMS Plot
          if ( tGraph[5] != NULL ) delete tGraph[5];
@@ -677,24 +681,28 @@ void KpixGuiCalFit::readFitData(unsigned int dirIndex, unsigned int gain, unsign
    tmGraph[0] = new TMultiGraph(); valid = false;
    if ( tGraph[0] != NULL ) {
       tGraph[0]->SetMarkerColor(4);
+      tGraph[0]->SetMarkerStyle(7);
       tmGraph[0]->Add(tGraph[0]);
       tmGraph[0]->SetTitle(tGraph[0]->GetTitle());
       valid = true;
    }
    if ( tGraph[1] != NULL ) {
       tGraph[1]->SetMarkerColor(3);
+      tGraph[1]->SetMarkerStyle(7);
       tmGraph[0]->Add(tGraph[1]);
       tmGraph[0]->SetTitle(tGraph[1]->GetTitle());
       valid = true;
    }
    if ( tGraph[6] != NULL ) {
       tGraph[6]->SetMarkerColor(4);
+      tGraph[6]->SetMarkerStyle(7);
       tmGraph[0]->Add(tGraph[6]);
       tmGraph[0]->SetTitle(tGraph[6]->GetTitle());
       valid = true;
    }
    if ( tGraph[7] != NULL ) {
       tGraph[7]->SetMarkerColor(3);
+      tGraph[7]->SetMarkerStyle(7);
       tmGraph[0]->Add(tGraph[7]);
       tmGraph[0]->SetTitle(tGraph[7]->GetTitle());
       valid = true;
@@ -704,18 +712,21 @@ void KpixGuiCalFit::readFitData(unsigned int dirIndex, unsigned int gain, unsign
       tmGraph[0] = NULL;
    }
 
-   // Time
+
+   // Residuals
    tmGraph[1] = new TMultiGraph(); valid = false;
-   if ( tGraph[2] != NULL ) {
-      tGraph[2]->SetMarkerColor(4);
-      tmGraph[1]->Add(tGraph[2]);
-      tmGraph[1]->SetTitle(tGraph[2]->GetTitle());
+   if ( tGraph[4] != NULL ) {
+      tGraph[4]->SetMarkerColor(4);
+      tGraph[4]->SetMarkerStyle(7);
+      tmGraph[1]->Add(tGraph[4]);
+      tmGraph[1]->SetTitle(tGraph[4]->GetTitle());
       valid = true;
    }
-   if ( tGraph[3] != NULL ) {
-      tGraph[3]->SetMarkerColor(3);
-      tmGraph[1]->Add(tGraph[3]);
-      tmGraph[1]->SetTitle(tGraph[3]->GetTitle());
+   if ( tGraph[5] != NULL ) {
+      tGraph[5]->SetMarkerColor(3);
+      tGraph[5]->SetMarkerStyle(7);
+      tmGraph[1]->Add(tGraph[5]);
+      tmGraph[1]->SetTitle(tGraph[5]->GetTitle());
       valid = true;
    }
    if ( ! valid ) {
@@ -723,18 +734,20 @@ void KpixGuiCalFit::readFitData(unsigned int dirIndex, unsigned int gain, unsign
       tmGraph[1] = NULL;
    }
 
-   // Residuals
+   // Time
    tmGraph[2] = new TMultiGraph(); valid = false;
-   if ( tGraph[4] != NULL ) {
-      tGraph[4]->SetMarkerColor(4);
-      tmGraph[2]->Add(tGraph[4]);
-      tmGraph[2]->SetTitle(tGraph[4]->GetTitle());
+   if ( tGraph[2] != NULL ) {
+      tGraph[2]->SetMarkerColor(4);
+      tGraph[2]->SetMarkerStyle(7);
+      tmGraph[2]->Add(tGraph[2]);
+      tmGraph[2]->SetTitle(tGraph[2]->GetTitle());
       valid = true;
    }
-   if ( tGraph[5] != NULL ) {
-      tGraph[5]->SetMarkerColor(3);
-      tmGraph[2]->Add(tGraph[5]);
-      tmGraph[2]->SetTitle(tGraph[5]->GetTitle());
+   if ( tGraph[3] != NULL ) {
+      tGraph[3]->SetMarkerColor(3);
+      tGraph[3]->SetMarkerStyle(7);
+      tmGraph[2]->Add(tGraph[3]);
+      tmGraph[2]->SetTitle(tGraph[3]->GetTitle());
       valid = true;
    }
    if ( ! valid ) {
@@ -1284,7 +1297,7 @@ void KpixGuiCalFit::customEvent ( QCustomEvent *event ) {
             calibCanvas->GetCanvas()->Divide(1,3,.01,.01);
             for (x=0; x < 3; x++) {
                calibCanvas->GetCanvas()->cd(x+1);
-               if ( mGraph[x] != NULL ) mGraph[x]->Draw("A*");
+               if ( mGraph[x] != NULL ) mGraph[x]->Draw("Ap");
             }
             calibCanvas->GetCanvas()->Update();
 
