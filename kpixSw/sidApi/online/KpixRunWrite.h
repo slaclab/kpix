@@ -38,6 +38,7 @@
 // 10/22/2008: Removed close function.
 // 06/18/2009: Added namespace.
 // 06/23/2009: Removed namespaces.
+// 06/15/2010: Added calibration data string to run file
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_RUN_WRITE_H__
 #define __KPIX_RUN_WRITE_H__
@@ -74,6 +75,7 @@ class KpixRunWrite {
       TString endTime;
       TString runDesc;
       TString runCalib;
+      TString calibData;
 
       // Pointers to hold elements that will be returned
       KpixAsic     *kpixAsic;
@@ -149,6 +151,9 @@ class KpixRunWrite {
       // Set current directory for storing plots
       // Directory is created if it does not exist
       void setDir ( std::string directory );
+
+      // Add calibData xml string to run file
+      void addCalibData ( std::string calibData );
 
       // Deconstructor.
       virtual ~KpixRunWrite ();

@@ -40,6 +40,7 @@
 // 10/22/2008: Removed close function.
 // 06/22/2009: Added namespaces.
 // 06/23/2009: Removed namespaces.
+// 06/15/2010: Added calibration data string to run file
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -123,11 +124,12 @@ KpixRunWrite::KpixRunWrite (string runFile, TString runName, TString runDesc,
    if ( runTime == "" ) runTime = genTimestamp();
 
    // Store passed values
-   this->runName  = runName;
-   this->runTime = runTime;
-   this->endTime  = endTime;
-   this->runDesc  = runDesc;
-   this->runCalib = runCalib;
+   this->runName   = runName;
+   this->runTime   = runTime;
+   this->endTime   = endTime;
+   this->runDesc   = runDesc;
+   this->runCalib  = runCalib;
+   this->calibData = "";
 
    // Open root file
    if ( (treeFile = new TFile(runFile.c_str(),"recreate")) == NULL ) 
@@ -326,11 +328,20 @@ void KpixRunWrite::setDir ( string directory ) {
 }
 
 
+// Add calibData xml string to run file
+void KpixRunWrite::addCalibData ( std::string calibData ) {
+   this->calibData = calibData;
+}
+
+
 // Close open tree file. 
 // Must be called to ensure all data is written to file
 KpixRunWrite::~KpixRunWrite () {
 
    int i;
+
+   // Add calib data to file
+   treeFile->WriteObject(&calibData,"CalibData");
 
    // Delete event variables
    for (i=0; i < eventVarCount; i++) delete eventVar[i];
