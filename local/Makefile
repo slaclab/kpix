@@ -1,7 +1,8 @@
 # Variables
 DEF     := -DONLINE_EN
 CFLAGS  := -Wall `root-config --cflags` -I $(KPIX_SW)/sidApi/offline -I $(KPIX_SW)/sidApi/online
-LFLAGS  := -L$(PWD)/../bin -lsidapi `root-config --libs` -lMinuit -llockdev
+#LFLAGS  := -L$(PWD)/../bin -lsidapi `root-config --libs` -lMinuit -llockdev -lXMLParser -lXMLIO
+LFLAGS  := -L$(PWD)/../bin -lsidapi `root-config --libs` -lMinuit -llockdev -lXMLParser
 CC      := g++
 OUT     := $(PWD)/../bin
 

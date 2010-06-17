@@ -6,7 +6,7 @@ OBJ     := $(PWD)/.obj
 DEP     := $(PWD)/.dep
 TAR     := $(OUT)/libsidapi.so
 CFLAGS  := -Wall `root-config --cflags`
-LFLAGS  := -lpthread -ldl -lftd2xx -L ftdi -L$(OUT) `root-config --libs` -lMinuit -llockdev
+LFLAGS  := -lpthread -ldl -lftd2xx -L ftdi -L$(OUT) `root-config --libs` -lMinuit -llockdev -lXMLParser
 
 # Sources in the hw directory
 ON_DIR    := $(PWD)/online
