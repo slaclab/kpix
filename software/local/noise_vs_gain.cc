@@ -6,6 +6,7 @@
 //-----------------------------------------------------------------------------
 // Description :
 // Plot gain vs noise.
+
 //-----------------------------------------------------------------------------
 // Copyright (c) 2006 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
