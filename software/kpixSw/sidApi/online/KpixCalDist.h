@@ -136,9 +136,6 @@ class KpixCalDist {
       // Enable plot generation
       void enablePlots( bool enable );
 
-      // Enable double calibration
-      void enableDoubleCal( bool enable );
-
       // Pass name of the TFile directory in which to store the plots
       void setPlotDir( std::string plotDir );
 
