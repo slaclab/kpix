@@ -67,7 +67,6 @@ void KpixGuiSampleView::setRunData(KpixRunRead *kpixRunRead) {
    if ( kpixCalibRead != NULL ) delete kpixCalibRead;
 
    this->kpixRunRead   = kpixRunRead;
-   this->kpixCalibRead = new KpixCalibRead(kpixRunRead);
 
    // Free Old Event Variables
    for (x=0; x<eventCount; x++) delete eventVar[x];
@@ -84,6 +83,7 @@ void KpixGuiSampleView::setRunData(KpixRunRead *kpixRunRead) {
 
    // Create new list
    if ( kpixRunRead != NULL ) {
+      this->kpixCalibRead = new KpixCalibRead(kpixRunRead);
 
       // For Each Event Variable
       eventCount = kpixRunRead->getEventVarCount();

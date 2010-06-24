@@ -136,7 +136,6 @@ void KpixGuiCalibrate::setEnabled ( bool enable ) {
    enablePlots->setEnabled(enable);
    distCalEn->setEnabled(enable);
    calibAllChannels->setEnabled(enable);
-   enableDoubleCal->setEnabled(enable);
    verbose->setEnabled(enable);
    runTest->setEnabled(enable);
    stopTest->setEnabled(!enable);
@@ -271,9 +270,6 @@ void KpixGuiCalibrate::run() {
          // Display calibration status during run
          kpixCalDist->calDistDebug (verbose->isChecked());
          kpixCalDist->setKpixProgress(this);
-
-         // Enable double sampling of calibration
-         kpixCalDist->enableDoubleCal(enableDoubleCal->isChecked());
 
          // Setup gains to support, Set Fit Range
          kpixCalDist->enNormalGain (enNormalGain->isChecked());
