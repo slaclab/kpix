@@ -65,8 +65,8 @@ void KpixGuiSampleView::setRunData(KpixRunRead *kpixRunRead) {
 
    // Delete calib read class
    if ( kpixCalibRead != NULL ) delete kpixCalibRead;
-
-   this->kpixRunRead   = kpixRunRead;
+   this->kpixRunRead = kpixRunRead;
+   this->kpixCalibRead = NULL;
 
    // Free Old Event Variables
    for (x=0; x<eventCount; x++) delete eventVar[x];
