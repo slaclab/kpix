@@ -1,5 +1,5 @@
 # Set Kpix Software Base Directory
-setenv KPIX_SW /u/ey/rherbst/projects/w_si/devel/software/kpixSw
+setenv KPIX_SW ${PWD}/../kpixSw
 
 # QT Base Directory
 setenv QTDIR /afs/slac/g/reseng/qt/qt_3.3.8
@@ -10,7 +10,7 @@ setenv ROOTSYS /afs/slac/g/reseng/root/root_5.20
 # Kpix GUI Settings. run 'kpixGui -h' for more info
 #setenv KPIX_DEVICE   /dev/ttyUSB0
 setenv KPIX_DEVICE   0
-setenv KPIX_BASE_DIR /u1/w_si/samples/
+setenv KPIX_BASE_DIR /u1/w_si/paul/
 #setenv KPIX_VERSION  8
 setenv KPIX_VERSION  9
 setenv KPIX_CLK_PER  50

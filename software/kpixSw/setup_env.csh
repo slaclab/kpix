@@ -1,5 +1,5 @@
 # Set Kpix Software Base Directory
-setenv KPIX_SW /u/ey/rherbst/projects/w_si/src/kpixSw
+setenv KPIX_SW $(PWD)
 
 # QT Base Directory
 setenv QTDIR /afs/slac/g/reseng/qt/qt_3.3.8
