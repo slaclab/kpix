@@ -329,7 +329,7 @@ void KpixRunWrite::setDir ( string directory ) {
 
 
 // Add calibData xml string to run file
-void KpixRunWrite::addCalibData ( std::string calibData ) {
+void KpixRunWrite::addCalibData ( TString calibData ) {
    this->calibData = calibData;
 }
 
