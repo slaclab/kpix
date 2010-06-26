@@ -1,9 +1,9 @@
 # Variables
 DEF     := -DONLINE_EN
 CFLAGS  := -Wall `root-config --cflags` -I ../sidApi/online -I ../sidApi/offline
-LFLAGS  := -L../../bin -lsidapi `root-config --libs` -lMinuit -llockdev -lXMLParser
+LFLAGS  := -L../bin -lsidapi `root-config --libs` -lMinuit -llockdev -lXMLParser
 CC      := g++
-OUT     := $(PWD)/../../bin
+OUT     := $(PWD)/../bin
 DEP     := $(PWD)/.dep
 
 # Sources in the nohw directory
