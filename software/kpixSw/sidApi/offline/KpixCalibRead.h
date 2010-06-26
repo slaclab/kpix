@@ -24,7 +24,8 @@
 #define __KPIX_CALIB_READ_H__
 
 #include <string>
-
+#include <TSAXParser.h>
+#include "../online/KpixRunWrite.h"
 
 // Forward Declarations
 class KpixRunRead;
@@ -33,13 +34,93 @@ class TFile;
 class TGraph;
 class TH1;
 class TH1F;
+class KpixCalibReadAsicStruct;
+class KpixCalibReadGainStruct;
+class KpixCalibReadDir;
 
-class KpixCalibRead {
+// Structure for ASICs
+class KpixCalibReadAsicStruct {
+
+      public:
+      //Calibration variables for 1024 channels and 4 buckets
+      double fitGain [1024][4]; 
+      double fitIntercept [1024][4]; 
+      double fitRms [1024][4]; 
+      double histSigma [1024][4]; 
+      double histMean [1024][4]; 
+      double histRms [1024][4]; 
+
+      // Asic Serial #
+      int kpixID;
+
+      // Self-pointing pointer for linked list
+      class KpixCalibReadAsicStruct *nextAsic;
+};
+
+// Structure for different gain modes
+class KpixCalibReadGainStruct {
+
+      public:
+      // Head & Tail pointer to the Calibration Data structure
+      KpixCalibReadAsicStruct *asicHead, *asicTail;
+
+      // Asic Serial #
+      int gainID;
+    
+      // Self-pointing pointer for linked list
+      class KpixCalibReadGainStruct *nextGain;
+};
+
+// Structure for directories
+class KpixCalibReadDir {
+    
+      public:
+      // Head & Tail pointer to the Gain structure
+      KpixCalibReadGainStruct *gainHead, *gainTail;
+
+      // Directory Name
+      std::string dirName;
+
+      // Self-pointing pointer for linked list
+      class KpixCalibReadDir *nextDir;
+};
+
+class KpixCalibRead : public TSAXParser{
 
       // Flag to delete runRead
       bool delRunRead;
 
+      // Pointers & variables to hold the current xml tags
+      KpixCalibReadAsicStruct *currAsic;
+      KpixCalibReadGainStruct *currGain;
+      KpixCalibReadDir *currDir;
+      int currBucket, currChannel;
+      char currVar[15];
+      
+      // Head & Tail pointer for the KpixCalibReadDir linked list
+      KpixCalibReadDir *dirHead, *dirTail;
+
+      // Function to add an asic to linked list
+      KpixCalibReadAsicStruct *addAsic ( KpixCalibReadGainStruct *currGain, int kpixID );
+
+      // Function to find an asic to linked list
+      KpixCalibReadAsicStruct *findAsic ( KpixCalibReadGainStruct *currGain, int kpixID );
+
+      // Function to add a Gain to linked list
+      KpixCalibReadGainStruct *addGain ( KpixCalibReadDir *currDir, int gainID );
+
+      // Function to find a Gain to linked list
+      KpixCalibReadGainStruct *findGain ( KpixCalibReadDir *currDir, int gainID );
+
+      // Function to add a Dir to linked list
+      KpixCalibReadDir *addDir ( std::string dirName );
+
+      // Function to find a Dir to linked list
+      KpixCalibReadDir *findDir ( std::string dirName );
+
    public:
+
+      bool xmlDataExists;
 
       // Run Read Class
       KpixRunRead *kpixRunRead;
@@ -54,6 +135,14 @@ class KpixCalibRead {
 
       // Calib Data Class DeConstructor
       ~KpixCalibRead ( );
+
+      // Functions to parse the xml tags 
+      void OnStartElement ( const char *name, const TList *attributes );
+      void OnEndElement ( const char *name );
+      void OnCharacters ( const char *characters );
+
+      // Function to invoke xml parsing
+      void ParseXml ( );
 
       // Function to create plot name
       static std::string genPlotName ( int gain, int kpix, int channel, int bucket, std::string prefix, int range=-1 );
@@ -95,5 +184,10 @@ class KpixCalibRead {
 
       // Copy calibration data to a new root file
       void copyCalibData ( TFile *newFile, std::string directory, KpixAsic **asic, int asicCnt );
+
+      // Copy xml string to a new root file
+      void copyCalibData ( KpixRunWrite *newFile );
+
+      ClassDef(KpixCalibRead,1)
 };
 #endif
