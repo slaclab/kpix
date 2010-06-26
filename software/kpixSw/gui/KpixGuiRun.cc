@@ -399,8 +399,11 @@ void KpixGuiRun::run() {
             event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusMsg,"Copying Calibration Data");
             QApplication::postEvent(this,event);
 
-            // Copy calibrations data to the new file
-            calData->copyCalibData ( kpixRunWrite->treeFile, "Force_Trig",asic,asicCnt);
+            // Copy xml string data to the new file
+            if ( calData->xmlDataExists )
+               calData->copyCalibData ( kpixRunWrite );
+            else // Copy calibrations data to the new file
+               calData->copyCalibData ( kpixRunWrite->treeFile, "Force_Trig",asic,asicCnt);
 
             // Update status display
             event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusMsg,"Loading Calibration Constants");
