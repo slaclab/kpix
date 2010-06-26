@@ -1,9 +1,9 @@
 # Variables
 DEF     := -DONLINE_EN
 CFLAGS  := -Wall `root-config --cflags` -I $(KPIX_SW)/sidApi/offline -I $(KPIX_SW)/sidApi/online
-LFLAGS  := -L$(PWD)/../bin -lsidapi `root-config --libs` -lMinuit -llockdev -lXMLParser
+LFLAGS  := -L$(PWD)/../kpixSw/bin -lsidapi `root-config --libs` -lMinuit -llockdev -lXMLParser
 CC      := g++
-OUT     := $(PWD)/../bin
+OUT     := $(PWD)/../kpixSw/bin
 
 # Sources in the nohw directory
 UTIL_SRC  := $(wildcard *.cc)

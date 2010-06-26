@@ -56,19 +56,19 @@ Required Packages:
 
       Next compile the root package
 
+         csh> setenv ROOTSYS /u1/local/root_5.20 (change to the dir where you untarred root)
          csh> gmake
-         csh> setenv ROOTSYS /u1/local/root_5.20
 
 Kpix Software Installation:
 
    Once the QT and ROOT packages are in place the Kpix Software can be
-   installed. Once the tar file is extracted edit the following file
-   found in the top level directory:
-
-      setup_env.csh
+   installed. You must setup the environment to match your current setup.
+   You will find a file called setup_env.csh.template in the bin
+   subdirectory of the kpix release. Copy this file to setup_env.csh.
 
    In this file set the KPIX_SW variable to the location of the top
-   level directory of the Kpix Software package. 
+   level directory of the Kpix Software package. The default is
+   to use a reletive path.
 
    Next set the QTDIR variable to the location in which the QT package
    was installed (/u1/local/qt_3.3.8/).

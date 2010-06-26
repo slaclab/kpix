@@ -2972,6 +2972,7 @@ double KpixAsic::convertTemp(unsigned int tempAdc) {
    // Convert back to an integer
    de = 0;
    for (i=0; i<8; i++) if ( d[i] != 0 ) de += (int)pow(2,i);
+   cout << "Decimal=0x" << hex << de << endl;
 
    // Convert to temperature
    temp=-30.2+127.45/233*(255-de-20.75);
