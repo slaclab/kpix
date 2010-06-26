@@ -153,7 +153,7 @@ class KpixRunWrite {
       void setDir ( std::string directory );
 
       // Add calibData xml string to run file
-      void addCalibData ( std::string calibData );
+      void addCalibData ( TString calibData );
 
       // Deconstructor.
       virtual ~KpixRunWrite ();
