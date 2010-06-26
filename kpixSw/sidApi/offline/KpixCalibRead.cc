@@ -28,14 +28,210 @@
 #include <TH1F.h>
 #include <TF1.h>
 #include <TFile.h>
+#include <TList.h>
 #include <TDirectory.h>
 #include <TKey.h>
 #include <TGraph.h>
+#include <Riostream.h>
+#include <TXMLEngine.h>
+#include <TXMLParser.h>
+#include <TXMLAttr.h>
 #include "KpixCalibRead.h"
 #include "KpixRunRead.h"
 #include "KpixAsic.h"
 using namespace std;
 
+ClassImp(KpixCalibRead)
+
+/*****************************************************************************************************************/
+
+// Private function to add ASIC to the KpixCalibReadAsicStruct linked list or return an existing entry
+KpixCalibReadAsicStruct * KpixCalibRead::addAsic ( KpixCalibReadGainStruct *currGain, int kpixID ) {
+
+   // Add asic to the head if list is empty
+   if ( currGain->asicHead == NULL ) {
+      currGain->asicHead = new KpixCalibReadAsicStruct;
+      memset(currGain->asicHead,0,sizeof(KpixCalibReadAsicStruct));
+      currGain->asicHead->kpixID = kpixID;
+      currGain->asicHead->nextAsic = NULL;
+      currGain->asicTail = currGain->asicHead;
+      return (currGain->asicHead);
+   }
+   else {
+      KpixCalibReadAsicStruct *temp;
+      if ( (temp = findAsic (currGain, kpixID)) == NULL ) {
+         KpixCalibReadAsicStruct *newAsic = new KpixCalibReadAsicStruct;
+         memset(newAsic,0,sizeof(KpixCalibReadAsicStruct));
+         newAsic->kpixID = kpixID;
+         newAsic->nextAsic = NULL;
+         currGain->asicTail->nextAsic = newAsic; //Add the new asic to the tail
+         currGain->asicTail = newAsic;
+         return (newAsic);
+      }
+      else { //Asic already exists in the list
+         return (temp);
+      }
+   }
+}
+
+// Private function to find ASIC in the KpixCalibReadAsicStruct linked list
+KpixCalibReadAsicStruct *KpixCalibRead::findAsic ( KpixCalibReadGainStruct *currGain, int kpixID ) {
+   
+   KpixCalibReadAsicStruct *temp = currGain->asicHead;
+
+   while ( temp != NULL ) {
+      if ( temp->kpixID == kpixID )
+         return temp; // Found the ASIC, return the pointer
+      temp = temp->nextAsic;
+   }
+
+   return (NULL); // Not found, return NULL
+}
+
+// Private function to add Gain to the KpixCalibReadAsicStruct linked list or return an existing entry
+KpixCalibReadGainStruct *KpixCalibRead::addGain ( KpixCalibReadDir *currDir, int gainID ) {
+
+   // Add gain to the head if list is empty
+   if ( currDir->gainHead == NULL ) {
+      currDir->gainHead = new KpixCalibReadGainStruct;
+      memset(currDir->gainHead,0,sizeof(KpixCalibReadGainStruct));
+      currDir->gainHead->gainID = gainID;
+      currDir->gainHead->nextGain = NULL;
+      currDir->gainHead->asicHead = NULL;
+      currDir->gainHead->asicTail = NULL;
+      currDir->gainTail = currDir->gainHead;
+      return (currDir->gainHead);
+   }
+   else {
+      KpixCalibReadGainStruct *temp;
+      if( (temp = findGain (currDir, gainID)) == NULL ) {
+         KpixCalibReadGainStruct *newGain = new KpixCalibReadGainStruct;
+         memset(newGain,0,sizeof(KpixCalibReadGainStruct));
+         newGain->gainID = gainID;
+         newGain->nextGain = NULL;
+         newGain->asicHead = NULL;
+         newGain->asicTail = NULL;
+         currDir->gainTail->nextGain = newGain; //Add the new Gain to the tail
+         currDir->gainTail = newGain;
+         return (newGain);
+      }
+      else { //Gain already exists in the list
+         return (temp);
+      }
+   }
+}
+
+// Private function to find Gain in the KpixCalibReadGainStruct linked list
+KpixCalibReadGainStruct *KpixCalibRead::findGain ( KpixCalibReadDir *currDir, int gainID ) {
+   
+   KpixCalibReadGainStruct *temp = currDir->gainHead;
+
+   while ( temp != NULL ) {
+      if ( temp->gainID == gainID )
+         return temp; // Found the Gain, return the pointer
+      temp = temp->nextGain;
+   }
+
+   return (NULL); // Not found, return NULL
+}
+
+// Private function to add Directory to the KpixCalibReadDir linked list or return an existing entry
+KpixCalibReadDir *KpixCalibRead::addDir ( std::string dirName) {
+
+   // Add Dir to the head if list is empty
+   if ( dirHead == NULL ) {
+      dirHead = new KpixCalibReadDir;
+      dirHead->dirName = dirName;
+      dirHead->nextDir = NULL;
+      dirHead->gainHead = NULL;
+      dirHead->gainTail = NULL;
+      dirTail = dirHead;
+      return (dirHead);
+   }
+   else {
+      KpixCalibReadDir *temp;
+      if( (temp = findDir ( dirName )) == NULL ) {
+         KpixCalibReadDir *newDir = new KpixCalibReadDir;
+         newDir->dirName = dirName;
+         newDir->nextDir = NULL;
+         newDir->gainHead = NULL;
+         newDir->gainTail = NULL;
+         dirTail->nextDir = newDir; //Add the new Dir to the tail
+         dirTail = newDir;
+         return (newDir);
+      }
+      else { //Dir already exists in the list
+         return (temp);
+      }
+   }
+}
+
+// Private function to find Dir in the KpixCalibReadDir linked list
+KpixCalibReadDir *KpixCalibRead::findDir ( std::string dirName ) {
+   
+   KpixCalibReadDir *temp = dirHead;
+
+   while ( temp != NULL ) {
+      if ( temp->dirName.compare( dirName ) == 0 )
+         return temp; // Found the dir, return the pointer
+      temp = temp->nextDir;
+   }
+
+   return (NULL); // Not found, return NULL
+}
+
+void KpixCalibRead::OnStartElement ( const char *name, const TList *attributes ) {
+
+   TXMLAttr *attr;
+   strcpy (currVar, name ); // Store the variable
+   
+   TIter next (attributes);
+   while ((attr = (TXMLAttr*) next())) {
+      
+      if ( !strcmp(name, "type") ) 
+         { currDir = addDir ( attr->GetValue () ); } // Handle the directory
+      else if ( !strcmp(name, "gain") )
+         { currGain = addGain ( currDir, atoi( attr->GetValue() )); } // Handle the Gain type
+      else if ( !strcmp(name, "asic") ) 
+         { currAsic = addAsic ( currGain, atoi( attr->GetValue() )); } // Handle the asic
+      else if ( !strcmp(name, "channel") ) 
+         { currChannel = atoi( attr->GetValue () ); } // Store the channel value
+      else if ( !strcmp(name, "bucket") ) 
+         { currBucket = atoi( attr->GetValue() ); } // Store the bucket value
+   }
+}
+
+void KpixCalibRead::OnEndElement ( const char *name ) { } // Not using this feature
+
+void KpixCalibRead::OnCharacters ( const char *characters ) {
+   if ( strcmp(characters, "\n") ) { // Ignores carriage returns
+      if ( !strcmp(currVar, "fitGain") )
+         { currAsic->fitGain[currChannel][currBucket] = atof( characters ); }
+      else if ( !strcmp(currVar, "fitIntercept") )
+         { currAsic->fitIntercept[currChannel][currBucket] = atof( characters ); }
+      else if ( !strcmp(currVar, "fitRms") )
+         { currAsic->fitRms[currChannel][currBucket] = atof( characters ); }
+      else if ( !strcmp(currVar, "histMean") )
+         { currAsic->histMean[currChannel][currBucket] = atof( characters ); }
+      else if ( !strcmp(currVar, "histSigma") )
+         { currAsic->histSigma[currChannel][currBucket] = atof( characters ); }
+      else if ( !strcmp(currVar, "histRms") )
+         { currAsic->histRms[currChannel][currBucket] = atof( characters ); }
+   }
+}
+
+void KpixCalibRead::ParseXml ( ) {
+
+   TString xmlString;
+
+   xmlString = kpixRunRead->getCalibData();
+   if (xmlString.Length() > 5) {
+      xmlDataExists = 1;
+      ParseBuffer ( xmlString.Data(), xmlString.Length() ); 
+   }
+}
+
+/*****************************************************************************************************************/
 
 // Private functin to create plot name
 string KpixCalibRead::genPlotName ( int gain, int kpix, int channel, int bucket, string prefix, int range ) {
@@ -78,7 +274,18 @@ string KpixCalibRead::genPlotTitle ( int gain, int kpix, int channel, int bucket
 // Calib Data Class Constructor
 // Pass path to calibration data or
 KpixCalibRead::KpixCalibRead ( string calibFile, bool debug ) {
+
+   //Assigning default values
+   currAsic = NULL;
+   currGain = NULL;
+   currDir = NULL;
+   currBucket = currChannel = 0;
+   currVar[0] = '\0';
+   dirHead = NULL;
+   dirTail = NULL;
+
    this->kpixRunRead = new KpixRunRead(calibFile, debug);
+   ParseXml ();
    delRunRead = true;
 }
 
@@ -87,6 +294,7 @@ KpixCalibRead::KpixCalibRead ( string calibFile, bool debug ) {
 // Pass already open run read class
 KpixCalibRead::KpixCalibRead ( KpixRunRead *kpixRunRead ) {
    this->kpixRunRead = kpixRunRead;
+   ParseXml ();
    delRunRead = false;
 }
 
@@ -94,6 +302,28 @@ KpixCalibRead::KpixCalibRead ( KpixRunRead *kpixRunRead ) {
 // Deconstructor
 KpixCalibRead::~KpixCalibRead () {
    if ( delRunRead ) delete kpixRunRead;
+
+   if ( dirHead != NULL ) {
+      if ( dirHead->gainHead != NULL ) {
+         if ( dirHead->gainHead->asicHead != NULL ) {
+            while ( dirHead->gainHead->asicHead != NULL ) {
+               dirHead->gainHead->asicTail = dirHead->gainHead->asicHead;
+               dirHead->gainHead->asicHead = dirHead->gainHead->asicHead->nextAsic;
+               delete (dirHead->gainHead->asicTail);
+            }
+         }
+         while ( dirHead->gainHead != NULL ) {
+            dirHead->gainTail = dirHead->gainHead;
+            dirHead->gainHead = dirHead->gainHead->nextGain;
+            delete (dirHead->gainTail);
+         }
+      }
+      while ( dirHead != NULL ) {
+         dirTail = dirHead;
+         dirHead = dirHead->nextDir;
+         delete (dirTail);
+      }
+   }
 }
 
  
@@ -180,29 +410,51 @@ bool KpixCalibRead::getCalibData ( double *fitGain, double *fitIntercept,
                                    string dir, int gain, int kpix, int channel, int bucket,
                                    double *fitGainErr, double *fitInterceptErr ) {
 
-   TGraph *gr;
+   TGraph *gr = NULL;
    string name;
 
    // Defaults
    *fitGain      = 0;
    *fitIntercept = 0;
 
-   // First try filtered gain
-   name = "/" + dir + "/" + genPlotName(gain,kpix,channel,bucket,"calib_filt",(gain==2)?1:0);
-   kpixRunRead->treeFile->GetObject(name.c_str(),gr);
+   // Check if XML data exists
+   KpixCalibReadDir *currDir;
+   KpixCalibReadGainStruct *currGain;
+   KpixCalibReadAsicStruct *currAsic;
 
-   // Next try non-filtered gain
-   if ( gr == NULL ) {
-      name = "/" + dir + "/" + genPlotName(gain,kpix,channel,bucket,"calib_value",(gain==2)?1:0);
-      kpixRunRead->treeFile->GetObject(name.c_str(),gr);
+   currDir = findDir ( dir );
+
+   if ( currDir != NULL ) {
+      currGain = findGain ( currDir, gain );
+      
+      if ( currGain != NULL ) {
+         currAsic = findAsic ( currGain, kpix );
+       
+         if ( currAsic != NULL ) {
+            *fitGain = currAsic->fitGain[channel][bucket];
+            *fitIntercept = currAsic->fitIntercept[channel][bucket];
+         }
+      }
    }
 
-   // Get gain value
-   if ( gr != NULL && gr->GetFunction("pol1") != NULL ) {
-      *fitGain      = gr->GetFunction("pol1")->GetParameter(1);
-      *fitIntercept = gr->GetFunction("pol1")->GetParameter(0);
-      if ( fitGainErr      != NULL ) *fitGainErr      = gr->GetFunction("pol1")->GetParError(1);
-      if ( fitInterceptErr != NULL ) *fitInterceptErr = gr->GetFunction("pol1")->GetParError(0);
+   if ( !xmlDataExists ) {
+      // First try filtered gain
+      name = "/" + dir + "/" + genPlotName(gain,kpix,channel,bucket,"calib_filt",(gain==2)?1:0);
+      kpixRunRead->treeFile->GetObject(name.c_str(),gr);
+
+      // Next try non-filtered gain
+      if ( gr == NULL ) {
+         name = "/" + dir + "/" + genPlotName(gain,kpix,channel,bucket,"calib_value",(gain==2)?1:0);
+         kpixRunRead->treeFile->GetObject(name.c_str(),gr);
+      }
+
+      // Get gain value
+      if ( gr != NULL && gr->GetFunction("pol1") != NULL ) {
+         *fitGain = gr->GetFunction("pol1")->GetParameter(1);
+         *fitIntercept = gr->GetFunction("pol1")->GetParameter(0);
+         if ( fitGainErr      != NULL ) *fitGainErr      = gr->GetFunction("pol1")->GetParError(1);
+         if ( fitInterceptErr != NULL ) *fitInterceptErr = gr->GetFunction("pol1")->GetParError(0);
+      }
    }
    if ( gr != NULL ) delete gr;
 
@@ -221,14 +473,35 @@ bool KpixCalibRead::getCalibRms ( double *rms, string dir, int gain, int kpix, i
    // Default
    *rms = 0;
 
-   // Get RMS
-   name = "/" + dir + "/" + genPlotName(gain,kpix,channel,bucket,"calib_resid",(gain==2)?1:0);
-   kpixRunRead->treeFile->GetObject(name.c_str(),gr);
+   // Check if XML data exists
+   KpixCalibReadDir *currDir;
+   KpixCalibReadGainStruct *currGain;
+   KpixCalibReadAsicStruct *currAsic;
 
-   // Get value
-   if ( gr != NULL ) {
-      *rms = gr->GetRMS(2);
-      delete gr;
+   currDir = findDir ( dir );
+
+   if ( currDir != NULL ) {
+      currGain = findGain ( currDir, gain );
+      
+      if ( currGain != NULL ) {
+         currAsic = findAsic ( currGain, kpix );
+       
+         if ( currAsic != NULL ) {
+            *rms = currAsic->fitRms[channel][bucket];
+         }
+      }
+   }
+
+   if ( !xmlDataExists ) {
+      // Get RMS
+      name = "/" + dir + "/" + genPlotName(gain,kpix,channel,bucket,"calib_resid",(gain==2)?1:0);
+      kpixRunRead->treeFile->GetObject(name.c_str(),gr);
+
+      // Get value
+      if ( gr != NULL ) {
+         *rms = gr->GetRMS(2);
+         delete gr;
+      }
    }
 
    // Return Value
@@ -242,24 +515,48 @@ bool KpixCalibRead::getHistData ( double *fitMean, double *fitSigma, double *fit
                                   string dir, int gain, int kpix, int channel, int bucket,
                                   double *fitMeanErr, double *fitSigmaErr ) {
 
-   TH1F *hist;
+   TH1F *hist = NULL;
 
    // Defaults
    *fitMean  = 0;
    *fitSigma = 0;
 
-   // Get Plot
-   string name = "/" + dir + "/" + genPlotName(gain,kpix,channel,bucket,"dist_value");
-   kpixRunRead->treeFile->GetObject(name.c_str(),hist);
+   // Check if XML data exists
+   KpixCalibReadDir *currDir;
+   KpixCalibReadGainStruct *currGain;
+   KpixCalibReadAsicStruct *currAsic;
 
-   // Get Values
-   if ( hist != NULL && hist->GetFunction("gaus") != NULL ) {
-      *fitMean = hist->GetFunction("gaus")->GetParameter(1);
-      *fitSigma = hist->GetFunction("gaus")->GetParameter(2);
-      *fitRms   = hist->GetRMS();
-      if ( fitMeanErr  != NULL ) *fitMeanErr  = hist->GetFunction("gaus")->GetParError(1);
-      if ( fitSigmaErr != NULL ) *fitSigmaErr = hist->GetFunction("gaus")->GetParError(2);
+   currDir = findDir ( dir );
+
+   if ( currDir != NULL ) {
+      currGain = findGain ( currDir, gain );
+      
+      if ( currGain != NULL ) {
+         currAsic = findAsic ( currGain, kpix );
+       
+         if ( currAsic != NULL ) {
+            *fitMean = currAsic->histMean[channel][bucket];
+            *fitSigma = currAsic->histSigma[channel][bucket];
+            *fitRms = currAsic->histRms[channel][bucket];
+         }
+      }
    }
+
+   if ( !xmlDataExists ) {
+      // Get Plot
+      string name = "/" + dir + "/" + genPlotName(gain,kpix,channel,bucket,"dist_value");
+      kpixRunRead->treeFile->GetObject(name.c_str(),hist);
+
+      // Get Values
+      if ( hist != NULL && hist->GetFunction("gaus") != NULL ) {
+         *fitMean = hist->GetFunction("gaus")->GetParameter(1);
+         *fitSigma = hist->GetFunction("gaus")->GetParameter(2);
+         *fitRms = hist->GetRMS();
+         if ( fitMeanErr  != NULL ) *fitMeanErr  = hist->GetFunction("gaus")->GetParError(1);
+         if ( fitSigmaErr != NULL ) *fitSigmaErr = hist->GetFunction("gaus")->GetParError(2);
+      }
+   }
+
    if ( hist != NULL ) delete hist;
 
    // Return Value
@@ -317,3 +614,8 @@ void KpixCalibRead::copyCalibData ( TFile *newFile, string directory, KpixAsic *
    newFile->cd("/");
 }
 
+void KpixCalibRead::copyCalibData ( KpixRunWrite *newFile ) {
+
+   newFile->addCalibData(kpixRunRead->getCalibData());
+
+}
