@@ -14,3 +14,4 @@ Kpix Serial Numbers
 900 = SLAC
 901 = Oregon
 902 = Oregon
+903 = Santa Cruz

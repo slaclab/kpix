@@ -1,8 +1,8 @@
 # Project Name
-PROJECT = Opto
+PROJECT = KpixCon
 
 # Prom Type
-PROM_TYPE = xcf04s
+PROM_TYPE = xcf32p
 
 # Top level directory
 export TOP_DIR  = $(PWD)/../
