@@ -187,7 +187,7 @@ architecture Opto of Opto is
          clkSelA       : out   std_logic_vector(4  downto 0); -- Clock selection
          clkSelB       : out   std_logic_vector(4  downto 0); -- Clock selection
          clkSelC       : out   std_logic_vector(4  downto 0); -- Clock selection
-         coreState     : out   std_logic_vector(1  downto 0); -- State of internal core
+         coreState     : out   std_logic_vector(2  downto 0); -- State of internal core
          jumpL         : in    std_logic_vector(3  downto 0); -- Test jumpers, active low
          ledL          : out   std_logic_vector(3  downto 0); -- FPGA LEDs
          debug         : out   std_logic_vector(31 downto 0); -- Debug connector
@@ -265,7 +265,7 @@ architecture Opto of Opto is
    signal clkSelA       : std_logic_vector(4  downto 0); -- Clock selection
    signal clkSelB       : std_logic_vector(4  downto 0); -- Clock selection
    signal clkSelC       : std_logic_vector(4  downto 0); -- Clock selection
-   signal coreState     : std_logic_vector(1  downto 0); -- State of internal core
+   signal coreState     : std_logic_vector(2  downto 0); -- State of internal core
 
    -- Local signals
    signal tmpClk20      : std_logic;
