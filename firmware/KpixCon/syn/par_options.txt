@@ -74,7 +74,7 @@
 #   -ise = Use supplied ISE project repository file.
 #   -ntd = Ignore Timing constraints in physical constraints file and do NOT
 #         generate timing constraints automatically.
--t 3
+#-t 3
 -intstyle ise
 -ol high
 -w

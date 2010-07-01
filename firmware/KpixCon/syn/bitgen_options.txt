@@ -78,5 +78,6 @@
 #  DCIUpdateMode   AsRequired, Continuous, Quiet
 #  IEEE1532        No, Yes
 #  Binary          No, Yes
+-t 3
 -intstyle silent
 -w

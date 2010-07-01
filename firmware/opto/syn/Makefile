@@ -83,6 +83,8 @@ bit:
 	@cd $(TOP_DIR)/build/$(PROJECT); bitgen \
       -f $(TOP_DIR)/syn/bitgen_options.txt \
       $(TOP_DIR)/build/$(PROJECT)/$(PROJECT).ncd 
+	@cp $(TOP_DIR)/build/$(PROJECT)/$(PROJECT).bit $(TOP_DIR)/images/$(PROJECT)_$(PRJ_VERSION).bit
+	@echo "Bit File copied to $(TOP_DIR)/images/$(PROJECT)_$(PRJ_VERSION).bit"
 
 prom:
 	@echo 
@@ -94,8 +96,8 @@ prom:
       -f $(TOP_DIR)/syn/promgen_options.txt \
       -x $(PROM_TYPE) \
       -u 0 $(TOP_DIR)/build/$(PROJECT)/$(PROJECT).bit
-		@cp $(TOP_DIR)/build/$(PROJECT)/$(PROJECT).mcs $(TOP_DIR)/images/$(PROJECT)_$(PRJ_VERSION).mcs
-		@echo "Image copied to $(TOP_DIR)/images/$(PROJECT)_$(PRJ_VERSION).mcs"
+	@cp $(TOP_DIR)/build/$(PROJECT)/$(PROJECT).mcs $(TOP_DIR)/images/$(PROJECT)_$(PRJ_VERSION).mcs
+	@echo "Image copied to $(TOP_DIR)/images/$(PROJECT)_$(PRJ_VERSION).mcs"
 
 clean:
 	rm -rf $(TOP_DIR)/build/$(PROJECT)
