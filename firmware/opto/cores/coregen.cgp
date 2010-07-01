@@ -16,5 +16,5 @@ SET simulationfiles = Behavioral
 SET speedgrade = -5
 SET verilogsim = False
 SET vhdlsim = True
-SET workingdirectory = /afs/slac.stanford.edu/u/ey/rherbst/projects/w_si/fpgas/opto/cores/tmp
+SET workingdirectory = ./tmp
 

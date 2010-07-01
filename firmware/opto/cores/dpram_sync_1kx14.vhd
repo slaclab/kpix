@@ -23,7 +23,7 @@
 --     appliances, devices, or systems. Use in such applications are          --
 --     expressly prohibited.                                                  --
 --                                                                            --
---     (c) Copyright 1995-2007 Xilinx, Inc.                                   --
+--     (c) Copyright 1995-2009 Xilinx, Inc.                                   --
 --     All rights reserved.                                                   --
 --------------------------------------------------------------------------------
 -- You must compile the wrapper file dpram_sync_1kx14.vhd when simulating
@@ -43,9 +43,9 @@ Library XilinxCoreLib;
 ENTITY dpram_sync_1kx14 IS
 	port (
 	clka: IN std_logic;
-	dina: IN std_logic_VECTOR(13 downto 0);
-	addra: IN std_logic_VECTOR(9 downto 0);
 	wea: IN std_logic_VECTOR(0 downto 0);
+	addra: IN std_logic_VECTOR(9 downto 0);
+	dina: IN std_logic_VECTOR(13 downto 0);
 	clkb: IN std_logic;
 	addrb: IN std_logic_VECTOR(9 downto 0);
 	doutb: OUT std_logic_VECTOR(13 downto 0));
@@ -56,41 +56,51 @@ ARCHITECTURE dpram_sync_1kx14_a OF dpram_sync_1kx14 IS
 component wrapped_dpram_sync_1kx14
 	port (
 	clka: IN std_logic;
-	dina: IN std_logic_VECTOR(13 downto 0);
-	addra: IN std_logic_VECTOR(9 downto 0);
 	wea: IN std_logic_VECTOR(0 downto 0);
+	addra: IN std_logic_VECTOR(9 downto 0);
+	dina: IN std_logic_VECTOR(13 downto 0);
 	clkb: IN std_logic;
 	addrb: IN std_logic_VECTOR(9 downto 0);
 	doutb: OUT std_logic_VECTOR(13 downto 0));
 end component;
 
 -- Configuration specification 
-	for all : wrapped_dpram_sync_1kx14 use entity XilinxCoreLib.blk_mem_gen_v2_8(behavioral)
+	for all : wrapped_dpram_sync_1kx14 use entity XilinxCoreLib.blk_mem_gen_v4_1(behavioral)
 		generic map(
 			c_has_regceb => 0,
 			c_has_regcea => 0,
 			c_mem_type => 1,
+			c_rstram_b => 0,
+			c_rstram_a => 0,
+			c_has_injecterr => 0,
+			c_rst_type => "SYNC",
 			c_prim_type => 1,
-			c_sinita_val => "0",
 			c_read_width_b => 14,
+			c_initb_val => "0",
 			c_family => "spartan3",
 			c_read_width_a => 14,
 			c_disable_warn_bhv_coll => 0,
+			c_use_softecc => 0,
 			c_write_mode_b => "READ_FIRST",
 			c_init_file_name => "no_coe_file_loaded",
 			c_write_mode_a => "READ_FIRST",
 			c_mux_pipeline_stages => 0,
+			c_has_softecc_output_regs_b => 0,
+			c_has_softecc_output_regs_a => 0,
 			c_has_mem_output_regs_b => 0,
+			c_has_mem_output_regs_a => 0,
 			c_load_init_file => 0,
 			c_xdevicefamily => "spartan3",
-			c_has_mem_output_regs_a => 0,
 			c_write_depth_b => 1024,
 			c_write_depth_a => 1024,
-			c_has_ssrb => 0,
+			c_has_rstb => 0,
+			c_has_rsta => 0,
 			c_has_mux_output_regs_b => 0,
-			c_has_ssra => 0,
+			c_inita_val => "0",
 			c_has_mux_output_regs_a => 0,
 			c_addra_width => 10,
+			c_has_softecc_input_regs_b => 0,
+			c_has_softecc_input_regs_a => 0,
 			c_addrb_width => 10,
 			c_default_data => "0",
 			c_use_ecc => 0,
@@ -102,15 +112,15 @@ end component;
 			c_read_depth_a => 1024,
 			c_byte_size => 9,
 			c_sim_collision_check => "ALL",
-			c_use_ramb16bwer_rst_bhv => 0,
 			c_common_clk => 0,
 			c_wea_width => 1,
 			c_has_enb => 0,
 			c_web_width => 1,
 			c_has_ena => 0,
-			c_sinitb_val => "0",
 			c_use_byte_web => 0,
 			c_use_byte_wea => 0,
+			c_rst_priority_b => "CE",
+			c_rst_priority_a => "CE",
 			c_use_default_data => 0);
 -- synthesis translate_on
 BEGIN
@@ -118,9 +128,9 @@ BEGIN
 U0 : wrapped_dpram_sync_1kx14
 		port map (
 			clka => clka,
-			dina => dina,
-			addra => addra,
 			wea => wea,
+			addra => addra,
+			dina => dina,
 			clkb => clkb,
 			addrb => addrb,
 			doutb => doutb);

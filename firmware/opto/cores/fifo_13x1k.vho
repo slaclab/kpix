@@ -23,7 +23,7 @@
 --     appliances, devices, or systems. Use in such applications are          --
 --     expressly prohibited.                                                  --
 --                                                                            --
---     (c) Copyright 1995-2007 Xilinx, Inc.                                   --
+--     (c) Copyright 1995-2009 Xilinx, Inc.                                   --
 --     All rights reserved.                                                   --
 --------------------------------------------------------------------------------
 -- The following code must appear in the VHDL architecture header:
@@ -32,13 +32,13 @@
 component fifo_13x1k
 	port (
 	clk: IN std_logic;
-	din: IN std_logic_VECTOR(12 downto 0);
-	rd_en: IN std_logic;
 	rst: IN std_logic;
+	din: IN std_logic_VECTOR(12 downto 0);
 	wr_en: IN std_logic;
+	rd_en: IN std_logic;
 	dout: OUT std_logic_VECTOR(12 downto 0);
-	empty: OUT std_logic;
-	full: OUT std_logic);
+	full: OUT std_logic;
+	empty: OUT std_logic);
 end component;
 
 -- COMP_TAG_END ------ End COMPONENT Declaration ------------
@@ -50,13 +50,13 @@ end component;
 your_instance_name : fifo_13x1k
 		port map (
 			clk => clk,
-			din => din,
-			rd_en => rd_en,
 			rst => rst,
+			din => din,
 			wr_en => wr_en,
+			rd_en => rd_en,
 			dout => dout,
-			empty => empty,
-			full => full);
+			full => full,
+			empty => empty);
 -- INST_TAG_END ------ End INSTANTIATION Template ------------
 
 -- You must compile the wrapper file fifo_13x1k.vhd when simulating

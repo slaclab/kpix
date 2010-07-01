@@ -23,7 +23,7 @@
 --     appliances, devices, or systems. Use in such applications are          --
 --     expressly prohibited.                                                  --
 --                                                                            --
---     (c) Copyright 1995-2007 Xilinx, Inc.                                   --
+--     (c) Copyright 1995-2009 Xilinx, Inc.                                   --
 --     All rights reserved.                                                   --
 --------------------------------------------------------------------------------
 -- You must compile the wrapper file fifo_13x1k.vhd when simulating
@@ -43,13 +43,13 @@ Library XilinxCoreLib;
 ENTITY fifo_13x1k IS
 	port (
 	clk: IN std_logic;
-	din: IN std_logic_VECTOR(12 downto 0);
-	rd_en: IN std_logic;
 	rst: IN std_logic;
+	din: IN std_logic_VECTOR(12 downto 0);
 	wr_en: IN std_logic;
+	rd_en: IN std_logic;
 	dout: OUT std_logic_VECTOR(12 downto 0);
-	empty: OUT std_logic;
-	full: OUT std_logic);
+	full: OUT std_logic;
+	empty: OUT std_logic);
 END fifo_13x1k;
 
 ARCHITECTURE fifo_13x1k_a OF fifo_13x1k IS
@@ -57,22 +57,23 @@ ARCHITECTURE fifo_13x1k_a OF fifo_13x1k IS
 component wrapped_fifo_13x1k
 	port (
 	clk: IN std_logic;
-	din: IN std_logic_VECTOR(12 downto 0);
-	rd_en: IN std_logic;
 	rst: IN std_logic;
+	din: IN std_logic_VECTOR(12 downto 0);
 	wr_en: IN std_logic;
+	rd_en: IN std_logic;
 	dout: OUT std_logic_VECTOR(12 downto 0);
-	empty: OUT std_logic;
-	full: OUT std_logic);
+	full: OUT std_logic;
+	empty: OUT std_logic);
 end component;
 
 -- Configuration specification 
-	for all : wrapped_fifo_13x1k use entity XilinxCoreLib.fifo_generator_v4_4(behavioral)
+	for all : wrapped_fifo_13x1k use entity XilinxCoreLib.fifo_generator_v6_1(behavioral)
 		generic map(
 			c_has_int_clk => 0,
-			c_rd_freq => 1,
 			c_wr_response_latency => 1,
+			c_rd_freq => 1,
 			c_has_srst => 0,
+			c_enable_rst_sync => 1,
 			c_has_rd_data_count => 0,
 			c_din_width => 13,
 			c_has_wr_data_count => 0,
@@ -92,6 +93,7 @@ end component;
 			c_rd_depth => 1024,
 			c_default_value => "BlankString",
 			c_mif_file_name => "BlankString",
+			c_error_injection_type => 0,
 			c_has_underflow => 0,
 			c_has_rd_rst => 0,
 			c_has_almost_full => 0,
@@ -134,13 +136,13 @@ BEGIN
 U0 : wrapped_fifo_13x1k
 		port map (
 			clk => clk,
-			din => din,
-			rd_en => rd_en,
 			rst => rst,
+			din => din,
 			wr_en => wr_en,
+			rd_en => rd_en,
 			dout => dout,
-			empty => empty,
-			full => full);
+			full => full,
+			empty => empty);
 -- synthesis translate_on
 
 END fifo_13x1k_a;

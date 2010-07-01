@@ -1,8 +1,12 @@
 # Output products list for <dpram_sync_1kx14>
+_xmsgs/pn_parser.xmsgs
+blk_mem_gen_ds512.pdf
+dpram_sync_1kx14.gise
 dpram_sync_1kx14.ngc
 dpram_sync_1kx14.vhd
 dpram_sync_1kx14.vho
 dpram_sync_1kx14.xco
-dpram_sync_1kx14_blk_mem_gen_v2_8_xst_1.ngc_xst.xrpt
+dpram_sync_1kx14.xise
 dpram_sync_1kx14_flist.txt
+dpram_sync_1kx14_readme.txt
 dpram_sync_1kx14_xmdf.tcl

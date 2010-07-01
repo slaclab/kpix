@@ -52,11 +52,11 @@ utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path afifo_17x32.
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type coregen_ip
 incr fcount
 
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path afifo_17x32_fifo_generator_v4_4_xst_1.ngc_xst.xrpt
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path afifo_17x32_xmdf.tcl
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type AnyView
 incr fcount
 
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path afifo_17x32_xmdf.tcl
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path fifo_generator_ug175.pdf
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type AnyView
 incr fcount
 

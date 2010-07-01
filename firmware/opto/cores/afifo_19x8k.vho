@@ -23,7 +23,7 @@
 --     appliances, devices, or systems. Use in such applications are          --
 --     expressly prohibited.                                                  --
 --                                                                            --
---     (c) Copyright 1995-2007 Xilinx, Inc.                                   --
+--     (c) Copyright 1995-2009 Xilinx, Inc.                                   --
 --     All rights reserved.                                                   --
 --------------------------------------------------------------------------------
 -- The following code must appear in the VHDL architecture header:
@@ -31,15 +31,15 @@
 ------------- Begin Cut here for COMPONENT Declaration ------ COMP_TAG
 component afifo_19x8k
 	port (
-	din: IN std_logic_VECTOR(18 downto 0);
-	rd_clk: IN std_logic;
-	rd_en: IN std_logic;
 	rst: IN std_logic;
 	wr_clk: IN std_logic;
+	rd_clk: IN std_logic;
+	din: IN std_logic_VECTOR(18 downto 0);
 	wr_en: IN std_logic;
+	rd_en: IN std_logic;
 	dout: OUT std_logic_VECTOR(18 downto 0);
-	empty: OUT std_logic;
 	full: OUT std_logic;
+	empty: OUT std_logic;
 	wr_data_count: OUT std_logic_VECTOR(12 downto 0));
 end component;
 
@@ -51,15 +51,15 @@ end component;
 ------------- Begin Cut here for INSTANTIATION Template ----- INST_TAG
 your_instance_name : afifo_19x8k
 		port map (
-			din => din,
-			rd_clk => rd_clk,
-			rd_en => rd_en,
 			rst => rst,
 			wr_clk => wr_clk,
+			rd_clk => rd_clk,
+			din => din,
 			wr_en => wr_en,
+			rd_en => rd_en,
 			dout => dout,
-			empty => empty,
 			full => full,
+			empty => empty,
 			wr_data_count => wr_data_count);
 -- INST_TAG_END ------ End INSTANTIATION Template ------------
 

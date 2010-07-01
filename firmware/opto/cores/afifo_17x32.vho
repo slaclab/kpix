@@ -23,7 +23,7 @@
 --     appliances, devices, or systems. Use in such applications are          --
 --     expressly prohibited.                                                  --
 --                                                                            --
---     (c) Copyright 1995-2007 Xilinx, Inc.                                   --
+--     (c) Copyright 1995-2009 Xilinx, Inc.                                   --
 --     All rights reserved.                                                   --
 --------------------------------------------------------------------------------
 -- The following code must appear in the VHDL architecture header:
@@ -31,15 +31,15 @@
 ------------- Begin Cut here for COMPONENT Declaration ------ COMP_TAG
 component afifo_17x32
 	port (
-	din: IN std_logic_VECTOR(16 downto 0);
-	rd_clk: IN std_logic;
-	rd_en: IN std_logic;
 	rst: IN std_logic;
 	wr_clk: IN std_logic;
+	rd_clk: IN std_logic;
+	din: IN std_logic_VECTOR(16 downto 0);
 	wr_en: IN std_logic;
+	rd_en: IN std_logic;
 	dout: OUT std_logic_VECTOR(16 downto 0);
-	empty: OUT std_logic;
-	full: OUT std_logic);
+	full: OUT std_logic;
+	empty: OUT std_logic);
 end component;
 
 -- COMP_TAG_END ------ End COMPONENT Declaration ------------
@@ -50,15 +50,15 @@ end component;
 ------------- Begin Cut here for INSTANTIATION Template ----- INST_TAG
 your_instance_name : afifo_17x32
 		port map (
-			din => din,
-			rd_clk => rd_clk,
-			rd_en => rd_en,
 			rst => rst,
 			wr_clk => wr_clk,
+			rd_clk => rd_clk,
+			din => din,
 			wr_en => wr_en,
+			rd_en => rd_en,
 			dout => dout,
-			empty => empty,
-			full => full);
+			full => full,
+			empty => empty);
 -- INST_TAG_END ------ End INSTANTIATION Template ------------
 
 -- You must compile the wrapper file afifo_17x32.vhd when simulating

@@ -23,7 +23,7 @@
 --     appliances, devices, or systems. Use in such applications are          --
 --     expressly prohibited.                                                  --
 --                                                                            --
---     (c) Copyright 1995-2007 Xilinx, Inc.                                   --
+--     (c) Copyright 1995-2009 Xilinx, Inc.                                   --
 --     All rights reserved.                                                   --
 --------------------------------------------------------------------------------
 -- The following code must appear in the VHDL architecture header:
@@ -32,9 +32,9 @@
 component dpram_sync_1kx14
 	port (
 	clka: IN std_logic;
-	dina: IN std_logic_VECTOR(13 downto 0);
-	addra: IN std_logic_VECTOR(9 downto 0);
 	wea: IN std_logic_VECTOR(0 downto 0);
+	addra: IN std_logic_VECTOR(9 downto 0);
+	dina: IN std_logic_VECTOR(13 downto 0);
 	clkb: IN std_logic;
 	addrb: IN std_logic_VECTOR(9 downto 0);
 	doutb: OUT std_logic_VECTOR(13 downto 0));
@@ -49,9 +49,9 @@ end component;
 your_instance_name : dpram_sync_1kx14
 		port map (
 			clka => clka,
-			dina => dina,
-			addra => addra,
 			wea => wea,
+			addra => addra,
+			dina => dina,
 			clkb => clkb,
 			addrb => addrb,
 			doutb => doutb);
