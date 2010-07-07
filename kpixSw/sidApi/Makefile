@@ -70,6 +70,12 @@ dep: $(ON_SRC) $(OFF_SRC) $(ON_HDR) $(OFF_HDR)
 	test -d $(DEP) || mkdir $(DEP)
 	cd $(DEP); $(CC) $(CFLAGS) $(DEF) -MD -E $(ON_SRC) $(OFF_SRC) > /dev/null
 
+# Generate documentation
+docs: 
+	cd ./doc; doxygen doxygen.cfg
+	cd ./doc/latex; make
+	cp ./doc/latex/refman.pdf ./doc/sidApi.pdf
+
 # Include dependencies
 -include ($ON_DEPS)
 -include ($OFF_DEPS)

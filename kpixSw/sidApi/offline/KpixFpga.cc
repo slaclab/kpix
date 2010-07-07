@@ -670,18 +670,13 @@ void KpixFpga::cmdRstCheckSumErrors () {
 
 
 // Method to set BNC A output source.
-// Default value = 0 (RegClock)
-// Valid range of values are 0 - 31
 // Set writeEn to false to disable real write to KPIX
-void KpixFpga::setBncSourceA ( unsigned char value, bool writeEn ) {
-
-   // Verify range
-   if ( value > 31  ) throw string("KpixFpga::setBncSourceA -> Invalid Value");
+void KpixFpga::setBncSourceA ( KpixBncOut value, bool writeEn ) {
 
    // Output value
    if ( enDebug ) {
       cout << "KpixFpga::setBncSourceA -> Set BncSourceA=";
-      cout << setw(3) << setfill('0') << dec << (int)value;
+      cout << setw(3) << setfill('0') << dec << value;
       cout << ", WriteEn=" << writeEn << ".\n";
    }
 
@@ -690,7 +685,7 @@ void KpixFpga::setBncSourceA ( unsigned char value, bool writeEn ) {
 
    // Set value
    temp &= 0xFFE0FFFF;
-   temp |= (value << 16) & 0x001F0000;
+   temp |= ((unsigned int)value << 16) & 0x001F0000;
 
    // Set new value
    regSetValue ( 0x08, temp, writeEn );
@@ -699,19 +694,21 @@ void KpixFpga::setBncSourceA ( unsigned char value, bool writeEn ) {
 
 // Method to get BNC A output source.
 // Set readEn to false to disable real read from FPGA.
-unsigned char KpixFpga::getBncSourceA ( bool readEn ) {
+KpixFpga::KpixBncOut KpixFpga::getBncSourceA ( bool readEn ) {
 
    // Get Value
    unsigned int temp = regGetValue ( 0x08, readEn );
 
    // Convert value
-   unsigned char ret = (temp >> 16) & 0x1F;
+   unsigned char val = (temp >> 16) & 0x1F;
+   KpixBncOut ret = (KpixBncOut)val;
 
    // Debug
    if ( enDebug ) {
       cout << "KpixFpga::getBncSourceA -> BncSourceA=";
       cout << hex << setfill('0') << setw(3) << (int)ret << ".\n";
    }
+
    return(ret);
 }
 
@@ -720,10 +717,7 @@ unsigned char KpixFpga::getBncSourceA ( bool readEn ) {
 // Default value = 0 (RegClock)
 // Valid range of values are 0 - 31
 // Set writeEn to false to disable real write to KPIX
-void KpixFpga::setBncSourceB ( unsigned char value, bool writeEn ) {
-
-   // Verify range
-   if ( value > 31  ) throw string("KpixFpga::setBncSourceB -> Invalid Value");
+void KpixFpga::setBncSourceB ( KpixBncOut value, bool writeEn ) {
 
    // Output value
    if ( enDebug ) {
@@ -737,7 +731,7 @@ void KpixFpga::setBncSourceB ( unsigned char value, bool writeEn ) {
 
    // Set value
    temp &= 0xFC1FFFFF;
-   temp |= (value << 21) & 0x03E00000;
+   temp |= ((unsigned int)value << 21) & 0x03E00000;
 
    // Set new value
    regSetValue ( 0x08, temp, writeEn );
@@ -746,13 +740,14 @@ void KpixFpga::setBncSourceB ( unsigned char value, bool writeEn ) {
 
 // Method to get BNC B output source.
 // Set readEn to false to disable real read from FPGA.
-unsigned char KpixFpga::getBncSourceB ( bool readEn ) {
+KpixFpga::KpixBncOut KpixFpga::getBncSourceB ( bool readEn ) {
 
    // Get Value
    unsigned int temp = regGetValue ( 0x08, readEn );
 
    // Convert value
-   unsigned char ret = (temp >> 21) & 0x1F;
+   unsigned char val = (temp >> 21) & 0x1F;
+   KpixBncOut ret = (KpixBncOut)val;
 
    // Debug
    if ( enDebug ) {
@@ -965,19 +960,8 @@ void KpixFpga::cmdRstParErrors () {
 
 
 // Method to set source for external run trigger
-// Valid values are 0-4
-// Default value = 0 None.
-// Pass source index.
-//  0x0 = None. Disable.
-//  0x1 = NIMA Input
-//  0x2 = NIMB Input
-//  0x3 = BncA Input
-//  0x4 = BncB Input
 // Set writeEn to false to disable real write to KPIX
-void KpixFpga::setExtRunSource ( unsigned char value, bool writeEn ) {
-
-   // Verify range
-   if ( value > 4 ) throw string("KpixFpga::setExtRunSource -> Invalid Value");
+void KpixFpga::setExtRunSource ( KpixExtRun value, bool writeEn ) {
 
    // Output value
    if ( enDebug ) {
@@ -991,7 +975,7 @@ void KpixFpga::setExtRunSource ( unsigned char value, bool writeEn ) {
 
    // Set value
    temp &= 0xFFF8FFFF;
-   temp |= (value << 16) & 0x00070000;
+   temp |= ((unsigned int)value << 16) & 0x00070000;
 
    // Set new value
    regSetValue ( 0x0E, temp, writeEn );
@@ -1000,13 +984,14 @@ void KpixFpga::setExtRunSource ( unsigned char value, bool writeEn ) {
 
 // Method to get source for external run trigger
 // Set readEn to false to disable real read from FPGA.
-unsigned char KpixFpga::getExtRunSource ( bool readEn ) {
+KpixFpga::KpixExtRun KpixFpga::getExtRunSource ( bool readEn ) {
 
    // Get Value
    unsigned int temp = regGetValue ( 0x0E, readEn );
 
    // Convert value
-   unsigned char ret = ((temp >> 16) & 0x7);
+   unsigned char val = ((temp >> 16) & 0x7);
+   KpixExtRun ret = (KpixExtRun)val;
 
    // Debug
    if ( enDebug ) {
@@ -1088,16 +1073,8 @@ bool KpixFpga::getExtRunType ( bool readEn ) {
 
 
 // Method to set source for external records.
-// Valid values are 0-4
-// Default value = 0 None.
-// Pass source index.
-//  0x0 = None. Disable.
-//  0x1 = NIMA Input
-//  0x2 = NIMB Input
-//  0x3 = BncA Input
-//  0x4 = BncB Input
 // Set writeEn to false to disable real write to KPIX
-void KpixFpga::setExtRecord ( unsigned char value, bool writeEn ) {
+void KpixFpga::setExtRecord ( KpixExtRec value, bool writeEn ) {
 
    // Verify range
    if ( value > 5 ) throw string("KpixFpga::setExtRecord -> Invalid Value");
@@ -1114,7 +1091,7 @@ void KpixFpga::setExtRecord ( unsigned char value, bool writeEn ) {
 
    // Set value, bits 22-20
    temp &= 0xFF8FFFFF;
-   temp |= (value << 20) & 0x00700000;
+   temp |= ((unsigned int)value << 20) & 0x00700000;
 
    // Set new value
    regSetValue ( 0x0E, temp, writeEn );
@@ -1123,13 +1100,14 @@ void KpixFpga::setExtRecord ( unsigned char value, bool writeEn ) {
 
 // Method to get source for external records
 // Set readEn to false to disable real read from FPGA.
-unsigned char KpixFpga::getExtRecord ( bool readEn ) {
+KpixFpga::KpixExtRec KpixFpga::getExtRecord ( bool readEn ) {
 
    // Get Value
    unsigned int temp = regGetValue ( 0x0E, readEn );
 
    // Convert value, bits 22-20
-   unsigned char ret = (temp >> 20) & 0x7;
+   unsigned char val = (temp >> 20) & 0x7;
+   KpixExtRec ret = (KpixExtRec)val;
 
    // Debug
    if ( enDebug ) {
@@ -1279,10 +1257,8 @@ unsigned char KpixFpga::getCalDelay ( bool readEn ) {
 
 
 // Method to set the force trigger source.
-// Valid values are 0-15
-// Default value = 0 None.
 // Set writeEn to false to disable real write to KPIX
-void KpixFpga::setTrigSource ( unsigned char value, bool writeEn ) {
+void KpixFpga::setTrigSource ( KpixTrigSource value, bool writeEn ) {
 
    // Verify range
    if ( value > 15 ) throw string("KpixFpga::setTrigSource -> Invalid Value");
@@ -1299,7 +1275,7 @@ void KpixFpga::setTrigSource ( unsigned char value, bool writeEn ) {
 
    // Set value
    temp &= 0xF0FFFFFF;
-   temp |= (value << 24) & 0x0F000000;
+   temp |= ((unsigned int)value << 24) & 0x0F000000;
 
    // Set new value
    regSetValue ( 0x0B, temp, writeEn );
@@ -1308,13 +1284,14 @@ void KpixFpga::setTrigSource ( unsigned char value, bool writeEn ) {
 
 // Method to get BNC B output source.
 // Set readEn to false to disable real read from FPGA.
-unsigned char KpixFpga::getTrigSource ( bool readEn ) {
+KpixFpga::KpixTrigSource KpixFpga::getTrigSource ( bool readEn ) {
 
    // Get Value
    unsigned int temp = regGetValue ( 0x0B, readEn );
 
    // Convert value
-   unsigned short ret = (temp >> 24) & 0xF;
+   unsigned short val = (temp >> 24) & 0xF;
+   KpixTrigSource ret = (KpixTrigSource)val;
 
    // Debug
    if ( enDebug ) {
@@ -1402,22 +1379,22 @@ void KpixFpga::setDefaults ( unsigned int clkPeriod, bool kpixVer, bool writeEn 
 
    // Other defaults
    setKpixVer  ( kpixVer, writeEn ); // Not On Gui
-   setBncSourceA ( 0x03, writeEn );
-   setBncSourceB ( 0x03, writeEn );
+   setBncSourceA ( KpixBncPwrUpAcq, writeEn );
+   setBncSourceB ( KpixBncPwrUpAcq, writeEn );
    setDropData ( false, writeEn );
    setRawData ( false, writeEn );
    setDisKpixA ( false, writeEn ); // Not On Gui
    setDisKpixB ( false, writeEn ); // Not On Gui
    setDisKpixC ( false, writeEn ); // Not On Gui
    setDisKpixD ( false, writeEn ); // Not On Gui
-   setExtRunSource ( 0, writeEn);
+   setExtRunSource ( KpixExtRunDisable, writeEn);
    setExtRunDelay ( 0, writeEn);
    setExtRunType ( false, writeEn);
-   setExtRecord ( 0, writeEn);
+   setExtRecord ( KpixExtRecDisable, writeEn);
    setTrigEnable ( 0xFF, writeEn);
    setTrigExpand ( 0, writeEn);
    setCalDelay ( 0, writeEn);
-   setTrigSource ( 0, writeEn);
+   setTrigSource ( KpixTrigNone, writeEn);
 }
 
 

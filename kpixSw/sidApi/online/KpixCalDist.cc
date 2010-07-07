@@ -172,29 +172,29 @@ void KpixCalDist::enableRandDistTime ( bool enable ) { this->randDistTimeEn = en
 // Or pass -1 to set cal mask for all channels or -2 to set mask for no channels
 void KpixCalDist::runDistribution ( short channel ) {
 
-   unsigned int   x,y,gain;
-   KpixBunchTrain *train;
-   KpixSample     *sample;
-   double         charges[4];
-   int            errCnt;
-   unsigned int   modes[1024];
-   TH1F           *hist[8];
-   int            kpixSer, kpixAddr, chan, bucket, idx, range;
-   unsigned int   kpixIdx;
-   unsigned int   prgCount, prgTotal;
-   KpixHistogram  *value[4096 * kpixCount];
-   KpixHistogram  *time[4096 * kpixCount];
-   unsigned int   plotCount;
-   struct timeval curTime, acqTime;
-   unsigned long  diff, secUs;
-   unsigned int   distMin;
-   unsigned int   distMax;
-   unsigned int   calCount;
-   unsigned int   orig0Delay;
-   unsigned int   cal0Delay;
-   unsigned int   cal1Delay;
-   unsigned int   cal2Delay;
-   unsigned int   cal3Delay;
+   unsigned int           x,y,gain;
+   KpixBunchTrain         *train;
+   KpixSample             *sample;
+   double                 charges[4];
+   int                    errCnt;
+   KpixAsic::KpixChanMode modes[1024];
+   TH1F                   *hist[8];
+   int                    kpixSer, kpixAddr, chan, bucket, idx, range;
+   unsigned int           kpixIdx;
+   unsigned int           prgCount, prgTotal;
+   KpixHistogram          *value[4096 * kpixCount];
+   KpixHistogram          *time[4096 * kpixCount];
+   unsigned int           plotCount;
+   struct timeval         curTime, acqTime;
+   unsigned long          diff, secUs;
+   unsigned int           distMin;
+   unsigned int           distMax;
+   unsigned int           calCount;
+   unsigned int           orig0Delay;
+   unsigned int           cal0Delay;
+   unsigned int           cal1Delay;
+   unsigned int           cal2Delay;
+   unsigned int           cal3Delay;
 
    // Set Plot Directory
    if ( plotEn ) {
@@ -206,20 +206,20 @@ void KpixCalDist::runDistribution ( short channel ) {
    kpixRunWrite->setEventVar("calDistType",1.0);
 
    // Init modes
-   for (x=0; x < 1024; x++) modes[x] = KpixChanDisable;
+   for (x=0; x < 1024; x++) modes[x] = KpixAsic::KpixChanDisable;
 
    // No Channels Enabled
    if ( channel == -2 ) kpixRunWrite->setEventVar("calDistMaskChan",-2.0);
 
    // All Channels Enabled
    else if ( channel == -1 ) {
-      for (x=0; x < 1024; x++) modes[x] = KpixChanThreshACal;
+      for (x=0; x < 1024; x++) modes[x] = KpixAsic::KpixChanThreshACal;
       kpixRunWrite->setEventVar("calDistMaskChan",-1.0);
    }
 
    // One Channel Enabled
    else {
-      modes[channel] = KpixChanThreshACal;
+      modes[channel] = KpixAsic::KpixChanThreshACal;
       kpixRunWrite->setEventVar("calDistMaskChan",(double)channel);
    }
 
@@ -488,7 +488,7 @@ void KpixCalDist::runDistribution ( short channel ) {
 
                   // Update Live Plots
                   if (kpixProgress != NULL && plotCount != 0) 
-                     kpixProgress->updateData(KpixDataTH1F,8,(void **)hist); 
+                     kpixProgress->updateData(KpixProgress::KpixDataTH1F,8,(void **)hist); 
 
                   // Otherwise delete plots
                   else for ( bucket = 0; bucket < 8; bucket++ ) if ( hist[bucket] != NULL ) delete hist[bucket]; 
@@ -512,22 +512,22 @@ void KpixCalDist::runDistribution ( short channel ) {
 // Or pass -1 to set cal mask for all channels or -2 to set mask for no channels
 void KpixCalDist::runCalibration ( short channel ) {
 
-   unsigned int     x,gain;
-   int              cal;
-   KpixBunchTrain   *train;
-   KpixSample       *sample;
-   double           charges[4];
-   int              errCnt;
-   unsigned int     modes[1024];
-   int              kpixSer, kpixAddr, chan, bucket, idx;
-   unsigned int     kpixIdx;
-   TGraph           *tg[16];
-   unsigned int     prgCount, prgTotal;
-   KpixCalDistData  *dataR0[4096 * kpixCount];
-   KpixCalDistData  *dataR1[4096 * kpixCount];
-   unsigned int     plotCount;
-   struct timeval   curTime, acqTime;
-   unsigned long    diff, secUs;
+   unsigned int           x,gain;
+   int                    cal;
+   KpixBunchTrain         *train;
+   KpixSample             *sample;
+   double                 charges[4];
+   int                    errCnt;
+   KpixAsic::KpixChanMode modes[1024];
+   int                    kpixSer, kpixAddr, chan, bucket, idx;
+   unsigned int           kpixIdx;
+   TGraph                 *tg[16];
+   unsigned int           prgCount, prgTotal;
+   KpixCalDistData        *dataR0[4096 * kpixCount];
+   KpixCalDistData        *dataR1[4096 * kpixCount];
+   unsigned int           plotCount;
+   struct timeval         curTime, acqTime;
+   unsigned long          diff, secUs;
 
    // Set Plot Directory
    if ( plotEn ) {
@@ -539,20 +539,20 @@ void KpixCalDist::runCalibration ( short channel ) {
    kpixRunWrite->setEventVar("calDistType",0.0);
 
    // Init modes
-   for (x=0; x < 1024; x++) modes[x] = KpixChanDisable;
+   for (x=0; x < 1024; x++) modes[x] = KpixAsic::KpixChanDisable;
 
    // No Channels Enabled
    if ( channel == -2 ) kpixRunWrite->setEventVar("calDistMaskChan",-2.0);
 
    // All Channels Enabled
    else if ( channel == -1 ) {
-      for (x=0; x < 1024; x++) modes[x] = KpixChanThreshACal;
+      for (x=0; x < 1024; x++) modes[x] = KpixAsic::KpixChanThreshACal;
       kpixRunWrite->setEventVar("calDistMaskChan",-1.0);
    }
 
    // One Channel Enabled
    else {
-      modes[channel] = KpixChanThreshACal;
+      modes[channel] = KpixAsic::KpixChanThreshACal;
       kpixRunWrite->setEventVar("calDistMaskChan",(double)channel);
    }
 
@@ -823,7 +823,7 @@ void KpixCalDist::runCalibration ( short channel ) {
 
                   // Check For Valid, Update Live Plots
                   if ( kpixProgress != NULL && plotCount != 0 )
-                     kpixProgress->updateData(KpixDataTGraph,16,(void **)tg);
+                     kpixProgress->updateData(KpixProgress::KpixDataTGraph,16,(void **)tg);
 
                   // Otherwise delete plots
                   else for ( bucket = 0; bucket < 16; bucket++ ) if ( tg[bucket] != NULL ) delete tg[bucket];

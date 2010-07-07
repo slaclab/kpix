@@ -1,4 +1,3 @@
-//-----------------------------------------------------------------------------
 // File          : KpixGuiTop.cc
 // Author        : Ryan Herbst  <rherbst@slac.stanford.edu>
 // Created       : 09/25/2008
@@ -558,7 +557,8 @@ void KpixGuiTop::customEvent ( QCustomEvent *event ) {
             runRead = NULL;
          }
       }
-      calEnable->setChecked(cmdType==CmdRescanKpix);
+      if ( cmdType == CmdLoadSettings ) calEnable->setChecked(false);
+      if ( cmdType = CmdRescanKpix )    calEnable->setChecked(true);
       updateDisplay();
       setEnabled(true);
       update();

@@ -171,7 +171,8 @@ void KpixGuiMain::updateDisplay() {
       // Serial
       temp.str("");
       temp << dec << asic[x]->getSerial();
-      kpixList->setText(x,1,temp.str());
+      if ( x == (asicCnt-1) ) kpixList->setText(x,1,"FPGA");
+      else kpixList->setText(x,1,temp.str());
    }
 }
 
@@ -194,7 +195,7 @@ void KpixGuiMain::writeConfig() {
 
    // Get Pos Pixel & Serial Numbers For Each ASICs
    if ( asicCnt != 0 ) for ( x=0; x < (asicCnt-1); x++ ) {
-      asic[x]->setSerial(kpixList->text(x,1).toInt(&ok,10));
+      if ( x != (asicCnt-1)) asic[x]->setSerial(kpixList->text(x,1).toInt(&ok,10));
       asic[x]->setCntrlPosPixel(posPixel[x]->currentItem());
    }
 }

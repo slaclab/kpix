@@ -158,9 +158,10 @@ void KpixGuiTrig::setEnabled ( bool enable ) {
 // Update Display
 void KpixGuiTrig::updateDisplay() {
 
-   stringstream  temp;
-   unsigned int  x, y, chModes[1024];
-   unsigned char tholdVal[4];
+   stringstream           temp;
+   unsigned int           x, y;
+   KpixAsic::KpixChanMode chModes[1024];
+   unsigned char          tholdVal[4];
 
    // FPGA
    if ( fpga != NULL ) {
@@ -198,9 +199,10 @@ void KpixGuiTrig::updateDisplay() {
 // Read Settings From Asic/Fpga class
 void KpixGuiTrig::readConfig() {
 
-   stringstream  temp;
-   unsigned int  x, chModes[1024];
-   unsigned char tholdVal[4];
+   stringstream           temp;
+   unsigned int           x;
+   KpixAsic::KpixChanMode chModes[1024];
+   unsigned char          tholdVal[4];
 
    // FPGA
    if ( fpga != NULL ) {
@@ -232,14 +234,14 @@ void KpixGuiTrig::readConfig() {
 // Write Settings To Asic/Fpga class
 void KpixGuiTrig::writeConfig() {
 
-   unsigned int  x, y;
-   bool          ok;
-   unsigned int  chModes[1024];
-   unsigned char tholdVal[4];
+   unsigned int           x, y;
+   bool                   ok;
+   KpixAsic::KpixChanMode chModes[1024];
+   unsigned char          tholdVal[4];
 
    // FPGA
    if ( fpga != NULL ) {
-      fpga->setTrigSource(trigSource->currentItem());
+      fpga->setTrigSource((KpixFpga::KpixTrigSource)trigSource->currentItem());
       fpga->setTrigExpand(trigExpand->value());
       fpga->setTrigEnable(trigMask->text().toInt(&ok,16));
    }
@@ -255,7 +257,7 @@ void KpixGuiTrig::writeConfig() {
 
       // Get Table Values
       for ( y=0; y <  4; y++ ) tholdVal[y] = thold[x*4+y]->currentItem();
-      for ( y=0; y < asic[x]->getChCount(); y++ ) chModes[y] = mode[x*1024+y]->currentItem();
+      for ( y=0; y < asic[x]->getChCount(); y++ ) chModes[y] = (KpixAsic::KpixChanMode)mode[x*1024+y]->currentItem();
 
       // Set Asic Data Modes
       asic[x]->setChannelModeArray(chModes);

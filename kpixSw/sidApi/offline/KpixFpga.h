@@ -76,6 +76,66 @@ class KpixFpga : public TObject {
 
    public:
 
+      enum KpixBncOut {
+         KpixBncRegClock       = 0x00,
+         KpixBncRegSel1        = 0x01,
+         KpixBncRegSel0        = 0x02,
+         KpixBncPwrUpAcq       = 0x03,
+         KpixBncResetLoad      = 0x04,
+         KpixBncLeakageNull    = 0x05,
+         KpixBncOffsetNull     = 0x06,
+         KpixBncThreshOff      = 0x07,
+         KpixBncTrigInh        = 0x08,
+         KpixBncCalStrobe      = 0x09,
+         KpixBncPwrUpAcqDig    = 0x0A,
+         KpixBncSelCell        = 0x0B,
+         KpixBncDeselAllCells  = 0x0C,
+         KpixBncRampPeriod     = 0x0D,
+         KpixBncPrechargeBus   = 0x0E,
+         KpixBncRegData        = 0x0F,
+         KpixBncRegWrEn        = 0x10,
+         KpixBncKpixClk        = 0x11,
+         KpixBncForceTrig      = 0x12,
+         KpixBncTrigEnable     = 0x13,
+         KpixBncCalStrobeDelay = 0x14,
+         KpixBncNimA           = 0x15,
+         KpixBncNimB           = 0x16,
+         KpixBncBncA           = 0x17,
+         KpixBncBncB           = 0x18,
+         KpixBncBcPhase        = 0x19
+      };
+
+      enum KpixExtRun {
+         KpixExtRunDisable     = 0x00,
+         KpixExtRunNimA        = 0x01,
+         KpixExtRunNimB        = 0x02,
+         KpixExtRunBncA        = 0x03,
+         KpixExtRunBncB        = 0x04
+      };
+
+      enum KpixExtRec {
+         KpixExtRecDisable     = 0x00,
+         KpixExtRecNimA        = 0x01,
+         KpixExtRecNimB        = 0x02,
+         KpixExtRecBncA        = 0x03,
+         KpixExtRecBncB        = 0x04,
+         KpixExtCalStrobe      = 0x05
+      };
+
+      enum KpixTrigSource {
+         KpixTrigNone         = 0x00,
+         KpixTrigCalStrobe    = 0x01,
+         KpixTrigNimA         = 0x02,
+         KpixTrigNimB         = 0x03,
+         KpixTrigBncA         = 0x04,
+         KpixTrigBncB         = 0x05,
+         KpixTrigMaskNimA     = 0x06,
+         KpixTrigMaskNimB     = 0x07,
+         KpixTrigMaskBncA     = 0x08,
+         KpixTrigMaskBncB     = 0x09,
+         KpixTrigCalStrobeDly = 0x0A
+      };
+
       // Kpix FPGA Constructor
       KpixFpga ( );
 
@@ -206,52 +266,19 @@ class KpixFpga : public TObject {
       void cmdRstCheckSumErrors ();
 
       // Method to set BNC A output source.
-      // Default value = 0 (RegClock)
-      // Valid range of values are 0 - 31
-      // Pass source index.
-      //  0x0 = RegClock
-      //  0x1 = RegSel1
-      //  0x2 = RegSel0
-      //  0x3 = PwrUpAcq
-      //  0x4 = ResetLoad
-      //  0x5 = LeakageNull
-      //  0x6 = OffsetNull
-      //  0x7 = ThreshOff
-      //  0x8 = TrigInh
-      //  0x9 = CalStrobe
-      // 0x0A = PwrUpAcqDig
-      // 0x0B = SelCell
-      // 0x0C = DeselAllCells
-      // 0x0D = RampPeriod
-      // 0x0E = PrechargeBus
-      // 0x0F = RegData
-      // 0x10 = RegWrEn
-      // 0x11 = KpixClk
-      // 0x12 = ForceTrig
-      // 0x13 = TrigEnable
-      // 0x14 = CalStrobeDelay
-      // 0x15 = NIM A Input
-      // 0x16 = NIM B Input
-      // 0x17 = BNC A Input
-      // 0x18 = BNC B Input
-      // 0x19 = Bunch Clock Phase
-      // Set writeEn to false to disable real write to KPIX
-      void setBncSourceA ( unsigned char  value, bool writeEn=true );
+      void setBncSourceA ( KpixBncOut value, bool writeEn=true );
 
       // Method to get BNC A output source.
       // Set readEn to false to disable real read from FPGA.
-      unsigned char getBncSourceA ( bool readEn=true );
+      KpixBncOut getBncSourceA ( bool readEn=true );
 
       // Method to set BNC B output source.
-      // Default value = 0 (RegClock)
-      // Valid range of values are 0 - 31
-      // Pass source index. Same as above
       // Set writeEn to false to disable real write to KPIX
-      void setBncSourceB ( unsigned char value, bool writeEn=true );
+      void setBncSourceB ( KpixBncOut value, bool writeEn=true );
 
       // Method to get BNC B output source.
       // Set readEn to false to disable real read from FPGA.
-      unsigned char getBncSourceB ( bool readEn=true );
+      KpixBncOut getBncSourceB ( bool readEn=true );
 
       // Method to set Drop Data Flag, this drops all received data.
       // Default value = False
@@ -328,20 +355,12 @@ class KpixFpga : public TObject {
       void cmdRstParErrors ();
 
       // Method to set source for external run trigger
-      // Valid values are 0-4
-      // Default value = 0 None.
-      // Pass source index.
-      //  0x0 = None. Disable.
-      //  0x1 = NIMA Input
-      //  0x2 = NIMB Input
-      //  0x3 = BncA Input
-      //  0x4 = BncB Input
       // Set writeEn to false to disable real write to KPIX
-      void setExtRunSource ( unsigned char value, bool writeEn=true );
+      void setExtRunSource ( KpixExtRun value, bool writeEn=true );
 
       // Method to get source for external run trigger
       // Set readEn to false to disable real read from FPGA.
-      unsigned char getExtRunSource ( bool readEn=true );
+      KpixExtRun getExtRunSource ( bool readEn=true );
 
       // Method to set delay in clock counts between external
       // trigger signal and sending of acquisition command.
@@ -365,21 +384,12 @@ class KpixFpga : public TObject {
       bool getExtRunType ( bool readEn=true );
 
       // Method to set source for external records.
-      // Valid values are 0-4
-      // Default value = 0 None.
-      // Pass source index.
-      //  0x0 = None. Disable.
-      //  0x1 = NIMA Input
-      //  0x2 = NIMB Input
-      //  0x3 = BncA Input
-      //  0x4 = BncB Input
-      //  0x5 = CalStrobe
       // Set writeEn to false to disable real write to KPIX
-      void setExtRecord ( unsigned char value, bool writeEn=true );
+      void setExtRecord ( KpixExtRec value, bool writeEn=true );
 
       // Method to get source for external records.
       // Set readEn to false to disable real read from FPGA.
-      unsigned char getExtRecord ( bool readEn=true );
+      KpixExtRec getExtRecord ( bool readEn=true );
 
       // Method to set external trigger enable windows
       // Pass bit mask (8-bits) to define which portions of the bunch
@@ -419,26 +429,12 @@ class KpixFpga : public TObject {
       unsigned char getCalDelay ( bool readEn=true );
 
       // Method to set the force trigger source.
-      // Valid values are 0-15
-      // Default value = 0 None.
-      // Pass source index.
-      //  0x0 = None.
-      //  0x1 = CalStrobe from internal core
-      //  0x2 = NIMA Input
-      //  0x3 = NIMB Input
-      //  0x4 = BncA Input
-      //  0x5 = BncB Input
-      //  0x6 = NIMA Input, Masked by trigger window
-      //  0x7 = NIMB Input, Masked by trigger window
-      //  0x8 = BncA Input, Masked by trigger window
-      //  0x9 = BncB Input, Masked by trigger window
-      //  0xA = CalStrobeDelay
       // Set writeEn to false to disable real write to KPIX
-      void setTrigSource ( unsigned char value, bool writeEn=true );
+      void setTrigSource ( KpixTrigSource value, bool writeEn=true );
 
       // Method to get BNC B output source.
       // Set readEn to false to disable real read from FPGA.
-      unsigned char getTrigSource ( bool readEn=true );
+      KpixTrigSource getTrigSource ( bool readEn=true );
 
       // Method to get KPIX train number value.
       // Set readEn to false to disable real read from FPGA.

@@ -20,17 +20,19 @@
 #define __KPIX_PROGRESS_H__
 
 // Constants
-static const unsigned int KpixDataTH1F     = 0;
-static const unsigned int KpixDataTGraph   = 1;
-static const unsigned int KpixDataTGraph2D = 2;
-static const unsigned int KpixDataTH2F     = 3;
-static const unsigned int KpixDataString   = 4;
-static const unsigned int KpixDataInt      = 5;
-static const unsigned int KpixDataUInt     = 6;
-static const unsigned int KpixDataDouble   = 7;
 
 class KpixProgress {
    public:
+      enum KpixData { 
+         KpixDataTH1F     = 0,
+         KpixDataTGraph   = 1,
+         KpixDataTGraph2D = 2,
+         KpixDataTH2F     = 3,
+         KpixDataString   = 4,
+         KpixDataInt      = 5,
+         KpixDataUInt     = 6,
+         KpixDataDouble   = 7
+      };
       virtual void updateProgress(unsigned int count, unsigned int total) = 0;
       virtual void updateData(unsigned int type, unsigned int count, void **data) = 0;
       virtual ~KpixProgress() {};

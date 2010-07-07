@@ -1107,34 +1107,26 @@ bool KpixAsic::getCfgAutoStatus ( bool readEn ) {
 
 // Method to set hold time value in Control Register
 // Set writeEn to false to disable real write to KPIX
-// Hold Times For 20Mhz Clock In Kpix Versions 0-7:
-//    1 = 3.2uS 
-//    2 = 2.0uS
-//    3 = 1.6uS
-// Hold Times For 20Mhz Clock In Kpix Version 8+:
-//    0 = 0.4uS 
-//    1 = 0.8uS 
-//    2 = 1.2uS
-//    3 = 1.6uS
-//    4 = 2.0uS
-//    5 = 2.4uS
-//    6 = 2.8uS
-//    7 = 3.2uS
-void KpixAsic::setCntrlHoldTime ( unsigned char holdTime, bool writeEn ) {
+void KpixAsic::setCntrlHoldTime ( KpixHoldTime holdTime, bool writeEn ) {
 
    unsigned short bit;
+   unsigned short shift;
 
    if ( enDebug ) {
-      cout << "KpixAsic::setCntrlHoldTime -> Set HoldTime=" << (int)holdTime;
+      cout << "KpixAsic::setCntrlHoldTime -> Set HoldTime=" << holdTime;
       cout << ", WriteEn=" << writeEn << ".\n";
    }
 
    // Older Kpix Versions
    if ( kpixVersion < 8 ) {
 
-      // Verify range
-      if ( holdTime < 1 || holdTime > 3 ) 
-         throw string("KpixAsic::setCntrlHoldTime -> Invalid Value");
+      // Determine shift
+      switch ( holdTime ) {
+         case HoldTime_64x: shift = 0; break;
+         case HoldTime_40x: shift = 1; break;
+         case HoldTime_32x: shift = 2; break;
+         default: throw string("KpixAsic::setCntrlHoldTime -> Invalid Value"); break;
+      }
 
       // Start bit depends on version
       if ( kpixVersion >= 3 ) bit = 8; else bit = 0;
@@ -1145,20 +1137,16 @@ void KpixAsic::setCntrlHoldTime ( unsigned char holdTime, bool writeEn ) {
       regSetBit(0x30,bit+2,false,false);
 
       // Set proper bit
-      regSetBit(0x030,bit+(holdTime-1),true,writeEn);
+      regSetBit(0x030,bit+shift,true,writeEn);
    }
 
    // New Kpix Versions
    else {
 
-      // Verify range
-      if ( holdTime > 7 ) 
-         throw string("KpixAsic::setCntrlHoldTime -> Invalid Value");
-
       // Set Bits
-      regSetBit(0x30,8,((holdTime&0x1)!=0),false);
-      regSetBit(0x30,9,((holdTime&0x2)!=0),false);
-      regSetBit(0x30,10,((holdTime&0x4)!=0),writeEn);
+      regSetBit(0x30,8,(((int)holdTime&0x1)!=0),false);
+      regSetBit(0x30,9,(((int)holdTime&0x2)!=0),false);
+      regSetBit(0x30,10,(((int)holdTime&0x4)!=0),writeEn);
    }
 }
 
@@ -1167,9 +1155,10 @@ void KpixAsic::setCntrlHoldTime ( unsigned char holdTime, bool writeEn ) {
 // Set readEn to false to disable real read from KPIX, this flag allows
 // the user to get the currently set status without actually accessing
 // the device.
-unsigned char KpixAsic::getCntrlHoldTime (  bool readEn ) {
+KpixAsic::KpixHoldTime KpixAsic::getCntrlHoldTime (  bool readEn ) {
 
-   unsigned short ret;
+   KpixHoldTime   ret;
+   unsigned int   val;
    unsigned short bit;
 
    // Older Kpix Versions
@@ -1178,21 +1167,22 @@ unsigned char KpixAsic::getCntrlHoldTime (  bool readEn ) {
       // Start bit depends on version
       if ( kpixVersion >= 3 ) bit = 8; else bit = 0;
 
-      // Set default return to Short Hold
-      ret = 1;
+      // Set default return
+      ret = HoldTime_64x;
 
       // Determine return, read only once
-      if ( regGetBit(0x30,bit,readEn)  ) ret = 1;
-      if ( regGetBit(0x30,bit+1,false) ) ret = 2;
-      if ( regGetBit(0x30,bit+2,false) ) ret = 3;
+      if ( regGetBit(0x30,bit,readEn)  ) ret = HoldTime_64x;
+      if ( regGetBit(0x30,bit+1,false) ) ret = HoldTime_40x;
+      if ( regGetBit(0x30,bit+2,false) ) ret = HoldTime_32x;
    }
 
    // Newer Version
    else {
-      ret = 0;
-      if ( regGetBit(0x30,8,readEn)) ret += 0x1;
-      if ( regGetBit(0x30,9,false))  ret += 0x2;
-      if ( regGetBit(0x30,10,false)) ret += 0x4;
+      val = 0;
+      if ( regGetBit(0x30,8,readEn)) val += 0x1;
+      if ( regGetBit(0x30,9,false))  val += 0x2;
+      if ( regGetBit(0x30,10,false)) val += 0x4;
+      ret = KpixHoldTime(val);
    }
 
    if ( enDebug ) {
@@ -1654,30 +1644,17 @@ bool KpixAsic::getCntrlDisPwrCycle (  bool readEn ) {
 
 // Method to set front end current value in Control Register
 // Set writeEn to false to disable real write to KPIX
-// Current values:
-//    0 = 1uA  
-//    1 = 31uA 
-//    2 = 61uA 
-//    3 = 91uA 
-//    4 = 121uA
-//    5 = 151uA
-//    6 = 181uA
-//    7 = 211uA
-void KpixAsic::setCntrlFeCurr ( unsigned char feCurr, bool writeEn ) {
+void KpixAsic::setCntrlFeCurr ( KpixFeCurr feCurr, bool writeEn ) {
    if ( kpixVersion > 7 ) {
       if ( enDebug ) {
-         cout << "KpixAsic::setCntrlFeCurr -> Set FeCurr=" << (int)feCurr;
+         cout << "KpixAsic::setCntrlFeCurr -> Set FeCurr=" << feCurr;
          cout << ", WriteEn=" << writeEn << ".\n";
       }
 
-      // Verify range
-      if ( feCurr > 7 ) 
-         throw string("KpixAsic::setCntrlFeCurr -> Invalid Value");
-
       // Set Bits
-      regSetBit(0x30,25,((feCurr&0x4)!=0),false);
-      regSetBit(0x30,26,((feCurr&0x2)!=0),false);
-      regSetBit(0x30,27,((feCurr&0x1)!=0),writeEn);
+      regSetBit(0x30,25,(((int)feCurr&0x4)!=0),false);
+      regSetBit(0x30,26,(((int)feCurr&0x2)!=0),false);
+      regSetBit(0x30,27,(((int)feCurr&0x1)!=0),writeEn);
    }
 }
 
@@ -1686,14 +1663,16 @@ void KpixAsic::setCntrlFeCurr ( unsigned char feCurr, bool writeEn ) {
 // Set readEn to false to disable real read from KPIX, this flag allows
 // the user to get the currently set status without actually accessing
 // the device.
-unsigned char KpixAsic::getCntrlFeCurr ( bool readEn ) {
-   unsigned short ret;
+KpixAsic::KpixFeCurr KpixAsic::getCntrlFeCurr ( bool readEn ) {
+   unsigned short val;
+   KpixFeCurr     ret;
    if ( kpixVersion > 7 ) {
 
-      ret = 0;
-      if ( regGetBit(0x30,25,readEn)) ret += 0x4;
-      if ( regGetBit(0x30,26,false))  ret += 0x2;
-      if ( regGetBit(0x30,27,false))  ret += 0x1;
+      val = 0;
+      if ( regGetBit(0x30,25,readEn)) val += 0x4;
+      if ( regGetBit(0x30,26,false))  val += 0x2;
+      if ( regGetBit(0x30,27,false))  val += 0x1;
+      ret = (KpixFeCurr)val;
 
       if ( enDebug ) {
          cout << "KpixAsic::getCntrlFeCurr -> Get FeCurr=" << ret;
@@ -1701,31 +1680,22 @@ unsigned char KpixAsic::getCntrlFeCurr ( bool readEn ) {
       }
       return(ret);
    }
-   else return(4);
+   else return(FeCurr_121uA);
 }
 
 
 // Method to set shaper diff time value in Control Register
 // Set writeEn to false to disable real write to KPIX
-// Current values:
-//    0 = Normal
-//    1 = 1/2
-//    2 = 1/3
-//    3 = 1/4
-void KpixAsic::setCntrlDiffTime ( unsigned char diffTime, bool writeEn ) {
+void KpixAsic::setCntrlDiffTime ( KpixDiffTime diffTime, bool writeEn ) {
    if ( kpixVersion > 7 ) {
       if ( enDebug ) {
-         cout << "KpixAsic::setCntrlDiffTime -> Set FeCurr=" << (int)diffTime;
+         cout << "KpixAsic::setCntrlDiffTime -> Set FeCurr=" << diffTime;
          cout << ", WriteEn=" << writeEn << ".\n";
       }
 
-      // Verify range
-      if ( diffTime > 3 ) 
-         throw string("KpixAsic::setCntrlDiffTime -> Invalid Value");
-
       // Set Bits
-      regSetBit(0x30,28,((diffTime&0x1)!=0),false);
-      regSetBit(0x30,29,((diffTime&0x2)!=0),writeEn);
+      regSetBit(0x30,28,(((int)diffTime&0x1)!=0),false);
+      regSetBit(0x30,29,(((int)diffTime&0x2)!=0),writeEn);
    }
 }
 
@@ -1734,13 +1704,15 @@ void KpixAsic::setCntrlDiffTime ( unsigned char diffTime, bool writeEn ) {
 // Set readEn to false to disable real read from KPIX, this flag allows
 // the user to get the currently set status without actually accessing
 // the device.
-unsigned char KpixAsic::getCntrlDiffTime ( bool readEn ) {
-   unsigned short ret;
+KpixAsic::KpixDiffTime KpixAsic::getCntrlDiffTime ( bool readEn ) {
+   unsigned short val;
+   KpixDiffTime   ret;
 
    if ( kpixVersion > 7 ) {
-      ret = 0;
-      if ( regGetBit(0x30,28,readEn)) ret += 0x1;
-      if ( regGetBit(0x30,29,false))  ret += 0x2;
+      val = 0;
+      if ( regGetBit(0x30,28,readEn)) val += 0x1;
+      if ( regGetBit(0x30,29,false))  val += 0x2;
+      ret = (KpixDiffTime)val;
 
       if ( enDebug ) {
          cout << "KpixAsic::getCntrlDiffTime -> Get DiffTime=" << ret;
@@ -1748,7 +1720,7 @@ unsigned char KpixAsic::getCntrlDiffTime ( bool readEn ) {
       }
       return(ret);
    }
-   else return(0);
+   else return(FeDiffNormal);
 }
 
 
@@ -2545,7 +2517,7 @@ unsigned char KpixAsic::getDacDefaultAnalog ( bool readEn ) {
 // each channel. The modes enabled are KpixChanThreshACal, KpixChanThreshA, KpixChanThreshB, KpixChanDisable
 // If KpixChanDisable is passed for a KPIX earlier than 6, KpixChanThreshB will be selected.
 // Set writeEn to false to disable real write to KPIX
-void KpixAsic::setChannelModeArray (unsigned int *modes, bool writeEn ) {
+void KpixAsic::setChannelModeArray (KpixChanMode *modes, bool writeEn ) {
 
    unsigned int x, y;
    unsigned int temp[2];
@@ -2590,7 +2562,7 @@ void KpixAsic::setChannelModeArray (unsigned int *modes, bool writeEn ) {
 // Pass array of integers (1024) to update. Each location will be updated
 // with one of the following values: ChanThreshACal, ChanThreshA, ChanThreshB, ChanDisable
 // Set readEn to false to disable real read from KPIX
-void KpixAsic::getChannelModeArray ( unsigned int *modes, bool readEn ) {
+void KpixAsic::getChannelModeArray ( KpixChanMode *modes, bool readEn ) {
 
    unsigned int x, y;
    unsigned int temp[2];
@@ -2752,32 +2724,29 @@ SidLink * KpixAsic::getSidLink () { return(sidLink); }
 void KpixAsic::setDefaults ( unsigned int clkPeriod, bool writeEn ) {
 
    unsigned int x;
-   unsigned int modes[1024];
+   KpixChanMode modes[1024];
 
    // Configure Control Registers
-   setCfgTestData       ( false,     false   );
-   setCfgAutoReadDis    ( false,     false   );
-   setCfgForceTemp      ( false,     false   );
-   setCfgDisableTemp    ( false,     false   );
-   setCfgAutoStatus     ( false,     writeEn );
-   setCntrlCalibHigh    ( false,     writeEn );
-   setCntrlCalDacInt    ( true,      writeEn );
-   setCntrlForceLowGain ( false,     writeEn );
-   setCntrlLeakNullDis  ( true,      writeEn );
-   setCntrlDoubleGain   ( false,     writeEn );
-   setCntrlNearNeighbor ( false,     writeEn );
-   setCntrlPosPixel     ( true,      writeEn );
-   setCntrlDisPerRst    ( true,      writeEn );
-   setCntrlEnDcRst      ( true,      writeEn );
-   setCntrlCalSrcCore   ( true,      writeEn );
-   setCntrlTrigSrcCore  ( false,     writeEn );
-   setCntrlShortIntEn   ( false,     writeEn );
-   setCntrlDisPwrCycle  ( false,     writeEn );
-   setCntrlFeCurr       ( 4,         writeEn );
-   if ( kpixVersion < 8 ) 
-      setCntrlHoldTime     ( 1, writeEn );
-   else 
-      setCntrlHoldTime     ( 7, writeEn );
+   setCfgTestData       ( false,          false   );
+   setCfgAutoReadDis    ( false,          false   );
+   setCfgForceTemp      ( false,          false   );
+   setCfgDisableTemp    ( false,          false   );
+   setCfgAutoStatus     ( false,          writeEn );
+   setCntrlCalibHigh    ( false,          writeEn );
+   setCntrlCalDacInt    ( true,           writeEn );
+   setCntrlForceLowGain ( false,          writeEn );
+   setCntrlLeakNullDis  ( true,           writeEn );
+   setCntrlDoubleGain   ( false,          writeEn );
+   setCntrlNearNeighbor ( false,          writeEn );
+   setCntrlPosPixel     ( true,           writeEn );
+   setCntrlDisPerRst    ( true,           writeEn );
+   setCntrlEnDcRst      ( true,           writeEn );
+   setCntrlCalSrcCore   ( true,           writeEn );
+   setCntrlTrigSrcCore  ( false,          writeEn );
+   setCntrlShortIntEn   ( false,          writeEn );
+   setCntrlDisPwrCycle  ( false,          writeEn );
+   setCntrlFeCurr       ( FeCurr_121uA,   writeEn );
+   setCntrlHoldTime     ( HoldTime_64x,   writeEn );
 
    // Set timing values
    setTiming ( clkPeriod, // Clock Period
@@ -2818,10 +2787,10 @@ void KpixAsic::setDefaults ( unsigned int clkPeriod, bool writeEn ) {
 
    // Setup calibration strobes
    setCalibTime ( 4,      // Calibration Count
-                  0x5dc,  // Calibration 0 Delay
-                  0xC8,   // Calibration 1 Delay
-                  0xC8,   // Calibration 2 Delay
-                  0xC8,   // Calibration 3 Delay
+                  0x28A,  // Calibration 0 Delay
+                  0x28A,  // Calibration 1 Delay
+                  0x28A,  // Calibration 2 Delay
+                  0x28A,  // Calibration 3 Delay
                   writeEn);
 }
 
@@ -2850,7 +2819,7 @@ void KpixAsic::dumpSettings () {
    unsigned char trigTholdA;
    unsigned char rstTholdB;
    unsigned char trigTholdB;
-   unsigned int  modes[1024];
+   KpixChanMode  modes[1024];
    unsigned int  x;
 
    // Get some values
@@ -2870,7 +2839,7 @@ void KpixAsic::dumpSettings () {
    cout << "      CfgForceTemp = " << getCfgForceTemp(false) << "\n";
    cout << "    CfgDisableTemp = " << getCfgDisableTemp(false) << "\n";
    cout << "     CfgAutoStatus = " << getCfgAutoStatus(false) << "\n";
-   cout << "     CntrlHoldTime = " << dec << (int)getCntrlHoldTime(false) << "\n";
+   cout << "     CntrlHoldTime = " << getCntrlHoldTime(false) << "\n";
    cout << "    CntrlCalibHigh = " << getCntrlCalibHigh(false) << "\n";
    cout << "    CntrlCalDacInt = " << getCntrlCalDacInt(false) << "\n";
    cout << " CntrlForceLowGain = " << getCntrlForceLowGain(false) << "\n";
@@ -2884,7 +2853,7 @@ void KpixAsic::dumpSettings () {
    cout << "      CntrlEnDcRst = " << getCntrlEnDcRst(false) << "\n";
    cout << "   CntrlShortIntEn = " << getCntrlShortIntEn(false) << "\n";
    cout << "  CntrlDisPwrCycle = " << getCntrlDisPwrCycle(false) << "\n";
-   cout << "        CntrlFeCur = " << dec << (int)getCntrlFeCurr(false) << "\n";
+   cout << "        CntrlFeCur = " << getCntrlFeCurr(false) << "\n";
    cout << "          DacCalib = 0x" << hex << setw(2) << setfill('0');
    cout << (int)getDacCalib(false) << "\n";
    cout << "     DacRampThresh = 0x" << hex << setw(2) << setfill('0');
