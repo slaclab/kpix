@@ -49,22 +49,17 @@ void KpixGuiConfig::setAsics (KpixAsic **asic, unsigned int asicCnt) {
    // Delete hold time values
    cntrlHoldTime->clear();
 
-   // Setup hold time values based upon Kpix version
+   // Setup hold time values
    if ( asicCnt != 0 ) {
-      if ( asic[0]->getVersion() < 8 ) {
-         cntrlHoldTime->insertItem("64 * clkPeriod",0);
-         cntrlHoldTime->insertItem("40 * clkPeriod",1);
-         cntrlHoldTime->insertItem("32 * clkPeriod",2);
-      } else {
-         cntrlHoldTime->insertItem("8  * clkPeriod",0);
-         cntrlHoldTime->insertItem("16 * clkPeriod",1);
-         cntrlHoldTime->insertItem("24 * clkPeriod",2);
-         cntrlHoldTime->insertItem("32 * clkPeriod",3);
-         cntrlHoldTime->insertItem("40 * clkPeriod",4);
-         cntrlHoldTime->insertItem("48 * clkPeriod",5);
-         cntrlHoldTime->insertItem("56 * clkPeriod",6);
-         cntrlHoldTime->insertItem("64 * clkPeriod",7);
-      }
+      cntrlHoldTime->insertItem("8  * clkPeriod (8+)",0);
+      cntrlHoldTime->insertItem("16 * clkPeriod (8+)",1);
+      cntrlHoldTime->insertItem("24 * clkPeriod (8+)",2);
+      cntrlHoldTime->insertItem("32 * clkPeriod",3);
+      cntrlHoldTime->insertItem("40 * clkPeriod",4);
+      cntrlHoldTime->insertItem("48 * clkPeriod (8+)",5);
+      cntrlHoldTime->insertItem("56 * clkPeriod (8+)",6);
+      cntrlHoldTime->insertItem("64 * clkPeriod",7);
+      cntrlHoldTime->setCurrentItem(7);
    }
 }
 
@@ -144,10 +139,7 @@ void KpixGuiConfig::updateDisplay() {
       cntrlDisPwrCycle->setChecked(asic[0]->getCntrlDisPwrCycle(false));
       cntrlFeCurr->setCurrentItem(asic[0]->getCntrlFeCurr(false));
       cntrlDiffTime->setCurrentItem(asic[0]->getCntrlDiffTime(false));
-      if ( asic[0]->getVersion() < 8 ) 
-         cntrlHoldTime->setCurrentItem(asic[0]->getCntrlHoldTime(false)-1);
-      else
-         cntrlHoldTime->setCurrentItem(asic[0]->getCntrlHoldTime(false));
+      cntrlHoldTime->setCurrentItem(asic[0]->getCntrlHoldTime(false));
       dacValueChanged();
    }
 }
@@ -202,15 +194,9 @@ void KpixGuiConfig::writeConfig() {
       asic[x]->setCntrlEnDcRst(cntrlEnDcRst->isChecked());
       asic[x]->setCntrlShortIntEn(cntrlShortIntEn->isChecked());
       asic[x]->setCntrlDisPwrCycle(cntrlDisPwrCycle->isChecked());
-      asic[x]->setCntrlFeCurr(cntrlFeCurr->currentItem());
-      asic[x]->setCntrlDiffTime(cntrlDiffTime->currentItem());
-
-      // Older kpix versions have valid hold time values of 1,2,3 while newer
-      // version supports 0-7
-      if ( asic[x]->getVersion() < 8 )
-         asic[x]->setCntrlHoldTime(cntrlHoldTime->currentItem()+1);
-      else
-         asic[x]->setCntrlHoldTime(cntrlHoldTime->currentItem());
+      asic[x]->setCntrlFeCurr((KpixAsic::KpixFeCurr)cntrlFeCurr->currentItem());
+      asic[x]->setCntrlDiffTime((KpixAsic::KpixDiffTime)cntrlDiffTime->currentItem());
+      asic[x]->setCntrlHoldTime((KpixAsic::KpixHoldTime)cntrlHoldTime->currentItem());
    }
 }
 

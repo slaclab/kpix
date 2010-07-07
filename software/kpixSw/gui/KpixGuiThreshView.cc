@@ -722,7 +722,7 @@ void KpixGuiThreshView::readFitData(unsigned int gain, unsigned int serial, unsi
 
 // Update summary plots
 void KpixGuiThreshView::updateSummary () {
-   unsigned int     x, chCount, locChannel, locBucket;
+   unsigned int     x, chCount, locChannel;
    stringstream     temp;
    string           temp2;
    KpixGuiEventData *data;

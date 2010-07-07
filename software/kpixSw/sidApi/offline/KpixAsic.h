@@ -64,13 +64,19 @@
 class SidLink;
 #endif
 
+/** \defgroup offline
+ * Classes used in offline data processing.
+ */
 
-static const unsigned int KpixChanDisable     = 1;
-static const unsigned int KpixChanThreshACal  = 3;
-static const unsigned int KpixChanThreshA     = 2;
-static const unsigned int KpixChanThreshB     = 0;
-
-
+/** \ingroup offline */
+//! Class to Kpix ASIC.
+/*!
+   This class is used to interface to a KPIX Asic device in a DAQ system. In online mode
+   this device is used to communicate directly with the KPIX hardware, allowing the device
+   to be configured and operated. In offline mode this this class is used to read back the
+   configuration of the device as it was operated in the run which generated the root
+   data file.
+*/
 class KpixAsic : public TObject {
 
       // Address of Kpix ASIC
@@ -148,6 +154,49 @@ class KpixAsic : public TObject {
                          bool readEn,              bool trigInhRaw );
 
    public:
+
+      //! Supported Channel Modes 
+      /*!
+         Channel modes to define the threshold & calibration operation of a channel.
+         \see setChannelModeArray()
+         \see getChannelModeArray()
+      */
+      enum KpixChanMode {
+         KpixChanThreshB    = 0, /*!< Threshold B Enabled */
+         KpixChanDisable    = 1, /*!< Threshold & Calibration Disabled */
+         KpixChanThreshACal = 3, /*!< Threshold A Enabled With Calibration */
+         KpixChanThreshA    = 2  /*!< Threshold A Enabled */
+      };
+
+      enum KpixHoldTime {
+         HoldTime_8x  = 0,
+         HoldTime_16x = 1,
+         HoldTime_24x = 2,
+         HoldTime_32x = 3,
+         HoldTime_40x = 4,
+         HoldTime_48x = 5,
+         HoldTime_56x = 6,
+         HoldTime_64x = 7
+      };
+
+      enum KpixFeCurr {
+         FeCurr_1uA   = 0,
+         FeCurr_31uA  = 1,
+         FeCurr_61uA  = 2,
+         FeCurr_91uA  = 3,
+         FeCurr_121uA = 4,
+         FeCurr_151uA = 5,
+         FeCurr_181uA = 6,
+         FeCurr_211uA = 7
+      };
+
+      enum KpixDiffTime {
+         FeDiffNormal  = 0,
+         FeDiffHalf    = 1,
+         FeDiffThird   = 2,
+         FeDiffQuarter = 3
+      };
+
 
       // Max Kpix Version
       static unsigned short maxVersion();
@@ -285,26 +334,13 @@ class KpixAsic : public TObject {
 
       // Method to set hold time value in Control Register
       // Set writeEn to false to disable real write to KPIX
-      // Hold Times For 20Mhz Clock In Kpix Versions 0-7:
-      //    1 = 3.2uS 
-      //    2 = 2.0uS
-      //    3 = 1.6uS
-      // Hold Times For 20Mhz Clock In Kpix Version 8+:
-      //    0 = 0.4uS 
-      //    1 = 0.8uS 
-      //    2 = 1.2uS
-      //    3 = 1.6uS
-      //    4 = 2.0uS
-      //    5 = 2.4uS
-      //    6 = 2.8uS
-      //    7 = 3.2uS
-      void setCntrlHoldTime ( unsigned char holdTime, bool writeEn=true );
+      void setCntrlHoldTime ( KpixHoldTime holdTime, bool writeEn=true );
 
       // Method to get hold time value from Control Register
       // Set readEn to false to disable real read from KPIX, this flag allows
       // the user to get the currently set status without actually accessing
       // the device.
-      unsigned char getCntrlHoldTime ( bool readEn=true );
+      KpixHoldTime getCntrlHoldTime ( bool readEn=true );
 
       // Method to set calibration pulse 0 high range mode in Control Register
       // Pass calibHigh flag
@@ -477,37 +513,23 @@ class KpixAsic : public TObject {
 
       // Method to set front end current value in Control Register
       // Set writeEn to false to disable real write to KPIX
-      // Current values:
-      //    0 = 1uA  
-      //    1 = 31uA 
-      //    2 = 61uA 
-      //    3 = 91uA 
-      //    4 = 121uA
-      //    5 = 151uA
-      //    6 = 181uA
-      //    7 = 211uA
-      void setCntrlFeCurr ( unsigned char feCurr, bool writeEn=true );
+      void setCntrlFeCurr ( KpixFeCurr, bool writeEn=true );
 
       // Method to get front end current value from Control Register
       // Set readEn to false to disable real read from KPIX, this flag allows
       // the user to get the currently set status without actually accessing
       // the device.
-      unsigned char getCntrlFeCurr ( bool readEn=true );
+      KpixFeCurr getCntrlFeCurr ( bool readEn=true );
 
       // Method to set shaper diff time value in Control Register
       // Set writeEn to false to disable real write to KPIX
-      // Current values:
-      //    0 = Normal
-      //    1 = 1/2
-      //    2 = 1/3
-      //    3 = 1/4
-      void setCntrlDiffTime ( unsigned char diffTime, bool writeEn=true );
+      void setCntrlDiffTime ( KpixDiffTime, bool writeEn=true );
 
       // Method to get shaper diff time value from Control Register
       // Set readEn to false to disable real read from KPIX, this flag allows
       // the user to get the currently set status without actually accessing
       // the device.
-      unsigned char getCntrlDiffTime ( bool readEn=true );
+      KpixDiffTime getCntrlDiffTime ( bool readEn=true );
 
       // Method to update KPIX timing configuration
       // If the passed timing values are not evenly divisable by the
@@ -685,18 +707,20 @@ class KpixAsic : public TObject {
       // Set readEn to false to disable real read from KPIX
       unsigned char getDacDefaultAnalog ( bool readEn=true );
 
-      // Method to set channel mode according to a passed array
-      // Pass array of integers (1024) to select the mode of
-      // each channel. The modes enabled are CAL_A, TH_A, TH_B, DISABLE
-      // If DISABLE is passed for a KPIX earlier than 6, TH_B will be selected.
-      // Set writeEn to false to disable real write to KPIX
-      void setChannelModeArray (unsigned int *modes, bool writeEn=true );
 
-      // Method to update the passed array with the current mode of each channel
-      // Pass array of integers (1024) to update. Each location will be updated
-      // with one of the following values: CAL_A, TH_A, TH_B, DISABLE
-      // Set readEn to false to disable real read from KPIX
-      void getChannelModeArray ( unsigned int *modes, bool readEn=true );
+      //! Set channel mode according to a passed array
+      /*!
+         Pass array to select the mode of each channel. 
+         Set writeEn to false to disable real write to KPIX.
+      */
+      void setChannelModeArray (KpixChanMode *modes, bool writeEn=true );
+
+      //! Get channel mode
+      /*!
+         Method to update the passed array with the current mode of each channel
+         Set readEn to false to disable real read from KPIX
+      */
+      void getChannelModeArray ( KpixChanMode *modes, bool readEn=true );
 
       // Class Method To Convert DAC value to voltage
       static double dacToVolt(unsigned char dacValue );

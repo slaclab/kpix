@@ -557,7 +557,7 @@ void KpixGuiRun::run() {
                         *(eventVars[x]) = eventCmd[x];
                         kpixRunWrite->setEventVar(eventTable->text(x,0).ascii(),eventCmd[x]);
                      }
-                     data = new KpixGuiEventData(KpixDataDouble,eventCnt,(void **)eventVars);
+                     data = new KpixGuiEventData(KpixProgress::KpixDataDouble,eventCnt,(void **)eventVars);
                      QApplication::postEvent(this,data);
                   }
                   netCount--;
@@ -738,7 +738,7 @@ void KpixGuiRun::run() {
                   }
 
                   // Pass Plots
-                  data = new KpixGuiEventData(KpixDataTH1F,32,(void **)plot);
+                  data = new KpixGuiEventData(KpixProgress::KpixDataTH1F,32,(void **)plot);
                   QApplication::postEvent(this,data);
                }
             } else rate++;
@@ -1028,7 +1028,7 @@ void KpixGuiRun::customEvent ( QCustomEvent *event ) {
       eventPlots = (KpixGuiEventData *)event;
 
       // Variables
-      if ( eventPlots->id == KpixDataDouble ) {
+      if ( eventPlots->id == KpixProgress::KpixDataDouble ) {
          for (x=0; x<eventPlots->count; x++) {
             temp.str("");
             temp << *((double *)(eventPlots->data[x]));
@@ -1051,7 +1051,7 @@ void KpixGuiRun::customEvent ( QCustomEvent *event ) {
 
          // Copy New Plots
          count = 0;
-         if ( eventPlots->id == KpixDataTH1F ) {
+         if ( eventPlots->id == KpixProgress::KpixDataTH1F ) {
             for (x=0; x<16; x++) {
                plots[x*2] = (TH1F *)eventPlots->data[x*2];
                plots[x*2+1] = (TH1F *)eventPlots->data[x*2+1];

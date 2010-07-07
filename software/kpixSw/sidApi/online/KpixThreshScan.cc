@@ -166,19 +166,19 @@ void KpixThreshScan::setPlotDir( string plotDir ) { this->plotDir = plotDir; }
 // Or pass -1 to enable all channels
 void KpixThreshScan::runThreshold ( short channel ) {
 
-   int            x,y,gain,thresh;
-   KpixBunchTrain *train;
-   unsigned int   modes[1024];
-   unsigned int   mode;
-   int            count;
-   double         charges[4];
-   unsigned char  preTrig;
-   int            errCnt;
-   int            t0, t1, t2, t3;
-   unsigned int   prgCount, prgTotal;
-   TH2F           *hist[kpixCount];
-   unsigned int   minX[kpixCount], minY[kpixCount], maxX[kpixCount], maxY[kpixCount];
-   unsigned int   time,idx;
+   int                    x,y,gain,thresh;
+   KpixBunchTrain         *train;
+   KpixAsic::KpixChanMode modes[1024];
+   KpixAsic::KpixChanMode mode;
+   int                    count;
+   double                 charges[4];
+   unsigned char          preTrig;
+   int                    errCnt;
+   int                    t0, t1, t2, t3;
+   unsigned int           prgCount, prgTotal;
+   TH2F                   *hist[kpixCount];
+   unsigned int           minX[kpixCount], minY[kpixCount], maxX[kpixCount], maxY[kpixCount];
+   unsigned int           time,idx;
 
    // Set Plot Directory
    if ( plotEn ) {
@@ -199,16 +199,16 @@ void KpixThreshScan::runThreshold ( short channel ) {
    kpixRunWrite->addRunVar("threshOffset","Threshold Offset",threshOffset);
 
    // Init modes
-   for (x=0; x < 1024; x++) modes[x] = KpixChanDisable;
+   for (x=0; x < 1024; x++) modes[x] = KpixAsic::KpixChanDisable;
 
    // Determine if calibration is enabled
    if (calEnable) {
       kpixRunWrite->setEventVar("calEnable",1.0);
-      mode = KpixChanThreshACal;
+      mode = KpixAsic::KpixChanThreshACal;
    }
    else {
       kpixRunWrite->setEventVar("calEnable",0.0);
-      mode = KpixChanThreshA;
+      mode = KpixAsic::KpixChanThreshA;
    }
 
    // All Channels Calibration Enabled
@@ -415,7 +415,7 @@ void KpixThreshScan::runThreshold ( short channel ) {
                hist[idx]->GetXaxis()->SetRangeUser(minX[idx],maxX[idx]);
                hist[idx]->GetYaxis()->SetRangeUser(minY[idx],maxY[idx]);
                hist[idx]->Write();
-               if ( kpixProgress != NULL ) kpixProgress->updateData(KpixDataTH2F,1,(void**)(&(hist[idx])));
+               if ( kpixProgress != NULL ) kpixProgress->updateData(KpixProgress::KpixDataTH2F,1,(void**)(&(hist[idx])));
                else delete hist[idx];
             }
             sleep(2);

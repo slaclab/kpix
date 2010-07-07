@@ -125,10 +125,12 @@ files:
 # Create partition file
 partition:
 	@rm -f $(PWD)/../sim_dir/partition.txt
-	@echo "partition -cell Kpix;"                                    >  $(PWD)/../sim_dir/partition.txt
-	@echo "choose nanosim -A -n $(NET) -C nanosim_cfg.txt -out wdb;" >> $(PWD)/../sim_dir/partition.txt
-	@echo "set bus_format %d;"                                       >> $(PWD)/../sim_dir/partition.txt
-	@echo "set rmap resis_map.txt;"                                  >> $(PWD)/../sim_dir/partition.txt
+	@echo "choose hsim $(NET);"                                       >  $(PWD)/../sim_dir/partition.txt
+	@echo "use_spice -cell Kpix;"                                     >> $(PWD)/../sim_dir/partition.txt
+	#@echo "partition -cell Kpix;"                                    >  $(PWD)/../sim_dir/partition.txt
+	#@echo "choose nanosim -A -n $(NET) -C nanosim_cfg.txt -out wdb;" >> $(PWD)/../sim_dir/partition.txt
+	#@echo "set bus_format %d;"                                       >> $(PWD)/../sim_dir/partition.txt
+	#@echo "set rmap resis_map.txt;"                                  >> $(PWD)/../sim_dir/partition.txt
 
 # Create setup env script
 env:

@@ -375,6 +375,4 @@ class KpixSample : public TObject {
       ClassDef(KpixSample,2)
 };
 
-/*\@}*/
-
 #endif

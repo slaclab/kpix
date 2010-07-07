@@ -107,10 +107,10 @@ void KpixGuiFpga::updateDisplay() {
 // Write Settings To Asic/Fpga class
 void KpixGuiFpga::writeConfig() {
    if ( fpga != NULL ) {
-      fpga->setBncSourceA(bncSourceA->currentItem());
-      fpga->setBncSourceB(bncSourceB->currentItem());
-      fpga->setExtRecord(extRecord->currentItem());
-      fpga->setExtRunSource(extRunSource->currentItem());
+      fpga->setBncSourceA((KpixFpga::KpixBncOut)bncSourceA->currentItem());
+      fpga->setBncSourceB((KpixFpga::KpixBncOut)bncSourceB->currentItem());
+      fpga->setExtRecord((KpixFpga::KpixExtRec)extRecord->currentItem());
+      fpga->setExtRunSource((KpixFpga::KpixExtRun)extRunSource->currentItem());
       fpga->setExtRunDelay(extRunDelay->value());
       fpga->setExtRunType(extRunType->isChecked());
       fpga->setCalDelay(calDelay->value());
