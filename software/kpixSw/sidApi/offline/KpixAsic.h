@@ -732,8 +732,8 @@ class KpixAsic : public TObject {
       static unsigned char voltToDac ( double dacVoltage );
 
       // Class Method To Convert DAC value to voltage
-      static double convertTemp(unsigned int tempAdc);
-
+      static double convertTemp(unsigned int tempAdc, unsigned int* decimalValue = NULL );
+	
       // Class Method to retrieve the current value of the calibration charge
       // For settings provided by external code.
       // Pass the following values
