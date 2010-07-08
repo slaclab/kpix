@@ -2917,8 +2917,8 @@ unsigned int KpixAsic::getChCount() {
 }
 
 
-// Class Method To Convert DAC value to voltage
-double KpixAsic::convertTemp(unsigned int tempAdc) {
+// Class Method To Convert DAC value to temperature
+double KpixAsic::convertTemp(unsigned int tempAdc, unsigned int* decimalValue) {
    int    g[8];
    int    d[8];
    int    de;
@@ -2941,10 +2941,14 @@ double KpixAsic::convertTemp(unsigned int tempAdc) {
    // Convert back to an integer
    de = 0;
    for (i=0; i<8; i++) if ( d[i] != 0 ) de += (int)pow(2,i);
-   cout << "Decimal=0x" << hex << de << endl;
+   cout << "Decimal=0x" << hex << de << "," << dec << de << endl;
 
    // Convert to temperature
    temp=-30.2+127.45/233*(255-de-20.75);
+   //if ( (object)decimalValue != NULL ) { 
+   if ( decimalValue != NULL ) { 
+	   decimalValue = (unsigned int*) (255 - de); 
+	   //cout << "in decimal: " << dec << decimalValue << endl;
+	   }
    return(temp);
 }
-
