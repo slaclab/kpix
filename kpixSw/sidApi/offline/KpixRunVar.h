@@ -24,6 +24,9 @@
 #include <TObject.h>
 #include <TString.h>
 
+/** \ingroup offline */
+
+//! This class is used to hold and update Run Variable information
 
 class KpixRunVar : public TObject {
 
@@ -38,29 +41,30 @@ class KpixRunVar : public TObject {
 
    public:
 
-      // Variable class constructor
+      //! Variable class constructor
       KpixRunVar ( );
 
-      // Variable class constructor
-      // Pass the following values for construction
-      // name      = Variable name string
-      // desc      = Variable description string
-      // value     = Initial value
+      //! Variable class constructor
+      /*! Pass the following values for construction
+      name      = Variable name string
+      desc      = Variable description string
+      value     = Initial value
+		*/
       KpixRunVar ( TString name, TString desc, Double_t value );
 
-      // Return variable name
+      //! Return variable name
       TString name ();
 
-      // Return variable description
+      //! Return variable description
       TString description ();
 
-      // Return Value
+      //! Return Value
       Double_t value();
 
-      // Set Value
+      //! Set Value
       void value( Double_t value );
 
-      // Deconstructor
+      //! Deconstructor
       virtual ~KpixRunVar (); 
 
       ClassDef(KpixRunVar,2)

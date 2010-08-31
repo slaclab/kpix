@@ -30,41 +30,42 @@
 /** \ingroup offline */
 //! Class to hold event variable information.
 /*!
-   Blah blah blah
+   
 */
 class KpixEventVar : public TObject {
 
-      // Variable number to match to sample records
+      //! Variable number to match to sample records
       Int_t varNumber;
 
-      // Variable Name
+      //! Variable Name
       TString varName;
 
-      // Variable Description
+      //! Variable Description
       TString varDesc;
 
    public:
 
-      // Variable class constructor
+      //! Variable class constructor
       KpixEventVar ( );
 
-      // Variable class constructor
-      // Pass the following values for construction
-      // number    = Variable number
-      // name      = Variable name string
-      // desc      = Variable description string
+      //! Variable class constructor
+      /*! Pass the following values for construction
+      number    = Variable number
+      name      = Variable name string
+      desc      = Variable description string
+		*/
       KpixEventVar ( Int_t number, TString name, TString desc );
 
-      // Return variable name
+      //! Return variable name
       TString name ();
 
-      // Return variable description
+      //! Return variable description
       TString description ();
 
-      // Return variable number
+      //! Return variable number
       Int_t number ();
 
-      // Deconstructor 
+      //! Deconstructor 
       virtual ~KpixEventVar();
 
       ClassDef(KpixEventVar,3)
