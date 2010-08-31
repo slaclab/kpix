@@ -19,6 +19,11 @@
 #ifndef __KPIX_HISTOGRAM_H__
 #define __KPIX_HISTOGRAM_H__
 
+/** \ingroup online */
+
+
+//! This class is used to update KPIX histogram information.
+
 class KpixHistogram {
 
       // Histogram contents
@@ -33,28 +38,28 @@ class KpixHistogram {
 
    public:
 
-      // Constructor
+      //! Constructor
       KpixHistogram ( );
 
-      // Constructor
+      //! Constructor
       ~KpixHistogram ( );
 
-      // Add an entry
+      //! Add an entry
       void fill(unsigned int value);
 
-      // Get Number Of Entries
+      //! Get Number Of Entries
       unsigned int binCount();
 
-      // Get Min Value
+      //! Get Min Value
       unsigned int minValue();
 
-      // Get Max Value
+      //! Get Max Value
       unsigned int maxValue();
 
-      // Get Bin Value
+      //! Get Bin Value
       unsigned int value(unsigned int bin);
 
-      // Get Bin Count
+      //! Get Bin Count
       unsigned int count(unsigned int bin);
 };
 #endif

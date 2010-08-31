@@ -37,6 +37,9 @@
 class SidLink;
 class KpixSample;
 
+/** \ingroup online */
+
+//! This class is used to hold KPIX bunch train information
 
 class KpixBunchTrain {
 
@@ -61,39 +64,42 @@ class KpixBunchTrain {
 
    public:
 
-      // Sample class constructor, received frame
-      // Pass the following values for construction
-      // link      = SID Link to receive data
-      // debug     = Debug flag
+      //! Sample class constructor, received frame
+      /*! Pass the following values for construction
+      link      = SID Link to receive data
+      debug     = Debug flag
+		*/
       KpixBunchTrain ( SidLink *link, bool debug );
 
-      // Method to return an sample by KPIX/channel/bucket
-      // Pass KPIX serial, channel number & bucket number
+      //! Method to return an sample by KPIX/channel/bucket
+      /*! Pass KPIX serial, channel number & bucket number
+		*/
       KpixSample * getSample ( unsigned short kpix, unsigned short channel, unsigned char bucket );
 
-      // Method to return an sample list sorted by time
-      // Return pointer to array of 4*64*4 possible samples, unused locations point to NULL
+      //! Method to return an sample list sorted by time
+      /*! Return pointer to array of 4*64*4 possible samples, unused locations point to NULL
+		*/
       KpixSample ** getSampleList ( );
 
-      // Method to return total sample count
+      //! Method to return total sample count
       unsigned int getSampleCount ( );
 
-      // Method to return sample count for a kpix/channel
+      //! Method to return sample count for a kpix/channel
       unsigned int getSampleCount ( unsigned short kpix, unsigned short channel );
 
-      // Get dead count
+      //! Get dead count
       unsigned int getDeadCount ();
 
-      // Get parity errors
+      //! Get parity errors
       unsigned int getParErrors ();
 
-      // Get last train flag
+      //! Get last train flag
       bool getLastTrain ();
 
-      // Get sequence number
+      //! Get sequence number
       unsigned int getTrainNumber();
 
-      // Deconstructor, Will delete all associated samples stored in this sample.
+      //! Deconstructor, Will delete all associated samples stored in this sample.
       virtual ~KpixBunchTrain ( );
 
 };

@@ -57,6 +57,15 @@ class TFile;
 class TTree;
 class TBranch;
 
+/** \defgroup online
+ * Classes used in online data processing.
+ */
+ 
+/** \ingroup online */
+
+//! This class is used to store KPIX data to a root file during runs
+/*!
+*/
 class KpixRunWrite {
 
       // Pointer Tree & Branches
@@ -101,61 +110,66 @@ class KpixRunWrite {
       // Tree File Is Public
       TFile *treeFile;
 
-      // Function to generate and return timestamp.
+      //! Function to generate and return timestamp.
       static std::string genTimestamp (); 
 
-      // Create run write structure. Opens tree file for writing
-      // Run timestamp is generated internally.
-      // Pass the following values:
-      //   runFile   = Filename for root file to create.
-      //   runName   = Name of the run
-      //   runDesc   = Description of the run
-      //   runCalib  = Optional calibration file used for the run.
-      //   runTime   = Optional run timestamp to pass along.
-      //   endTime   = Optional end timestamp to pass along.
-      //   debug     = Optional debug flag, true to enable debugging
+      //! Create run write structure. Opens tree file for writing
+      /*! Run timestamp is generated internally.
+      Pass the following values:
+      runFile   = Filename for root file to create.
+      runName   = Name of the run
+      runDesc   = Description of the run
+      runCalib  = Optional calibration file used for the run.
+      runTime   = Optional run timestamp to pass along.
+      endTime   = Optional end timestamp to pass along.
+      debug     = Optional debug flag, true to enable debugging
+		*/
       KpixRunWrite ( std::string runFile, TString runName, TString runDesc, 
                      TString runCalib = "", TString runTime = "",
                      TString endTime = "", bool debug=false );
 
-      // Create a new event variable. This value will be added to
-      // all stored sample objects. A KpixEventVar object will be created and stored
-      // in the root tree. Pass the following values:
-      // name  = Name of the variable.
-      // desc  = Description of the variable.
-      // value = Optional initial value
+      //! Create a new event variable. This value will be added to
+      /*! all stored sample objects. A KpixEventVar object will be created and stored
+      in the root tree. Pass the following values:
+      name  = Name of the variable.
+      desc  = Description of the variable.
+      value = Optional initial value
+		*/
       void addEventVar ( TString name, TString desc, Double_t value = 0.0 );
 
-      // Set event variable value, will be used as value in sample records stored from
-      // this point on.  Pass the following values:
-      // name  = Name of the variable
-      // value = New variable value
+      //! Set event variable value, will be used as value in sample records stored from
+      /*this point on.  Pass the following values:
+      name  = Name of the variable
+      value = New variable value
+		*/
       void setEventVar ( TString name, Double_t value );
 
-      // Create a new run variable to hold run data. A KpixRunVar object will be created 
-      // and stored in the root tree. Pass the following values:
-      // name  = Name of the variable
-      // desc  = Description of the variable
-      // value = Optional initial value
+      //! Create a new run variable to hold run data. A KpixRunVar object will be created 
+      /*! and stored in the root tree. Pass the following values:
+      name  = Name of the variable
+      desc  = Description of the variable
+      value = Optional initial value
+		*/
       void addRunVar ( TString name, TString desc, Double_t value = 0.0 );
 
-      // Add Bunch Train Data Class To Run,
+      //! Add Bunch Train Data Class To Run
       void addBunchTrain ( KpixBunchTrain *train );
 
-      // Add Asic Data Class To Run,
+      //! Add Asic Data Class To Run
       void addAsic ( KpixAsic *asic );
 
-      // Add Fpga Data Class To Run,
+      //! Add Fpga Data Class To Run.
       void addFpga ( KpixFpga *fpga );
 
-      // Set current directory for storing plots
-      // Directory is created if it does not exist
+      //! Set current directory for storing plots
+      /*! Directory is created if it does not exist
+		*/
       void setDir ( std::string directory );
 
-      // Add calibData xml string to run file
+      //! Add calibData xml string to run file
       void addCalibData ( TString calibData );
 
-      // Deconstructor.
+      //! Deconstructor.
       virtual ~KpixRunWrite ();
 
 };

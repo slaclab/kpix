@@ -37,7 +37,10 @@ class KpixRunWrite;
 class KpixAsic;
 
 
-// Class to store calibration plots
+/** \ingroup online */
+
+//! Class to store calibration plots
+
 class KpixCalDistData {
    public:
       unsigned int count;
@@ -48,7 +51,7 @@ class KpixCalDistData {
 };
 
 
-// KPIX Event Data Class
+//! KPIX Event Data Class
 class KpixCalDist {
 
       // Locations to store asic and run objects to use
@@ -101,62 +104,66 @@ class KpixCalDist {
 
    public:
 
-      // Constructor for single KPIX. 
-      // Pass a pointer to the Kpix Asic and the Run object
+      //! Constructor for single KPIX. 
+      /*! Pass a pointer to the Kpix Asic and the Run object
+		*/
       KpixCalDist ( KpixAsic *asic, KpixRunWrite *run );
 
-      // Constructor for multiple KPIX devices. 
-      // Pass a pointer to the Kpix Asic and the Run object
+      //! Constructor for multiple KPIX devices. 
+      /*! Pass a pointer to the Kpix Asic and the Run object
+		*/
       KpixCalDist ( KpixAsic **asic, unsigned int count, KpixRunWrite *run );
 
-      // Set calibration DAC value for distribution
+      //! Set calibration DAC value for distribution
       void setDistCalDac ( unsigned char value );
 
-      // Set number of distribution iterations
+      //! Set number of distribution iterations
       void setDistCount ( unsigned int count );
 
-      // Set calibration DAC steps for calibration run
+      //! Set calibration DAC steps for calibration run
       void setCalibRange ( unsigned char start, unsigned char end, unsigned char step );
 
-      // Enable/Disable normal gain iteration
+      //! Enable/Disable normal gain iteration
       void enNormalGain ( bool enable );
 
-      // Enable/Disable double gain iteration
+      //! Enable/Disable double gain iteration
       void enDoubleGain ( bool enable );
 
-      // Enable/Disable low gain iteration
+      //! Enable/Disable low gain iteration
       void enLowGain ( bool enable );
 
-      // Turn on or off debugging for the class
+      //! Turn on or off debugging for the class
       void calDistDebug ( bool debug );
 
-      // Enable raw data
+      //! Enable raw data
       void enableRawData( bool enable );
 
-      // Enable plot generation
+      //! Enable plot generation
       void enablePlots( bool enable );
 
-      // Pass name of the TFile directory in which to store the plots
+      //! Pass name of the TFile directory in which to store the plots
       void setPlotDir( std::string plotDir );
 
-      // Set Rate Limit
+      //! Set Rate Limit
       void setRateLimit( unsigned int rateLimit );
 
-      // Enable random histogram time
+      //! Enable random histogram time
       void enableRandDistTime ( bool enable );
 
-      // Execute distribution, pass channel to enable calibration mask for
-      // Or pass -1 to set cal mask for all channels or -2 to set mask for no channels
+      //! Execute distribution, pass channel to enable calibration mask for
+      /*! Or pass -1 to set cal mask for all channels or -2 to set mask for no channels
+		*/
       void runDistribution ( short channel );
 
-      // Execute calibration, pass channel to enable calibration mask for
-      // Or pass -1 to set cal mask for all channels or -2 to set mask for no channels
+      //! Execute calibration, pass channel to enable calibration mask for
+      /*! Or pass -1 to set cal mask for all channels or -2 to set mask for no channels
+		*/
       void runCalibration ( short channel );
 
-      // Deconstructor
+      //! Deconstructor
       virtual ~KpixCalDist ();
 
-      // Set progress Callback
+      //! Set progress Callback
       void setKpixProgress(KpixProgress *progress);
 
 };
