@@ -466,9 +466,13 @@ void KpixGuiThreshView::setEnabled(bool enable) {
    selChannel->setEnabled((inFileRoot!=NULL)?enable:false);
    prevPlot->setEnabled((inFileRoot!=NULL)?enable:false);
    nextPlot->setEnabled((inFileRoot!=NULL)?enable:false);
-   calTime->setEnabled((inFileRoot!=NULL)?enable:false);
+   calFitMin->setEnabled((inFileRoot!=NULL)?enable:false);
+   calFitMax->setEnabled((inFileRoot!=NULL)?enable:false);
+   calTimeMin->setEnabled((inFileRoot!=NULL)?enable:false);
+   calTimeMax->setEnabled((inFileRoot!=NULL)?enable:false);
    calHint->setEnabled((inFileRoot!=NULL)?enable:false);
-   threshTime->setEnabled((inFileRoot!=NULL)?enable:false);
+   threshTimeMin->setEnabled((inFileRoot!=NULL)?enable:false);
+   threshTimeMax->setEnabled((inFileRoot!=NULL)?enable:false);
    threshHint->setEnabled((inFileRoot!=NULL)?enable:false);
    fitDebug->setEnabled((inFileRoot!=NULL)?enable:false);
    voltConvert->setEnabled((inFileRoot!=NULL)?enable:false);
@@ -547,7 +551,7 @@ void KpixGuiThreshView::readFitData(unsigned int gain, unsigned int serial, unsi
          if ( torigHist[cal] == NULL ) continue;
 
          // Create Asym Calibration Graph
-         tcalGraph[cal] = convertHist(torigHist[cal]->ProjectionX("temp",0,calTime->value()),
+         tcalGraph[cal] = convertHist(torigHist[cal]->ProjectionX("temp",calTimeMin->value(),calTimeMax->value()),
                                       threshCount,&hint,&lmin,&lmax,fitDebug->isChecked(),voltConvert->isChecked());
 
          // Valid Graph
@@ -582,7 +586,7 @@ void KpixGuiThreshView::readFitData(unsigned int gain, unsigned int serial, unsi
          }
 
          // Create Treshold Plot Using Cal Value
-         tempHist = torigHist[cal]->ProjectionX("proj",threshTime->value(),threshTime->value());
+         tempHist = torigHist[cal]->ProjectionX("proj",threshTimeMin->value(),threshTimeMax->value());
 
          // Valid plot
          if ( tempHist != NULL ) {
@@ -627,7 +631,8 @@ void KpixGuiThreshView::readFitData(unsigned int gain, unsigned int serial, unsi
       if ( calCnt > 0 ) {
          tcalPlot = new TGraph(calCnt,calX,calY);
          tcalPlot->SetTitle(KpixThreshRead::genPlotTitle("Thresh Cal",gain,asic[serial]->getSerial(),channel).c_str());
-         if ( tcalPlot->Fit("pol1","q") != 0 || tcalPlot->GetFunction("pol1")->GetParameter(1) > 0)
+         if ( tcalPlot->Fit("pol1","q","",calFitMin->text().toDouble()*1e-15,calFitMax->text().toDouble()*1e-15) != 0 
+            || tcalPlot->GetFunction("pol1")->GetParameter(1) > 0)
             delete tcalPlot->GetFunction("pol1");
       }
    }
@@ -1121,14 +1126,24 @@ void KpixGuiThreshView::customEvent ( QCustomEvent *event ) {
                selGain->setCurrentItem(0);
 
                // Set Threshold Fit Time
-               threshTime->setMinValue(trigInh);
-               threshTime->setMaxValue(minCalTime-1);
-               threshTime->setValue(trigInh+3);
+               threshTimeMin->setMinValue(trigInh);
+               threshTimeMin->setMaxValue(minCalTime-1);
+               threshTimeMin->setValue(trigInh+3);
+               threshTimeMax->setMinValue(trigInh);
+               threshTimeMax->setMaxValue(minCalTime-1);
+               threshTimeMax->setValue(trigInh+3);
 
                // Set Calibration Fit Max Time
-               calTime->setMinValue(minCalTime);
-               calTime->setMaxValue(maxCalTime-1);
-               calTime->setValue(minCalTime+4);
+               calTimeMin->setMinValue(trigInh);
+               calTimeMin->setMaxValue(maxCalTime-1);
+               calTimeMin->setValue(trigInh);
+               calTimeMax->setMinValue(minCalTime);
+               calTimeMax->setMaxValue(maxCalTime-1);
+               calTimeMax->setValue(minCalTime+4);
+               
+               // Fit Range
+               calFitMin->setText("0");
+               calFitMax->setText("10");
 
                // Re-Start thread with read plot command
                cmdType = CmdReadOne;
