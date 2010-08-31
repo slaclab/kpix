@@ -38,6 +38,8 @@ class KpixCalibReadAsicStruct;
 class KpixCalibReadGainStruct;
 class KpixCalibReadDir;
 
+
+
 // Structure for ASICs
 class KpixCalibReadAsicStruct {
 
@@ -85,6 +87,10 @@ class KpixCalibReadDir {
       class KpixCalibReadDir *nextDir;
 };
 
+
+/** \ingroup offline */
+
+//! Class used to parse and read calibration run data.
 class KpixCalibRead : public TSAXParser{
 
       // Flag to delete runRead
@@ -100,22 +106,22 @@ class KpixCalibRead : public TSAXParser{
       // Head & Tail pointer for the KpixCalibReadDir linked list
       KpixCalibReadDir *dirHead, *dirTail;
 
-      // Function to add an asic to linked list
+      //! Function to add an asic to linked list
       KpixCalibReadAsicStruct *addAsic ( KpixCalibReadGainStruct *currGain, int kpixID );
 
-      // Function to find an asic to linked list
+      //! Function to find an asic to linked list
       KpixCalibReadAsicStruct *findAsic ( KpixCalibReadGainStruct *currGain, int kpixID );
 
-      // Function to add a Gain to linked list
+      //! Function to add a Gain to linked list
       KpixCalibReadGainStruct *addGain ( KpixCalibReadDir *currDir, int gainID );
 
-      // Function to find a Gain to linked list
+      //! Function to find a Gain to linked list
       KpixCalibReadGainStruct *findGain ( KpixCalibReadDir *currDir, int gainID );
 
-      // Function to add a Dir to linked list
+      //! Function to add a Dir to linked list
       KpixCalibReadDir *addDir ( std::string dirName );
 
-      // Function to find a Dir to linked list
+      //! Function to find a Dir to linked list
       KpixCalibReadDir *findDir ( std::string dirName );
 
    public:
@@ -125,67 +131,69 @@ class KpixCalibRead : public TSAXParser{
       // Run Read Class
       KpixRunRead *kpixRunRead;
 
-      // Calib Data Class Constructor
-      // Pass path to calibration data or
+      //! Calib Data Class Constructor
+      /*! Pass path to calibration data or
+		*/
       KpixCalibRead ( std::string calibFile, bool debug = false );
 
-      // Calib Data Class Constructor
-      // Pass already open run read class
+      //! Calib Data Class Constructor
+      /*! Pass already open run read class
+		*/
       KpixCalibRead ( KpixRunRead *kpixRunRead );
 
-      // Calib Data Class DeConstructor
+      //! Calib Data Class DeConstructor
       ~KpixCalibRead ( );
 
-      // Functions to parse the xml tags 
+      //! Functions to parse the xml tags 
       void OnStartElement ( const char *name, const TList *attributes );
       void OnEndElement ( const char *name );
       void OnCharacters ( const char *characters );
 
-      // Function to invoke xml parsing
+      //! Function to invoke xml parsing
       void ParseXml ( );
 
-      // Function to create plot name
+      //! Function to create plot name
       static std::string genPlotName ( int gain, int kpix, int channel, int bucket, std::string prefix, int range=-1 );
 
-      // Function to create plot title
+      //! Function to create plot title
       static std::string genPlotTitle ( int gain, int kpix, int channel, int bucket, std::string prefix, int range=-1 );
 
-      // Get and make copy of Value Histogam
+      //! Get and make copy of Value Histogam
       TH1F *getHistValue ( std::string dir, int gain, int kpix, int channel, int bucket );
 
-      // Get and make copy of Time Histogam
+      //! Get and make copy of Time Histogam
       TH1F *getHistTime ( std::string dir, int gain, int kpix, int channel, int bucket );
 
-      // Get and make copy of Value Graph
+      //! Get and make copy of Value Graph
       TGraph *getGraphValue ( std::string dir, int gain, int kpix, int channel, int bucket, int range=-1 );
 
-      // Get and make copy of Time Graph
+      //! Get and make copy of Time Graph
       TGraph *getGraphTime ( std::string dir, int gain, int kpix, int channel, int bucket, int range=-1 );
 
-      // Get and make copy of Time Graph
+      //! Get and make copy of Time Graph
       TGraph *getGraphResid ( std::string dir, int gain, int kpix, int channel, int bucket, int range=-1 );
 
-      // Get and make copy of Filtered Graph
+      //! Get and make copy of Filtered Graph
       TGraph *getGraphFilt ( std::string dir, int gain, int kpix, int channel, int bucket, int range=-1 );
 
-      // Get Calibration Graph Fit Results If They Exist
+      //! Get Calibration Graph Fit Results If They Exist
       bool getCalibData ( double *fitGain, double *fitIntercept, 
                           std::string dir, int gain, int kpix, int channel, int bucket,
                           double *fitGainErr=NULL, double *fitInterceptErr=NULL );
 
-      // Get Calibration Graph Fit RMS Value
+      //! Get Calibration Graph Fit RMS Value
       bool getCalibRms  ( double *rms, 
                           std::string dir, int gain, int kpix, int channel, int bucket);
 
-      // Get Histogram Graph Fit Results If They Exist
+      //! Get Histogram Graph Fit Results If They Exist
       bool getHistData ( double *mean, double *sigma, double *rms,
                          std::string dir, int gain, int kpix, int channel, int bucket,
                          double *meanErr=NULL, double *sigmaErr=NULL);
 
-      // Copy calibration data to a new root file
+      //! Copy calibration data to a new root file
       void copyCalibData ( TFile *newFile, std::string directory, KpixAsic **asic, int asicCnt );
 
-      // Copy xml string to a new root file
+      //! Copy xml string to a new root file
       void copyCalibData ( KpixRunWrite *newFile );
 
       ClassDef(KpixCalibRead,1)

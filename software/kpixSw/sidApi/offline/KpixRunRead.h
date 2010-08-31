@@ -54,6 +54,16 @@ class TFile;
 class TTree;
 class TBranch;
 
+/** \ingroup offline */
+
+//! Kpix RunRead Class.
+/*!
+   This class is used to retrieve run data from a KPIX Asic device in a DAQ system. In online mode
+   this device is used to communicate directly with the KPIX hardware, allowing the device
+   to be configured and operated. In offline mode this class is used to read back the
+   values from the device as it was operated in the run which generated the root
+   data file.
+*/
 
 class KpixRunRead {
 
@@ -96,10 +106,11 @@ class KpixRunRead {
       // Pointer to tree file structure
       TFile *treeFile;
 
-      // Create run read object. Opens tree file for reading
-      // Pass the following values:
-      //   rootFile  = Root file containing data
-      //   debug     = Optional debug flag, true to enable debugging
+      //! Create run read object. Opens tree file for reading
+      /*! Pass the following values:
+		rootFile  = Root file containing data
+		debug     = Optional debug flag, true to enable debugging
+		*/
       KpixRunRead ( std::string rootFile, bool debug );
 
       // Return pointer to tree in the data file
@@ -114,67 +125,67 @@ class KpixRunRead {
       TBranch * getRunVarBranch ();
       TBranch * getSampleBranch ();
 
-      // Get Run Calibation Souce
+      //! Get Run Calibation Source
       TString getRunCalib ();
 
-      // Get Run Name
+      //! Get Run Name
       TString getRunName ();
 
-      // Get Run Timestamp
+      //! Get Run Timestamp
       TString getRunTime ();
 
-      // Get End Timestamp
+      //! Get End Timestamp
       TString getEndTime ();
 
-      // Get Calibration Data
+      //! Get Calibration Data
       TString getCalibData ();
 
-      // Get Run Duration In Seconds
+      //! Get Run Duration In Seconds
       Int_t getRunDuration();
 
-      // Get Run Description
+      //! Get Run Description
       TString getRunDescription ();
 
-      // Return number of ASIC objects
+      //! Return number of ASIC objects
       Int_t getAsicCount();
 
-      // Return ASIC by index
+      //! Return ASIC by index
       KpixAsic *getAsic( Int_t index );
 
-      // Return ASIC List
+      //! Return ASIC List
       KpixAsic **getAsicList( );
 
-      // Return FPGA
+      //! Return FPGA
       KpixFpga *getFpga( );
 
-      // Return number of sample objects
+      //! Return number of sample objects
       Int_t getSampleCount();
 
-      // Return sample by index
+      //! Return sample by index
       KpixSample *getSample( Int_t index );
 
-      // Return number of Event Variables
+      //! Return number of Event Variables
       Int_t getEventVarCount();
 
-      // Return Event Variable by index
+      //! Return Event Variable by index
       KpixEventVar *getEventVar( Int_t index );
 
-      // Return Event Variable by name
+      //! Return Event Variable by name
       KpixEventVar *getEventVar( std::string name );
 
-      // Return number of Run Variables
+      //! Return number of Run Variables
       Int_t getRunVarCount();
 
-      // Return Run Variable by index
+      //! Return Run Variable by index
       KpixRunVar *getRunVar( Int_t index );
 
-      // Return Run Variable by name
+      //! Return Run Variable by name
       KpixRunVar *getRunVar( std::string name );
 
-      // Dump Run Data
+      //! Dump Run Data
       void dumpRunData ( );
 
-      // Deconstructor
+      //! Deconstructor
       virtual ~KpixRunRead ( );
 };
 #endif

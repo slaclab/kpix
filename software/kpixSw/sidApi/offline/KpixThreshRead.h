@@ -26,6 +26,11 @@ class TH2F;
 class TGraph;
 class TGraphAsymmErrors;
 
+
+/** \ingroup offline */
+
+//! This class is used to read Threshold scan data and create associated plots
+
 class KpixThreshRead {
 
       // Flag to delete runRead
@@ -36,39 +41,39 @@ class KpixThreshRead {
       // Run Read Class
       KpixRunRead *kpixRunRead;
 
-      // Calib Data Class Constructor
-      // Pass path to calibration data or
+      //! Calib Data Class Constructor
+      /*! Pass path to calibration data or */
       KpixThreshRead ( std::string threshFile, bool debug = false );
 
-      // Calib Data Class Constructor
-      // Pass already open run read class
+      //! Calib Data Class Constructor
+      /*! Pass already open run read class */
       KpixThreshRead ( KpixRunRead *kpixRunRead );
 
-      // Calib Data Class DeConstructor
+      //! Calib Data Class DeConstructor
       ~KpixThreshRead ( );
 
-      // Function to create plot name
+      //! Function to create plot name
       static std::string genPlotName ( std::string prefix, int gain, int kpix, int channel, int cal=-1 );
 
-      // Function to create plot title
+      //! Function to create plot title
       static std::string genPlotTitle ( std::string prefix, int gain, int kpix, int channel, int cal=-1 );
 
-      // Get Threshold Scan Histogram
+      //! Get Threshold Scan Histogram
       TH2F *getThreshScan ( std::string dir, int gain, int kpix, int channel, int cal );
 
-      // Get Threshold Curve
+      //! Get Threshold Curve
       TGraphAsymmErrors *getThreshCurve ( std::string dir, int gain, int kpix, int channel);
 
-      // Get Threshold Cal
+      //! Get Threshold Cal
       TGraphAsymmErrors *getThreshCal ( std::string dir, int gain, int kpix, int channel, int cal);
 
-      // Get Threshold Gain
+      //! Get Threshold Gain
       TGraph *getThreshGain ( std::string dir, int gain, int kpix, int channel);
 
-      // Get Threshold Data
+      //! Get Threshold Data
       bool getThreshData (double *meanVal, double *sigmaVal, double *gainVal, std::string dir,int gain,int serNum,int channel);
 
-      // Get Calibration Sigma Value
+      //! Get Calibration Sigma Value
       bool getCalSigma (double *sigmaVal,std::string dir,int gain,int serNum,int channel, int cal);
 
 };
