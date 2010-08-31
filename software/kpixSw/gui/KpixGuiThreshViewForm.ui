@@ -327,179 +327,6 @@
     </widget>
     <widget class="QGroupBox">
         <property name="name">
-            <cstring>groupBox1</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>10</x>
-                <y>210</y>
-                <width>230</width>
-                <height>170</height>
-            </rect>
-        </property>
-        <property name="title">
-            <string>Fit Parameters</string>
-        </property>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel1_2_4_2_2</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>30</x>
-                    <y>20</y>
-                    <width>110</width>
-                    <height>20</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>&lt;p align="right"&gt;Cal Fit Max Time:&lt;/p&gt;</string>
-            </property>
-        </widget>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel1_2_4_2_2_2</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>30</x>
-                    <y>50</y>
-                    <width>110</width>
-                    <height>20</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>&lt;p align="right"&gt;Cal Sigma Hint:&lt;/p&gt;</string>
-            </property>
-        </widget>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel1_2_4_2</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>20</x>
-                    <y>80</y>
-                    <width>120</width>
-                    <height>20</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>&lt;p align="right"&gt;Threshold Fit Time:&lt;/p&gt;</string>
-            </property>
-        </widget>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel1_2_4_2_2_2_2</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>20</x>
-                    <y>110</y>
-                    <width>120</width>
-                    <height>20</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>&lt;p align="right"&gt;Thresh Sigma Hint:&lt;/p&gt;</string>
-            </property>
-        </widget>
-        <widget class="QSpinBox">
-            <property name="name">
-                <cstring>calTime</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>140</x>
-                    <y>20</y>
-                    <width>60</width>
-                    <height>23</height>
-                </rect>
-            </property>
-        </widget>
-        <widget class="QLineEdit">
-            <property name="name">
-                <cstring>calHint</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>140</x>
-                    <y>50</y>
-                    <width>60</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>3.0</string>
-            </property>
-        </widget>
-        <widget class="QSpinBox">
-            <property name="name">
-                <cstring>threshTime</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>140</x>
-                    <y>80</y>
-                    <width>60</width>
-                    <height>23</height>
-                </rect>
-            </property>
-        </widget>
-        <widget class="QLineEdit">
-            <property name="name">
-                <cstring>threshHint</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>140</x>
-                    <y>110</y>
-                    <width>60</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>3.0</string>
-            </property>
-        </widget>
-        <widget class="QCheckBox">
-            <property name="name">
-                <cstring>voltConvert</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>110</x>
-                    <y>140</y>
-                    <width>100</width>
-                    <height>21</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>Volt Convert</string>
-            </property>
-            <property name="checked">
-                <bool>true</bool>
-            </property>
-        </widget>
-        <widget class="QCheckBox">
-            <property name="name">
-                <cstring>fitDebug</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>20</x>
-                    <y>140</y>
-                    <width>90</width>
-                    <height>21</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>Fit Debug</string>
-            </property>
-        </widget>
-    </widget>
-    <widget class="QGroupBox">
-        <property name="name">
             <cstring>groupBox2</cstring>
         </property>
         <property name="geometry">
@@ -609,53 +436,6 @@
                 <bool>true</bool>
             </property>
         </widget>
-    </widget>
-    <widget class="QTable">
-        <column>
-            <property name="text">
-                <string>Dac</string>
-            </property>
-        </column>
-        <column>
-            <property name="text">
-                <string>Charge</string>
-            </property>
-        </column>
-        <column>
-            <property name="text">
-                <string>Mean</string>
-            </property>
-        </column>
-        <column>
-            <property name="text">
-                <string>Sigma</string>
-            </property>
-        </column>
-        <property name="name">
-            <cstring>calTable</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>10</x>
-                <y>390</y>
-                <width>230</width>
-                <height>150</height>
-            </rect>
-        </property>
-        <property name="font">
-            <font>
-                <pointsize>8</pointsize>
-            </font>
-        </property>
-        <property name="numRows">
-            <number>0</number>
-        </property>
-        <property name="numCols">
-            <number>4</number>
-        </property>
-        <property name="readOnly">
-            <bool>true</bool>
-        </property>
     </widget>
     <widget class="QTabWidget">
         <property name="name">
@@ -864,6 +644,293 @@
             <number>1023</number>
         </property>
     </widget>
+    <widget class="QTable">
+        <column>
+            <property name="text">
+                <string>Dac</string>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Charge</string>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Mean</string>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Sigma</string>
+            </property>
+        </column>
+        <property name="name">
+            <cstring>calTable</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>420</y>
+                <width>230</width>
+                <height>120</height>
+            </rect>
+        </property>
+        <property name="font">
+            <font>
+            </font>
+        </property>
+        <property name="numRows">
+            <number>0</number>
+        </property>
+        <property name="numCols">
+            <number>4</number>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QGroupBox">
+        <property name="name">
+            <cstring>groupBox1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>210</y>
+                <width>230</width>
+                <height>200</height>
+            </rect>
+        </property>
+        <property name="title">
+            <string>Fit Parameters</string>
+        </property>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel1_2_4_2_2_2</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>30</x>
+                    <y>50</y>
+                    <width>110</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>&lt;p align="right"&gt;Cal Sigma Hint:&lt;/p&gt;</string>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel1_2_4_2_2_2_2</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>20</x>
+                    <y>110</y>
+                    <width>120</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>&lt;p align="right"&gt;Thresh Sigma Hint:&lt;/p&gt;</string>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>calHint</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>140</x>
+                    <y>50</y>
+                    <width>60</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>3.0</string>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>threshHint</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>140</x>
+                    <y>110</y>
+                    <width>60</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>3.0</string>
+            </property>
+        </widget>
+        <widget class="QCheckBox">
+            <property name="name">
+                <cstring>voltConvert</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>110</x>
+                    <y>140</y>
+                    <width>100</width>
+                    <height>21</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>Volt Convert</string>
+            </property>
+            <property name="checked">
+                <bool>true</bool>
+            </property>
+        </widget>
+        <widget class="QCheckBox">
+            <property name="name">
+                <cstring>fitDebug</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>20</x>
+                    <y>140</y>
+                    <width>90</width>
+                    <height>21</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>Fit Debug</string>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel1_2_4_2</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>20</x>
+                    <y>80</y>
+                    <width>80</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>&lt;p align="right"&gt;Thresh Fit Time:&lt;/p&gt;</string>
+            </property>
+        </widget>
+        <widget class="QSpinBox">
+            <property name="name">
+                <cstring>threshTimeMin</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>100</x>
+                    <y>80</y>
+                    <width>60</width>
+                    <height>23</height>
+                </rect>
+            </property>
+        </widget>
+        <widget class="QSpinBox">
+            <property name="name">
+                <cstring>threshTimeMax</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>160</x>
+                    <y>80</y>
+                    <width>60</width>
+                    <height>23</height>
+                </rect>
+            </property>
+        </widget>
+        <widget class="QSpinBox">
+            <property name="name">
+                <cstring>calTimeMax</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>160</x>
+                    <y>20</y>
+                    <width>60</width>
+                    <height>23</height>
+                </rect>
+            </property>
+        </widget>
+        <widget class="QSpinBox">
+            <property name="name">
+                <cstring>calTimeMin</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>100</x>
+                    <y>20</y>
+                    <width>60</width>
+                    <height>23</height>
+                </rect>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel1_2_4_2_2</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>30</x>
+                    <y>20</y>
+                    <width>70</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>&lt;p align="right"&gt;Cal Fit Time:&lt;/p&gt;</string>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>calFitMax</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>160</x>
+                    <y>170</y>
+                    <width>60</width>
+                    <height>23</height>
+                </rect>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>calFitMin</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>100</x>
+                    <y>170</y>
+                    <width>60</width>
+                    <height>23</height>
+                </rect>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel1_2_4_2_2_3</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>10</x>
+                    <y>170</y>
+                    <width>90</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>&lt;p align="right"&gt;Cal Fit Range(fC):&lt;/p&gt;</string>
+            </property>
+        </widget>
+    </widget>
 </widget>
 <customwidgets>
     <customwidget>
@@ -897,7 +964,7 @@
 </customwidgets>
 <images>
     <image name="image0">
-        <data format="PNG" length="340">89504e470d0a1a0a0000000d4948445200000020000000200806000000737a7af40000011b49444154789ced97db0e84200c44878d5f65133edea47c9509fbe0954bb1bab2f8e024269b8cd08374d035ec182df50100eac93705286a840c57f234be0aa0b25e8017600318e1b357e4514fa2773436f102800e267bed3cb204c0832c21f68ec6663d5cde027fdbe1f5a01e38d0b4e2fda2e7adf817402d75b5265e7ae4e86dbb01285e3a3cb8b088cd8f234be0815790e57754d98400bb6824c527cf93edc589d6e273af90dd014b73e3013da00248133089070ece03e9be9f00b451bb525c0530a9de17db0d31f4a0de5c5a7d085088611cbfd46300f97b963e49a2a889e132301bbfb9b8e425be1045b107ae36d5593df31cd0aebef4f843c9df0f09c099475f6a4e2d4400507fdf5308c38e9bfc3764c7660568a9e629f8027148aaf121ee81060000000049454e44ae426082</data>
+        <data format="XBM.GZ" length="79">789c534e494dcbcc4b554829cdcdad8c2fcf4c29c95030e0524611cd48cd4ccf28010a1797249664262b2467241641a592324b8aa363156c15aab914146aadb90067111b1f</data>
     </image>
 </images>
 <connections>
@@ -998,7 +1065,7 @@
         <slot>selChanged()</slot>
     </connection>
     <connection>
-        <sender>calTime</sender>
+        <sender>calTimeMin</sender>
         <signal>valueChanged(int)</signal>
         <receiver>KpixGuiThreshViewForm</receiver>
         <slot>selChanged()</slot>
@@ -1010,7 +1077,7 @@
         <slot>selChanged()</slot>
     </connection>
     <connection>
-        <sender>threshTime</sender>
+        <sender>threshTimeMin</sender>
         <signal>valueChanged(int)</signal>
         <receiver>KpixGuiThreshViewForm</receiver>
         <slot>selChanged()</slot>
@@ -1030,6 +1097,30 @@
     <connection>
         <sender>fitDebug</sender>
         <signal>toggled(bool)</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>selChanged()</slot>
+    </connection>
+    <connection>
+        <sender>calTimeMax</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>selChanged()</slot>
+    </connection>
+    <connection>
+        <sender>threshTimeMax</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>selChanged()</slot>
+    </connection>
+    <connection>
+        <sender>calFitMax</sender>
+        <signal>textChanged(const QString&amp;)</signal>
+        <receiver>KpixGuiThreshViewForm</receiver>
+        <slot>selChanged()</slot>
+    </connection>
+    <connection>
+        <sender>calFitMin</sender>
+        <signal>textChanged(const QString&amp;)</signal>
         <receiver>KpixGuiThreshViewForm</receiver>
         <slot>selChanged()</slot>
     </connection>
