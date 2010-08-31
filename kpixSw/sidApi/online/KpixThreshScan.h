@@ -38,6 +38,11 @@ class KpixRunWrite;
 class KpixProgress;
 class KpixAsic;
 
+/** \ingroup online */
+
+//! This class is used to store and set threshold scan settings
+/*!
+*/
 
 class KpixThreshScan {
 
@@ -86,62 +91,63 @@ class KpixThreshScan {
 
    public:
 
-      // Constructor for single KPIX. 
-      // Pass a pointer to the Kpix Asic and the Run object
+      //! Constructor for single KPIX. 
+      /*! Pass a pointer to the Kpix Asic and the Run object*/
       KpixThreshScan ( KpixAsic *asic, KpixRunWrite *run );
 
-      // Constructor for multiple KPIX devices. 
-      // Pass a pointer to the Kpix Asic and the Run object
+      //! Constructor for multiple KPIX devices. 
+      /*! Pass a pointer to the Kpix Asic and the Run object*/
       KpixThreshScan ( KpixAsic **asic, unsigned int count, KpixRunWrite *run );
 
-      // Enable disable charge injection
+      //! Enable disable charge injection
       void setCalibEn ( bool enable );
 
-      // Set calibration DAC steps for threshold scan
+      //! Set calibration DAC steps for threshold scan
       void setCalibRange ( unsigned char start, unsigned char end, unsigned char step );
 
-      // Set threshold steps for threshold scan
+      //! Set threshold range of threshold scan
       void setThreshRange (unsigned char start, unsigned char end, unsigned char step);
 
-      // Set pre-trigger threshold offset
-      // Set a negative value to track the pre-trigger threshold below
-      // the trigger threshold. Set to zero to keep the same as
-      // the trigger threshold. Set to a positive value to set 
-      // pre-trigger to always be 0xB0.
+      //! Set pre-trigger threshold offset
+      /*!Set a negative value to track the pre-trigger threshold below
+      the trigger threshold. Set to zero to keep the same as
+      the trigger threshold. Set to a positive value to set 
+      pre-trigger to always be 0xB0.
+		*/
       void setPreTrigger ( char diff );
 
-      // Set number of iterations to run at each step
+      //! Set number of iterations to run at each step
       void setThreshCount ( int count );
 
-      // Enable/Disable normal gain iteration
+      //! Enable/Disable normal amplifier gain iteration
       void enNormalGain ( bool enable );
 
-      // Enable/Disable double gain iteration
+      //! Enable/Disable double amplifier gain iteration
       void enDoubleGain ( bool enable );
 
-      // Enable/Disable low gain iteration
+      //! Enable/Disable low amplifier gain iteration
       void enLowGain ( bool enable );
 
-      // Turn on or off debugging for the class
+      //! Turn on or off debugging for the class
       void threshDebug ( bool debug );
 
-      // Enable raw data
+      //! Enable raw scan data storage
       void enableRawData( bool enable );
 
-      // Enable plot generation
+      //! Enable plot generation during a scan
       void enablePlots( bool enable );
 
-      // Pass name of the TFile directory in which to store the plots
+      //! Pass name of the TFile directory in which to store the plots
       void setPlotDir( std::string plotDir );
 
-      // Execute threshold scan, pass target channel
-      // Or pass -1 to enable all channels
+      //! Execute threshold scan, pass target channel
+      /*! Or pass -1 to enable all channels*/
       void runThreshold ( short channel );
 
-      // Deconstructor
+      //! Deconstructor
       virtual ~KpixThreshScan ();
 
-      // Set progress Callback
+      //! Set progress Callback
       void setKpixProgress(KpixProgress *progress);
 
 };

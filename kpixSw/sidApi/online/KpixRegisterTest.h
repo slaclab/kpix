@@ -24,6 +24,9 @@
 class KpixProgress;
 class KpixAsic;
 
+/** \ingroup online */
+
+//! This class is used to access and test KPIX registers
 
 class KpixRegisterTest {
 
@@ -49,46 +52,52 @@ class KpixRegisterTest {
 
    public:
 
-      // Register test class constructor
-      // Pass the following values for construction
-      // asic    = KPIX ASIC Object
+      //! Register test class constructor
+      /*! Pass the following values for construction
+      asic    = KPIX ASIC Object
+		*/
       KpixRegisterTest ( KpixAsic *asic );
 
-      // Deconstructor.
+      //! Deconstructor.
       virtual ~KpixRegisterTest ();
 
-      // Set end on error flag, default = true
-      // Controls if the test should end when an error occurs or just
-      // count the error and keep on running.
+      //! Set end on error flag, default = true
+      /*! Controls if the test should end when an error occurs or just
+      count the error and keep on running.
+		*/
       void setEndOnError(bool flag);
 
-      // Set iterations to run, default = 100
+      //! Set iterations to run
+		/*! default = 100
+		*/
       void setIterations (unsigned int iterations);
 
-      // Set reads to perform in each iteration, default = 2
+      //! Set reads to perform in each iteration, default = 2
       void setReadCount (unsigned int readCount);
 
-      // Turn on progress display, default = false
+      //! Turn on progress display, default = false
       void setShowProgress ( bool flag );
 
-      // Set direction of test
-      // Controls the order of register read and writes
+      //! Set direction of test
+      /*! Controls the order of register read and writes
+		*/
       void setDirection ( bool flag );
 
-      // Run the register test
-      // Return true on success, false on fail
+      //! Run the register test
+      /*! Return true on success, false on fail
+		*/
       bool runTest ();
 
-      // Return the number of read-mismatches found
+      //! Return the number of read-mismatches found
       unsigned int getReadErrors();
 
-      // Return the number of status errors detected
+      //! Return the number of status errors detected
       unsigned int getStatusErrors();
 
-      // Enable/disable debug
+      //! Enable/disable debug
       void setDebug ( bool debug );
 
-      // Set progress Callback
+      //! Set progress Callback
       void setKpixProgress(KpixProgress *progress);
 
 };
