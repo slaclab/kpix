@@ -37,6 +37,11 @@ KpixGuiInject::KpixGuiInject ( QWidget *parent ) : KpixGuiInjectForm(parent) {
 
    this->asicCnt = 0;
    this->asic    = NULL;
+
+   cal0Delay->setMaxValue(8191);
+   cal1Delay->setMaxValue(8191);
+   cal2Delay->setMaxValue(8191);
+   cal3Delay->setMaxValue(8191);
 }
 
 
