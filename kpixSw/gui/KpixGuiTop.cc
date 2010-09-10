@@ -396,6 +396,7 @@ void KpixGuiTop::run() {
    unsigned int       x;
    bool               temp1,temp2,temp3;
    unsigned char      temp4;
+   char               *xmlFile;
 
    // Which command
    try {
@@ -432,8 +433,12 @@ void KpixGuiTop::run() {
             break;
 
          case CmdSetDefaults :
+            xmlFile = getenv("KPIX_DEF_FILE");
             fpga->setDefaults(defClkPeriod,(asicVersion>7));
             for(x=0; x<asicCnt; x++) asic[x]->setDefaults(defClkPeriod);
+            if ( kpixConfigXml == NULL ) kpixConfigXml = new KpixConfigXml;
+            kpixConfigXml->readConfig (xmlFile, fpga, asic, asicCnt, 1);
+            kpixConfigXml->writeConfig (fpga, asic, asicCnt);
             break;
 
          case CmdRescanKpix :
@@ -453,8 +458,9 @@ void KpixGuiTop::run() {
             fpga = new KpixFpga(sidLink);
 
             // Set defaults
+            xmlFile = getenv("KPIX_DEF_FILE");
             fpga->setDefaults(defClkPeriod,(asicVersion>7));
-
+            
             // Find Each Address
             cout << "Searching For ASICs" << endl;
             for (x=0; x <= KPIX_MAX_ADDR; x++) {
@@ -484,6 +490,9 @@ void KpixGuiTop::run() {
                }
             }
             cout << "ReScan Done" << endl;
+            if ( kpixConfigXml == NULL ) kpixConfigXml = new KpixConfigXml;
+            kpixConfigXml->readConfig (xmlFile, fpga, asic, asicCnt, 1);
+            kpixConfigXml->writeConfig (fpga, asic, asicCnt);
             break;
 
          case CmdLoadSettings :
@@ -558,7 +567,7 @@ void KpixGuiTop::customEvent ( QCustomEvent *event ) {
          }
       }
       if ( cmdType == CmdLoadSettings ) calEnable->setChecked(false);
-      if ( cmdType = CmdRescanKpix )    calEnable->setChecked(true);
+      if ( cmdType == CmdRescanKpix   ) calEnable->setChecked(true);
       updateDisplay();
       setEnabled(true);
       update();
