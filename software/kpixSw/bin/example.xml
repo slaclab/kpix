@@ -1,0 +1,89 @@
+<dafault_data>
+	<kpix>
+		<clkPrd>30</clkPrd>
+		<clkPrdDig>30</clkPrdDig>
+		<clkPrdRd>50</clkPrdRd>
+		<clkPrdIdle>50</clkPrdIdle>
+		<kpixVer>9</kpixVer>
+		<bncSrcA>3</bncSrcA>
+		<bncSrcB>3</bncSrcB>
+		<dropData>0</dropData>
+		<rawData>0</rawData>
+		<disKpixA>0</disKpixA>
+		<disKpixB>0</disKpixB>
+		<disKpixC>0</disKpixC>
+		<disKpixD>0</disKpixD>
+		<runSrc>0</runSrc>
+		<runDly>0</runDly>
+		<runType>0</runType>
+		<extRec>0</extRec>
+		<trigEn>255</trigEn>
+		<trigExpand>0</trigExpand>
+		<trigSrc>0</trigSrc>
+		<calDly>0</calDly>
+	</kpix>
+	
+	<asic>
+		<cfgTstData>0</cfgTstData>
+		<cfgAutoReadDis>0</cfgAutoReadDis>
+		<cfgForceTemp>0</cfgForceTemp>
+		<cfgDisableTemp>0</cfgDisableTemp>
+		<cfgAutoStatus>0</cfgAutoStatus>
+		<cntrlCalibHigh>0</cntrlCalibHigh>
+		<cntrlCalDacInt>1</cntrlCalDacInt>
+		<cntrlForceLowGain>0</cntrlForceLowGain>
+		<cntrlLeakNullDis>1</cntrlLeakNullDis>
+		<cntrlDoubleGain>0</cntrlDoubleGain>
+		<cntrlNearNeighbor>0</cntrlNearNeighbor>
+		<cntrlPosPixel>1</cntrlPosPixel>
+		<cntrlDisPerRst>1</cntrlDisPerRst>
+		<cntrlEnDcRst>1</cntrlEnDcRst>
+		<cntrlCalSrcCore>1</cntrlCalSrcCore>
+		<cntrlTrigSrcCore>0</cntrlTrigSrcCore>
+		<cntrlShortIntEn>0</cntrlShortIntEn>
+		<cntrlDisPwrCycle>0</cntrlDisPwrCycle>
+		<cntrlFeCurr>0</cntrlFeCurr>
+		<cntrlHldTime>7</cntrlHldTime>
+		<clkPrd>50</clkPrd>
+		<rstOnTime>700</rstOnTime>
+		<rstOffTime>120000</rstOffTime>
+		<leakageNullOff>200</leakageNullOff>
+		<offsetNullOff>100500</offsetNullOff>
+		<threshOff>101500</threshOff>
+		<trigInhibitOff>0</trigInhibitOff>
+		<pwrUpOn>900</pwrUpOn>
+		<deselSequence>6900</deselSequence>
+		<bunchClkDly>467500</bunchClkDly>
+		<digitizationDly>10000</digitizationDly>
+		<bunchClockCount>2890</bunchClockCount>
+		<checkingEn>1</checkingEn>
+		<dacCalib>0</dacCalib>
+		<dacRampThresh>224</dacRampThresh>
+		<dacRangeThresh>0</dacRangeThresh>
+		<dacDefaultAnalog>189</dacDefaultAnalog>
+		<dacEventThreshRef>80</dacEventThreshRef>
+		<dacShaperBias>120</dacShaperBias>
+		<rstThreshA>0</rstThreshA>
+		<trigThreshA>0</trigThreshA>
+		<rstThreshB>0</rstThreshB>
+		<trigThreshB>0</trigThreshB>
+		<kpixChanMode>0</kpixChanMode>
+		<kpixChanMode id="1">1</kpixChanMode>
+		<calCount>4</calCount>
+		<cal0Delay>1500</cal0Delay>
+		<cal1Delay>200</cal1Delay>
+		<cal2Delay>200</cal2Delay>
+		<cal3Delay>200</cal3Delay>
+	</asic>
+	<asic id="2">
+		<channel id="2">
+			<!--<bucket id="0">    -->
+				<kpixChanMode>2</kpixChanMode>
+			<!--</bucket>
+			<bucket id="1">
+				<kpixChanMode>2</kpixChanMode>
+			</bucket>                                   -->
+		</channel>
+	</asic>
+</default_data>
+		
