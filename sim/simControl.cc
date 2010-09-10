@@ -16,6 +16,7 @@
 #include <KpixFpga.h>
 #include <KpixAsic.h>
 #include <KpixBunchTrain.h>
+#include <KpixRunWrite.h>
 #include <SidLink.h>
 #include <iostream>
 #include <iomanip>
@@ -28,12 +29,14 @@ int main ( int argc, char **argv ) {
    KpixFpga       *kpixFpga;
    KpixAsic       *kpixAsic[2];
    KpixBunchTrain *trainData;
+   KpixRunWrite   *kpixRunWrite;
    bool           cmdPerr, dataPerr, tempEn;
    unsigned char  tempValue;
-   unsigned int   modes[1024];
+   KpixAsic::KpixChanMode   modes[1024];
    unsigned int   x;
 
    try {
+
       // Create simulation link
       sidLink = new SidLink();
       sidLink->linkOpen ( OUT_DIR "/sim_link.rx", OUT_DIR "/sim_link.tx" );
@@ -44,6 +47,10 @@ int main ( int argc, char **argv ) {
 
       // Send resets 
       kpixFpga->cmdResetMst();
+      kpixFpga->setClockPeriod(50);
+      kpixFpga->setClockPeriodDig(50);
+      kpixFpga->setClockPeriodRead(50);
+      kpixFpga->setClockPeriodIdle(50);
       kpixFpga->cmdResetKpix();
 
       // Setup Kpix Version
@@ -51,39 +58,49 @@ int main ( int argc, char **argv ) {
       kpixFpga->setRawData  ( true, true );
 
       // Create the KPIX Devices
-      kpixAsic[0] = new KpixAsic(sidLink,9,2,800,false);
+      kpixAsic[0] = new KpixAsic(sidLink,9,2,900,false);
       kpixAsic[1] = new KpixAsic(sidLink,9,3,0,true);
 
       // Enable debugging
       kpixAsic[0]->kpixDebug(true);
       kpixAsic[1]->kpixDebug(true);
 
+
+      kpixAsic[0]->getStatus (&cmdPerr, &dataPerr, &tempEn, &tempValue);
+
+
       // Set Defaults
-      kpixAsic[0]->setCfgAutoStatus ( true, true );
+      kpixAsic[0]->setCfgTestData       ( false,          false   );
+      kpixAsic[0]->setCfgAutoReadDis    ( false,          false   );
+      kpixAsic[0]->setCfgForceTemp      ( false,          false   );
+      kpixAsic[0]->setCfgDisableTemp    ( false,          false   );
+      kpixAsic[0]->setCfgAutoStatus     ( true,           true    );
 
       // Set timing values
-      kpixAsic[0]->setTiming ( 50,        // Clock Period
-                               700,       // Reset On Time
-                               120000,    // Reset off Time
-                               200,       // Leakage Null Off
-                               100500,    // Offset Null Off
-                               101500,    // Thresh Off
-                               0,         // Trig Inhibit Off (bunch periods)
-                               900,       // Power Up On
-                               6900,      // Desel Sequence
-                               467500,    // Bunch Clock Delay
-                               10000,     // Digitization Delay
-                               2890,      // Bunch Clock Count
-                               true,      // Checking Enable
-                               true       // Write
-                             );
+      for (x=0; x<2; x++) {
+         kpixAsic[x]->setTiming ( 50,        // Clock Period
+                                  700,       // Reset On Time
+                                  120000,    // Reset off Time
+                                  200,       // Leakage Null Off
+                                  100500,    // Offset Null Off
+                                  101500,    // Thresh Off
+                                  0,         // Trig Inhibit Off (bunch periods)
+                                  900,       // Power Up On
+                                  6900,      // Desel Sequence
+                                  467500,    // Bunch Clock Delay
+                                  10000,     // Digitization Delay
+                                  2890,      // Bunch Clock Count
+                                  true,      // Checking Enable
+                                  true       // Write
+                                );
+      }
 
       // Real asic only settings, don't write to fpga core
       kpixAsic[0]->setCntrlCalibHigh    ( false,  false );
       kpixAsic[0]->setCntrlCalDacInt    ( true,   false );
       kpixAsic[0]->setCntrlForceLowGain ( false,  false );
       kpixAsic[0]->setCntrlLeakNullDis  ( true,   false );
-      kpixAsic[0]->setCntrlDoubleGain   ( false,  false );
+      kpixAsic[0]->setCntrlDoubleGain   ( true,   false );
       kpixAsic[0]->setCntrlNearNeighbor ( false,  false );
       kpixAsic[0]->setCntrlPosPixel     ( true,   false );
       kpixAsic[0]->setCntrlDisPerRst    ( true,   false );
@@ -92,8 +109,8 @@ int main ( int argc, char **argv ) {
       kpixAsic[0]->setCntrlTrigSrcCore  ( false,  false );
       kpixAsic[0]->setCntrlShortIntEn   ( false,  false );
       kpixAsic[0]->setCntrlDisPwrCycle  ( false,  false );
-      kpixAsic[0]->setCntrlFeCurr       ( 4,      false );
-      kpixAsic[0]->setCntrlHoldTime     ( 7,      true  ); // Only write control register once
+      kpixAsic[0]->setCntrlFeCurr       ( KpixAsic::FeCurr_121uA, false );
+      kpixAsic[0]->setCntrlHoldTime     ( KpixAsic::HoldTime_64x, true  ); // Only write control register once
 
       // Setup DACs
       kpixAsic[0]->setDacCalib          ( (unsigned char)0x40, true ); // was 0x80, new 0x40
@@ -113,39 +130,46 @@ int main ( int argc, char **argv ) {
 
       // Init Channel Modes
       for(x=0; x < 1024; x++) {
-         modes[x] = KpixChanThreshACal;
+         modes[x] = KpixAsic::KpixChanThreshACal;
       }
-      modes[31]  = KpixChanDisable;
-      modes[62]  = KpixChanDisable;
-      modes[95]  = KpixChanDisable;
-      modes[126] = KpixChanDisable;
-      modes[159] = KpixChanDisable;
-      modes[191] = KpixChanDisable;
-      modes[223] = KpixChanDisable;
-      modes[255] = KpixChanDisable;
-      modes[286] = KpixChanDisable;
-      modes[319] = KpixChanDisable;
-      modes[350] = KpixChanDisable;
+      //modes[31]  = KpixAsic::KpixChanDisable;
+      //modes[62]  = KpixAsic::KpixChanDisable;
+      //modes[95]  = KpixAsic::KpixChanDisable;
+      //modes[126] = KpixAsic::KpixChanDisable;
+      //modes[159] = KpixAsic::KpixChanDisable;
+      //modes[191] = KpixAsic::KpixChanDisable;
+      //modes[223] = KpixAsic::KpixChanDisable;
+      //modes[255] = KpixAsic::KpixChanDisable;
+      //modes[286] = KpixAsic::KpixChanDisable;
+      //modes[319] = KpixAsic::KpixChanDisable;
+      //modes[350] = KpixAsic::KpixChanDisable;
       kpixAsic[0]->setChannelModeArray(modes,true);
 
       // Setup calibration strobes
       kpixAsic[0]->setCalibTime ( 4,      // Calibration Count
-                                  0x100,  // Calibration 0 Delay
-                                  0x20,   // Calibration 1 Delay
-                                  0x20,   // Calibration 2 Delay
-                                  0x20,   // Calibration 3 Delay
+                                  0x28A,  // Calibration 0 Delay
+                                  0x28A,  // Calibration 1 Delay
+                                  0x28A,  // Calibration 2 Delay
+                                  0x28A,  // Calibration 3 Delay
                                   true);
 
       // Get Status
       kpixAsic[0]->getStatus (&cmdPerr, &dataPerr, &tempEn, &tempValue);
+
+      // Create Run Write Class To Store Data & Settings
+      kpixRunWrite = new KpixRunWrite ("sim_data.root","run","simulation","");
+      kpixRunWrite->addFpga  ( kpixFpga );
+      for (x=0; x<2; x++) kpixRunWrite->addAsic (kpixAsic[x]);
 
       // Send start command
       kpixAsic[0]->cmdCalibrate(true);
 
       // Get bunch train data
       trainData = new KpixBunchTrain ( sidLink, true );
+      kpixRunWrite->addBunchTrain(trainData);
 
       // Clean Up
+      delete kpixRunWrite;
       delete trainData;
       delete kpixAsic[0];
       delete kpixAsic[1];

@@ -16,6 +16,9 @@
 # Set Top Level
 TOP=KpixTb
 
+# Sim directory
+SIM_DIR=$(PWD)/../run_0x40_high
+
 # Set 64-bit compile flags
 ifeq ($(PLATFORM),lin64)
 VARGS=-full64
@@ -24,7 +27,8 @@ VARGS=
 endif
 
 # Set Main Netlist, Include Netlists & Configure Files For Copy
-NET = kpix_9_136_hier_P.cir
+#NET = kpix_9_136_hier_P.cir
+NET = kpix_a_02.cir
 INC = $(PWD)/olib_tsmc025.cir \
       $(PWD)/w_si_chip_driver.cir \
       $(PWD)/nanosim_cfg.txt \
@@ -73,69 +77,69 @@ all: pipe files partition env pli syn_setup vcomp vlink simControl
 
 # PLI Library
 pli: VhpiGeneric.h VhpiGeneric.c UsbChip.c
-	@cd $(PWD)/../sim_dir/; gcc -Wall -c -fPIC -O -I$(VCS_HOME)/include/ $(PWD)/VhpiGeneric.c
-	@cd $(PWD)/../sim_dir/; gcc -Wall -c -fPIC -O -I$(VCS_HOME)/include/ $(PWD)/UsbChip.c
-	@cd $(PWD)/../sim_dir/; gcc -Wall -shared -o libSimWsi_lib.so VhpiGeneric.o UsbChip.o
+	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -I$(VCS_HOME)/include/ $(PWD)/VhpiGeneric.c
+	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -I$(VCS_HOME)/include/ $(PWD)/UsbChip.c
+	@cd $(SIM_DIR); gcc -Wall -shared -o libSimWsi_lib.so VhpiGeneric.o UsbChip.o
 
 clean: 
-	@rm $(PWD)/../sim_dir/sim_src
-	@rm -rf $(PWD)/../sim_dir/*
+	@echo "Cleaning $(SIM_DIR)"
+	@rm $(SIM_DIR)/sim_src
+	@rm -rf $(SIM_DIR)/*
 
 # Compile VHDL Files
 vcomp:
-	@cd $(PWD)/../sim_dir/; vhdlan $(VARGS) $(VHDL)
-	@cd $(PWD)/../sim_dir/; vlogan $(VARGS) +v2k $(VLOG)
+	@cd $(SIM_DIR); vhdlan $(VARGS) $(VHDL)
+	@cd $(SIM_DIR); vlogan $(VARGS) +v2k $(VLOG)
 
 # Link Simulation Files
 vlink:
-	@cd $(PWD)/../sim_dir/; vcs $(VARGS) -nc -time "ns" -time_res "10ps" -debug $(TOP) +ad=$(PWD)/../sim_dir/partition.txt
+	@cd $(SIM_DIR); vcs $(VARGS) -nc -time "ns" -time_res "10ps" -debug $(TOP) +ad=$(SIM_DIR)/partition.txt
 
 # Make named pipe for sidApi link
 pipe:
-	@rm -f $(PWD)/../sim_dir/sim_link.*
-	@mknod --mode 666 $(PWD)/../sim_dir/sim_link.rx p
-	@mknod --mode 666 $(PWD)/../sim_dir/sim_link.tx p
+	@echo "Using directory $(SIM_DIR)"
+	@rm -f $(SIM_DIR)/sim_link.*
+	@mknod --mode 666 $(SIM_DIR)/sim_link.rx p
+	@mknod --mode 666 $(SIM_DIR)/sim_link.tx p
 
 # Create Synopsis Setup File
 syn_setup:
-	@rm -f $(PWD)/../sim_dir/.synopsys_vss.setup
-	@echo "UNISIM:$(XIL_SIMLIB)/unisim"                >  $(PWD)/../sim_dir/.synopsys_vss.setup
-	@echo "XILINXCORELIB:$(XIL_SIMLIB)/xilinxcorelib"  >> $(PWD)/../sim_dir/.synopsys_vss.setup
-	@echo "SIMPRIM:$(XIL_SIMLIB)/simprim"              >> $(PWD)/../sim_dir/.synopsys_vss.setup
+	@rm -f $(SIM_DIR)/.synopsys_vss.setup
+	@echo "UNISIM:$(XIL_SIMLIB)/unisim"                >  $(SIM_DIR)/.synopsys_vss.setup
+	@echo "XILINXCORELIB:$(XIL_SIMLIB)/xilinxcorelib"  >> $(SIM_DIR)/.synopsys_vss.setup
+	@echo "SIMPRIM:$(XIL_SIMLIB)/simprim"              >> $(SIM_DIR)/.synopsys_vss.setup
 
 # Compile simulation control
 simControl:
-	@cd $(PWD)/../sim_dir; \
+	@cd $(SIM_DIR); \
 	g++ -Wall -I $(PWD)/../software/kpixSw/sidApi/offline \
 	          -I $(PWD)/../software/kpixSw/sidApi/online \
 	          -L$(PWD)/../software/bin -lsidapi \
-	          -DOUT_DIR=\"$(PWD)/../sim_dir\" \
+	          -DOUT_DIR=\"$(SIM_DIR)\" \
 	          -DONLINE_EN \
 	          `root-config --cflags --libs` -m32 -lMinuit \
 	           $(PWD)/simControl.cc -o simControl
 
 # Copy simulation files
 files:
-	@rm -f $(PWD)/../sim_dir/sim_src
-	@ln -s $(PWD) $(PWD)/../sim_dir/sim_src
-	@cp $(PWD)/../netlists/$(NET).gz  $(PWD)/../sim_dir
-	@cp $(INC)                        $(PWD)/../sim_dir
-	@gzip -df $(PWD)/../sim_dir/*.gz
+	@rm -f $(SIM_DIR)/sim_src
+	@ln -s $(PWD) $(SIM_DIR)/sim_src
+	@cp $(PWD)/../netlists/$(NET).gz  $(SIM_DIR)
+	@cp $(INC)                        $(SIM_DIR)
+	@gzip -df $(SIM_DIR)/*.gz
 
 # Create partition file
 partition:
-	@rm -f $(PWD)/../sim_dir/partition.txt
-	@echo "choose hsim $(NET);"                                       >  $(PWD)/../sim_dir/partition.txt
-	@echo "use_spice -cell Kpix;"                                     >> $(PWD)/../sim_dir/partition.txt
-	#@echo "partition -cell Kpix;"                                    >  $(PWD)/../sim_dir/partition.txt
-	#@echo "choose nanosim -A -n $(NET) -C nanosim_cfg.txt -out wdb;" >> $(PWD)/../sim_dir/partition.txt
-	#@echo "set bus_format %d;"                                       >> $(PWD)/../sim_dir/partition.txt
-	#@echo "set rmap resis_map.txt;"                                  >> $(PWD)/../sim_dir/partition.txt
+	@rm -f $(SIM_DIR)/partition.txt
+	@echo "partition -cell Kpix;"                                    >  $(SIM_DIR)/partition.txt
+	@echo "choose nanosim -A -n $(NET) -C nanosim_cfg.txt -out wdb;" >> $(SIM_DIR)/partition.txt
+	@echo "set bus_format %d;"                                       >> $(SIM_DIR)/partition.txt
+	@echo "set rmap resis_map.txt;"                                  >> $(SIM_DIR)/partition.txt
 
 # Create setup env script
 env:
-	@rm -f $(PWD)/../sim_dir/setup_env.csh
-	@echo "source $(PWD)/../software/bin/setup_env.csh"                                          >  $(PWD)/../sim_dir/setup_env.csh
-	@echo "limit stacksize 60000"                                                                >> $(PWD)/../sim_dir/setup_env.csh
-	@echo "setenv LD_LIBRARY_PATH $(PWD)/../sim_dir:$(PWD)/../software/bin:$${LD_LIBRARY_PATH}"  >> $(PWD)/../sim_dir/setup_env.csh
+	@rm -f $(SIM_DIR)/setup_env.csh
+	@echo "source $(PWD)/../software/bin/setup_env.csh"                                   >  $(SIM_DIR)/setup_env.csh
+	@echo "limit stacksize 60000"                                                         >> $(SIM_DIR)/setup_env.csh
+	@echo "setenv LD_LIBRARY_PATH $(SIM_DIR):$(PWD)/../software/bin:$${LD_LIBRARY_PATH}"  >> $(SIM_DIR)/setup_env.csh
 

@@ -2,6 +2,8 @@
 
 report_node_dangle limit=2000
 
+print_node_l KpixTb.U_KpixC.XCORE.*
+
 print_node_l KpixTb.U_KpixC.CLK
 print_node_l KpixTb.U_KpixC.SYSCLK_P
 print_node_l KpixTb.U_KpixC.SYSCLK_M
