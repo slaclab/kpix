@@ -300,11 +300,11 @@ void KpixThreshScan::runThreshold ( short channel ) {
             for ( y=0; y < kpixCount-1; y++ ) {
                hist[y] = new TH2F(KpixThreshRead::genPlotName("thresh_scan",gain,kpixAsic[y]->getSerial(),channel,x).c_str(),
                                   KpixThreshRead::genPlotTitle("Thresh Scan",gain,kpixAsic[y]->getSerial(),channel,x).c_str(),
-                                  (threshStart-threshEnd)+1,threshEnd,threshStart+1,2880,0,2880);
+                                  (threshStart-threshEnd)+1,threshEnd,threshStart+1,8192,0,8192);
                hist[y]->SetDirectory(0);
                minX[y] = 256;
                maxX[y] = 0;
-               minY[y] = 2880;
+               minY[y] = 8192;
                maxY[y] = 0;
             }
          }
@@ -382,11 +382,6 @@ void KpixThreshScan::runThreshold ( short channel ) {
                prgCount++;
                delete train;
             }
-
-            if ( t0 > 4095 ) t0 = -1 * (t0 & 0xFFF);
-            if ( t1 > 4095 ) t1 = -1 * (t1 & 0xFFF);
-            if ( t2 > 4095 ) t2 = -1 * (t2 & 0xFFF);
-            if ( t3 > 4095 ) t3 = -1 * (t3 & 0xFFF);
 
             // Log event count
             if ( enDebug ) {
