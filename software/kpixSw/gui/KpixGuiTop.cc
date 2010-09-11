@@ -51,6 +51,7 @@
 #include "KpixGuiThreshScan.h"
 #include "KpixGuiEventStatus.h"
 #include "KpixGuiEventError.h"
+//#include "KpixConfigXml.h"
 using namespace std;
 
 
@@ -436,9 +437,9 @@ void KpixGuiTop::run() {
             xmlFile = getenv("KPIX_DEF_FILE");
             fpga->setDefaults(defClkPeriod,(asicVersion>7));
             for(x=0; x<asicCnt; x++) asic[x]->setDefaults(defClkPeriod);
-            if ( kpixConfigXml == NULL ) kpixConfigXml = new KpixConfigXml;
-            kpixConfigXml->readConfig (xmlFile, fpga, asic, asicCnt, 1);
-            kpixConfigXml->writeConfig (fpga, asic, asicCnt);
+            //if ( kpixConfigXml == NULL ) kpixConfigXml = new KpixConfigXml;
+            //kpixConfigXml->readConfig (xmlFile, fpga, asic, asicCnt, 1);
+            //kpixConfigXml->writeConfig (fpga, asic, asicCnt);
             break;
 
          case CmdRescanKpix :
@@ -490,9 +491,9 @@ void KpixGuiTop::run() {
                }
             }
             cout << "ReScan Done" << endl;
-            if ( kpixConfigXml == NULL ) kpixConfigXml = new KpixConfigXml;
-            kpixConfigXml->readConfig (xmlFile, fpga, asic, asicCnt, 1);
-            kpixConfigXml->writeConfig (fpga, asic, asicCnt);
+            //if ( kpixConfigXml == NULL ) kpixConfigXml = new KpixConfigXml;
+            //kpixConfigXml->readConfig (xmlFile, fpga, asic, asicCnt, 1);
+            //kpixConfigXml->writeConfig (fpga, asic, asicCnt);
             break;
 
          case CmdLoadSettings :
