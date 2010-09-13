@@ -373,6 +373,7 @@ void KpixConfigXml::writeConfig ( char *xmlFile, KpixFpga *fpga, KpixAsic **asic
       // Each ASIC
       for (x=0; x < asicCount; x++) {
          xml << "   <asic id=\"" << asic[x]->getAddress() << "\">\n";
+         xml << "      <cntrlPosPixel>" << asic[x]->getCntrlPosPixel(0) << "</cntrlPosPixel>\n";
 
          asic[x]->getDacThreshRangeA ( &rstThreshA, &trigThreshA, 0);
          xml << "      <rstThreshA>" << (int)rstThreshA << "</rstThreshA>\n";
