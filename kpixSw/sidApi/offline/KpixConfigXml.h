@@ -17,29 +17,29 @@
 // 06/30/2010: created
 
 #include <TSAXParser.h>
-#include "KpixFpga.h"
 #include "KpixAsic.h"
 
 // Forward Declarations
 class KpixFpga;
-class KpixAsic;
 
 class KpixConfigXml : public TSAXParser {
 
       // String to store variable names while XML parsing
-      char currVar[25];
-      bool xmlWriteEn, checkingEn;
-      int currAsic, currChannel, currBucket;
-      unsigned int clkPrd, rstOnTime, rstOffTime, leakageNullOff, offsetNullOff,
-          threshOff, trigInhibitOff, pwrUpOn, deselSequence, bunchClkDly, digitizationDly, bunchClockCount, calCount, cal0Delay, cal1Delay, cal2Delay, cal3Delay;
-      int rstThreshA, trigThreshA, rstThreshB, trigThreshB;
+      char                   currVar[25];
+      bool                   xmlWriteEn, checkingEn;
+      int                    currAsic, currChannel, currBucket;
+      unsigned int           clkPrd, rstOnTime, rstOffTime, leakageNullOff, offsetNullOff, threshOff;
+      unsigned int           trigInhibitOff, pwrUpOn, deselSequence, bunchClkDly, digitizationDly, bunchClockCount;
+      unsigned int           calCount, cal0Delay, cal1Delay, cal2Delay, cal3Delay;
+      unsigned char          rstThreshA, trigThreshA, rstThreshB, trigThreshB;
+      KpixAsic::KpixChanMode modes[1024];
 
       // Pointer for FPGA class
       KpixFpga *fpga;
  
       // Pointer for ASIC class
-      KpixAsic **asic;
-      int asicCnt;
+      KpixAsic     **asic;  //! Root: Don't stream
+      unsigned int asicCnt;
 
    public:
    
@@ -52,12 +52,12 @@ class KpixConfigXml : public TSAXParser {
       void OnCharacters ( const char *value );
       
       // Functions to set the variables of classes KpixFpga and KpixAsic
-      void readConfig ( char *xmlFile, KpixFpga *kpixFpga, KpixAsic **kpixAsic, int asicCount, int writeEn );
+      void readConfig ( char *xmlFile, KpixFpga *kpixFpga, KpixAsic **kpixAsic, unsigned int asicCount, int writeEn );
       void readConfig ( char *xmlFile, KpixFpga *kpixFpga, int writeEn );
-      void readConfig ( char *xmlFile, KpixAsic **KpixAsic, int asicCount, int writeEn );
+      void readConfig ( char *xmlFile, KpixAsic **KpixAsic, unsigned int asicCount, int writeEn );
       
       // Function to dump the settings in an XML file
-      void writeConfig ( KpixFpga *fpga, KpixAsic **asic, int asicCount);
+      void writeConfig ( char *xmlFile, KpixFpga *fpga, KpixAsic **asic, unsigned int asicCount);
       
       ClassDef(KpixConfigXml,1)
 };

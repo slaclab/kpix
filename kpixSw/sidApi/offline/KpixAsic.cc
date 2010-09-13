@@ -1939,8 +1939,8 @@ void KpixAsic::setCalibTime ( unsigned int calCount,  unsigned int cal0Delay,
       temp = 0;
       if ( calCount >= 3 ) temp |= 0x00001000;
       if ( calCount == 4 ) temp |= 0x10000000;
-      temp |= cal1Delay & 0x00000FFF;
-      temp |= (cal2Delay << 16) & 0x0FFF0000;
+      temp |= cal2Delay & 0x00000FFF;
+      temp |= (cal3Delay << 16) & 0x0FFF0000;
       regSetValue(0x11,temp,writeEn);
    } 
 
@@ -1959,8 +1959,8 @@ void KpixAsic::setCalibTime ( unsigned int calCount,  unsigned int cal0Delay,
       temp = 0;
       if ( calCount >= 3 ) temp |= 0x00008000;
       if ( calCount == 4 ) temp |= 0x80000000;
-      temp |= cal1Delay & 0x00001FFF;
-      temp |= (cal2Delay << 16) & 0x1FFF0000;
+      temp |= cal2Delay & 0x00001FFF;
+      temp |= (cal3Delay << 16) & 0x1FFF0000;
       regSetValue(0x11,temp,writeEn);
    }
 }

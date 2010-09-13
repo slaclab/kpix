@@ -1130,7 +1130,7 @@ void KpixGuiThreshView::customEvent ( QCustomEvent *event ) {
                threshTimeMin->setMaxValue(minCalTime-1);
                threshTimeMin->setValue(trigInh+3);
                threshTimeMax->setMinValue(trigInh);
-               threshTimeMax->setMaxValue(minCalTime-1);
+               threshTimeMax->setMaxValue(8192);
                threshTimeMax->setValue(trigInh+3);
 
                // Set Calibration Fit Max Time
