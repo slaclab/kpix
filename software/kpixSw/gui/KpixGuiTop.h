@@ -32,6 +32,7 @@ class KpixAsic;
 class KpixFpga;
 class KpixRunRead;
 class KpixRunVar;
+class KpixConfigXml;
 class SidLink;
 class KpixGuiError;
 class KpixGuiMain;
@@ -54,15 +55,16 @@ class KpixGuiRun;
 class KpixGuiTop : public KpixGuiTopForm, public QThread {
 
       // ASIC & FPGA Containers
-      unsigned int asicCnt;
-      unsigned int asicVersion;
-      unsigned int defClkPeriod;
-      unsigned int cmdType;
-      KpixAsic     *asic[KPIX_MAX_ADDR+1];
-      KpixFpga     *fpga;
-      KpixRunRead  *runRead;
-      SidLink      *sidLink;
-      KpixGuiError *errorMsg;
+      unsigned int  asicCnt;
+      unsigned int  asicVersion;
+      unsigned int  defClkPeriod;
+      unsigned int  cmdType;
+      KpixAsic      *asic[KPIX_MAX_ADDR+1];
+      KpixFpga      *fpga;
+      KpixRunRead   *runRead;
+      SidLink       *sidLink;
+      KpixGuiError  *errorMsg;
+      KpixConfigXml *kpixConfigXml;
 
       // Widgets In the Tabs
       KpixGuiMain       *kpixGuiMain;

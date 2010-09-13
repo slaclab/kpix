@@ -33,6 +33,7 @@
 #include <qpushbutton.h>
 #include <KpixAsic.h>
 #include <KpixFpga.h>
+#include <KpixConfigXml.h>
 #include <SidLink.h>
 #include <KpixRunRead.h>
 #include "KpixGuiMain.h"
@@ -67,6 +68,7 @@ KpixGuiTop::KpixGuiTop ( SidLink *sidLink, unsigned int clkPeriod, unsigned int 
    this->defClkPeriod  = clkPeriod;
    this->cmdType       = 0;
    this->runRead       = NULL;
+   kpixConfigXml       = new KpixConfigXml;
 
    // Set base directory
    baseDirBox->setText(baseDir);
@@ -115,6 +117,7 @@ KpixGuiTop::~KpixGuiTop ( ) {
    delete kpixGuiCalibrate;
    delete kpixGuiThreshScan;
    delete kpixGuiRun;
+   delete kpixConfigXml;
 }
 
 
@@ -299,6 +302,7 @@ void KpixGuiTop::dumpSettings_pressed( ) {
       cout << endl << "Dumping Asic " << x << " Settings: " << endl;
       asic[x]->dumpSettings();
    }
+   kpixConfigXml->writeConfig ("settings_dump.xml", fpga, asic, asicCnt);
 }
 
 
@@ -437,9 +441,7 @@ void KpixGuiTop::run() {
             xmlFile = getenv("KPIX_DEF_FILE");
             fpga->setDefaults(defClkPeriod,(asicVersion>7));
             for(x=0; x<asicCnt; x++) asic[x]->setDefaults(defClkPeriod);
-            //if ( kpixConfigXml == NULL ) kpixConfigXml = new KpixConfigXml;
-            //kpixConfigXml->readConfig (xmlFile, fpga, asic, asicCnt, 1);
-            //kpixConfigXml->writeConfig (fpga, asic, asicCnt);
+            kpixConfigXml->readConfig (xmlFile, fpga, asic, asicCnt, true);
             break;
 
          case CmdRescanKpix :
@@ -491,9 +493,8 @@ void KpixGuiTop::run() {
                }
             }
             cout << "ReScan Done" << endl;
-            //if ( kpixConfigXml == NULL ) kpixConfigXml = new KpixConfigXml;
-            //kpixConfigXml->readConfig (xmlFile, fpga, asic, asicCnt, 1);
-            //kpixConfigXml->writeConfig (fpga, asic, asicCnt);
+            xmlFile = getenv("KPIX_DEF_FILE");
+            kpixConfigXml->readConfig (xmlFile, fpga, asic, asicCnt, true);
             break;
 
          case CmdLoadSettings :

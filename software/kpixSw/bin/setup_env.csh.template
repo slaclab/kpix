@@ -15,8 +15,7 @@ setenv KPIX_BASE_DIR /u1/w_si/samples/
 setenv KPIX_VERSION  9
 setenv KPIX_CLK_PER  50
 setenv KPIX_CAL_FILE
-setenv KPIX_DEF_FILE ~/projects/w_si/devel/software/kpixSw/bin/example.xml
-setenv KPIX_SETTINGS_FILE /u1/w_si/samples/settings.xml
+setenv KPIX_DEF_FILE default.xml
 
 # Setup path
 if ($?PATH) then
