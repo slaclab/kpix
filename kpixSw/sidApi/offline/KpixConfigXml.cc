@@ -181,8 +181,14 @@ void KpixConfigXml::OnCharacters ( const char *value ) {
          for(x=0; x<asicCnt; x++) asic[x]->setCntrlDoubleGain ( atoi(value), xmlWriteEn );
       else if ( !strcmp(currVar, "cntrlNearNeighbor") )
          for(x=0; x<asicCnt; x++) asic[x]->setCntrlNearNeighbor ( atoi(value), xmlWriteEn );
-      else if ( !strcmp(currVar, "cntrlPosPixel") )
-         for(x=0; x<asicCnt; x++) asic[x]->setCntrlPosPixel ( atoi(value), xmlWriteEn );
+
+      else if ( !strcmp(currVar, "cntrlPosPixel") ) {
+         for(x=0; x<asicCnt; x++) {
+            if ( currAsic == -1 || asic[x]->getAddress() == currAsic ) 
+               asic[x]->setCntrlPosPixel ( atoi(value), xmlWriteEn );
+         }
+      }
+
       else if ( !strcmp(currVar, "cntrlDisPerRst") )
          for(x=0; x<asicCnt; x++) asic[x]->setCntrlDisPerRst ( atoi(value), xmlWriteEn );
       else if ( !strcmp(currVar, "cntrlEnDcRst") )
@@ -367,6 +373,7 @@ void KpixConfigXml::writeConfig ( char *xmlFile, KpixFpga *fpga, KpixAsic **asic
       // Each ASIC
       for (x=0; x < asicCount; x++) {
          xml << "   <asic id=\"" << asic[x]->getAddress() << "\">\n";
+         xml << "      <cntrlPosPixel>" << asic[x]->getCntrlPosPixel(0) << "</cntrlPosPixel>\n";
 
          asic[x]->getDacThreshRangeA ( &rstThreshA, &trigThreshA, 0);
          xml << "      <rstThreshA>" << (int)rstThreshA << "</rstThreshA>\n";
