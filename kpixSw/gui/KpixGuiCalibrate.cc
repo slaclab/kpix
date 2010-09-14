@@ -308,7 +308,10 @@ void KpixGuiCalibrate::run() {
             // Start Run
             kpixCalDist->setPlotDir("Force_Trig");
             kpixRunWrite->setEventVar ( "ForceTrig",1.0 );
-            for(y=0; y<asicCnt; y++) asic[y]->setCntrlTrigSrcCore ( true );
+            for(y=0; y<asicCnt; y++) {
+               asic[y]->setCntrlTrigSrcCore ( true );
+               asic[y]->setCntrlTrigDisable ( true );
+            }
             kpixCalDist->runDistribution (distCalEn->isChecked()?-1:-2);
             mainProgress++;
             sleep(1); // Delay for plot update
@@ -329,7 +332,10 @@ void KpixGuiCalibrate::run() {
             // Start Run
             kpixCalDist->setPlotDir("Self_Trig");
             kpixRunWrite->setEventVar ( "ForceTrig",0.0 );
-            for(y=0; y<asicCnt; y++) asic[y]->setCntrlTrigSrcCore ( false );
+            for(y=0; y<asicCnt; y++) {
+               asic[y]->setCntrlTrigSrcCore ( false );
+               asic[y]->setCntrlTrigDisable ( false );
+            }
             kpixCalDist->runDistribution (distCalEn->isChecked()?-1:-2);
             mainProgress++;
             sleep(1); // Delay for plot update
@@ -351,7 +357,10 @@ void KpixGuiCalibrate::run() {
                if ( verbose->isChecked() ) cout << "Forced Trigger Calibration" << endl;
                kpixCalDist->setPlotDir("Force_Trig");
                kpixRunWrite->setEventVar ( "ForceTrig",1.0 );
-               for(y=0; y<asicCnt; y++) asic[y]->setCntrlTrigSrcCore ( true );
+               for(y=0; y<asicCnt; y++) {
+                  asic[y]->setCntrlTrigSrcCore ( true );
+                  asic[y]->setCntrlTrigDisable ( true );
+               }
                kpixCalDist->runCalibration ( -1 );
                mainProgress++;
                sleep(1); // Delay for plot update
@@ -370,7 +379,10 @@ void KpixGuiCalibrate::run() {
                if ( verbose->isChecked() ) cout << "Self Trigger Calibration" << endl;
                kpixCalDist->setPlotDir("Self_Trig");
                kpixRunWrite->setEventVar ( "ForceTrig",0.0 );
-               for(y=0; y<asicCnt; y++) asic[y]->setCntrlTrigSrcCore ( false );
+               for(y=0; y<asicCnt; y++) {
+                  asic[y]->setCntrlTrigSrcCore ( false );
+                  asic[y]->setCntrlTrigDisable ( false );
+               }
                kpixCalDist->runCalibration ( -1 );
                mainProgress++;
                sleep(1); // Delay for plot update
@@ -399,7 +411,10 @@ void KpixGuiCalibrate::run() {
                   if ( verbose->isChecked() ) cout << "Forced Trigger Calibration" << endl;
                   kpixCalDist->setPlotDir("Force_Trig");
                   kpixRunWrite->setEventVar ( "ForceTrig",1.0 );
-                  for(y=0; y<asicCnt; y++) asic[y]->setCntrlTrigSrcCore ( true );
+                  for(y=0; y<asicCnt; y++) {
+                     asic[y]->setCntrlTrigSrcCore ( true );
+                     asic[y]->setCntrlTrigDisable ( true );
+                  }
                   kpixCalDist->runCalibration ( x );
                   mainProgress++;
                }
@@ -422,7 +437,10 @@ void KpixGuiCalibrate::run() {
                   if ( verbose->isChecked() ) cout << "Self Trigger Calibration" << endl;
                   kpixCalDist->setPlotDir("Self_Trig");
                   kpixRunWrite->setEventVar ( "ForceTrig",0.0 );
-                  for(y=0; y<asicCnt; y++) asic[y]->setCntrlTrigSrcCore ( false );
+                  for(y=0; y<asicCnt; y++) {
+                     asic[y]->setCntrlTrigSrcCore ( false );
+                     asic[y]->setCntrlTrigDisable ( false );
+                  }
                   kpixCalDist->runCalibration ( x );
                   mainProgress++;
                }
