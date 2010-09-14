@@ -203,6 +203,8 @@ void KpixConfigXml::OnCharacters ( const char *value ) {
          for(x=0; x<asicCnt; x++) asic[x]->setCntrlDisPwrCycle ( atoi(value), xmlWriteEn );
       else if ( !strcmp(currVar, "cntrlFeCurr") )
          for(x=0; x<asicCnt; x++) asic[x]->setCntrlFeCurr ( (KpixAsic::KpixFeCurr)(atoi(value)), xmlWriteEn );
+      else if ( !strcmp(currVar, "cntrlTrigDisable") )
+         for(x=0; x<asicCnt; x++) asic[x]->setCntrlTrigDisable ( atoi(value), xmlWriteEn );
       else if ( !strcmp(currVar, "cntrlHoldTime") )
          for(x=0; x<asicCnt; x++) asic[x]->setCntrlHoldTime ( (KpixAsic::KpixHoldTime)(atoi(value)), xmlWriteEn );
       else if ( !strcmp(currVar, "dacCalib") )
@@ -327,6 +329,7 @@ void KpixConfigXml::writeConfig ( char *xmlFile, KpixFpga *fpga, KpixAsic **asic
       xml << "      <cntrlDisPwrCycle>" << asic[0]->getCntrlDisPwrCycle(0) << "</cntrlDisPwrCycle>\n";
       xml << "      <cntrlFeCurr>" << asic[0]->getCntrlFeCurr(0) << "</cntrlFeCurr>\n";
       xml << "      <cntrlHldTime>" << asic[0]->getCntrlHoldTime(0) << "</cntrlHldTime>\n";
+      xml << "      <cntrlTrigDisable>" << asic[0]->getCntrlTrigDisable(0) << "</cntrlTrigDisable>\n";
 
       asic[0]->getTiming ( &clkPrd, &rstOnTime, &rstOffTime, &leakageNullOff, &offsetNullOff,
           &threshOff, &trigInhibitOff, &pwrUpOn, &deselSequence, &bunchClkDly, &digitizationDly, &bunchClockCount,0);

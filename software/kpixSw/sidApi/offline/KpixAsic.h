@@ -53,6 +53,7 @@
 // 06/10/2009: Added method to convert temp adc value to a celcias value
 // 06/18/2009: Added namespaces
 // 06/23/2009: Removed namespaces
+// 09/13/2010: KPIX A support
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_ASIC_H__
 #define __KPIX_ASIC_H__
@@ -633,6 +634,20 @@ class KpixAsic : public TObject {
       the device.
 		*/
       KpixDiffTime getCntrlDiffTime ( bool readEn=true );
+
+      //! Method to set global trigger disable bit.
+      /*! Set global trigger disable.
+      Eg:
+      kpixAsic[ x ]->setCntrlTrigDisable( trigDisable, true );
+      */
+      void setCntrlTrigDisable ( bool trigDisable, bool writeEn=true );
+
+      //! Method to get global trigger disable bit.
+      /*! Set readEn to false to disable real read from KPIX, this flag allows
+      the user to get the currently set status without actually accessing
+      the device.
+      */
+      bool getCntrlTrigDisable ( bool readEn=true );
 
       //! Method to update KPIX timing configuration
       /*! If the passed timing values are not evenly divisable by the

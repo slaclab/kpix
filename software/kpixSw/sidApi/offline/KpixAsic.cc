@@ -63,6 +63,7 @@
 // 07/07/2009: Added support for KPIX9, put in forced timing values for Kpix 8.
 // 04/22/2010: Added force power on for DAC accesses in KPIX 9.
 // 05/18/2010: Adjusted default calibration spacing.
+// 09/13/2010: KPIX A support
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -906,14 +907,14 @@ string KpixAsic::regGetName ( unsigned char address ) {
    if ( address == 0x30 ) temp = "Control Reg";
 
    // Calibration Mask Registers
-   if ( address >= 0x40 && address <= ((kpixVersion<8)?0x61:0x67) ) {
+   if ( address >= 0x40 && address <= 0x5F ) {
       tempString.str("");
       tempString << "Calibration Mask Reg 0x" << setw(2) << setfill('0') << hex << (address-0x40);
       temp = tempString.str();
    }
 
    // Range Select Registers
-   if ( address >= 0x60 && address <= ((kpixVersion<8)?0x61:0x67) ) {
+   if ( address >= 0x60 && address <= 0x7F ) {
       tempString.str("");
       tempString << "Range Select Reg 0x" << setw(2) << setfill('0') << hex << (address-0x60);
       temp = tempString.str();
@@ -1721,6 +1722,37 @@ KpixAsic::KpixDiffTime KpixAsic::getCntrlDiffTime ( bool readEn ) {
       return(ret);
    }
    else return(FeDiffNormal);
+}
+
+
+// Method to set global trigger disable bit.
+void KpixAsic::setCntrlTrigDisable ( bool trigDisable, bool writeEn ) {
+   if ( kpixVersion > 10 ) {
+      if ( enDebug ) {
+         cout << "KpixAsic::setCntrlTrigDisable -> Set trigDisable=" << trigDisable;
+         cout << ", WriteEn=" << writeEn << ".\n";
+      }
+
+      // Set Bits
+      regSetBit(0x30,16,trigDisable,writeEn);
+   }
+}
+
+
+// Method to get global trigger disable bit.
+bool KpixAsic::getCntrlTrigDisable ( bool readEn ) {
+   bool ret;
+
+   if ( kpixVersion > 10 ) {
+      ret = regGetBit(0x30,16,readEn);
+
+      if ( enDebug ) {
+         cout << "KpixAsic::getCntrlTrigDisable -> Get trigDisable=" << ret;
+         cout << ", ReadEn=" << readEn << ".\n";
+      }
+      return(ret);
+   }
+   else return(false);
 }
 
 
@@ -2747,6 +2779,7 @@ void KpixAsic::setDefaults ( unsigned int clkPeriod, bool writeEn ) {
    setCntrlDisPwrCycle  ( false,          writeEn );
    setCntrlFeCurr       ( FeCurr_121uA,   writeEn );
    setCntrlHoldTime     ( HoldTime_64x,   writeEn );
+   setCntrlTrigDisable  ( false,          writeEn );
 
    // Set timing values
    setTiming ( clkPeriod, // Clock Period
@@ -2853,7 +2886,8 @@ void KpixAsic::dumpSettings () {
    cout << "      CntrlEnDcRst = " << getCntrlEnDcRst(false) << "\n";
    cout << "   CntrlShortIntEn = " << getCntrlShortIntEn(false) << "\n";
    cout << "  CntrlDisPwrCycle = " << getCntrlDisPwrCycle(false) << "\n";
-   cout << "        CntrlFeCur = " << getCntrlFeCurr(false) << "\n";
+   cout << "       CntrlFeCurr = " << getCntrlFeCurr(false) << "\n";
+   cout << "  CntrlTrigDisable = " << getCntrlTrigDisable(false) << "\n";
    cout << "          DacCalib = 0x" << hex << setw(2) << setfill('0');
    cout << (int)getDacCalib(false) << "\n";
    cout << "     DacRampThresh = 0x" << hex << setw(2) << setfill('0');
@@ -2913,7 +2947,8 @@ void KpixAsic::dumpSettings () {
 unsigned int KpixAsic::getChCount() { 
    if ( kpixVersion < 8 ) return(64);
    if ( kpixVersion < 9 ) return(256);
-   else return(512);
+   if ( kpixVersion < 10 ) return(512);
+   else return(1024);
 }
 
 
