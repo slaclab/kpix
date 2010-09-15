@@ -89,6 +89,7 @@ void KpixGuiThreshScan::setEnabled ( bool enable ) {
    enLowGain->setEnabled(enable);
    threshCount->setEnabled(enable);
    preTrigger->setEnabled(enable);
+   tarBucket->setEnabled(enable);
    calMin->setEnabled(enable);
    calMax->setEnabled(enable);
    calStep->setEnabled(enable);
@@ -221,6 +222,7 @@ void KpixGuiThreshScan::run() {
          kpixThreshScan->setThreshRange ( threshMax->value(), threshMin->value(), threshStep->value());
          kpixThreshScan->setThreshCount ( threshCount->value() );
          kpixThreshScan->setPreTrigger  ( preTrigger->value() );
+         kpixThreshScan->setBucket      ( tarBucket->value() );
          kpixThreshScan->enNormalGain   ( enNormalGain->isChecked());
          kpixThreshScan->enDoubleGain   ( enDoubleGain->isChecked());
          kpixThreshScan->enLowGain      ( enLowGain->isChecked());

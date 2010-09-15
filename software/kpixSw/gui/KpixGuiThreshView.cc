@@ -938,6 +938,7 @@ void KpixGuiThreshView::run() {
    unsigned int       gain;
    unsigned int       serial;
    unsigned int       channel;
+   unsigned int       bucket;
    unsigned int       calA, calB, calC, calD, calCnt;
 
    // Get current entries
@@ -981,12 +982,33 @@ void KpixGuiThreshView::run() {
             runVar = inFileRoot->kpixRunRead->getRunVar("calStep");
             if ( runVar != NULL ) calStep = (unsigned int)runVar->value();
 
+            // Extract target bucket
+            runVar = inFileRoot->kpixRunRead->getRunVar("targetBucket");
+            if ( runVar != NULL ) bucket = (unsigned int)runVar->value();
+
             // Update calibration times
             inFileRoot->kpixRunRead->getAsic(0)->getCalibTime(&calCnt,&calA,&calB,&calC,&calD,false);
 
             // Compute time points
-            minCalTime = calA;
-            maxCalTime = calA + calB + 3;
+            switch (bucket) {
+               case 0:
+                  minCalTime = calA;
+                  maxCalTime = calA + calB + 3;
+                  break;
+               case 1:
+                  minCalTime = calB;
+                  maxCalTime = calB + calC + 3;
+                  break;
+               case 2:
+                  minCalTime = calC;
+                  maxCalTime = calC + calD + 3;
+                  break;
+               case 3:
+                  minCalTime = calD;
+                  maxCalTime = 8192;
+                  break;
+               default: break;
+            }
 
             // Get Trig Inhibit Time
             trigInh = inFileRoot->kpixRunRead->getAsic(0)->getTrigInh(false);

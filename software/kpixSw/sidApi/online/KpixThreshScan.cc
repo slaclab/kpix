@@ -30,6 +30,7 @@
 // 10/26/2008: Added support for plot generation.
 // 06/22/2009: Added namespaces.
 // 06/23/2009: Removed namespaces.
+// 09/15/2010: Feature to allow observed bucket to be settable.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <fstream>
@@ -84,6 +85,7 @@ KpixThreshScan::KpixThreshScan ( KpixAsic **asic, unsigned int count, KpixRunWri
    plotEn       = false;
    plotDir      = "";
    kpixProgress = NULL;
+   bucket       = 0;
 
    // Create Variables used by threshold scan
    kpixRunWrite->addEventVar("threshChan",
@@ -162,6 +164,10 @@ void KpixThreshScan::enablePlots( bool enable ) { this->plotEn = enable; }
 void KpixThreshScan::setPlotDir( string plotDir ) { this->plotDir = plotDir; }
 
 
+//! Set bucket to look for events in
+void KpixThreshScan::setBucket ( int bucket ) { this->bucket = (bucket & 0x3); }
+
+
 // Execute threshold scan, pass target channel
 // Or pass -1 to enable all channels
 void KpixThreshScan::runThreshold ( short channel ) {
@@ -194,6 +200,9 @@ void KpixThreshScan::runThreshold ( short channel ) {
    kpixRunWrite->addRunVar ( "calStart", "Calibration Start Value", calStart);
    kpixRunWrite->addRunVar ( "calEnd", "Calibration End Value", calEnd);
    kpixRunWrite->addRunVar ( "calStep", "Calibration Step Value", calStep);
+
+   // Add variable with target bucket
+   kpixRunWrite->addRunVar ( "targetBucket", "Target Bucket", bucket);
 
    // Threshold Offset
    kpixRunWrite->addRunVar("threshOffset","Threshold Offset",threshOffset);
@@ -366,8 +375,8 @@ void KpixThreshScan::runThreshold ( short channel ) {
                // Add To Plot
                if ( plotEn ) {
                   for (idx=0; idx < (unsigned int)(kpixCount-1); idx++) {
-                     if ( train->getSample(kpixAsic[idx]->getAddress(),channel,0) != NULL ) {
-                        time = train->getSample(kpixAsic[idx]->getAddress(),channel,0)->getSampleTime();
+                     if ( train->getSample(kpixAsic[idx]->getAddress(),channel,bucket) != NULL ) {
+                        time = train->getSample(kpixAsic[idx]->getAddress(),channel,bucket)->getSampleTime();
                         hist[idx]->Fill(thresh,time);
                         if ( (unsigned int)thresh < minX[idx] ) minX[idx] = thresh;
                         if ( (unsigned int)thresh > maxX[idx] ) maxX[idx] = thresh;

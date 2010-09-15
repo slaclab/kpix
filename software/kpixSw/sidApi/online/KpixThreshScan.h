@@ -27,6 +27,7 @@
 // 10/26/2008: Added support for plot generation.
 // 06/18/2009: Added namespace.
 // 06/23/2009: Removed namespaces.
+// 09/15/2010: Feature to allow observed bucket to be settable.
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_THRESH_SCAN_H__
 #define __KPIX_THRESH_SCAN_H__
@@ -82,6 +83,9 @@ class KpixThreshScan {
       unsigned char threshEnd;
       unsigned char threshStep;
       int           threshCount;
+
+      // Bucket to observe
+      unsigned int  bucket;
 
       // Pre-trigger threshold offset
       char threshOffset;
@@ -139,6 +143,9 @@ class KpixThreshScan {
 
       //! Pass name of the TFile directory in which to store the plots
       void setPlotDir( std::string plotDir );
+
+      //! Set bucket to look for events in
+      void setBucket ( int bucket );
 
       //! Execute threshold scan, pass target channel
       /*! Or pass -1 to enable all channels*/
