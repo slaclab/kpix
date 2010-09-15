@@ -1,0 +1,30 @@
+CFLAGS=-g -Wall 
+runStage : utils.o capser.o irrXML.o serial.o stage.o motion.o laser.o
+	g++ -o runStage utils.o capser.o irrXML.o serial.o stage.o motion.o laser.o
+
+utils.o : utils.cc
+	g++ -c utils.cc
+	
+capser.o : capser.cc
+	g++ -c capser.cc
+
+irrXML.o : irrXML.cc
+	g++ -c irrXML.cc
+	
+serial.o : serial.cc
+	g++ -c serial.cc
+
+stage.o : stage.cc
+	g++ -c stage.cc
+	
+motion.o : motion.cc
+	g++ -c motion.cc
+	
+laser.o : laser.cc
+	g++ -c laser.cc
+	
+
+clean:
+	rm -f stage.o utils.o capser.o serial.o motion.o laser.o
+
+
