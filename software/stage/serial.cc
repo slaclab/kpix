@@ -863,6 +863,7 @@ int serialClass::returnPosition( int ID, double* pos ){
 	reply = getReply(fd, replyData, numChars);	
 	reply = checkForACK( ID, replyData );
 	
+	sleep(0.1);
 	
 	char hexResult[12];
 	if ( replyData[0] == '#') {
@@ -1739,6 +1740,56 @@ int serialClass::goClosedLoop(int ID) {
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+int serialClass::clearInternalStatus(int ID) {
+	//ADL
+	
+
+	//~~~~~~~~~~~~~~~~~~~
+	const int cmdID = 163;
+	const int numDigs = 3;
+	//~~~~~~~~~~~~~~~~~~~
+	char output[40];
+		
+	std::stringstream stream;
+	stream <<"@"<<ID<<" 163\n\0";
+
+	strcpy(output, stream.str().c_str());
+	if (!writeport(fd, output)) {
+		printf("Err: CIS write failed\n");
+		//close(fd);
+		return 1;
+	}
+	else{
+		printf("CIS written:%s\n", output);
+		//tcflush(fd, TCIFLUSH);	//flush port		
+	}	
+	sleep(0.5);
+	//~~~~~~~~ reply ~~~~~~~~~
+	char replyData[MAX_REPLY_LEN];
+	int numChars;
+	int reply;
+	
+	reply = getReply(fd, replyData, numChars);	
+	reply = checkForACK( ID, replyData );
+	if ( reply == 0) {
+			printf("ACK CIS\n");
+			//printf("got:%s\n", replyData);
+			//printf("here1\n");
+			//delete replyData;
+			return 0;
+	}else{
+		printf("Err: bad CIS response\n");
+		printf("got:%s\n", replyData);
+		//printf( "\n" );
+		//status = displayPSWdescriptions( replyData );
+		//delete replyData;
+		return -1;
+	}
+	
+	return -1;		//should never be here*/
+}//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 int serialClass::changeACKdelay(int ID, double delay) {
 	//ADL
 	
@@ -1774,7 +1825,7 @@ int serialClass::changeACKdelay(int ID, double delay) {
 	*/
 			
 	std::stringstream stream;
-	stream <<"@"<<ID<<" 173 10\n\0";
+	stream <<"@"<<ID<<" 173 10\n";
 
 	strcpy(output, stream.str().c_str());
 	if (!writeport(fd, output)) {
@@ -1786,7 +1837,7 @@ int serialClass::changeACKdelay(int ID, double delay) {
 		printf("ADL written:%s\n", output);
 		//tcflush(fd, TCIFLUSH);	//flush port		
 	}	
-	
+	sleep(0.5);
 	//~~~~~~~~ reply ~~~~~~~~~
 	char replyData[MAX_REPLY_LEN];
 	int numChars;
@@ -1796,6 +1847,7 @@ int serialClass::changeACKdelay(int ID, double delay) {
 	reply = checkForACK( ID, replyData );
 	if ( reply == 0) {
 			printf("ACK ADL\n");
+			//printf("got:%s\n", replyData);
 			//printf("here1\n");
 			//delete replyData;
 			return 0;
@@ -2632,26 +2684,45 @@ int serialClass::gotoAndSetHomePoint(int ID){
 		sleep(0.5);
 		printf("About to move back towards home point\n");
 		double time = 2.5;
-		status = moveRelativeTime(ID, -4.0, time/2.0, time );		//about 1 cm/s
+		status = moveRelativeTime(ID, -4.0, time*3.0, time*6.0 );		//about 1 cm/s
 		if ( status == -1 ){
 				printf("ERR: movePosRel()\n");
 				stop(ID);
 				return -1;
 		}
 		sleep(time + 0.5);
-		status = resetMotor(ID);		//by now the motor should have shut off due to thermal overload, so reset.
+		/*status = resetMotor(ID);		//by now the motor should have shut off due to thermal overload, so reset.
 					
 		if ( status == -1 ){
 			printf("ERR: serialClass::gotoAndSetHomePoint() sending moveRelativeTime command\n");
 			eventuallyReturn = -1;			//make sure it sticks around
 			stop(ID);
 			return -1;
-		}
+		}*/
+		sleep (1.0);
 		printf("Sending HAL\n");
 		status = stop( ID );
 		sleep (0.01);
+		
+		status = clearInternalStatus(ID);
+		if ( status == -1 ){
+			printf("ERR: serialClass::gotoAndSetHomePoint() sending CIS command\n");
+			eventuallyReturn = -1;			//make sure it sticks around
+			stop(ID);
+			return -1;
+		}
+
+		status = enableMotor(ID);
+		if ( status == -1 ){
+			printf("ERR: serialClass::gotoAndSetHomePoint() sending HLT command\n");
+			eventuallyReturn = -1;			//make sure it sticks around
+			stop(ID);
+			return -1;
+		}
+	
+		
 		status = zeroTarget(ID);
-		sleep (0.01);
+		sleep (0.05);
 		return 0;
 		
 	}else{

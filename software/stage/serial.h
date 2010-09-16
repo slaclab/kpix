@@ -23,9 +23,9 @@ using namespace std;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //set to 1 if that motor is actively connected and used (or if it should be used), 0 otherwise.
-#define X_MOTOR_ACTIVE 1
-#define Y_MOTOR_ACTIVE 1
-#define Z_MOTOR_ACTIVE 0
+#define X_MOTOR_ACTIVE 0
+#define Y_MOTOR_ACTIVE 0
+#define Z_MOTOR_ACTIVE 1
 
 #define X_AXIS_ID 1
 #define Y_AXIS_ID 2
@@ -136,6 +136,7 @@ class serialClass{
 		int clearAllPSWbits(int ID);
 		int returnNumDigits(int number);
 		void printPSWmessage(int index);
+		int clearInternalStatus(int ID);
 		void printIOmessage(int index);
 		int getIObitFromReply(char* inputArray, int whichBit);
 		int getCloseSwitch(int ID);

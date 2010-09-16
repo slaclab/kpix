@@ -363,6 +363,8 @@ int initEverything(void){
 	   status = motInitSequence( Z_AXIS_ID );
 		if ( status < 0 ) return -1;
 	}//~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	
 	
 	
 	//only init the tcp port if the qt panel isn't being used
@@ -396,6 +398,8 @@ int motInitSequence(int ID){
 	status = s.killActiveMotors();
 	endProgramOnError(status);
 	
+	status = s.clearInternalStatus;
+	endProgramOnError(status);
 	status = s.enableMotor(ID);
 	endProgramOnError(status);
 		*/
