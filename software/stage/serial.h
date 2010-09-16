@@ -23,8 +23,8 @@ using namespace std;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //set to 1 if that motor is actively connected and used (or if it should be used), 0 otherwise.
-#define X_MOTOR_ACTIVE 0
-#define Y_MOTOR_ACTIVE 0
+#define X_MOTOR_ACTIVE 1
+#define Y_MOTOR_ACTIVE 1
 #define Z_MOTOR_ACTIVE 1
 
 #define X_AXIS_ID 1
