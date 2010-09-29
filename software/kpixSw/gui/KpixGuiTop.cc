@@ -33,7 +33,6 @@
 #include <qpushbutton.h>
 #include <KpixAsic.h>
 #include <KpixFpga.h>
-#include <KpixConfigXml.h>
 #include <SidLink.h>
 #include <KpixRunRead.h>
 #include "KpixGuiMain.h"
@@ -52,7 +51,7 @@
 #include "KpixGuiThreshScan.h"
 #include "KpixGuiEventStatus.h"
 #include "KpixGuiEventError.h"
-//#include "KpixConfigXml.h"
+
 using namespace std;
 
 
