@@ -25,7 +25,7 @@
 #include "KpixGuiTopForm.h"
 #include <qthread.h>
 #include <string>
-
+#include "../sidApi/offline/KpixConfigXml.h"
 
 // Forward declarations
 class KpixAsic;
@@ -47,7 +47,6 @@ class KpixGuiCalibrate;
 class KpixGuiThreshScan;
 class KpixGuiRun;
 
-
 // Max support KPIX Address
 #define KPIX_MAX_ADDR 3
 
@@ -64,8 +63,7 @@ class KpixGuiTop : public KpixGuiTopForm, public QThread {
       KpixRunRead   *runRead;
       SidLink       *sidLink;
       KpixGuiError  *errorMsg;
-      KpixConfigXml *kpixConfigXml;
-
+      
       // Widgets In the Tabs
       KpixGuiMain       *kpixGuiMain;
       KpixGuiFpga       *kpixGuiFpga;
@@ -78,6 +76,9 @@ class KpixGuiTop : public KpixGuiTopForm, public QThread {
       KpixGuiCalibrate  *kpixGuiCalibrate;
       KpixGuiThreshScan *kpixGuiThreshScan;
       KpixGuiRun        *kpixGuiRun;
+
+      // Object for class that sets default values from XML file
+      KpixConfigXml *kpixConfigXml;
 
       // Constants for command type
       static const unsigned int CmdReadStatus    = 1;
