@@ -53,6 +53,12 @@ class SidLink {
       int    serFd;
       int    serFdRd;
 
+      // Values used for udp version
+      std::string udpHost;
+      int    udpPort;
+      int    udpFd;
+      void   *udpAddr;
+
       // Max count in buffer 
       unsigned int maxRxSize;
 
@@ -76,10 +82,15 @@ class SidLink {
 		*/
       void linkOpen ( std::string device );
 
+      //! Open link to SID Devices, UDP version
+      /*! Pass hostname and port of UDP client
+      Throws exception on device open failure
+		*/
+      void linkOpen ( std::string host, int port );
+
       //! Open link to SID Devices, direct driver version
       /*! Pass device ID for direct drivers, 0,1,2 etc
       Throws exception on device open failure
-      Do not use, not yet fully tested.
 		*/
       void linkOpen ( int device );
 

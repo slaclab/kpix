@@ -66,6 +66,8 @@ int main ( int argc, char **argv ) {
    KpixGuiThreshView *kpixGuiThreshView;
    string            deviceString;
    int               deviceInt;
+   string            portString;
+   int               portInt;
    string            baseDir;
    string            verString;
    int               verInt;
@@ -81,6 +83,7 @@ int main ( int argc, char **argv ) {
    // Set Default Options
    deviceString = "/dev/ttyUSB0";
    deviceInt    = -1;
+   portInt      = -1;
    baseDir      = get_current_dir_name();
    verInt       = KpixAsic::maxVersion();
    verString    = "";
@@ -92,6 +95,7 @@ int main ( int argc, char **argv ) {
 
    // Get Environment Variables
    if ( (env = getenv("KPIX_DEVICE"))   != NULL ) deviceString.assign(env);
+   if ( (env = getenv("KPIX_PORT")) != NULL ) portString.assign(env);
    if ( (env = getenv("KPIX_VERSION")) != NULL ) verString.assign(env);
    if ( (env = getenv("KPIX_BASE_DIR")) != NULL ) baseDir.assign(env);
    if ( (env = getenv("KPIX_CLK_PER"))  != NULL ) clkString.assign(env);
@@ -99,13 +103,14 @@ int main ( int argc, char **argv ) {
    if ( (env = getenv("KPIX_RATE_LIMIT"))  != NULL ) rateString.assign(env);
 
    // Process Args
-   while ((oc = getopt(argc, argv, ":hd:b:a:v:c:s:")) != -1) {
+   while ((oc = getopt(argc, argv, ":hd:b:a:v:c:s:p:")) != -1) {
       switch (oc) {
          case 'l': deviceString.assign(optarg); break;
          case 'd': baseDir.assign(optarg);      break;
          case 'v': verString.assign(optarg);    break;
          case 'c': clkString.assign(optarg);    break;
          case 's': calString.assign(optarg);    break;
+         case 'p': portString.assign(optarg);   break;
          default:  printUsage(argv[0]);         return(1);
       }
    }
@@ -130,13 +135,17 @@ int main ( int argc, char **argv ) {
    // Convert Clock Period
    if ( clkString != "" ) clkInt = atoi(clkString.c_str());
 
+   // Determine port
+   if ( portString != "" ) portInt = atoi(portString.c_str());
+
    // Determine Device
    if ( deviceString.find("dev/") == 1 ) deviceInt = -1;
-   else deviceInt = atoi(deviceString.c_str());
+   else if ( portInt < 0 ) deviceInt = atoi(deviceString.c_str());
 
    // Show Operating Mode
    if ( deviceInt == -1 ) cout << "Using Device    = " << deviceString << endl;
    else cout << "Using Device    = " << deviceInt << endl;
+   if ( portInt != -1 ) cout << "Using Port      = " << portInt   << endl;
    cout << "Using Base Dir  = " << baseDir   << endl;
    cout << "Using Version   = " << verInt    << endl;
    cout << "Using Clock Per = " << clkInt    << endl;
@@ -160,10 +169,11 @@ int main ( int argc, char **argv ) {
       // Open serial link
       try {
          sidLink = new SidLink();
-         if ( deviceInt == -1 ) sidLink->linkOpen(deviceString);
+         if ( portInt > 0 ) sidLink->linkOpen(deviceString,portInt);
+         else if ( deviceInt == -1 ) sidLink->linkOpen(deviceString);
          else sidLink->linkOpen(deviceInt);
       } catch ( string error ) {
-         cout << "Error opening serial link:\n";
+         cout << "Error opening link:\n";
          cout << error << "\n";
          cout << "Exiting!\n";
          return(1);

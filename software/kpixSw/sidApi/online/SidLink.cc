@@ -32,6 +32,7 @@
 // 06/18/2009: Changed read and write functions to save CPU cycles.
 // 06/22/2009: Added namespaces.
 // 06/23/2009: Removed namespaces.
+// 10/14/2010: Added UDP support.
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -42,6 +43,9 @@
 #include <lockdev.h>
 #include <sys/ioctl.h>
 #include <termio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
 #include "../ftdi/ftd2xx.h"
 #include "SidLink.h"
 using namespace std;
@@ -60,12 +64,17 @@ SidLink::SidLink () {
    enDebug   = false;
    timeoutEn = true;
    maxRxSize = 0;
+   udpHost   = "";
+   udpPort   = 0;
+   udpFd     = -1;
+   udpAddr   = malloc(sizeof(struct sockaddr_in));
 }
 
 
 // Deconstructor
 SidLink::~SidLink ( ) { 
-   if ( serFd >= 0 || usbDevice >= 0 ) linkClose(); 
+   if ( serFd >= 0 || usbDevice >= 0 || udpFd >= 0 ) linkClose(); 
+   free(udpAddr);
 }
 
 
@@ -79,7 +88,7 @@ void SidLink::linkOpen ( string device ) {
    struct termio svbuf;
 
    // Make sure no links are open
-   if ( serFd >= 0 || usbDevice >= 0 ) 
+   if ( serFd >= 0 || usbDevice >= 0 || udpFd >= 0 ) 
       throw string("SidLink::linkOpen -> SID Link Already Open");
 
    if ( enDebug ) 
@@ -115,6 +124,57 @@ void SidLink::linkOpen ( string device ) {
 }
 
 
+// Open link to SID devices, UDP Version
+// Pass hostname and port of UDP host
+// Throws exception on device open failure
+void SidLink::linkOpen ( string host, int port ) {
+   struct addrinfo*   aiList=0;
+   struct addrinfo    aiHints;
+   const sockaddr_in* addr;
+   int                error;
+   unsigned int       size;
+
+   // Make sure no links are open
+   if ( serFd >= 0 || usbDevice >= 0 || udpFd >= 0 ) 
+      throw string("SidLink::linkOpen -> SID Link Already Open");
+
+   if ( enDebug ) 
+      cout << "SidLink::linkOpen -> Attempting to open UDP device " << host << ":" << port << "\n";
+ 
+   // Create socket
+   udpFd = socket(AF_INET,SOCK_DGRAM,0);
+   if ( udpFd == -1 ) throw string("SidLink::linkOpen -> Could Not Create Socket");
+
+   // Lookup host address
+   aiHints.ai_flags    = AI_CANONNAME;
+   aiHints.ai_family   = AF_INET;
+   aiHints.ai_socktype = SOCK_DGRAM;
+   aiHints.ai_protocol = IPPROTO_UDP;
+   error = ::getaddrinfo(host.c_str(), 0, &aiHints, &aiList);
+   if (error || !aiList) throw string("SidLink::linkOpen -> Error Getting Resolving Hostname");
+   addr = (const sockaddr_in*)(aiList->ai_addr);
+
+   // Setup Remote Address
+   memset(udpAddr,0,sizeof(struct sockaddr_in));
+   ((sockaddr_in *)udpAddr)->sin_family=AF_INET;
+   ((sockaddr_in *)udpAddr)->sin_addr.s_addr=htonl(addr->sin_addr.s_addr);
+   ((sockaddr_in *)udpAddr)->sin_port=htons(port);
+
+   // Set receive size
+   size = 2000000;
+   setsockopt(udpFd, SOL_SOCKET, SO_RCVBUF, (char*)&size, sizeof(size));
+
+   // Debug
+   if ( enDebug ) 
+      cout << "SidLink::linkOpen -> Opened UDP device " << host << ":" << port << ". Fd=" << udpFd << "\n";
+
+   // Set device variable
+   udpHost = host;
+   udpPort = port;
+   maxRxSize = 0;
+}
+
+
 // Open link to KPIX, direct driver version
 // Pass device ID for direct drivers
 // Throws exception on device open failure
@@ -126,12 +186,11 @@ void SidLink::linkOpen ( int device ) {
    FT_HANDLE    tmpHandle;
 
    // Make sure no links are open
-   if ( serFd >= 0 || usbDevice >= 0 ) 
+   if ( serFd >= 0 || usbDevice >= 0 || udpFd >= 0 ) 
       throw string("SidLink::linkOpen -> KPIX Link Already Open");
 
    if ( enDebug ) 
       cout << "SidLink::linkOpen -> Attempting to open direct USB device " << device << "\n";
-
 
    // Attempt to open the USB interface
    if((ftStatus = FT_Open(device, &tmpHandle)) != FT_OK) {
@@ -158,7 +217,7 @@ void SidLink::linkOpen ( string rdPipe, string wrPipe ) {
    stringstream error;
 
    // Make sure no links are open
-   if ( serFd >= 0 || usbDevice >= 0 ) 
+   if ( serFd >= 0 || usbDevice >= 0 || udpFd >= 0 ) 
       throw string("SidLink::linkOpen -> SID Link Already Open");
 
    if ( enDebug ) 
@@ -199,17 +258,20 @@ void SidLink::linkOpen ( string rdPipe, string wrPipe ) {
 // Flush any pending data from the link.
 // Returns number of bytes flushed
 int SidLink::linkFlush ( ) {
-
-   FT_STATUS     ftStatus;
-   int           count = 0;
-   unsigned long rcount = 0;
-   unsigned long rxBytes;
-   unsigned long txBytes;
-   unsigned long eventWord;
-   int           total = 0;
-   int           fdes;
-   unsigned char buffer[1000];
-   stringstream  error;
+   FT_STATUS      ftStatus;
+   int            count = 0;
+   unsigned long  rcount = 0;
+   unsigned long  rxBytes;
+   unsigned long  txBytes;
+   unsigned long  eventWord;
+   int            total = 0;
+   int            fdes;
+   unsigned char  buffer[1000];
+   stringstream   error;
+   unsigned int   udpAddrLength;
+   struct timeval timeout;
+   fd_set         fds;
+   int            ret;
 
    if ( enDebug ) cout << "SidLink::linkOpen -> Flushing Link.\n";
 
@@ -230,6 +292,26 @@ int SidLink::linkFlush ( ) {
          if ( count > 0 ) {
             rcount = count;
             total += count;
+         }
+      }
+
+      // UDP device is open
+      if ( udpFd >= 0 ) {
+         timeout.tv_sec=0;
+         timeout.tv_usec=1;
+         FD_ZERO(&fds);
+         FD_SET(udpFd,&fds);
+
+         // Is data waiting?
+         ret = select(udpFd+1,&fds,NULL,NULL,&timeout);
+         if ( ret < 0 || FD_ISSET(udpFd,&fds) == 0 ) ret = 0;
+         else {
+            udpAddrLength = sizeof(struct sockaddr_in);
+            ret = recvfrom(udpFd,buffer,1000,0,(struct sockaddr *)udpAddr,&udpAddrLength);
+         }
+         if ( ret > 0 ) {
+            rcount = ret;
+            total += ret;
          }
       }
 
@@ -291,12 +373,21 @@ void SidLink::linkClose () {
       // Attempt to close
       if ( close(serFd) != 0 ) {
          error << "sidLink::linkClose -> Could not close VCP USB device " << serDevice;
-         throw error.str();
          serFd     = -1;
          serDevice = "";
+         throw error.str();
       }
       serFd     = -1;
       serDevice = "";
+   }
+
+   // UDP Device is open
+   if ( udpFd >= 0 ) {
+      if ( close(udpFd) != 0 ) {
+         udpFd     = -1;
+         throw("sidLink::linkClose -> Could not close UDP device ");
+      }
+      udpFd     = -1;
    }
 
    // Special simulation read fdes is open
@@ -343,7 +434,7 @@ int SidLink::linkRawWrite (unsigned short *data, short int size, unsigned char t
    unsigned long newSize;
 
    // Check if no links are open
-   if ( serFd < 0 && usbDevice < 0 ) 
+   if ( serFd < 0 && usbDevice < 0 && udpFd < 0 ) 
       throw string("SidLink::linkRawWrite -> KPIX Link Not Open");
 
    // Calc size
@@ -398,6 +489,12 @@ int SidLink::linkRawWrite (unsigned short *data, short int size, unsigned char t
       if ( ret > 0 ) wtotal = ret;
    }
 
+   // UDP device is open
+   if ( udpFd >= 0 ) {
+      ret = sendto(udpFd,byteData,newSize,0,(struct sockaddr *)(udpAddr),sizeof(struct sockaddr_in));
+      if ( ret > 0 ) wtotal = ret;
+   }
+
    // USB device is open
    if ( usbDevice >= 0 ) {
 
@@ -438,9 +535,12 @@ int SidLink::linkRawRead ( unsigned short *data, short int size, unsigned char t
    unsigned int   toCount;
    int            fdes;
    unsigned int   wordCnt;
+   unsigned int   udpAddrLength;
+   struct timeval timeout;
+   fd_set         fds;
 
    // Check if no links are open
-   if ( serFd < 0 && usbDevice < 0 ) throw string("SidLink::linkRawRead -> KPIX Link Not Open");
+   if ( serFd < 0 && usbDevice < 0 && udpFd < 0 ) throw string("SidLink::linkRawRead -> KPIX Link Not Open");
 
    // First create byte array to contain byte
    newSize = size * 3;
@@ -458,6 +558,24 @@ int SidLink::linkRawRead ( unsigned short *data, short int size, unsigned char t
    rtotal  = 0;
    toCount = 0;
    while ( rtotal < newSize ) {
+
+      // UDP device is open
+      if ( udpFd >= 0 ) {
+         timeout.tv_sec=0;
+         timeout.tv_usec=1;
+         FD_ZERO(&fds);
+         FD_SET(udpFd,&fds);
+
+         // Is data waiting?
+         ret = select(udpFd+1,&fds,NULL,NULL,&timeout);
+         if ( ret < 0 || FD_ISSET(udpFd,&fds) == 0 ) rcount = 0;
+         else {
+            udpAddrLength = sizeof(struct sockaddr_in);
+            ret = recvfrom(udpFd,&(byteData[rtotal]),(newSize-rtotal),0,(struct sockaddr *)udpAddr,&udpAddrLength);
+            if ( ret > 0 ) rcount = ret;
+            else rcount = 0;
+         }
+      }
 
       // Serial device is open
       if ( fdes >= 0 ) {
