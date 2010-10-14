@@ -10,6 +10,7 @@ setenv ROOTSYS /afs/slac/g/reseng/root/root_5.20
 # Kpix GUI Settings. run 'kpixGui -h' for more info
 #setenv KPIX_DEVICE   /dev/ttyUSB0
 setenv KPIX_DEVICE   0
+#setenv KPIX_DEVICE   172.16.10.1
 #setenv KPIX_PORT     1000
 setenv KPIX_BASE_DIR /u1/w_si/samples/
 #setenv KPIX_VERSION  8
