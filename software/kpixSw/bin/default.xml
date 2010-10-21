@@ -28,20 +28,21 @@
       <cfgDisableTemp>0</cfgDisableTemp>
       <cfgAutoStatus>0</cfgAutoStatus>
       <cntrlCalibHigh>0</cntrlCalibHigh>
-      <cntrlCalDacInt>0</cntrlCalDacInt>
+      <cntrlCalDacInt>1</cntrlCalDacInt>
       <cntrlForceLowGain>0</cntrlForceLowGain>
-      <cntrlLeakNullDis>0</cntrlLeakNullDis>
+      <cntrlLeakNullDis>1</cntrlLeakNullDis>
       <cntrlDoubleGain>0</cntrlDoubleGain>
       <cntrlNearNeighbor>0</cntrlNearNeighbor>
-      <cntrlPosPixel>0</cntrlPosPixel>
-      <cntrlDisPerRst>0</cntrlDisPerRst>
-      <cntrlEnDcRst>0</cntrlEnDcRst>
-      <cntrlCalSrcCore>0</cntrlCalSrcCore>
+      <cntrlPosPixel>1</cntrlPosPixel>
+      <cntrlDisPerRst>1</cntrlDisPerRst>
+      <cntrlEnDcRst>1</cntrlEnDcRst>
+      <cntrlCalSrcCore>1</cntrlCalSrcCore>
       <cntrlTrigSrcCore>0</cntrlTrigSrcCore>
       <cntrlShortIntEn>0</cntrlShortIntEn>
       <cntrlDisPwrCycle>0</cntrlDisPwrCycle>
       <cntrlFeCurr>4</cntrlFeCurr>
       <cntrlHldTime>7</cntrlHldTime>
+      <cntrlTrigDisable>0</cntrlTrigDisable>
       <rstOnTime>700</rstOnTime>
       <rstOffTime>120000</rstOffTime>
       <leakageNullOff>200</leakageNullOff>
@@ -52,13 +53,13 @@
       <deselSequence>6900</deselSequence>
       <bunchClkDly>467500</bunchClkDly>
       <digitizationDly>10000</digitizationDly>
-      <bunchClockCount>2889</bunchClockCount>
+      <bunchClockCount>2890</bunchClockCount>
       <dacCalib>0</dacCalib>
-      <dacRampThresh>0</dacRampThresh>
+      <dacRampThresh>224</dacRampThresh>
       <dacRangeThresh>0</dacRangeThresh>
-      <dacDefaultAnalog>0</dacDefaultAnalog>
-      <dacEventThreshRef>0</dacEventThreshRef>
-      <dacShaperBias>0</dacShaperBias>
+      <dacDefaultAnalog>189</dacDefaultAnalog>
+      <dacEventThreshRef>80</dacEventThreshRef>
+      <dacShaperBias>120</dacShaperBias>
       <calCount>4</calCount>
       <cal0Delay>650</cal0Delay>
       <cal1Delay>650</cal1Delay>
@@ -68,12 +69,6 @@
       <trigThreshA>0</trigThreshA>
       <rstThreshB>0</rstThreshB>
       <trigThreshB>0</trigThreshB>
-      <kpixChanMode>0</kpixChanMode>
-   </asic>
-   <asic id="2">
-      <rstThreshA>0</rstThreshA>
-      <trigThreshA>0</trigThreshA>
-      <rstThreshB>0</rstThreshB>
-      <trigThreshB>0</trigThreshB>
+      <kpixChanMode>1</kpixChanMode>
    </asic>
 </default_config>

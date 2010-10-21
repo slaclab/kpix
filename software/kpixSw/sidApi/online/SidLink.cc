@@ -157,7 +157,7 @@ void SidLink::linkOpen ( string host, int port ) {
    // Setup Remote Address
    memset(udpAddr,0,sizeof(struct sockaddr_in));
    ((sockaddr_in *)udpAddr)->sin_family=AF_INET;
-   ((sockaddr_in *)udpAddr)->sin_addr.s_addr=htonl(addr->sin_addr.s_addr);
+   ((sockaddr_in *)udpAddr)->sin_addr.s_addr=addr->sin_addr.s_addr;
    ((sockaddr_in *)udpAddr)->sin_port=htons(port);
 
    // Set receive size
