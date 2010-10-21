@@ -1,0 +1,616 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>KpixGuiSampleViewForm</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>KpixGuiSampleViewForm</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>459</width>
+            <height>530</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>KPIX Sample Viewer</string>
+    </property>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>290</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Event Variables:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QTable">
+        <column>
+            <property name="text">
+                <string>Name</string>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Value</string>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Desciption</string>
+            </property>
+        </column>
+        <property name="name">
+            <cstring>eventVarTable</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>310</y>
+                <width>440</width>
+                <height>150</height>
+            </rect>
+        </property>
+        <property name="numRows">
+            <number>0</number>
+        </property>
+        <property name="numCols">
+            <number>3</number>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>470</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Samples In Run:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>500</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Current Sample:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>sampleCount</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>120</x>
+                <y>470</y>
+                <width>100</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QSpinBox">
+        <property name="name">
+            <cstring>selSample</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>120</x>
+                <y>500</y>
+                <width>100</width>
+                <height>23</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>closeButton</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>360</x>
+                <y>490</y>
+                <width>84</width>
+                <height>26</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Close</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3_3_4_2_2_2_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>250</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Sample Charge:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>sampleCharge</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>140</x>
+                <y>250</y>
+                <width>90</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>kpixChannel</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>140</x>
+                <y>100</y>
+                <width>90</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>trainNum_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>140</x>
+                <y>70</y>
+                <width>90</width>
+                <height>23</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3_3_4_2_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>190</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Sample Time:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>sampleRange</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>140</x>
+                <y>160</y>
+                <width>90</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3_3_4_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>130</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Kpix Bucket:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>kpixBucket</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>140</x>
+                <y>130</y>
+                <width>90</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>10</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Train Number:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3_3_4_2_2_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>220</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Sample Value:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3_3_4_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>160</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Sample Range:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>sampleTime</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>140</x>
+                <y>190</y>
+                <width>90</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3_3_3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>70</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Kpix Serial:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3_3_4</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>100</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Kpix Channel:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>sampleValue</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>140</x>
+                <y>220</y>
+                <width>90</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3_3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>40</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Kpix Address:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>trainNum</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>140</x>
+                <y>10</y>
+                <width>90</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>kpixAddress</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>140</x>
+                <y>40</y>
+                <width>90</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3_3_4_2_2_3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>280</x>
+                <y>170</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Empty:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3_3_4_2_2_3_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>280</x>
+                <y>200</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Bad Count:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3_3_4_2_2_3_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>280</x>
+                <y>230</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Trig Type:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>sampleEmpty</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>390</x>
+                <y>170</y>
+                <width>30</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>sampleBadCnt</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>390</x>
+                <y>200</y>
+                <width>30</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>sampleTrigType</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>390</x>
+                <y>230</y>
+                <width>30</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>kpixSerial</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>140</x>
+                <y>70</y>
+                <width>90</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3_3_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>70</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Kpix Serial:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3_3_4_2_2_3_3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>280</x>
+                <y>140</y>
+                <width>110</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Special:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>sampleSpecial</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>390</x>
+                <y>140</y>
+                <width>30</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+    </widget>
+</widget>
+<connections>
+    <connection>
+        <sender>selSample</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>KpixGuiSampleViewForm</receiver>
+        <slot>updateDisplay()</slot>
+    </connection>
+    <connection>
+        <sender>closeButton</sender>
+        <signal>pressed()</signal>
+        <receiver>KpixGuiSampleViewForm</receiver>
+        <slot>close()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">KpixGuiSampleViewForm.ui.h</include>
+</includes>
+<slots>
+    <slot>updateDisplay()</slot>
+</slots>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>
