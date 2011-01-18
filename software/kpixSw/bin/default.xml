@@ -41,6 +41,7 @@
       <cntrlShortIntEn>0</cntrlShortIntEn>
       <cntrlDisPwrCycle>0</cntrlDisPwrCycle>
       <cntrlFeCurr>4</cntrlFeCurr>
+      <cntrlDiffTime>0</cntrlDiffTime>
       <cntrlHldTime>7</cntrlHldTime>
       <cntrlTrigDisable>0</cntrlTrigDisable>
       <rstOnTime>700</rstOnTime>
