@@ -100,7 +100,7 @@ int main ( int argc, char **argv ) {
       kpixAsic[0]->setCntrlCalDacInt    ( true,   false );
       kpixAsic[0]->setCntrlForceLowGain ( false,  false );
       kpixAsic[0]->setCntrlLeakNullDis  ( true,   false );
-      kpixAsic[0]->setCntrlDoubleGain   ( true,   false );
+      kpixAsic[0]->setCntrlDoubleGain   ( true,   false );   // SIM_SETUP
       kpixAsic[0]->setCntrlNearNeighbor ( false,  false );
       kpixAsic[0]->setCntrlPosPixel     ( true,   false );
       kpixAsic[0]->setCntrlDisPerRst    ( true,   false );
@@ -113,7 +113,7 @@ int main ( int argc, char **argv ) {
       kpixAsic[0]->setCntrlHoldTime     ( KpixAsic::HoldTime_64x, true  ); // Only write control register once
 
       // Setup DACs
-      kpixAsic[0]->setDacCalib          ( (unsigned char)0x40, true ); // was 0x80, new 0x40
+      kpixAsic[0]->setDacCalib          ( (unsigned char)0x80, true ); // was 0x80, new 0x40   // SIM_SETUP
       kpixAsic[0]->setDacRampThresh     ( (unsigned char)0xE0, true );
       kpixAsic[0]->setDacRangeThresh    ( (unsigned char)0x3E, true );
       kpixAsic[0]->setDacDefaultAnalog  ( (unsigned char)0xBD, true );
