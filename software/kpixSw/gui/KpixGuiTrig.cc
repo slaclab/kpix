@@ -142,7 +142,7 @@ void KpixGuiTrig::setEnabled ( bool enable ) {
    unsigned int x,y;
    if ( asicCnt == 0 ) enable = false;
    cntrlNearNeighbor->setEnabled(enable);
-   cntrlTrigSrcCore->setEnabled(enable);
+   cntrlTrigSrc->setEnabled(enable);
    cntrlTrigDisable->setEnabled(enable);
    trigSource->setEnabled(enable);
    trigExpand->setEnabled(enable);
@@ -177,7 +177,7 @@ void KpixGuiTrig::updateDisplay() {
 
       // Asic
       cntrlNearNeighbor->setChecked(asic[0]->getCntrlNearNeighbor(false));
-      cntrlTrigSrcCore->setChecked(asic[0]->getCntrlTrigSrcCore(false));
+      cntrlTrigSrc->setCurrentItem(asic[0]->getCntrlTrigSrc(false));
       cntrlTrigDisable->setChecked(asic[0]->getCntrlTrigDisable(false));
 
       // Table Entries
@@ -217,7 +217,7 @@ void KpixGuiTrig::readConfig() {
 
       // Asic
       asic[0]->getCntrlNearNeighbor();
-      asic[0]->getCntrlTrigSrcCore();
+      asic[0]->getCntrlTrigSrc();
 
       // Table Entries
       for ( x=0; x < (asicCnt-1); x++ ) {
@@ -251,7 +251,7 @@ void KpixGuiTrig::writeConfig() {
    // Asic
    for (x=0; x < asicCnt; x++) {
       asic[x]->setCntrlNearNeighbor(cntrlNearNeighbor->isChecked());
-      asic[x]->setCntrlTrigSrcCore(cntrlTrigSrcCore->isChecked());
+      asic[x]->setCntrlTrigSrc((KpixAsic::KpixCalTrigSrc)(cntrlTrigSrc->currentItem()));
       asic[x]->setCntrlTrigDisable(cntrlTrigDisable->isChecked());
    }
 

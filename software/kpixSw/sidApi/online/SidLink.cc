@@ -659,18 +659,21 @@ int SidLink::linkRawRead ( unsigned short *data, short int size, unsigned char t
       // Check aligment
       if ( (byteData[i] & 0x80) == 0 || (byteData[i+1] & 0xC0) != 0 || (byteData[i+2] & 0xC0) != 0x40 ) {
          free(byteData);
+         linkFlush();
          throw(string("SidLink::linkRawRead -> Alignment Error"));
       }
 
       // Check word type
       if ( ((byteData[i] >> 4) & 0x03) != type ) {
          free(byteData);
+         linkFlush();
          throw(string("SidLink::linkRawRead -> Word Type Mimsatch"));
       }
 
       // Check SOF
       if ( i == 0 && (sof != ((byteData[i] & 0x40) != 0)) ) {
          free(byteData);
+         linkFlush();
          throw(string("SidLink::linkRawRead -> SOF Mimsatch"));
       }
 

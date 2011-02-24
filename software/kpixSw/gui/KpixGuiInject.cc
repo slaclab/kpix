@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <qlineedit.h>
 #include <qspinbox.h>
+#include <qcombobox.h>
 #include <qcheckbox.h>
 #include <KpixAsic.h>
 #include "KpixGuiInject.h"
@@ -62,7 +63,7 @@ void KpixGuiInject::setEnabled ( bool enable ) {
    cal3Delay->setEnabled(enable);
    dacCalib->setEnabled(enable);
    cntrlCalibHigh->setEnabled(enable);
-   cntrlCalSrcCore->setEnabled(enable);
+   cntrlCalSrc->setEnabled(enable);
 }
 
 
@@ -116,7 +117,7 @@ void KpixGuiInject::updateDisplay() {
 
       // Other Settings
       dacCalib->setValue(asic[0]->getDacCalib(false));
-      cntrlCalSrcCore->setChecked(asic[0]->getCntrlCalSrcCore(false));
+      cntrlCalSrc->setCurrentItem(asic[0]->getCntrlCalSrc(false));
       cntrlCalibHigh->setChecked(asic[0]->getCntrlCalibHigh(false));
       dacValueChanged();
    }
@@ -140,7 +141,7 @@ void KpixGuiInject::readConfig() {
 
       // Other Settings
       asic[0]->getDacCalib();
-      asic[0]->getCntrlCalSrcCore();
+      asic[0]->getCntrlCalSrc();
       asic[0]->getCntrlCalibHigh();
    }
 }
@@ -156,7 +157,7 @@ void KpixGuiInject::writeConfig() {
       asic[x]->setCalibTime(calCount->value(), cal0Delay->value(), cal1Delay->value(),
                             cal2Delay->value(), cal3Delay->value());
       asic[x]->setDacCalib(dacCalib->value());
-      asic[x]->setCntrlCalSrcCore(cntrlCalSrcCore->isChecked());
+      asic[x]->setCntrlCalSrc((KpixAsic::KpixCalTrigSrc)(cntrlCalSrc->currentItem()));
       asic[x]->setCntrlCalibHigh(cntrlCalibHigh->isChecked());
    }
 }

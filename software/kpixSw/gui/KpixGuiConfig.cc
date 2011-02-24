@@ -72,6 +72,7 @@ void KpixGuiConfig::setEnabled ( bool enable, bool calEnable ) {
    cfgDisableTemp->setEnabled(enable&&asic[0]->getVersion()>7);
    cfgAutoStatus->setEnabled(enable&&asic[0]->getVersion()>7);
    cntrlHoldTime->setEnabled(enable&&calEnable);
+   cntrlMonSrc->setEnabled(enable);
    dacRampThresh->setEnabled(enable&&calEnable);
    dacRangeThresh->setEnabled(enable&&calEnable);
    dacEventThreshRef->setEnabled(enable&&calEnable);
@@ -140,6 +141,7 @@ void KpixGuiConfig::updateDisplay() {
       cntrlFeCurr->setCurrentItem(asic[0]->getCntrlFeCurr(false));
       cntrlDiffTime->setCurrentItem(asic[0]->getCntrlDiffTime(false));
       cntrlHoldTime->setCurrentItem(asic[0]->getCntrlHoldTime(false));
+      cntrlMonSrc->setCurrentItem(asic[0]->getCntrlMonSrc(false));
       dacValueChanged();
    }
 }
@@ -167,6 +169,7 @@ void KpixGuiConfig::readConfig() {
       asic[0]->getCntrlFeCurr();
       asic[0]->getCntrlDiffTime();
       asic[0]->getCntrlHoldTime();
+      asic[0]->getCntrlMonSrc();
    }
 }
 
@@ -197,6 +200,7 @@ void KpixGuiConfig::writeConfig() {
       asic[x]->setCntrlFeCurr((KpixAsic::KpixFeCurr)cntrlFeCurr->currentItem());
       asic[x]->setCntrlDiffTime((KpixAsic::KpixDiffTime)cntrlDiffTime->currentItem());
       asic[x]->setCntrlHoldTime((KpixAsic::KpixHoldTime)cntrlHoldTime->currentItem());
+      asic[x]->setCntrlMonSrc((KpixAsic::KpixMonSrc)cntrlMonSrc->currentItem());
    }
 }
 

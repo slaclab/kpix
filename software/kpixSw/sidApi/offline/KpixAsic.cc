@@ -63,7 +63,7 @@
 // 07/07/2009: Added support for KPIX9, put in forced timing values for Kpix 8.
 // 04/22/2010: Added force power on for DAC accesses in KPIX 9.
 // 05/18/2010: Adjusted default calibration spacing.
-// 09/13/2010: KPIX A support
+// 02/24/2011: KPIX A support
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
@@ -741,7 +741,7 @@ void KpixAsic::setSidLink ( SidLink *sidLink ) {
 
 
 // Max Kpix Version
-unsigned short KpixAsic::maxVersion() { return(9); }
+unsigned short KpixAsic::maxVersion() { return(10); }
 
 
 // Send reset command to KPIX
@@ -1356,21 +1356,25 @@ bool KpixAsic:: getCntrlPosPixel (  bool readEn ) {
 
 
 // Method to set calibration source in Control Register
-// Pass calibSrcCore flag, true = Core, false = External
+// Pass KpixCalTrigSrc enum
 // Set writeEn to false to disable real write to KPIX, this flag can be used
 // to allow the individual register bits to be set before performing a write
 // to the device.
-void KpixAsic::setCntrlCalSrcCore ( bool calSrcCore, bool writeEn ) {
+void KpixAsic::setCntrlCalSrc ( KpixAsic::KpixCalTrigSrc calSrc, bool writeEn ) {
    // Only exists in later versions
    if ( kpixVersion >= 3 ) {
+
+      // Disable not allowed below KPIX 10
+      if ( kpixVersion < 10 && calSrc == KpixDisable ) calSrc = KpixExternal;
+
       if ( enDebug ) {
-         cout << "KpixAsic::setCntrlCalSrcCore -> Set CalSrcCore=" << calSrcCore;
+         cout << "KpixAsic::setCntrlCalSrcCore -> Set CalSrc=" << calSrc;
          cout << ", WriteEn=" << writeEn << ".\n";
       }
 
       // Only write once
-      regSetBit(0x30,6,calSrcCore,false);
-      regSetBit(0x30,4,!calSrcCore,writeEn);
+      regSetBit(0x30,6,(calSrc==KpixInternal)?1:0,false);
+      regSetBit(0x30,4,(calSrc==KpixExternal)?1:0,writeEn);
    }
 }
 
@@ -1379,11 +1383,12 @@ void KpixAsic::setCntrlCalSrcCore ( bool calSrcCore, bool writeEn ) {
 // Set readEn to false to disable real read from KPIX, this flag allows
 // the user to get the currently set status without actually accessing
 // the device.
-bool KpixAsic:: getCntrlCalSrcCore (  bool readEn ) {
-   bool ret=true;;
+KpixAsic::KpixCalTrigSrc KpixAsic::getCntrlCalSrc (  bool readEn ) {
+   KpixAsic::KpixCalTrigSrc ret=KpixDisable;
    // Only exists in later versions
    if ( kpixVersion >= 3 ) {
-      ret = regGetBit(0x30,6,readEn);
+      if ( regGetBit(0x30,6,readEn) ) ret = KpixInternal;
+      if ( regGetBit(0x30,4,readEn) ) ret = KpixExternal;
       if ( enDebug ) {
          cout << "KpixAsic::getCntrlCalSrcCore -> Get CalSrcCore=" << ret;
          cout << ", ReadEn=" << readEn << ".\n";
@@ -1394,21 +1399,25 @@ bool KpixAsic:: getCntrlCalSrcCore (  bool readEn ) {
 
 
 // Method to set force trigger source in Control Register
-// Pass trigSrcCore flag, true = Core, false = External
+// Pass KpixCalTrigSrc enum
 // Set writeEn to false to disable real write to KPIX, this flag can be used
 // to allow the individual register bits to be set before performing a write
 // to the device.
-void KpixAsic::setCntrlTrigSrcCore ( bool trigSrcCore, bool writeEn ) {
+void KpixAsic::setCntrlTrigSrc ( KpixCalTrigSrc trigSrc, bool writeEn ) {
    // Only exists in later versions
    if ( kpixVersion >= 3 ) {
+
+      // Disable not allowed below KPIX 10
+      if ( kpixVersion < 10 && trigSrc == KpixDisable ) trigSrc = KpixExternal;
+
       if ( enDebug ) {
-         cout << "KpixAsic::setCntrlTrigSrcCore -> Set TrigSrcCore=" << trigSrcCore;
+         cout << "KpixAsic::setCntrlTrigSrcCore -> Set TrigSrc=" << trigSrc;
          cout << ", WriteEn=" << writeEn << ".\n";
       }
 
       // Only write once
-      regSetBit(0x30,7,trigSrcCore,false);
-      regSetBit(0x30,5,!trigSrcCore,writeEn);
+      regSetBit(0x30,7,(trigSrc==KpixInternal)?1:0,false);
+      regSetBit(0x30,5,(trigSrc==KpixExternal)?1:0,writeEn);
    }
 }
 
@@ -1417,11 +1426,12 @@ void KpixAsic::setCntrlTrigSrcCore ( bool trigSrcCore, bool writeEn ) {
 // Set readEn to false to disable real read from KPIX, this flag allows
 // the user to get the currently set status without actually accessing
 // the device.
-bool KpixAsic:: getCntrlTrigSrcCore (  bool readEn ) {
-   bool ret=true;;
+KpixAsic::KpixCalTrigSrc KpixAsic:: getCntrlTrigSrc (  bool readEn ) {
+   KpixAsic::KpixCalTrigSrc ret=KpixDisable;
    // Only exists in later versions
    if ( kpixVersion >= 3 ) {
-      ret = regGetBit(0x30,7,readEn);
+      if ( regGetBit(0x30,7,readEn) ) ret = KpixInternal;
+      if ( regGetBit(0x30,5,readEn) ) ret = KpixExternal;
       if ( enDebug ) {
          cout << "KpixAsic::getCntrlTrigSrcCore -> Get TrigSrcCore=" << ret;
          cout << ", ReadEn=" << readEn << ".\n";
@@ -1753,6 +1763,40 @@ bool KpixAsic::getCntrlTrigDisable ( bool readEn ) {
       return(ret);
    }
    else return(false);
+}
+
+
+// Method to set monitor output source
+// Set monitor output source
+void KpixAsic::setCntrlMonSrc ( KpixAsic::KpixMonSrc monSrc, bool writeEn ) {
+   if ( kpixVersion > 10 ) {
+      if ( enDebug ) {
+         cout << "KpixAsic::setCntrlMonSrc -> Set monSrc=" << monSrc;
+         cout << ", WriteEn=" << writeEn << ".\n";
+      }
+
+      // Set Bits
+      regSetBit(0x30,31,(monSrc==KpixMonAmp)?1:0,false);
+      regSetBit(0x30,30,(monSrc==KpixMonShape)?1:0,writeEn);
+   }
+}
+
+
+// Method to get monitor output source
+// Get monitor output source
+KpixAsic::KpixMonSrc KpixAsic::getCntrlMonSrc ( bool readEn ) {
+   KpixAsic::KpixMonSrc ret = KpixMonNone;
+
+   if ( kpixVersion > 10 ) {
+      if ( regGetBit(0x30,31,readEn) ) ret = KpixMonAmp;
+      if ( regGetBit(0x30,30,readEn) ) ret = KpixMonShape;
+
+      if ( enDebug ) {
+         cout << "KpixAsic::getCntrlMonSrc -> Get monSrc=" << ret;
+         cout << ", ReadEn=" << readEn << ".\n";
+      }
+   }
+   return(ret);
 }
 
 
@@ -2764,22 +2808,23 @@ void KpixAsic::setDefaults ( unsigned int clkPeriod, bool writeEn ) {
    setCfgForceTemp      ( false,          false   );
    setCfgDisableTemp    ( false,          false   );
    setCfgAutoStatus     ( false,          writeEn );
-   setCntrlCalibHigh    ( false,          writeEn );
-   setCntrlCalDacInt    ( true,           writeEn );
-   setCntrlForceLowGain ( false,          writeEn );
-   setCntrlLeakNullDis  ( true,           writeEn );
-   setCntrlDoubleGain   ( false,          writeEn );
-   setCntrlNearNeighbor ( false,          writeEn );
-   setCntrlPosPixel     ( true,           writeEn );
-   setCntrlDisPerRst    ( true,           writeEn );
-   setCntrlEnDcRst      ( true,           writeEn );
-   setCntrlCalSrcCore   ( true,           writeEn );
-   setCntrlTrigSrcCore  ( false,          writeEn );
-   setCntrlShortIntEn   ( false,          writeEn );
-   setCntrlDisPwrCycle  ( false,          writeEn );
-   setCntrlFeCurr       ( FeCurr_121uA,   writeEn );
-   setCntrlHoldTime     ( HoldTime_64x,   writeEn );
-   setCntrlTrigDisable  ( false,          writeEn );
+   setCntrlCalibHigh    ( false,          false   );
+   setCntrlCalDacInt    ( true,           false   );
+   setCntrlForceLowGain ( false,          false   );
+   setCntrlLeakNullDis  ( true,           false   );
+   setCntrlDoubleGain   ( false,          false   );
+   setCntrlNearNeighbor ( false,          false   );
+   setCntrlPosPixel     ( true,           false   );
+   setCntrlDisPerRst    ( true,           false   );
+   setCntrlEnDcRst      ( true,           false   );
+   setCntrlCalSrc       ( KpixDisable,    false   );
+   setCntrlTrigSrc      ( KpixDisable,    false   );
+   setCntrlShortIntEn   ( false,          false   );
+   setCntrlDisPwrCycle  ( false,          false   );
+   setCntrlFeCurr       ( FeCurr_121uA,   false   );
+   setCntrlHoldTime     ( HoldTime_64x,   false   );
+   setCntrlTrigDisable  ( true,           false   );
+   setCntrlMonSrc       ( KpixMonNone,    writeEn );
 
    // Set timing values
    setTiming ( clkPeriod, // Clock Period
@@ -2878,8 +2923,8 @@ void KpixAsic::dumpSettings () {
    cout << " CntrlForceLowGain = " << getCntrlForceLowGain(false) << "\n";
    cout << "  CntrlLeakNullDis = " << getCntrlLeakNullDis(false) << "\n";
    cout << "     CntrlPosPixel = " << getCntrlPosPixel(false) << "\n";
-   cout << "   CntrlCalSrcCore = " << getCntrlCalSrcCore(false) << "\n";
-   cout << "  CntrlTrigSrcCore = " << getCntrlTrigSrcCore(false) << "\n";
+   cout << "       CntrlCalSrc = " << getCntrlCalSrc(false) << "\n";
+   cout << "      CntrlTrigSrc = " << getCntrlTrigSrc(false) << "\n";
    cout << " CntrlNearNeighbor = " << getCntrlNearNeighbor(false) << "\n";
    cout << "   CntrlDoubleGain = " << getCntrlDoubleGain(false) << "\n";
    cout << "    CntrlDisPerRst = " << getCntrlDisPerRst(false) << "\n";
@@ -2888,6 +2933,7 @@ void KpixAsic::dumpSettings () {
    cout << "  CntrlDisPwrCycle = " << getCntrlDisPwrCycle(false) << "\n";
    cout << "       CntrlFeCurr = " << getCntrlFeCurr(false) << "\n";
    cout << "  CntrlTrigDisable = " << getCntrlTrigDisable(false) << "\n";
+   cout << "       CntrlMonSrc = " << getCntrlMonSrc(false) << "\n";
    cout << "          DacCalib = 0x" << hex << setw(2) << setfill('0');
    cout << (int)getDacCalib(false) << "\n";
    cout << "     DacRampThresh = 0x" << hex << setw(2) << setfill('0');

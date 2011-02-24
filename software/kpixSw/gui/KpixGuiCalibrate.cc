@@ -309,7 +309,7 @@ void KpixGuiCalibrate::run() {
             kpixCalDist->setPlotDir("Force_Trig");
             kpixRunWrite->setEventVar ( "ForceTrig",1.0 );
             for(y=0; y<asicCnt; y++) {
-               asic[y]->setCntrlTrigSrcCore ( true );
+               asic[y]->setCntrlTrigSrc ( KpixAsic::KpixInternal );
                asic[y]->setCntrlTrigDisable ( true );
             }
             kpixCalDist->runDistribution (distCalEn->isChecked()?-1:-2);
@@ -333,7 +333,7 @@ void KpixGuiCalibrate::run() {
             kpixCalDist->setPlotDir("Self_Trig");
             kpixRunWrite->setEventVar ( "ForceTrig",0.0 );
             for(y=0; y<asicCnt; y++) {
-               asic[y]->setCntrlTrigSrcCore ( false );
+               asic[y]->setCntrlTrigSrc ( KpixAsic::KpixDisable );
                asic[y]->setCntrlTrigDisable ( false );
             }
             kpixCalDist->runDistribution (distCalEn->isChecked()?-1:-2);
@@ -358,7 +358,7 @@ void KpixGuiCalibrate::run() {
                kpixCalDist->setPlotDir("Force_Trig");
                kpixRunWrite->setEventVar ( "ForceTrig",1.0 );
                for(y=0; y<asicCnt; y++) {
-                  asic[y]->setCntrlTrigSrcCore ( true );
+                  asic[y]->setCntrlTrigSrc ( KpixAsic::KpixInternal );
                   asic[y]->setCntrlTrigDisable ( true );
                }
                kpixCalDist->runCalibration ( -1 );
@@ -380,7 +380,7 @@ void KpixGuiCalibrate::run() {
                kpixCalDist->setPlotDir("Self_Trig");
                kpixRunWrite->setEventVar ( "ForceTrig",0.0 );
                for(y=0; y<asicCnt; y++) {
-                  asic[y]->setCntrlTrigSrcCore ( false );
+                  asic[y]->setCntrlTrigSrc ( KpixAsic::KpixDisable );
                   asic[y]->setCntrlTrigDisable ( false );
                }
                kpixCalDist->runCalibration ( -1 );
@@ -412,7 +412,7 @@ void KpixGuiCalibrate::run() {
                   kpixCalDist->setPlotDir("Force_Trig");
                   kpixRunWrite->setEventVar ( "ForceTrig",1.0 );
                   for(y=0; y<asicCnt; y++) {
-                     asic[y]->setCntrlTrigSrcCore ( true );
+                     asic[y]->setCntrlTrigSrc ( KpixAsic::KpixInternal );
                      asic[y]->setCntrlTrigDisable ( true );
                   }
                   kpixCalDist->runCalibration ( x );
@@ -438,7 +438,7 @@ void KpixGuiCalibrate::run() {
                   kpixCalDist->setPlotDir("Self_Trig");
                   kpixRunWrite->setEventVar ( "ForceTrig",0.0 );
                   for(y=0; y<asicCnt; y++) {
-                     asic[y]->setCntrlTrigSrcCore ( false );
+                     asic[y]->setCntrlTrigSrc ( KpixAsic::KpixDisable );
                      asic[y]->setCntrlTrigDisable ( false );
                   }
                   kpixCalDist->runCalibration ( x );

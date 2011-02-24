@@ -112,6 +112,7 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
       // Detect overrun of frame data
       if ( totalCount == MaxSamples ) {
          totalCount = 0;
+         link->linkFlush();
          throw(string("KpixBunchTrain::KpixBunchTrain -> Sample Overrun"));
       }
       totalCount++;

@@ -53,7 +53,7 @@
 // 06/10/2009: Added method to convert temp adc value to a celcias value
 // 06/18/2009: Added namespaces
 // 06/23/2009: Removed namespaces
-// 09/13/2010: KPIX A support
+// 02/24/2011: KPIX A support
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_ASIC_H__
 #define __KPIX_ASIC_H__
@@ -211,6 +211,17 @@ class KpixAsic : public TObject {
          FeDiffQuarter = 3
       };
 
+      enum KpixCalTrigSrc {
+         KpixDisable   = 0,
+         KpixInternal  = 1,
+         KpixExternal  = 2
+      };
+
+      enum KpixMonSrc {
+         KpixMonNone   = 0,
+         KpixMonAmp    = 1,
+         KpixMonShape  = 2
+      };
 
       // Max Kpix Version
       static unsigned short maxVersion();
@@ -257,8 +268,7 @@ class KpixAsic : public TObject {
       /*! Begins calibration acquisition
 		Eg: kpixAsic[ x ]->cmdCalibrate(true);
 		If the thresholds are disabled, then make sure to set CORE and EXTERNAL as desired, eg:
-	   const bool CORE = true, EXTERNAL = false;	//kpix trigger source either core or outside signals
-		kpixAsic[ x ]->setCntrlTrigSrcCore  ( CORE )
+	   const bool CORE = true, EXTERNAL = false;	
 		 Pass optional broadcast flag, default=false
 		*/
       void cmdCalibrate ( bool bcast = false );
@@ -475,34 +485,34 @@ class KpixAsic : public TObject {
       bool getCntrlPosPixel (  bool readEn=true );
 
       //! Method to set calibration source in Control Register
-      /*! Pass calibSrcCore flag, true = Core, false = External
+      /*! Pass KpixCalTrigSource enum.
       Set writeEn to false to disable real write to KPIX, this flag can be used
       to allow the individual register bits to be set before performing a write
       to the device.
 		*/
-      void setCntrlCalSrcCore ( bool calSrcCore, bool writeEn=true );
+      void setCntrlCalSrc ( KpixCalTrigSrc calSrc, bool writeEn=true );
 
       //! Method to get status of calibration source in Control Register
       /*! Set readEn to false to disable real read from KPIX, this flag allows
       the user to get the currently set status without actually accessing
       the device.
 		*/
-      bool getCntrlCalSrcCore (  bool readEn=true );
+      KpixCalTrigSrc getCntrlCalSrc (  bool readEn=true );
 
       //! Method to set force trigger source in Control Register
-      /*! Pass trigSrcCore flag, true = Core, false = External
+      /*! Pass KpixCalTrigSource enum.
       Set writeEn to false to disable real write to KPIX, this flag can be used
       to allow the individual register bits to be set before performing a write
       to the device.
 		*/
-      void setCntrlTrigSrcCore ( bool trigSrcCore, bool writeEn=true );
+      void setCntrlTrigSrc ( KpixCalTrigSrc trigSrc, bool writeEn=true );
 
       //! Method to get status of force trigger source in Control Register
       /*! Set readEn to false to disable real read from KPIX, this flag allows
       the user to get the currently set status without actually accessing
       the device.
 		*/
-      bool getCntrlTrigSrcCore (  bool readEn=true );
+      KpixCalTrigSrc getCntrlTrigSrc (  bool readEn=true );
 
       //! Method to set enable nearest neighbor triggering in Control Register
       /*! Pass nearNeighbor flag, true = enable, false = disable
@@ -648,6 +658,16 @@ class KpixAsic : public TObject {
       the device.
       */
       bool getCntrlTrigDisable ( bool readEn=true );
+
+      //! Method to set monitor output source
+      /*! Set monitor output source
+      */
+      void setCntrlMonSrc ( KpixMonSrc monSrc, bool writeEn=true );
+
+      //! Method to get monitor output source
+      /*! Get monitor output source
+      */
+      KpixMonSrc getCntrlMonSrc ( bool readEn=true );
 
       //! Method to update KPIX timing configuration
       /*! If the passed timing values are not evenly divisable by the

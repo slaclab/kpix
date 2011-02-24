@@ -36,14 +36,15 @@
       <cntrlPosPixel>1</cntrlPosPixel>
       <cntrlDisPerRst>1</cntrlDisPerRst>
       <cntrlEnDcRst>1</cntrlEnDcRst>
-      <cntrlCalSrcCore>1</cntrlCalSrcCore>
-      <cntrlTrigSrcCore>0</cntrlTrigSrcCore>
+      <cntrlCalSrc>0</cntrlCalSrc>
+      <cntrlTrigSrc>0</cntrlTrigSrc>
       <cntrlShortIntEn>0</cntrlShortIntEn>
       <cntrlDisPwrCycle>0</cntrlDisPwrCycle>
       <cntrlFeCurr>4</cntrlFeCurr>
       <cntrlDiffTime>0</cntrlDiffTime>
       <cntrlHldTime>7</cntrlHldTime>
       <cntrlTrigDisable>0</cntrlTrigDisable>
+      <cntrlMonSrc>0</cntrlMonSrc>
       <rstOnTime>700</rstOnTime>
       <rstOffTime>120000</rstOffTime>
       <leakageNullOff>200</leakageNullOff>

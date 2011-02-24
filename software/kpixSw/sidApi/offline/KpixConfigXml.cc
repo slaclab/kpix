@@ -193,10 +193,10 @@ void KpixConfigXml::OnCharacters ( const char *value ) {
          for(x=0; x<asicCnt; x++) asic[x]->setCntrlDisPerRst ( atoi(value), xmlWriteEn );
       else if ( !strcmp(currVar, "cntrlEnDcRst") )
          for(x=0; x<asicCnt; x++) asic[x]->setCntrlEnDcRst ( atoi(value), xmlWriteEn );
-      else if ( !strcmp(currVar, "cntrlCalSrcCore") )
-         for(x=0; x<asicCnt; x++) asic[x]->setCntrlCalSrcCore ( atoi(value), xmlWriteEn );
-      else if ( !strcmp(currVar, "cntrlTrigSrcCore") )
-         for(x=0; x<asicCnt; x++) asic[x]->setCntrlTrigSrcCore ( atoi(value), xmlWriteEn );
+      else if ( !strcmp(currVar, "cntrlCalSrc") )
+         for(x=0; x<asicCnt; x++) asic[x]->setCntrlCalSrc ( (KpixAsic::KpixCalTrigSrc)(atoi(value)), xmlWriteEn );
+      else if ( !strcmp(currVar, "cntrlTrigSrc") )
+         for(x=0; x<asicCnt; x++) asic[x]->setCntrlTrigSrc ( (KpixAsic::KpixCalTrigSrc)(atoi(value)), xmlWriteEn );
       else if ( !strcmp(currVar, "cntrlShortIntEn") )
          for(x=0; x<asicCnt; x++) asic[x]->setCntrlShortIntEn ( atoi(value), xmlWriteEn );
       else if ( !strcmp(currVar, "cntrlDisPwrCycle") )
@@ -207,6 +207,8 @@ void KpixConfigXml::OnCharacters ( const char *value ) {
          for(x=0; x<asicCnt; x++) asic[x]->setCntrlDiffTime ( (KpixAsic::KpixDiffTime)(atoi(value)), xmlWriteEn );
       else if ( !strcmp(currVar, "cntrlTrigDisable") )
          for(x=0; x<asicCnt; x++) asic[x]->setCntrlTrigDisable ( atoi(value), xmlWriteEn );
+      else if ( !strcmp(currVar, "cntrlMonSrc") )
+         for(x=0; x<asicCnt; x++) asic[x]->setCntrlMonSrc ( (KpixAsic::KpixMonSrc)(atoi(value)), xmlWriteEn );
       else if ( !strcmp(currVar, "cntrlHoldTime") )
          for(x=0; x<asicCnt; x++) asic[x]->setCntrlHoldTime ( (KpixAsic::KpixHoldTime)(atoi(value)), xmlWriteEn );
       else if ( !strcmp(currVar, "dacCalib") )
@@ -325,14 +327,15 @@ void KpixConfigXml::writeConfig ( char *xmlFile, KpixFpga *fpga, KpixAsic **asic
       xml << "      <cntrlPosPixel>" << asic[0]->getCntrlPosPixel(0) << "</cntrlPosPixel>\n";
       xml << "      <cntrlDisPerRst>" << asic[0]->getCntrlDisPerRst(0) << "</cntrlDisPerRst>\n";
       xml << "      <cntrlEnDcRst>" << asic[0]->getCntrlEnDcRst(0) << "</cntrlEnDcRst>\n";
-      xml << "      <cntrlCalSrcCore>" << asic[0]->getCntrlCalSrcCore(0) << "</cntrlCalSrcCore>\n";
-      xml << "      <cntrlTrigSrcCore>" << asic[0]->getCntrlTrigSrcCore(0) << "</cntrlTrigSrcCore>\n";
+      xml << "      <cntrlCalSrc>" << asic[0]->getCntrlCalSrc(0) << "</cntrlCalSrc>\n";
+      xml << "      <cntrlTrigSrc>" << asic[0]->getCntrlTrigSrc(0) << "</cntrlTrigSrc>\n";
       xml << "      <cntrlShortIntEn>" << asic[0]->getCntrlShortIntEn(0) << "</cntrlShortIntEn>\n";
       xml << "      <cntrlDisPwrCycle>" << asic[0]->getCntrlDisPwrCycle(0) << "</cntrlDisPwrCycle>\n";
       xml << "      <cntrlFeCurr>" << asic[0]->getCntrlFeCurr(0) << "</cntrlFeCurr>\n";
       xml << "      <cntrlDiffTime>" << asic[0]->getCntrlDiffTime(0) << "</cntrlDiffTime>\n";
       xml << "      <cntrlHldTime>" << asic[0]->getCntrlHoldTime(0) << "</cntrlHldTime>\n";
       xml << "      <cntrlTrigDisable>" << asic[0]->getCntrlTrigDisable(0) << "</cntrlTrigDisable>\n";
+      xml << "      <cntrlMonSrc>" << asic[0]->getCntrlMonSrc(0) << "</cntrlMonSrc>\n";
 
       asic[0]->getTiming ( &clkPrd, &rstOnTime, &rstOffTime, &leakageNullOff, &offsetNullOff,
           &threshOff, &trigInhibitOff, &pwrUpOn, &deselSequence, &bunchClkDly, &digitizationDly, &bunchClockCount,0);
