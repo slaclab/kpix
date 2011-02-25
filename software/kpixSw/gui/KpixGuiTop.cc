@@ -461,7 +461,7 @@ void KpixGuiTop::run() {
 
             // Set defaults
             xmlFile = getenv("KPIX_DEF_FILE");
-            fpga->setDefaults(defClkPeriod,(asicVersion>7));
+            fpga->setDefaults(defClkPeriod,(asicVersion<10));
             
             // Find Each Address
             cout << "Searching For ASICs" << endl;

@@ -1737,7 +1737,7 @@ KpixAsic::KpixDiffTime KpixAsic::getCntrlDiffTime ( bool readEn ) {
 
 // Method to set global trigger disable bit.
 void KpixAsic::setCntrlTrigDisable ( bool trigDisable, bool writeEn ) {
-   if ( kpixVersion > 10 ) {
+   if ( kpixVersion >= 10 ) {
       if ( enDebug ) {
          cout << "KpixAsic::setCntrlTrigDisable -> Set trigDisable=" << trigDisable;
          cout << ", WriteEn=" << writeEn << ".\n";
@@ -1753,7 +1753,7 @@ void KpixAsic::setCntrlTrigDisable ( bool trigDisable, bool writeEn ) {
 bool KpixAsic::getCntrlTrigDisable ( bool readEn ) {
    bool ret;
 
-   if ( kpixVersion > 10 ) {
+   if ( kpixVersion >= 10 ) {
       ret = regGetBit(0x30,16,readEn);
 
       if ( enDebug ) {
@@ -1769,7 +1769,7 @@ bool KpixAsic::getCntrlTrigDisable ( bool readEn ) {
 // Method to set monitor output source
 // Set monitor output source
 void KpixAsic::setCntrlMonSrc ( KpixAsic::KpixMonSrc monSrc, bool writeEn ) {
-   if ( kpixVersion > 10 ) {
+   if ( kpixVersion >= 10 ) {
       if ( enDebug ) {
          cout << "KpixAsic::setCntrlMonSrc -> Set monSrc=" << monSrc;
          cout << ", WriteEn=" << writeEn << ".\n";
@@ -1787,7 +1787,7 @@ void KpixAsic::setCntrlMonSrc ( KpixAsic::KpixMonSrc monSrc, bool writeEn ) {
 KpixAsic::KpixMonSrc KpixAsic::getCntrlMonSrc ( bool readEn ) {
    KpixAsic::KpixMonSrc ret = KpixMonNone;
 
-   if ( kpixVersion > 10 ) {
+   if ( kpixVersion >=10 ) {
       if ( regGetBit(0x30,31,readEn) ) ret = KpixMonAmp;
       if ( regGetBit(0x30,30,readEn) ) ret = KpixMonShape;
 

@@ -224,7 +224,10 @@ void KpixCalDist::runDistribution ( short channel ) {
    }
 
    // Update channel modes
-   for (x=0;x<kpixCount;x++) kpixAsic[x]->setChannelModeArray(modes);
+   for (x=0;x<kpixCount;x++) {
+      kpixAsic[x]->setChannelModeArray(modes);
+      kpixAsic[x]->setCntrlCalSrc(KpixAsic::KpixInternal);
+   }
 
    // Debug if enabled
    if ( enDebug ) {
@@ -557,7 +560,10 @@ void KpixCalDist::runCalibration ( short channel ) {
    }
 
    // Update channel modes
-   for (x=0;x<kpixCount;x++) kpixAsic[x]->setChannelModeArray(modes);
+   for (x=0;x<kpixCount;x++) {
+      kpixAsic[x]->setChannelModeArray(modes);
+      kpixAsic[x]->setCntrlCalSrc(KpixAsic::KpixInternal);
+   }
 
    // Debug if enabled
    if ( enDebug ) {
