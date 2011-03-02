@@ -207,14 +207,22 @@ void KpixCalibRead::OnCharacters ( const char *characters ) {
    if ( strcmp(characters, "\n") ) { // Ignores carriage returns
       if ( !strcmp(currVar, "fitGain") )
          { currAsic->fitGain[currChannel][currBucket] = atof( characters ); }
+      else if ( !strcmp(currVar, "fitGainErr") )
+         { currAsic->fitGainErr[currChannel][currBucket] = atof( characters ); }
       else if ( !strcmp(currVar, "fitIntercept") )
          { currAsic->fitIntercept[currChannel][currBucket] = atof( characters ); }
+      else if ( !strcmp(currVar, "fitInterceptErr") )
+         { currAsic->fitInterceptErr[currChannel][currBucket] = atof( characters ); }
       else if ( !strcmp(currVar, "fitRms") )
          { currAsic->fitRms[currChannel][currBucket] = atof( characters ); }
       else if ( !strcmp(currVar, "histMean") )
          { currAsic->histMean[currChannel][currBucket] = atof( characters ); }
+      else if ( !strcmp(currVar, "histMeanErr") )
+         { currAsic->histMeanErr[currChannel][currBucket] = atof( characters ); }
       else if ( !strcmp(currVar, "histSigma") )
          { currAsic->histSigma[currChannel][currBucket] = atof( characters ); }
+      else if ( !strcmp(currVar, "histSigmaErr") )
+         { currAsic->histSigmaErr[currChannel][currBucket] = atof( characters ); }
       else if ( !strcmp(currVar, "histRms") )
          { currAsic->histRms[currChannel][currBucket] = atof( characters ); }
    }
@@ -433,6 +441,8 @@ bool KpixCalibRead::getCalibData ( double *fitGain, double *fitIntercept,
          if ( currAsic != NULL ) {
             *fitGain = currAsic->fitGain[channel][bucket];
             *fitIntercept = currAsic->fitIntercept[channel][bucket];
+            if ( fitGainErr      != NULL ) *fitGainErr      = currAsic->fitGainErr[channel][bucket];
+            if ( fitInterceptErr != NULL ) *fitInterceptErr = currAsic->fitInterceptErr[channel][bucket];
          }
       }
    }
@@ -538,6 +548,8 @@ bool KpixCalibRead::getHistData ( double *fitMean, double *fitSigma, double *fit
             *fitMean = currAsic->histMean[channel][bucket];
             *fitSigma = currAsic->histSigma[channel][bucket];
             *fitRms = currAsic->histRms[channel][bucket];
+            if ( fitMeanErr  != NULL ) *fitMeanErr  = currAsic->histMeanErr[channel][bucket];
+            if ( fitSigmaErr != NULL ) *fitSigmaErr = currAsic->histSigmaErr[channel][bucket];
          }
       }
    }

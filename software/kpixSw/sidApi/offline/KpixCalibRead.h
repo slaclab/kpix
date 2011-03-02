@@ -46,10 +46,14 @@ class KpixCalibReadAsicStruct {
       public:
       //Calibration variables for 1024 channels and 4 buckets
       double fitGain [1024][4]; 
+      double fitGainErr [1024][4]; 
       double fitIntercept [1024][4]; 
+      double fitInterceptErr [1024][4]; 
       double fitRms [1024][4]; 
       double histSigma [1024][4]; 
+      double histSigmaErr [1024][4]; 
       double histMean [1024][4]; 
+      double histMeanErr [1024][4]; 
       double histRms [1024][4]; 
 
       // Asic Serial #

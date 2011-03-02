@@ -51,10 +51,14 @@ class TH1F;
 class KpixGuiCalFitData {
    public:
       double calGain[DIR_COUNT][3][1024][4][2];
+      double calGainErr[DIR_COUNT][3][1024][4][2];
       double calIntercept[DIR_COUNT][3][1024][4][2];
+      double calInterceptErr[DIR_COUNT][3][1024][4][2];
       double calRms[DIR_COUNT][3][1024][4][2];
       double distMean[DIR_COUNT][3][1024][4];
+      double distMeanErr[DIR_COUNT][3][1024][4];
       double distSigma[DIR_COUNT][3][1024][4];
+      double distSigmaErr[DIR_COUNT][3][1024][4];
       double distRms[DIR_COUNT][3][1024][4];
 };
 

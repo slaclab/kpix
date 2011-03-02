@@ -607,15 +607,21 @@ void KpixGuiCalFit::readFitData(unsigned int dirIndex, unsigned int gain, unsign
    // Extract Range 0 Value Fit Results
    if ( tGraph[6] != NULL && tGraph[6]->GetFunction("pol1") != NULL ) {
       calibData[serial]->calGain[dirIndex][gain][channel][bucket][0] = tGraph[6]->GetFunction("pol1")->GetParameter(1);
+      calibData[serial]->calGainErr[dirIndex][gain][channel][bucket][0] = tGraph[6]->GetFunction("pol1")->GetParError(1);
       calibData[serial]->calIntercept[dirIndex][gain][channel][bucket][0] = tGraph[6]->GetFunction("pol1")->GetParameter(0);
+      calibData[serial]->calInterceptErr[dirIndex][gain][channel][bucket][0] = tGraph[6]->GetFunction("pol1")->GetParError(0);
    }
    else if ( tGraph[0] != NULL && tGraph[0]->GetFunction("pol1") != NULL ) {
       calibData[serial]->calGain[dirIndex][gain][channel][bucket][0] = tGraph[0]->GetFunction("pol1")->GetParameter(1);
+      calibData[serial]->calGainErr[dirIndex][gain][channel][bucket][0] = tGraph[0]->GetFunction("pol1")->GetParError(1);
       calibData[serial]->calIntercept[dirIndex][gain][channel][bucket][0] = tGraph[0]->GetFunction("pol1")->GetParameter(0);
+      calibData[serial]->calInterceptErr[dirIndex][gain][channel][bucket][0] = tGraph[0]->GetFunction("pol1")->GetParError(0);
    }
    else {
       calibData[serial]->calGain[dirIndex][gain][channel][bucket][0] = 0;
+      calibData[serial]->calGainErr[dirIndex][gain][channel][bucket][0] = 0;
       calibData[serial]->calIntercept[dirIndex][gain][channel][bucket][0] = 0;
+      calibData[serial]->calInterceptErr[dirIndex][gain][channel][bucket][0] = 0;
    }
    if ( tGraph[4] != NULL ) calibData[serial]->calRms[dirIndex][gain][channel][bucket][0] = tGraph[4]->GetRMS(2);
    else calibData[serial]->calRms[dirIndex][gain][channel][bucket][0] = 0;
@@ -623,11 +629,15 @@ void KpixGuiCalFit::readFitData(unsigned int dirIndex, unsigned int gain, unsign
    // Extract Range 1 Value Fit Results
    if ( tGraph[7] != NULL && tGraph[7]->GetFunction("pol1") != NULL ) {
       calibData[serial]->calGain[dirIndex][gain][channel][bucket][1] = tGraph[7]->GetFunction("pol1")->GetParameter(1);
+      calibData[serial]->calGainErr[dirIndex][gain][channel][bucket][1] = tGraph[7]->GetFunction("pol1")->GetParError(1);
       calibData[serial]->calIntercept[dirIndex][gain][channel][bucket][1] = tGraph[7]->GetFunction("pol1")->GetParameter(0);
+      calibData[serial]->calInterceptErr[dirIndex][gain][channel][bucket][1] = tGraph[7]->GetFunction("pol1")->GetParError(0);
    }
    else if ( tGraph[1] != NULL && tGraph[1]->GetFunction("pol1") != NULL ) {
       calibData[serial]->calGain[dirIndex][gain][channel][bucket][1] = tGraph[1]->GetFunction("pol1")->GetParameter(1);
+      calibData[serial]->calGainErr[dirIndex][gain][channel][bucket][1] = tGraph[1]->GetFunction("pol1")->GetParError(1);
       calibData[serial]->calIntercept[dirIndex][gain][channel][bucket][1] = tGraph[1]->GetFunction("pol1")->GetParameter(0);
+      calibData[serial]->calInterceptErr[dirIndex][gain][channel][bucket][1] = tGraph[1]->GetFunction("pol1")->GetParError(0);
    }
    if ( tGraph[5] != NULL ) calibData[serial]->calRms[dirIndex][gain][channel][bucket][1] = tGraph[5]->GetRMS(2);
    else calibData[serial]->calRms[dirIndex][gain][channel][bucket][1] = 0;
@@ -635,12 +645,16 @@ void KpixGuiCalFit::readFitData(unsigned int dirIndex, unsigned int gain, unsign
    // Extract fit results
    if ( tHist[0] != NULL && tHist[0]->GetFunction("gaus") != NULL ) {
       calibData[serial]->distMean[dirIndex][gain][channel][bucket]  = tHist[0]->GetFunction("gaus")->GetParameter(1);
+      calibData[serial]->distMeanErr[dirIndex][gain][channel][bucket]  = tHist[0]->GetFunction("gaus")->GetParError(1);
       calibData[serial]->distSigma[dirIndex][gain][channel][bucket] = tHist[0]->GetFunction("gaus")->GetParameter(2);
+      calibData[serial]->distSigmaErr[dirIndex][gain][channel][bucket] = tHist[0]->GetFunction("gaus")->GetParError(2);
       calibData[serial]->distRms[dirIndex][gain][channel][bucket]   = tHist[0]->GetRMS();
    }
    else {
       calibData[serial]->distMean[dirIndex][gain][channel][bucket]  = 0;
+      calibData[serial]->distMeanErr[dirIndex][gain][channel][bucket]  = 0;
       calibData[serial]->distSigma[dirIndex][gain][channel][bucket] = 0;
+      calibData[serial]->distSigmaErr[dirIndex][gain][channel][bucket] = 0;
       calibData[serial]->distRms[dirIndex][gain][channel][bucket]   = 0;
    }
 
@@ -1173,30 +1187,50 @@ void KpixGuiCalFit::run() {
                            xmlStream << "<fitGain>";
                            xmlStream << calibData[serial]->calGain[dirIndex][gain][channel][bucket][gain==2?1:0];
                            xmlStream << "</fitGain>" << endl;
+                           xmlStream << "<fitGainErr>";
+                           xmlStream << calibData[serial]->calGainErr[dirIndex][gain][channel][bucket][gain==2?1:0];
+                           xmlStream << "</fitGainErr>" << endl;
                            xmlStream << "<fitIntercept>";
                            xmlStream << calibData[serial]->calIntercept[dirIndex][gain][channel][bucket][gain==2?1:0];
                            xmlStream << "</fitIntercept>" << endl;
+                           xmlStream << "<fitInterceptErr>";
+                           xmlStream << calibData[serial]->calInterceptErr[dirIndex][gain][channel][bucket][gain==2?1:0];
+                           xmlStream << "</fitInterceptErr>" << endl;
                            xmlStream << "<fitRms>";
                            xmlStream << calibData[serial]->calRms[dirIndex][gain][channel][bucket][gain==2?1:0];
                            xmlStream << "</fitRms>" << endl;
                            xmlStream << "<histMean>";
                            xmlStream << calibData[serial]->distMean[dirIndex][gain][channel][bucket];
                            xmlStream << "</histMean>" << endl;
+                           xmlStream << "<histMeanErr>";
+                           xmlStream << calibData[serial]->distMeanErr[dirIndex][gain][channel][bucket];
+                           xmlStream << "</histMeanErr>" << endl;
                            xmlStream << "<histSigma>";
                            xmlStream << calibData[serial]->distSigma[dirIndex][gain][channel][bucket];
                            xmlStream << "</histSigma>" << endl;
+                           xmlStream << "<histSigmaErr>";
+                           xmlStream << calibData[serial]->distSigmaErr[dirIndex][gain][channel][bucket];
+                           xmlStream << "</histSigmaErr>" << endl;
                            xmlStream << "<histRms>";
                            xmlStream << calibData[serial]->distRms[dirIndex][gain][channel][bucket];
                            xmlStream << "</histRms>" << endl;
                            xmlStream << "</bucket>" << endl;
                         }
+                        xmlStream << "</channel>" << endl;
 
                         curr = (dirIndex*3*asicCnt*asic[0]->getChCount()) +
                                (gain*asicCnt*asic[0]->getChCount()) +
                                (serial*asic[0]->getChCount()) + channel;
-                        event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusPrgMain,curr,total);
-                        QApplication::postEvent(this,event);
-                        xmlStream << "</channel>" << endl;
+
+                        //event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusPrgMain,curr,total);
+                        //QApplication::postEvent(this,event);
+
+                        cout << "Fit Recorded.";
+                        cout << " Dir=" << dec << dirIndex;
+                        cout << " Gain=" << dec << gain;
+                        cout << " Serial=" << dec << serial;
+                        cout << " Channel=" << dec << channel;
+                        cout << " Pct=" << (int)((100.0)*((double)curr/(double)total)) << endl;
                      }
                      xmlStream << "</asic>" << endl;
                   } 
@@ -1213,6 +1247,7 @@ void KpixGuiCalFit::run() {
             channel  = 0;
             bucket   = 0;
             delete outFileRoot;
+            cout << "File closed." << endl;
             updateSummary();
 
             break;

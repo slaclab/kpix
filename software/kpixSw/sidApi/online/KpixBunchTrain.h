@@ -44,10 +44,10 @@ class KpixSample;
 class KpixBunchTrain {
 
       // Define max number of samples that can be received
-      static const unsigned int MaxSamples = 1024+8192+3;
+      static const unsigned int MaxSamples = (1024*4+20) * 3;
 
       // Array of sample data sorted by sample time, pointers
-      KpixSample *samplesByTime[MaxSamples];
+      KpixSample *samplesByTime[MaxSamples+1];
 
       // Total number of samples
       unsigned int totalCount;

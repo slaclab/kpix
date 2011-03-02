@@ -90,7 +90,7 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
    unsigned int   trigType;
    unsigned int   empty;
    unsigned int   special;
-   unsigned short data[MaxSamples*3*2];
+   unsigned short data[MaxSamples*3+10];
    stringstream   error;
 
    // Debug
@@ -98,6 +98,7 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
 
    // Get header first
    link->linkDataRead(data,2,true);
+   if ( debug ) cout << "KpixBunchTrain::KpixBunchTrain -> Read Header.\n";
    totalCount = 0;
 
    // Keep going until we got all of the samples
@@ -105,6 +106,7 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
 
       // Read three words
       link->linkDataRead(&(data[totalCount*3+2]),3,false);
+      if ( debug ) cout << "KpixBunchTrain::KpixBunchTrain -> Read Sample. Count=" << dec << totalCount << "\n";
 
       // Is this the end?
       if ((data[totalCount*3+2] & 0x8000) != 0 ) break;
@@ -203,7 +205,7 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
    lastTrain = (data[totalCount*3+2+1] & 0x8000) == 0;
 
    // Set last entry to NULL
-   if ( totalCount != 64*4*4) samplesByTime[totalCount] = NULL;
+   samplesByTime[totalCount] = NULL;
 
    // Sort sample list by time
    if ( totalCount > 0 ) 

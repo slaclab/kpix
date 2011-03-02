@@ -2,7 +2,7 @@
    <fpga>
       <clkPrd>50</clkPrd>
       <clkPrdDig>50</clkPrdDig>
-      <clkPrdRd>50</clkPrdRd>
+      <clkPrdRd>100</clkPrdRd>
       <clkPrdIdle>100</clkPrdIdle>
       <bncSrcA>3</bncSrcA>
       <bncSrcB>3</bncSrcB>

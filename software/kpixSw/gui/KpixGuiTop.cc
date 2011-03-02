@@ -438,7 +438,7 @@ void KpixGuiTop::run() {
 
          case CmdSetDefaults :
             xmlFile = getenv("KPIX_DEF_FILE");
-            fpga->setDefaults(defClkPeriod,(asicVersion>7));
+            fpga->setDefaults(defClkPeriod,(asicVersion<10));
             for(x=0; x<asicCnt; x++) asic[x]->setDefaults(defClkPeriod);
             kpixConfigXml->readConfig (xmlFile, fpga, asic, asicCnt, true);
             break;
