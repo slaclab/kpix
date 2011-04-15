@@ -95,7 +95,7 @@ void KpixConfigXml::OnEndElement ( const char *name ) {
          if ( currAsic == -1 || asic[x]->getAddress() == currAsic ) {
             asic[x]->setTiming ( clkPrd, rstOnTime, rstOffTime, leakageNullOff, offsetNullOff,
                                  threshOff, trigInhibitOff, pwrUpOn, deselSequence, bunchClkDly, 
-                                 digitizationDly, bunchClockCount,checkingEn,xmlWriteEn,0);
+                                 digitizationDly, bunchClockCount,true,xmlWriteEn,0);
             asic[x]->setCalibTime ( calCount, cal0Delay, cal1Delay, cal2Delay, cal3Delay, xmlWriteEn);
             asic[x]->setDacThreshRangeA ( rstThreshA, trigThreshA, xmlWriteEn);
             asic[x]->setDacThreshRangeB ( rstThreshB, trigThreshB, xmlWriteEn);
@@ -105,7 +105,7 @@ void KpixConfigXml::OnEndElement ( const char *name ) {
       currAsic = -1;
    }
    else if ( !strcmp(name, "kpixChanMode") ) currChannel = -1;
-   
+   strcpy (currVar, "" );
 } 
 
 // Set Defaults by parsing the xml file
@@ -225,6 +225,7 @@ void KpixConfigXml::OnCharacters ( const char *value ) {
          for(x=0; x<asicCnt; x++) asic[x]->setDacShaperBias ( (unsigned char)atoi(value), xmlWriteEn );
 
       // Store timings for later
+      else if ( !strcmp(currVar, "rstOnTime") ) rstOnTime = atoi(value);
       else if ( !strcmp(currVar, "rstOffTime") ) rstOffTime = atoi(value);
       else if ( !strcmp(currVar, "leakageNullOff") ) leakageNullOff = atoi(value);
       else if ( !strcmp(currVar, "offsetNullOff") ) offsetNullOff = atoi(value);
