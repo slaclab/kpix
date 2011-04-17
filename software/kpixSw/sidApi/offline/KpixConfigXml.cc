@@ -39,6 +39,7 @@ KpixConfigXml::KpixConfigXml () {
    asic        = NULL;
    asicCnt     = 0;
    xmlWriteEn  = 0;
+   clkPrd      = 0;
 }
 
 // Set Defaults by parsing the xml file
@@ -70,10 +71,11 @@ void KpixConfigXml::OnStartElement ( const char *name, const TList *attributes )
          asic[0]->getDacThreshRangeA ( &rstThreshA, &trigThreshA, 0);
          asic[0]->getDacThreshRangeB ( &rstThreshB, &trigThreshB, 0);
          asic[0]->getChannelModeArray ( modes, 0 );
+         if ( clkPrd == 0 ) clkPrd = tmpPrd;
       }
       else for ( x=0; x < asicCnt; x++ ) {
          if ( asic[x]->getAddress() == currAsic ) {
-            asic[x]->getTiming ( &clkPrd, &rstOnTime, &rstOffTime, &leakageNullOff, &offsetNullOff,
+            asic[x]->getTiming ( &tmpPrd, &rstOnTime, &rstOffTime, &leakageNullOff, &offsetNullOff,
                                  &threshOff, &trigInhibitOff, &pwrUpOn, &deselSequence, &bunchClkDly, 
                                  &digitizationDly, &bunchClockCount,0);
             asic[x]->getCalibTime ( &calCount, &cal0Delay, &cal1Delay, &cal2Delay, &cal3Delay, 0);
