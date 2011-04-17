@@ -251,8 +251,10 @@ void KpixConfigXml::OnCharacters ( const char *value ) {
       else if ( !strcmp(currVar, "trigThreshB") ) trigThreshB = atoi(value);
 
       // Channel modes for later
-      if ( currChannel == -1 ) for (x=0; x < 1024; x++) modes[x] = (KpixAsic::KpixChanMode)atoi(value); 
-      else modes[currChannel] = (KpixAsic::KpixChanMode)atoi(value); 
+      else if ( !strcmp(currVar, "kpixChanMode") ) {
+         if ( currChannel == -1 ) for (x=0; x < 1024; x++) modes[x] = (KpixAsic::KpixChanMode)atoi(value); 
+         else modes[currChannel] = (KpixAsic::KpixChanMode)atoi(value); 
+      }
    }
 }
 // Reads and stores the values for FPGA
@@ -334,7 +336,7 @@ void KpixConfigXml::writeConfig ( char *xmlFile, KpixFpga *fpga, KpixAsic **asic
       xml << "      <cntrlDisPwrCycle>" << asic[0]->getCntrlDisPwrCycle(0) << "</cntrlDisPwrCycle>\n";
       xml << "      <cntrlFeCurr>" << asic[0]->getCntrlFeCurr(0) << "</cntrlFeCurr>\n";
       xml << "      <cntrlDiffTime>" << asic[0]->getCntrlDiffTime(0) << "</cntrlDiffTime>\n";
-      xml << "      <cntrlHldTime>" << asic[0]->getCntrlHoldTime(0) << "</cntrlHldTime>\n";
+      xml << "      <cntrlHoldTime>" << asic[0]->getCntrlHoldTime(0) << "</cntrlHoldTime>\n";
       xml << "      <cntrlTrigDisable>" << asic[0]->getCntrlTrigDisable(0) << "</cntrlTrigDisable>\n";
       xml << "      <cntrlMonSrc>" << asic[0]->getCntrlMonSrc(0) << "</cntrlMonSrc>\n";
 
