@@ -90,6 +90,7 @@ KpixCalDist::KpixCalDist ( KpixAsic **asic, unsigned int count, KpixRunWrite *ru
    plotDir      = "Plots";
    kpixProgress = NULL;
    rateLimit    = 0;
+   highRange    = false;
    
    // THis should not happen
    if ( count == 0 ) throw(string("KpixCalDist::KpixCalDist -> Error: Asic Count Is Zero"));
@@ -152,6 +153,8 @@ void KpixCalDist::calDistDebug ( bool debug ) { this->enDebug = debug; }
 // Enable raw data
 void KpixCalDist::enableRawData( bool enable ) { this->rawDataEn = enable; }
 
+// Enable high range
+void KpixCalDist::enHighRange( bool enable ) { this->highRange = enable; }
 
 // Enable plots
 void KpixCalDist::enablePlots( bool enable ) { this->plotEn = enable; }
@@ -515,7 +518,7 @@ void KpixCalDist::runDistribution ( short channel ) {
 // Or pass -1 to set cal mask for all channels or -2 to set mask for no channels
 void KpixCalDist::runCalibration ( short channel ) {
 
-   unsigned int           x,gain;
+   unsigned int           x,gain, range;
    int                    cal;
    KpixBunchTrain         *train;
    KpixSample             *sample;
@@ -584,9 +587,9 @@ void KpixCalDist::runCalibration ( short channel ) {
    prgTotal = 0;
 
    // Compute total
-   if ( enNormal ) prgTotal++;
-   if ( enDouble ) prgTotal++;
-   if ( enLow    ) prgTotal++;
+   if ( enNormal ) prgTotal += (highRange)?2:1;
+   if ( enDouble ) prgTotal += (highRange)?2:1;
+   if ( enLow    ) prgTotal += (highRange)?2:1;
    prgTotal *= (((calStart-calEnd)/calStep)+1);
 
    // Init graph pointers
@@ -622,131 +625,139 @@ void KpixCalDist::runCalibration ( short channel ) {
       // Store gain variable
       kpixRunWrite->setEventVar("calDistGain",(double)gain);
 
-      // Loop through each calibration value
-      for ( cal=calStart; cal >= calEnd; cal-=calStep ) {
+      // Once for each calibration range
+      for ( range=0; range < ((highRange)?2:1); range++ ) {
 
-         // Set calibration DAC
-         for (x=0;x<kpixCount;x++) kpixAsic[x]->setDacCalib((unsigned char)cal);
-         kpixRunWrite->setEventVar("calibDac",(double)cal);
+         // Set high range for bucket 0
+         for (x=0;x<kpixCount;x++) kpixAsic[x]->setCntrlCalibHigh(range == 1);
 
-         // Get and store charges
-         kpixAsic[0]->getCalibCharges(charges);
-         kpixRunWrite->setEventVar("b0Charge",charges[0]);
-         kpixRunWrite->setEventVar("b1Charge",charges[1]);
-         kpixRunWrite->setEventVar("b2Charge",charges[2]);
-         kpixRunWrite->setEventVar("b3Charge",charges[3]);
+         // Loop through each calibration value
+         for ( cal=calStart; cal >= calEnd; cal-=calStep ) {
 
-         // Throttle acquistion if enabled
-         do {
+            // Set calibration DAC
+            for (x=0;x<kpixCount;x++) kpixAsic[x]->setDacCalib((unsigned char)cal);
+            kpixRunWrite->setEventVar("calibDac",(double)cal);
 
-            // Get Current acquisition time
-            gettimeofday(&curTime,NULL); 
+            // Get and store charges
+            kpixAsic[0]->getCalibCharges(charges);
+            kpixRunWrite->setEventVar("b0Charge",charges[0]);
+            kpixRunWrite->setEventVar("b1Charge",charges[1]);
+            kpixRunWrite->setEventVar("b2Charge",charges[2]);
+            kpixRunWrite->setEventVar("b3Charge",charges[3]);
 
-            // Difference in uS
-            secUs = 1000000 * (curTime.tv_sec - acqTime.tv_sec);
-            diff  = (secUs + curTime.tv_usec) - acqTime.tv_usec;
+            // Throttle acquistion if enabled
+            do {
 
-         } while ( rateLimit != 0 && diff < rateLimit );
-         acqTime.tv_sec  = curTime.tv_sec; 
-         acqTime.tv_usec = curTime.tv_usec; 
+               // Get Current acquisition time
+               gettimeofday(&curTime,NULL); 
 
-         // Start Calibration
-         errCnt = 0;
-         while (1) {
-            try {
-               kpixAsic[0]->cmdCalibrate(kpixCount > 1); // Broadcast for count > 1
-               train = new KpixBunchTrain ( kpixAsic[0]->getSidLink(), kpixAsic[0]->kpixDebug() );
-               break;
-            } catch (string error) {
-               if ( enDebug ) {
+               // Difference in uS
+               secUs = 1000000 * (curTime.tv_sec - acqTime.tv_sec);
+               diff  = (secUs + curTime.tv_usec) - acqTime.tv_usec;
 
-                  // Display error
-                  cout << "KpixCalDist::runCalibration -> ";
-                  cout << "Caught Error: " << error << "\n";
+            } while ( rateLimit != 0 && diff < rateLimit );
+            acqTime.tv_sec  = curTime.tv_sec; 
+            acqTime.tv_usec = curTime.tv_usec; 
+
+            // Start Calibration
+            errCnt = 0;
+            while (1) {
+               try {
+                  kpixAsic[0]->cmdCalibrate(kpixCount > 1); // Broadcast for count > 1
+                  train = new KpixBunchTrain ( kpixAsic[0]->getSidLink(), kpixAsic[0]->kpixDebug() );
+                  break;
+               } catch (string error) {
+                  if ( enDebug ) {
+
+                     // Display error
+                     cout << "KpixCalDist::runCalibration -> ";
+                     cout << "Caught Error: " << error << "\n";
+                  }
+
+                  // Count errors
+                  errCnt++;
+                  if ( errCnt == 5 )
+                     throw(string("KpixCalDist::runDistribution -> Too many errors. Giving Up"));
                }
-
-               // Count errors
-               errCnt++;
-               if ( errCnt == 5 )
-                  throw(string("KpixCalDist::runDistribution -> Too many errors. Giving Up"));
             }
-         }
 
-         // Fill histogram for each channel we have received data for
-         if ( plotEn ) {
+            // Fill histogram for each channel we have received data for
+            if ( plotEn ) {
 
-            // Get each sample value
-            for (x=0; x < train->getSampleCount(); x++) {
-               sample   = train->getSampleList()[x];
-               kpixAddr = sample->getKpixAddress();
-               chan     = sample->getKpixChannel();
-               bucket   = sample->getKpixBucket();
+               // Get each sample value
+               for (x=0; x < train->getSampleCount(); x++) {
+                  sample   = train->getSampleList()[x];
+                  kpixAddr = sample->getKpixAddress();
+                  chan     = sample->getKpixChannel();
+                  bucket   = sample->getKpixBucket();
 
-               if ( (unsigned int)kpixAddr > maxAddress )
-                  throw(string("KpixCalDist::runCalibration -> Data Received From Unkown KPIX Address"));
+                  if ( (unsigned int)kpixAddr > maxAddress )
+                     throw(string("KpixCalDist::runCalibration -> Data Received From Unkown KPIX Address"));
 
-               kpixIdx  = kpixIdxLookup[kpixAddr];
+                  kpixIdx  = kpixIdxLookup[kpixAddr];
 
-               // Channel matches target
-               if ( chan == channel || channel < 0 ) {
+                  // Channel matches target & bucket is correct
+                  if ( (chan == channel || channel < 0) && (range == 0 || bucket == 0)) {
 
-                  // Generate calibration index
-                  idx = kpixIdx*4096 + chan*4 + bucket;
-                  kpixAsic[kpixIdx]->getCalibCharges(charges);
+                     // Generate calibration index
+                     idx = kpixIdx*4096 + chan*4 + bucket;
+                     kpixAsic[kpixIdx]->getCalibCharges(charges);
 
-                  // Choose Range
-                  if ( sample->getSampleRange() ) {
+                     // Choose Range
+                     if ( sample->getSampleRange() ) {
 
-                     // Create data if it does not exist
-                     if ( dataR1[idx] == NULL ) dataR1[idx] = new KpixCalDistData();
+                        // Create data if it does not exist
+                        if ( dataR1[idx] == NULL ) dataR1[idx] = new KpixCalDistData();
 
-                     // Add point
-                     dataR1[idx]->xData[dataR1[idx]->count] = charges[bucket];
-                     dataR1[idx]->vData[dataR1[idx]->count] = sample->getSampleValue();
-                     dataR1[idx]->tData[dataR1[idx]->count] = sample->getSampleTime();
-                     dataR1[idx]->count++;
-                  } else {
+                        // Add point
+                        dataR1[idx]->xData[dataR1[idx]->count] = charges[bucket];
+                        dataR1[idx]->vData[dataR1[idx]->count] = sample->getSampleValue();
+                        dataR1[idx]->tData[dataR1[idx]->count] = sample->getSampleTime();
+                        dataR1[idx]->count++;
+                     } else {
 
-                     // Create data if it does not exist
-                     if ( dataR0[idx] == NULL ) dataR0[idx] = new KpixCalDistData();
+                        // Create data if it does not exist
+                        if ( dataR0[idx] == NULL ) dataR0[idx] = new KpixCalDistData();
 
-                     // Add point
-                     dataR0[idx]->xData[dataR0[idx]->count] = charges[bucket];
-                     dataR0[idx]->vData[dataR0[idx]->count] = sample->getSampleValue();
-                     dataR0[idx]->tData[dataR0[idx]->count] = sample->getSampleTime();
-                     dataR0[idx]->count++;
+                        // Add point
+                        dataR0[idx]->xData[dataR0[idx]->count] = charges[bucket];
+                        dataR0[idx]->vData[dataR0[idx]->count] = sample->getSampleValue();
+                        dataR0[idx]->tData[dataR0[idx]->count] = sample->getSampleTime();
+                        dataR0[idx]->count++;
+                     }
                   }
                }
             }
-         }
 
-         // Log event count
-         if ( enDebug && prgCount % 0x10 == 0) {
-            cout << "KpixCalDist::runCalibration -> ";
-            cout << "Channel=";
-            if ( channel == -1 ) cout << "All, ";
-            else if ( channel == -2 ) cout << "None, ";
-            else cout << "0x" << hex << setw(3) << setfill('0') << channel << ", ";
-            cout << "Mode=" << gain << ", ";
-            cout << "DAC4=0x" << hex << setw(2) << setfill('0') << cal;
+            // Log event count
+            if ( enDebug && prgCount % 0x10 == 0) {
+               cout << "KpixCalDist::runCalibration -> ";
+               cout << "Range=" << range << " ";
+               cout << "Channel=";
+               if ( channel == -1 ) cout << "All, ";
+               else if ( channel == -2 ) cout << "None, ";
+               else cout << "0x" << hex << setw(3) << setfill('0') << channel << ", ";
+               cout << "Mode=" << gain << ", ";
+               cout << "DAC4=0x" << hex << setw(2) << setfill('0') << cal;
 
-            // Display each buckets values
-            for (x=0; x < 4; x++) {
-               if ( (sample = train->getSample(kpixAsic[0]->getAddress(),channel,x)) != NULL )  {
-                  cout << ", 0x" << hex << setw(4) << setfill('0') << sample->getSampleValue();
-                  cout << ", 0x" << hex << setw(4) << setfill('0') << sample->getSampleTime();
+               // Display each buckets values
+               for (x=0; x < 4; x++) {
+                  if ( (sample = train->getSample(kpixAsic[0]->getAddress(),channel,x)) != NULL )  {
+                     cout << ", 0x" << hex << setw(4) << setfill('0') << sample->getSampleValue();
+                     cout << ", 0x" << hex << setw(4) << setfill('0') << sample->getSampleTime();
+                  }
                }
+               cout << "\n";
             }
-            cout << "\n";
+
+            // Add sample to run
+            if ( rawDataEn ) kpixRunWrite->addBunchTrain(train);
+            delete train;
+
+            // Update Progress
+            if ( kpixProgress != NULL && prgCount % 10 == 0) kpixProgress->updateProgress(prgCount,prgTotal);
+            prgCount++;
          }
-
-         // Add sample to run
-         if ( rawDataEn ) kpixRunWrite->addBunchTrain(train);
-         delete train;
-
-         // Update Progress
-         if ( kpixProgress != NULL && prgCount % 10 == 0) kpixProgress->updateProgress(prgCount,prgTotal);
-         prgCount++;
       }
       if ( kpixProgress != NULL ) kpixProgress->updateProgress(prgCount,prgTotal);
 

@@ -957,6 +957,10 @@ void KpixAsic::getStatus ( bool *cmdPerr, bool *dataPerr, bool *tempEn, unsigned
    }
 }
 
+//! Method to readback configuration & status from device
+void KpixAsic::readAll () {
+   for ( uint x=0; x < 0x80; x++ ) regRead ( x );
+}
 
 // Method to set testData mode in Config Register
 // Pass testData flag

@@ -140,6 +140,7 @@ void KpixGuiCalibrate::setEnabled ( bool enable ) {
    runTest->setEnabled(enable);
    stopTest->setEnabled(!enable);
    closeWindow->setEnabled(enable);
+   calHighRange->setEnabled(enable);
    if ( outDataFile == "" ) viewCalib->setEnabled(false);
    else viewCalib->setEnabled(enable);
 }
@@ -285,6 +286,9 @@ void KpixGuiCalibrate::run() {
 
          // Set Rate Limit
          kpixCalDist->setRateLimit(rateLimit);
+
+         // High range
+         kpixCalDist->enHighRange(calHighRange->isChecked());
 
          // Set calibration range
          kpixCalDist->setCalibRange (calMax->value(),calMin->value(),calStep->value());

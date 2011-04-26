@@ -321,6 +321,12 @@ bool KpixFpga::regGetBit ( unsigned char address, unsigned char bit, bool readEn
    return((temp & (1 << bit)) != 0);
 }
 
+//! Method to readback configuration & status from device
+void KpixFpga::readAll ( ) {
+   for (uint x=0; x< 0x40; x++) {
+      if ( regGetName(x) != "Unused" ) regRead(x);
+   }
+}
 
 // Method to return register name
 // Pass the register address

@@ -44,9 +44,9 @@ class KpixAsic;
 class KpixCalDistData {
    public:
       unsigned int count;
-      double       xData[256];   
-      double       vData[256];   
-      double       tData[256];   
+      double       xData[512];   
+      double       vData[512];   
+      double       tData[512];   
       KpixCalDistData() { count = 0; }
 };
 
@@ -64,6 +64,9 @@ class KpixCalDist {
 
       // Enable debug
       bool enDebug;
+
+      // Extended range for bucket 0
+      bool highRange;
 
       // Enables for each gain range
       bool enNormal;
@@ -128,6 +131,9 @@ class KpixCalDist {
 
       //! Enable/Disable double gain iteration
       void enDoubleGain ( bool enable );
+
+      //! Enable/Disable high range calibration for bucket 0
+      void enHighRange ( bool enable );
 
       //! Enable/Disable low gain iteration
       void enLowGain ( bool enable );

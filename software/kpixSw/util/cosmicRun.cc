@@ -22,6 +22,8 @@
 #include <KpixRunRead.h>
 #include <KpixConfigXml.h>
 #include <KpixCalibRead.h>
+#include <KpixSample.h>
+#include <SidLink.h>
 #include <SidLink.h>
 #include <iostream>
 #include <iomanip>
@@ -35,6 +37,30 @@ using namespace std;
 #define SERIAL   1001
 #define BASE_DIR "/u1/w_si/samples"
 #define DEFAULTS "cosmic_run.xml"
+
+class HistData {
+   public:
+      uint last;
+      uint count;
+      uint channel;
+
+      HistData (uint chan) {
+         last    = 0;
+         count   = 0;
+         channel = chan;
+      }
+
+      bool add (uint value) {
+         bool ret = false;
+         if ( value == last ) count++;
+         else {
+            if ( count > 10 ) ret = true;
+            last  = value;
+            count = 0;
+         }
+         return(ret);
+      }
+};
 
 // Global variable to catch cntrl-c
 bool gotCntrlC;
@@ -61,7 +87,10 @@ int main ( int argc, char **argv ) {
    unsigned int   x;
    unsigned int   errCnt;
    time_t         tm, lastTm;
+   stringstream   outDir;
    stringstream   outFile;
+   stringstream   cfgStart;
+   stringstream   cfgStop;
    unsigned int   triggers;
    unsigned int   cycles;
    char *         calFile;
@@ -69,7 +98,11 @@ int main ( int argc, char **argv ) {
    unsigned int   clkPeriod;
    char *         baseDir;
    unsigned int   kpixVersion;
+   unsigned int   channel;
+   unsigned int   value;
+   KpixSample     *sample;
    string         defaultFile;
+   HistData       *histData[1023];
 
    // Get settings
    if ( argc != 3 ) {
@@ -83,6 +116,9 @@ int main ( int argc, char **argv ) {
    clkPeriod   = atoi(getenv("KPIX_CLK_PER"));
    defaultFile = "cosmicRun.xml";
 
+   // Create records
+   for (channel=0; channel < 1024; channel++) histData[channel] = new HistData(channel);
+ 
    // Dump settings
    cout << "Using the following settings:" << endl;
    cout << "    serial: " << dec << serial << endl;
@@ -122,6 +158,10 @@ int main ( int argc, char **argv ) {
          kpixAsic[1]  = NULL;
          kpixRunWrite = NULL;
          trainData    = NULL;
+         outDir.str("");
+         outFile.str("");
+         cfgStart.str("");
+         cfgStop.str("");
 
          // Create simulation link
          sidLink = new SidLink();
@@ -142,15 +182,14 @@ int main ( int argc, char **argv ) {
          kpixAsic[1]->getStatus (&cmdPerr, &dataPerr, &tempEn, &tempValue);
 
          // Configure devices with xml defaults
-         kpixAsic[0]->kpixDebug(true);
          xmlConfig.readConfig ((char *)defaultFile.c_str(),kpixFpga,kpixAsic,2,true);
-         kpixAsic[0]->kpixDebug(false);
 
          // Generate file name
-         outFile.str("");
-         outFile << baseDir << "/" << KpixRunWrite::genTimestamp() << "_run";
-         mkdir(outFile.str().c_str(),0755);
-         outFile << "/run.root";
+         outDir << baseDir << "/" << KpixRunWrite::genTimestamp() << "_run";
+         mkdir(outDir.str().c_str(),0755);
+         outFile << outDir.str() << "/run.root";
+         cfgStart << outDir.str() << "/run_start.xml";
+         cfgStop << outDir.str() << "/run_stop.xml";
 
          // Create Run Write Class To Store Data & Settings
          kpixRunWrite = new KpixRunWrite (outFile.str(),"run","Cosmic Run",calString);
@@ -159,6 +198,9 @@ int main ( int argc, char **argv ) {
 
          // Copy calibration data
          calData->copyCalibData ( kpixRunWrite );
+
+         // Dump config
+         xmlConfig.writeConfig ((char *)cfgStart.str().c_str(), kpixFpga, kpixAsic, 2, true);
 
          time(&tm);
          cout << "Starting Run at " << ctime(&tm);
@@ -178,6 +220,18 @@ int main ( int argc, char **argv ) {
             trainData = new KpixBunchTrain ( sidLink, false);
             kpixRunWrite->addBunchTrain(trainData);
 
+            // Check first 8 channels for duplicating data
+            for (x=0; x < trainData->getSampleCount(); x++) {
+               sample = trainData->getSampleList()[x];
+               channel = sample->getKpixChannel();
+               value   = sample->getSampleValue();
+               if ( histData[channel]->add(value) ) {
+                  cout << endl << "Detected fixed value in channel " << dec << channel << endl;
+                  break;
+                  gotCntrlC = true;
+               }
+            }
+
             if ( trainData->getSampleCount() > 0 ) triggers++;
             cycles++;
 
@@ -193,6 +247,7 @@ int main ( int argc, char **argv ) {
                lastTm = tm;
             }
          }
+         errCnt = 0;
 
       } catch(string error) { 
          time(&tm);
@@ -200,30 +255,26 @@ int main ( int argc, char **argv ) {
          cout << error << endl;
          errCnt++;
 
-         // Clean up
-         if ( trainData != NULL ) delete trainData;
-         if ( kpixRunWrite != NULL ) delete kpixRunWrite;
-         if ( kpixAsic[0] != NULL ) delete kpixAsic[0];
-         if ( kpixAsic[1] != NULL ) delete kpixAsic[1];
-         if ( kpixFpga    != NULL ) delete kpixFpga;
-         if ( sidLink     != NULL ) delete sidLink;
-         sidLink      = NULL;
-         kpixFpga     = NULL;
-         kpixAsic[0]  = NULL;
-         kpixAsic[1]  = NULL;
-         kpixRunWrite = NULL;
-         trainData    = NULL;
       }
    }
-
    cout << endl << "Run stopped at " << ctime(&tm);
 
+   // Dump settings
+   if ( kpixFpga != NULL && kpixAsic[0] != NULL && kpixAsic[1] != NULL && cfgStop.str() != "" ) 
+      xmlConfig.writeConfig ((char *)cfgStop.str().c_str(), kpixFpga, kpixAsic, 2,true);
+
    // Clean up
-   if ( trainData    != NULL ) delete trainData;
+   if ( trainData != NULL ) delete trainData;
    if ( kpixRunWrite != NULL ) delete kpixRunWrite;
-   if ( kpixAsic[0]  != NULL ) delete kpixAsic[0];
-   if ( kpixAsic[1]  != NULL ) delete kpixAsic[1];
-   if ( kpixFpga     != NULL ) delete kpixFpga;
-   if ( sidLink      != NULL ) delete sidLink;
+   if ( kpixAsic[0] != NULL ) delete kpixAsic[0];
+   if ( kpixAsic[1] != NULL ) delete kpixAsic[1];
+   if ( kpixFpga    != NULL ) delete kpixFpga;
+   if ( sidLink     != NULL ) delete sidLink;
+   sidLink      = NULL;
+   kpixFpga     = NULL;
+   kpixAsic[0]  = NULL;
+   kpixAsic[1]  = NULL;
+   kpixRunWrite = NULL;
+   trainData    = NULL;
 }
 

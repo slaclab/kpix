@@ -57,7 +57,7 @@ class KpixConfigXml : public TSAXParser {
       void readConfig ( char *xmlFile, KpixAsic **KpixAsic, unsigned int asicCount, int writeEn );
       
       // Function to dump the settings in an XML file
-      void writeConfig ( char *xmlFile, KpixFpga *fpga, KpixAsic **asic, unsigned int asicCount);
+      void writeConfig ( char *xmlFile, KpixFpga *fpga, KpixAsic **asic, unsigned int asicCount, bool readEn=false );
       
       ClassDef(KpixConfigXml,1)
 };
