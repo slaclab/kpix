@@ -293,81 +293,77 @@ void KpixConfigXml::writeConfig ( char *xmlFile, KpixFpga *fpga, KpixAsic **asic
 
    xml.open(xmlFile);
    if ( ! xml.is_open() ) cout << "Error opening " << xmlFile << "\n";
-   xml << "<read_config>\n";
+   xml << "<dump_config>\n";
    
    if (fpga != NULL) {
 
-      if ( readEn ) fpga->readAll();
-
       xml << "   <fpga>\n";
-      xml << "      <fpgaVersion>" << fpga->getVersion(0) << "</fpgaVersion>\n";
-      xml << "      <fpgaJumpers>" << fpga->getJumpers(0) << "</fpgaJumpers>\n";
-      xml << "      <csumErrors>" << (int)fpga->getCheckSumErrors(0) << "</csumErrors>\n";
-      xml << "      <rspParErrors>" << (int)fpga->getRspParErrors(0) << "</rspParErrors>\n";
-      xml << "      <dataParErrors>" << (int)fpga->getDataParErrors(0) << "</dataParErrors>\n";
-      xml << "      <trainNumber>" << fpga->getTrainNumber(0) << "</trainNumber>\n";
-      xml << "      <deadCount>" << fpga->getDeadCount(0) << "</deadCount>\n";
-      xml << "      <clkPrd>" << fpga->getClockPeriod(0) << "</clkPrd>\n";
-      xml << "      <clkPrdDig>" << fpga->getClockPeriodDig(0) << "</clkPrdDig>\n";
-      xml << "      <clkPrdRd>" << fpga->getClockPeriodRead(0) << "</clkPrdRd>\n";
-      xml << "      <clkPrdIdle>" << fpga->getClockPeriodIdle(0) << "</clkPrdIdle>\n";
-      xml << "      <bncSrcA>" << fpga->getBncSourceA(0) << "</bncSrcA>\n";
-      xml << "      <bncSrcB>" << fpga->getBncSourceB(0) << "</bncSrcB>\n";
-      xml << "      <dropData>" << fpga->getDropData(0) << "</dropData>\n";
-      xml << "      <rawData>" << fpga->getRawData(0) << "</rawData>\n";
-      xml << "      <disKpixA>" << fpga->getDisKpixA(0) << "</disKpixA>\n";
-      xml << "      <disKpixB>" << fpga->getDisKpixB(0) << "</disKpixB>\n";
-      xml << "      <disKpixC>" << fpga->getDisKpixC(0) << "</disKpixC>\n";
-      xml << "      <disKpixD>" << fpga->getDisKpixD(0) << "</disKpixD>\n";
-      xml << "      <runSrc>" << fpga->getExtRunSource(0) << "</runSrc>\n";
-      xml << "      <runDly>" << fpga->getExtRunDelay(0) << "</runDly>\n";
-      xml << "      <runType>" << fpga->getExtRunType(0) << "</runType>\n";
-      xml << "      <extRec>" << fpga->getExtRecord(0) << "</extRec>\n";
-      xml << "      <trigEn>" << (int)(fpga->getTrigEnable(0)) << "</trigEn>\n";
-      xml << "      <trigExpand>" << (int)(fpga->getTrigExpand(0)) << "</trigExpand>\n";
-      xml << "      <trigSrc>" << fpga->getTrigSource(0) << "</trigSrc>\n";
-      xml << "      <calDly>" << (int)(fpga->getCalDelay(0)) << "</calDly>\n";
+      xml << "      <fpgaVersion>" << fpga->getVersion() << "</fpgaVersion>\n";
+      xml << "      <fpgaJumpers>" << fpga->getJumpers() << "</fpgaJumpers>\n";
+      xml << "      <csumErrors>" << (int)fpga->getCheckSumErrors() << "</csumErrors>\n";
+      xml << "      <rspParErrors>" << (int)fpga->getRspParErrors() << "</rspParErrors>\n";
+      xml << "      <dataParErrors>" << (int)fpga->getDataParErrors() << "</dataParErrors>\n";
+      xml << "      <trainNumber>" << fpga->getTrainNumber() << "</trainNumber>\n";
+      xml << "      <deadCount>" << fpga->getDeadCount() << "</deadCount>\n";
+      xml << "      <clkPrd>" << fpga->getClockPeriod() << "</clkPrd>\n";
+      xml << "      <clkPrdDig>" << fpga->getClockPeriodDig() << "</clkPrdDig>\n";
+      xml << "      <clkPrdRd>" << fpga->getClockPeriodRead() << "</clkPrdRd>\n";
+      xml << "      <clkPrdIdle>" << fpga->getClockPeriodIdle() << "</clkPrdIdle>\n";
+      xml << "      <bncSrcA>" << fpga->getBncSourceA() << "</bncSrcA>\n";
+      xml << "      <bncSrcB>" << fpga->getBncSourceB() << "</bncSrcB>\n";
+      xml << "      <dropData>" << fpga->getDropData() << "</dropData>\n";
+      xml << "      <rawData>" << fpga->getRawData() << "</rawData>\n";
+      xml << "      <disKpixA>" << fpga->getDisKpixA() << "</disKpixA>\n";
+      xml << "      <disKpixB>" << fpga->getDisKpixB() << "</disKpixB>\n";
+      xml << "      <disKpixC>" << fpga->getDisKpixC() << "</disKpixC>\n";
+      xml << "      <disKpixD>" << fpga->getDisKpixD() << "</disKpixD>\n";
+      xml << "      <runSrc>" << fpga->getExtRunSource() << "</runSrc>\n";
+      xml << "      <runDly>" << fpga->getExtRunDelay() << "</runDly>\n";
+      xml << "      <runType>" << fpga->getExtRunType() << "</runType>\n";
+      xml << "      <extRec>" << fpga->getExtRecord() << "</extRec>\n";
+      xml << "      <trigEn>" << (int)(fpga->getTrigEnable()) << "</trigEn>\n";
+      xml << "      <trigExpand>" << (int)(fpga->getTrigExpand()) << "</trigExpand>\n";
+      xml << "      <trigSrc>" << fpga->getTrigSource() << "</trigSrc>\n";
+      xml << "      <calDly>" << (int)(fpga->getCalDelay()) << "</calDly>\n";
       xml << "   </fpga>\n";
    }
 
    // Each ASIC
    for (x=0; x < asicCount; x++) {
 
-      if ( readEn ) asic[x]->readAll();
-
-      asic[x]->getStatus (&cmdPerr, &dataPerr, &tempEn, &tempValue,0 );
+      asic[x]->getStatus (&cmdPerr, &dataPerr, &tempEn, &tempValue );
 
       xml << "   <asic id=\"" << asic[x]->getAddress() << "\">\n";
       xml << "      <cmdPerr>" << cmdPerr << "</cmdPerr>\n";
       xml << "      <dataPerr>" << dataPerr << "</dataPerr>\n";
       xml << "      <tempEn>" << tempEn << "</tempEn>\n";
       xml << "      <tempIdValue>" << (int)tempValue << "</tempIdValue>\n";
-      xml << "      <cfgTstData>" << asic[x]->getCfgTestData(0) << "</cfgTstData>\n";
-      xml << "      <cfgAutoReadDis>" << asic[x]->getCfgAutoReadDis(0) << "</cfgAutoReadDis>\n";
-      xml << "      <cfgForceTemp>" << asic[x]->getCfgForceTemp(0) << "</cfgForceTemp>\n";
-      xml << "      <cfgDisableTemp>" << asic[x]->getCfgDisableTemp(0) << "</cfgDisableTemp>\n";
-      xml << "      <cfgAutoStatus>" << asic[x]->getCfgAutoStatus(0) << "</cfgAutoStatus>\n";
-      xml << "      <cntrlCalibHigh>" << asic[x]->getCntrlCalibHigh(0) << "</cntrlCalibHigh>\n";
-      xml << "      <cntrlCalDacInt>" << asic[x]->getCntrlCalDacInt(0) << "</cntrlCalDacInt>\n";
-      xml << "      <cntrlForceLowGain>" << asic[x]->getCntrlForceLowGain(0) << "</cntrlForceLowGain>\n";
-      xml << "      <cntrlLeakNullDis>" << asic[x]->getCntrlLeakNullDis(0) << "</cntrlLeakNullDis>\n";
-      xml << "      <cntrlDoubleGain>" << asic[x]->getCntrlDoubleGain(0) << "</cntrlDoubleGain>\n";
-      xml << "      <cntrlNearNeighbor>" << asic[x]->getCntrlNearNeighbor(0) << "</cntrlNearNeighbor>\n";
-      xml << "      <cntrlPosPixel>" << asic[x]->getCntrlPosPixel(0) << "</cntrlPosPixel>\n";
-      xml << "      <cntrlDisPerRst>" << asic[x]->getCntrlDisPerRst(0) << "</cntrlDisPerRst>\n";
-      xml << "      <cntrlEnDcRst>" << asic[x]->getCntrlEnDcRst(0) << "</cntrlEnDcRst>\n";
-      xml << "      <cntrlCalSrc>" << asic[x]->getCntrlCalSrc(0) << "</cntrlCalSrc>\n";
-      xml << "      <cntrlTrigSrc>" << asic[x]->getCntrlTrigSrc(0) << "</cntrlTrigSrc>\n";
-      xml << "      <cntrlShortIntEn>" << asic[x]->getCntrlShortIntEn(0) << "</cntrlShortIntEn>\n";
-      xml << "      <cntrlDisPwrCycle>" << asic[x]->getCntrlDisPwrCycle(0) << "</cntrlDisPwrCycle>\n";
-      xml << "      <cntrlFeCurr>" << asic[x]->getCntrlFeCurr(0) << "</cntrlFeCurr>\n";
-      xml << "      <cntrlDiffTime>" << asic[x]->getCntrlDiffTime(0) << "</cntrlDiffTime>\n";
-      xml << "      <cntrlHoldTime>" << asic[x]->getCntrlHoldTime(0) << "</cntrlHoldTime>\n";
-      xml << "      <cntrlTrigDisable>" << asic[x]->getCntrlTrigDisable(0) << "</cntrlTrigDisable>\n";
-      xml << "      <cntrlMonSrc>" << asic[x]->getCntrlMonSrc(0) << "</cntrlMonSrc>\n";
+      xml << "      <cfgTstData>" << asic[x]->getCfgTestData() << "</cfgTstData>\n";
+      xml << "      <cfgAutoReadDis>" << asic[x]->getCfgAutoReadDis() << "</cfgAutoReadDis>\n";
+      xml << "      <cfgForceTemp>" << asic[x]->getCfgForceTemp() << "</cfgForceTemp>\n";
+      xml << "      <cfgDisableTemp>" << asic[x]->getCfgDisableTemp() << "</cfgDisableTemp>\n";
+      xml << "      <cfgAutoStatus>" << asic[x]->getCfgAutoStatus() << "</cfgAutoStatus>\n";
+      xml << "      <cntrlCalibHigh>" << asic[x]->getCntrlCalibHigh() << "</cntrlCalibHigh>\n";
+      xml << "      <cntrlCalDacInt>" << asic[x]->getCntrlCalDacInt() << "</cntrlCalDacInt>\n";
+      xml << "      <cntrlForceLowGain>" << asic[x]->getCntrlForceLowGain() << "</cntrlForceLowGain>\n";
+      xml << "      <cntrlLeakNullDis>" << asic[x]->getCntrlLeakNullDis() << "</cntrlLeakNullDis>\n";
+      xml << "      <cntrlDoubleGain>" << asic[x]->getCntrlDoubleGain() << "</cntrlDoubleGain>\n";
+      xml << "      <cntrlNearNeighbor>" << asic[x]->getCntrlNearNeighbor() << "</cntrlNearNeighbor>\n";
+      xml << "      <cntrlPosPixel>" << asic[x]->getCntrlPosPixel() << "</cntrlPosPixel>\n";
+      xml << "      <cntrlDisPerRst>" << asic[x]->getCntrlDisPerRst() << "</cntrlDisPerRst>\n";
+      xml << "      <cntrlEnDcRst>" << asic[x]->getCntrlEnDcRst() << "</cntrlEnDcRst>\n";
+      xml << "      <cntrlCalSrc>" << asic[x]->getCntrlCalSrc() << "</cntrlCalSrc>\n";
+      xml << "      <cntrlTrigSrc>" << asic[x]->getCntrlTrigSrc() << "</cntrlTrigSrc>\n";
+      xml << "      <cntrlShortIntEn>" << asic[x]->getCntrlShortIntEn() << "</cntrlShortIntEn>\n";
+      xml << "      <cntrlDisPwrCycle>" << asic[x]->getCntrlDisPwrCycle() << "</cntrlDisPwrCycle>\n";
+      xml << "      <cntrlFeCurr>" << asic[x]->getCntrlFeCurr() << "</cntrlFeCurr>\n";
+      xml << "      <cntrlDiffTime>" << asic[x]->getCntrlDiffTime() << "</cntrlDiffTime>\n";
+      xml << "      <cntrlHoldTime>" << asic[x]->getCntrlHoldTime() << "</cntrlHoldTime>\n";
+      xml << "      <cntrlTrigDisable>" << asic[x]->getCntrlTrigDisable() << "</cntrlTrigDisable>\n";
+      xml << "      <cntrlMonSrc>" << asic[x]->getCntrlMonSrc() << "</cntrlMonSrc>\n";
 
       asic[x]->getTiming ( &clkPrd, &rstOnTime, &rstOffTime, &leakageNullOff, &offsetNullOff,
-          &threshOff, &trigInhibitOff, &pwrUpOn, &deselSequence, &bunchClkDly, &digitizationDly, &bunchClockCount,0);
+          &threshOff, &trigInhibitOff, &pwrUpOn, &deselSequence, &bunchClkDly, &digitizationDly, &bunchClockCount);
       xml << "      <rstOnTime>" << rstOnTime << "</rstOnTime>\n";
       xml << "      <rstOffTime>" << rstOffTime << "</rstOffTime>\n";
       xml << "      <leakageNullOff>" << leakageNullOff << "</leakageNullOff>\n";
@@ -380,34 +376,34 @@ void KpixConfigXml::writeConfig ( char *xmlFile, KpixFpga *fpga, KpixAsic **asic
       xml << "      <digitizationDly>" << digitizationDly << "</digitizationDly>\n";
       xml << "      <bunchClockCount>" << bunchClockCount << "</bunchClockCount>\n";
 
-      xml << "      <dacCalib>" <<  (int)(asic[x]->getDacCalib(0)) << "</dacCalib>\n";
-      xml << "      <dacRampThresh>" <<  (int)(asic[x]->getDacRampThresh(0)) << "</dacRampThresh>\n";
-      xml << "      <dacRangeThresh>" << (int)(asic[x]->getDacRangeThresh(0)) << "</dacRangeThresh>\n";
-      xml << "      <dacDefaultAnalog>" << (int)(asic[x]->getDacDefaultAnalog(0)) << "</dacDefaultAnalog>\n";
-      xml << "      <dacEventThreshRef>" <<  (int)(asic[x]->getDacEventThreshRef(0)) << "</dacEventThreshRef>\n";
-      xml << "      <dacShaperBias>" << (int)(asic[x]->getDacShaperBias(0)) << "</dacShaperBias>\n";
+      xml << "      <dacCalib>" <<  (int)(asic[x]->getDacCalib()) << "</dacCalib>\n";
+      xml << "      <dacRampThresh>" <<  (int)(asic[x]->getDacRampThresh()) << "</dacRampThresh>\n";
+      xml << "      <dacRangeThresh>" << (int)(asic[x]->getDacRangeThresh()) << "</dacRangeThresh>\n";
+      xml << "      <dacDefaultAnalog>" << (int)(asic[x]->getDacDefaultAnalog()) << "</dacDefaultAnalog>\n";
+      xml << "      <dacEventThreshRef>" <<  (int)(asic[x]->getDacEventThreshRef()) << "</dacEventThreshRef>\n";
+      xml << "      <dacShaperBias>" << (int)(asic[x]->getDacShaperBias()) << "</dacShaperBias>\n";
 
-      asic[x]->getCalibTime ( &calCount, &cal0Delay, &cal1Delay, &cal2Delay, &cal3Delay, 0);
+      asic[x]->getCalibTime ( &calCount, &cal0Delay, &cal1Delay, &cal2Delay, &cal3Delay);
       xml << "      <calCount>" << calCount << "</calCount>\n";
       xml << "      <cal0Delay>" << cal0Delay << "</cal0Delay>\n";
       xml << "      <cal1Delay>" << cal1Delay << "</cal1Delay>\n";
       xml << "      <cal2Delay>" << cal2Delay << "</cal2Delay>\n";
       xml << "      <cal3Delay>" << cal3Delay << "</cal3Delay>\n";
 
-      asic[x]->getDacThreshRangeA ( &rstThreshA, &trigThreshA, 0);
+      asic[x]->getDacThreshRangeA ( &rstThreshA, &trigThreshA);
       xml << "      <rstThreshA>" << (int)rstThreshA << "</rstThreshA>\n";
       xml << "      <trigThreshA>" << (int)trigThreshA << "</trigThreshA>\n";
 
-      asic[x]->getDacThreshRangeB ( &rstThreshB, &trigThreshB, 0);
+      asic[x]->getDacThreshRangeB ( &rstThreshB, &trigThreshB);
       xml << "      <rstThreshB>" << (int)rstThreshB << "</rstThreshB>\n";
       xml << "      <trigThreshB>" << (int)trigThreshB << "</trigThreshB>\n";
 
-      asic[x]->getChannelModeArray ( modes, 0 );
+      asic[x]->getChannelModeArray ( modes );
       for (y=0; y<1024; y++) {
          xml << "      <kpixChanMode id=\""<< y <<"\">" << modes[y] << "</kpixChanMode>\n";
       }
       xml << "   </asic>\n";
    }
-   xml << "</read_config>\n";
+   xml << "</dump_config>\n";
    xml.close();
 }

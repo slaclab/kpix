@@ -124,7 +124,7 @@ int main ( int argc, char **argv ) {
  
    // Dump settings
    cout << "Using the following settings:" << endl;
-   cout << "   address: " << dec << serial << endl;
+   cout << "   address: " << dec << address << endl;
    cout << "    serial: " << dec << serial << endl;
    cout << "   calFile: " << calFile << endl;
    cout << "   version: " << dec << kpixVersion << endl;

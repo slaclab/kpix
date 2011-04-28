@@ -1038,19 +1038,6 @@ void KpixAsic::getStatus ( bool *cmdPerr, bool *dataPerr, bool *tempEn, unsigned
    }
 }
 
-//! Method to readback configuration & status from device
-void KpixAsic::readAll () {
-   for ( uint x=0; x < 0x80; x++ ) regRead ( x );
-}
-
-//! Method to verify configuration of device
-void KpixAsic::verifyAll () {
-   for ( uint x=0; x < 0x80; x++ ) {
-      regVerify ( x );
-      regVerify ( x );
-   }
-}
-
 // Method to set testData mode in Config Register
 // Pass testData flag
 // Set writeEn to false to disable real write to KPIX

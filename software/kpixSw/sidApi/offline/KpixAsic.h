@@ -339,12 +339,6 @@ class KpixAsic : public TObject {
       void getStatus ( bool *cmdPerr, bool *dataPerr, 
                        bool *tempEn, unsigned char *tempValue, bool readEn = true );
 
-      //! Method to readback configuration & status from device
-      void readAll ( );
-
-      //! Method to verify configuration of device
-      void verifyAll ( );
-
       //! Method to set testData mode in Config Register
       /*! Pass testData flag
       Set writeEn to false to disable real write to KPIX

@@ -186,9 +186,6 @@ class KpixFpga : public TObject {
       // read    = Flag to perform actual write
       bool regGetBit ( unsigned char address, unsigned char bit, bool readEn=true);
 
-      //! Method to readback configuration & status from device
-      void readAll ( );
-
       // Method to return register name
       // Pass the register address
       std::string regGetName ( unsigned char address );
