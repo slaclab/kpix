@@ -95,6 +95,7 @@ int main ( int argc, char **argv ) {
    unsigned int   cycles;
    char *         calFile;
    unsigned int   serial;
+   unsigned int   address;
    unsigned int   clkPeriod;
    char *         baseDir;
    unsigned int   kpixVersion;
@@ -103,14 +104,16 @@ int main ( int argc, char **argv ) {
    KpixSample     *sample;
    string         defaultFile;
    HistData       *histData[1023];
+   stringstream   error;
 
    // Get settings
-   if ( argc != 3 ) {
-      cout << "Usage: cosmicRun serial cal_file" << endl;
+   if ( argc != 4 ) {
+      cout << "Usage: cosmicRun address serial cal_file" << endl;
       return(1);
    }
-   serial      = atoi(argv[1]);
-   calFile     = argv[2];
+   address     = atoi(argv[1]);
+   serial      = atoi(argv[2]);
+   calFile     = argv[3];
    kpixVersion = atoi(getenv("KPIX_VERSION"));
    baseDir     = getenv("KPIX_BASE_DIR");
    clkPeriod   = atoi(getenv("KPIX_CLK_PER"));
@@ -121,6 +124,7 @@ int main ( int argc, char **argv ) {
  
    // Dump settings
    cout << "Using the following settings:" << endl;
+   cout << "   address: " << dec << serial << endl;
    cout << "    serial: " << dec << serial << endl;
    cout << "   calFile: " << calFile << endl;
    cout << "   version: " << dec << kpixVersion << endl;
@@ -143,14 +147,6 @@ int main ( int argc, char **argv ) {
    errCnt    = 0;
    gotCntrlC = false;
    while ( ! gotCntrlC ) {
-
-      // Stop if things are unrecoverable
-      if ( errCnt > 10 ) {
-         time(&tm);
-         cout << "Could not recover error state. Giving up at " << ctime(&tm);
-         break;
-      }
-
       try {
          sidLink      = NULL;
          kpixFpga     = NULL;
@@ -172,7 +168,7 @@ int main ( int argc, char **argv ) {
          kpixFpga->setDefaults(clkPeriod,(kpixVersion<10));
 
          // Create the KPIX Devices
-         kpixAsic[0] = new KpixAsic(sidLink,kpixVersion,2,serial,false);
+         kpixAsic[0] = new KpixAsic(sidLink,kpixVersion,address,serial,false);
          kpixAsic[0]->setDefaults(50);
          kpixAsic[1] = new KpixAsic(sidLink,kpixVersion,3,0,true);
          kpixAsic[1]->setDefaults(50);
@@ -226,9 +222,9 @@ int main ( int argc, char **argv ) {
                channel = sample->getKpixChannel();
                value   = sample->getSampleValue();
                if ( histData[channel]->add(value) ) {
-                  cout << endl << "Detected fixed value in channel " << dec << channel << endl;
-                  break;
-                  gotCntrlC = true;
+                  error.str("");
+                  error << "Detected fixed value in channel " << dec << channel;
+                  throw(error.str());
                }
             }
 
@@ -246,35 +242,47 @@ int main ( int argc, char **argv ) {
                cout << flush;
                lastTm = tm;
             }
+            errCnt = 0;
          }
-         errCnt = 0;
-
       } catch(string error) { 
          time(&tm);
          cout << endl << "Got Error at " << ctime(&tm);
          cout << error << endl;
          errCnt++;
-
+         sleep(2);
       }
+      cout << endl << "Run stopped at " << ctime(&tm);
+
+      // Dump settings
+      try {
+         if ( kpixFpga != NULL && kpixAsic[0] != NULL && kpixAsic[1] != NULL && cfgStop.str() != "" ) 
+            xmlConfig.writeConfig ((char *)cfgStop.str().c_str(), kpixFpga, kpixAsic, 2,true);
+      } catch(string error) { 
+         cout << "Error reading back settings" << endl;
+         sleep(2);
+      }
+
+      // Clean up
+      if ( trainData != NULL ) delete trainData;
+      if ( kpixRunWrite != NULL ) delete kpixRunWrite;
+      if ( kpixAsic[0] != NULL ) delete kpixAsic[0];
+      if ( kpixAsic[1] != NULL ) delete kpixAsic[1];
+      if ( kpixFpga    != NULL ) delete kpixFpga;
+      if ( sidLink     != NULL ) delete sidLink;
+      sidLink      = NULL;
+      kpixFpga     = NULL;
+      kpixAsic[0]  = NULL;
+      kpixAsic[1]  = NULL;
+      kpixRunWrite = NULL;
+      trainData    = NULL;
+
+      // Stop if things are unrecoverable
+      if ( errCnt > 10 ) {
+         time(&tm);
+         cout << "Could not recover error state. Giving up at " << ctime(&tm);
+         gotCntrlC = true;
+      }
+      else sleep(5);
    }
-   cout << endl << "Run stopped at " << ctime(&tm);
-
-   // Dump settings
-   if ( kpixFpga != NULL && kpixAsic[0] != NULL && kpixAsic[1] != NULL && cfgStop.str() != "" ) 
-      xmlConfig.writeConfig ((char *)cfgStop.str().c_str(), kpixFpga, kpixAsic, 2,true);
-
-   // Clean up
-   if ( trainData != NULL ) delete trainData;
-   if ( kpixRunWrite != NULL ) delete kpixRunWrite;
-   if ( kpixAsic[0] != NULL ) delete kpixAsic[0];
-   if ( kpixAsic[1] != NULL ) delete kpixAsic[1];
-   if ( kpixFpga    != NULL ) delete kpixFpga;
-   if ( sidLink     != NULL ) delete sidLink;
-   sidLink      = NULL;
-   kpixFpga     = NULL;
-   kpixAsic[0]  = NULL;
-   kpixAsic[1]  = NULL;
-   kpixRunWrite = NULL;
-   trainData    = NULL;
 }
 

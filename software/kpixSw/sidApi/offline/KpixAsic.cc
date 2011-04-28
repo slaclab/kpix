@@ -220,6 +220,81 @@ void KpixAsic::regRead ( unsigned char address ) {
 }
 
 
+// Private method to verify register setting
+void KpixAsic::regVerify ( unsigned char address ) {
+
+#ifdef ONLINE_EN
+   unsigned short frameWrData[4];
+   unsigned short frameRdData[4];
+   unsigned int   rdValue;
+   stringstream   error;
+
+   // Check for valid address
+   if ( address >= 0x80 ) throw string("KpixAsic::regVerify -> Address out of range");
+
+   // Don't read if reg width is zero or is not writable
+   if ( regWidth[address] != 0 && regWriteable[address] ) {
+
+      // Link has not been set
+      if ( sidLink == NULL ) throw string("KpixAsic::regVerify -> KPIX Link Not Open");
+
+      // Debug read start
+      if ( enDebug ) cout << "KpixAsic::regVerify -> Kpix Address=0x" << setw(4) << setfill('0') 
+           << hex << kpixAddress << ", Reading '" << regGetName(address) << "' (0x"
+         << hex << setw(2) << setfill('0') << (int)address << ")\n";
+
+      // Format command, word 0
+      frameWrData[0]  = (address & 0x007F);
+      frameWrData[0] |= 0x0100; // Reg Access
+      frameWrData[0] |= ((kpixAddress << 9) & 0x0600);
+
+      // word 1 & 2 are 0
+      frameWrData[1] = 0;
+      frameWrData[2] = 0;
+
+      // Checksum 
+      frameWrData[3] = frameWrData[0];
+
+      // Write data
+      sidLink->linkKpixWrite(frameWrData,4);
+
+      // Read response data
+      sidLink->linkKpixRead(frameRdData,4);
+
+      // Check for checksum error
+      if ( frameRdData[3] != ((frameRdData[2] + frameRdData[1] + frameRdData[0]) & 0xFFFF) ) 
+         throw string("KpixAsic::regVerify -> Checksum Error");
+
+      // Mark sure first word matches
+      if ( frameRdData[0] != frameWrData[0] )
+         throw string("KpixAsic::regVerify -> Command Data Mismatch");
+
+      // Update read data
+      rdValue  = (frameRdData[1] & 0x0000FFFF);
+      rdValue |= ((frameRdData[2] << 16) & 0xFFFF0000);
+
+      // Debug read
+      if ( enDebug ) cout << "KpixAsic::regVerify -> Kpix Address=0x" << setw(4) 
+         << setfill('0') << hex << kpixAddress << ", Read '" << regGetName(address)
+         << "' (0x" << hex << setw(2) << setfill('0') << (int)address << ") Exp=0x" 
+         << setw(8) << setfill('0') << hex << (int)regData[address] 
+         << " Got=0x" << setw(8) << setfill('0') << hex << (int)rdValue << "\n";
+
+      // Compare 
+      if ( regData[address] != rdValue ) {
+         error.str("");
+         error << "KpixAsic::regVerify -> Verify Error Kpix Address=0x" << setw(4) 
+         << setfill('0') << hex << kpixAddress << ", Read '" << regGetName(address)
+         << "' (0x" << hex << setw(2) << setfill('0') << (int)address << ") Exp=0x" 
+         << setw(8) << setfill('0') << hex << (int)regData[address] 
+         << " Got=0x" << setw(8) << setfill('0') << hex << (int)rdValue;
+         throw(error.str());
+      }
+   }
+#endif
+}
+
+
 // Private method to write timing settings for versions 0-7
 void KpixAsic::setTimingV7 ( unsigned int clkPeriod,  unsigned int resetOn,
                              unsigned int resetOff,   unsigned int leakNullOff,
@@ -768,7 +843,7 @@ void KpixAsic::cmdCalibrate ( bool bcast ) { sendCommand(0x03,bcast); }
 // value   = 32-Bit register value
 // writeEn = Flag to perform actual write
 // Function will auto adjust for register width
-void KpixAsic::regSetValue ( unsigned char address, unsigned int value, bool writeEn ) {
+void KpixAsic::regSetValue ( unsigned char address, unsigned int value, bool writeEn, bool verifyEn ) {
 
    // Check for valid address
    if ( address >= 0x80 ) throw string("KpixAsic::regSetValue -> Address out of range");
@@ -793,7 +868,13 @@ void KpixAsic::regSetValue ( unsigned char address, unsigned int value, bool wri
       }
 
       // Write register if write flag is set
-      if ( writeEn ) regWrite ( address );
+      if ( writeEn ) {
+         regWrite ( address );
+         if ( verifyEn ) {
+            regVerify(address);
+            regVerify(address);
+         }
+      }
    }
 }
 
@@ -828,7 +909,7 @@ unsigned int KpixAsic::regGetValue ( unsigned char address, bool readEn ) {
 // value   = Value to set, true or false
 // writeEn = Flag to perform actual write
 // Function will auto adjust for register width
-void KpixAsic::regSetBit ( unsigned char address, unsigned char bit, bool value, bool writeEn){
+void KpixAsic::regSetBit ( unsigned char address, unsigned char bit, bool value, bool writeEn, bool verifyEn){
 
    // Get current value from shadow register, don't read from device
    unsigned int temp = regGetValue(address,false);
@@ -840,7 +921,7 @@ void KpixAsic::regSetBit ( unsigned char address, unsigned char bit, bool value,
    else temp &= ((1 << bit) ^ 0xFFFFFFFF);
 
    // Set new value
-   regSetValue ( address, temp, writeEn );
+   regSetValue ( address, temp, writeEn, verifyEn );
 }
 
 
@@ -960,6 +1041,14 @@ void KpixAsic::getStatus ( bool *cmdPerr, bool *dataPerr, bool *tempEn, unsigned
 //! Method to readback configuration & status from device
 void KpixAsic::readAll () {
    for ( uint x=0; x < 0x80; x++ ) regRead ( x );
+}
+
+//! Method to verify configuration of device
+void KpixAsic::verifyAll () {
+   for ( uint x=0; x < 0x80; x++ ) {
+      regVerify ( x );
+      regVerify ( x );
+   }
 }
 
 // Method to set testData mode in Config Register

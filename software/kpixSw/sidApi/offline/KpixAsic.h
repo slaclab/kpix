@@ -122,6 +122,11 @@ class KpixAsic : public TObject {
 		*/
       void regRead (unsigned char address);
 
+      //! Private method to verify register setting
+		/*!
+		*/
+      void regVerify (unsigned char address);
+
       //! Private method to write timing settings for versions 0-7
 		/*!
 		*/
@@ -275,12 +280,13 @@ class KpixAsic : public TObject {
 
       //! Method to set register value
       /*! Pass the following values
-      address = Register address
-      value   = 32-Bit register value
-      writeEn = Flag to perform actual write
+      address  = Register address
+      value    = 32-Bit register value
+      writeEn  = Flag to perform actual write
+      verifyEn = Flag to verify write
       Function will auto adjust for register width
 		*/
-      void regSetValue ( unsigned char address, unsigned int value, bool writeEn=true );
+      void regSetValue ( unsigned char address, unsigned int value, bool writeEn=true, bool verifyEn=true );
 
       //! Method to get register value
       /*! Pass the following values
@@ -292,13 +298,14 @@ class KpixAsic : public TObject {
 
       //! Method to set register bit
       /*! Pass the following values
-      address = Register address
-      bit     = Bit to set
-      value   = Value to set, true or false
-      writeEn = Flag to perform actual write
+      address  = Register address
+      bit      = Bit to set
+      value    = Value to set, true or false
+      writeEn  = Flag to perform actual write
+      verifyEn = Flag to verify write
       Function will auto adjust for register width
 		*/
-      void regSetBit ( unsigned char address, unsigned char bit, bool value, bool writeEn=true);
+      void regSetBit ( unsigned char address, unsigned char bit, bool value, bool writeEn=true, bool verifyEn=true);
 
       //! Method to get register bit
       /*! Pass the following values
@@ -334,6 +341,9 @@ class KpixAsic : public TObject {
 
       //! Method to readback configuration & status from device
       void readAll ( );
+
+      //! Method to verify configuration of device
+      void verifyAll ( );
 
       //! Method to set testData mode in Config Register
       /*! Pass testData flag

@@ -286,7 +286,6 @@ void KpixConfigXml::readConfig ( char *xmlFile, KpixAsic **kpixAsic, unsigned in
 void KpixConfigXml::writeConfig ( char *xmlFile, KpixFpga *fpga, KpixAsic **asic, unsigned int asicCount, bool readEn ) {
    unsigned int           x,y;
    ofstream               xml;
-   KpixAsic::KpixChanMode modeDef;
    bool                   cmdPerr;
    bool                   dataPerr; 
    bool                   tempEn;
@@ -405,7 +404,7 @@ void KpixConfigXml::writeConfig ( char *xmlFile, KpixFpga *fpga, KpixAsic **asic
 
       asic[x]->getChannelModeArray ( modes, 0 );
       for (y=0; y<1024; y++) {
-         if (modes[y] != modeDef) xml << "      <kpixChanMode id=\""<< x <<"\">" << modes[y] << "</kpixChanMode>\n";
+         xml << "      <kpixChanMode id=\""<< y <<"\">" << modes[y] << "</kpixChanMode>\n";
       }
       xml << "   </asic>\n";
    }

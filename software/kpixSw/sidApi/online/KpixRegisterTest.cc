@@ -109,8 +109,8 @@ bool KpixRegisterTest::runTest () {
          if ( kpixAsic->regGetWriteable(x) ) {
 
             // Kpix 9, force disable power cycle to be set
-            if ( kpixAsic->getVersion() == 9 && x == 0x30 ) kpixAsic->regSetValue(x,rand()|0x01000000,true);
-            else kpixAsic->regSetValue(x,rand(),true);
+            if ( kpixAsic->getVersion() == 9 && x == 0x30 ) kpixAsic->regSetValue(x,rand()|0x01000000,true,false);
+            else kpixAsic->regSetValue(x,rand(),true,false);
 
             if ( enDebug ) cout << "KpixRegisterTest::runTest -> Writing Register 0x" 
                << setw(2) << setfill('0') << hex << x << ". Value 0x"
@@ -177,7 +177,7 @@ bool KpixRegisterTest::runTest () {
                   }
 
                   // Set expected value back 
-                  kpixAsic->regSetValue(y,temp,false);
+                  kpixAsic->regSetValue(y,temp,false,false);
 
                   // End on error is set
                   if ( endOnError ) {
