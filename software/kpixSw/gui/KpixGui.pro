@@ -109,15 +109,6 @@ IMAGES	= images/editcopy \
 	images/editpaste_2 \
 	images/searchfind_2
 
-QMAKE_CFLAGS   += -m32
-QMAKE_CXXFLAGS += -m32
-QMAKE_LFLAGS   += -m32
-
-
-
-
-
-
 
 TARGET  = kpixGui
 DESTDIR = ../bin
