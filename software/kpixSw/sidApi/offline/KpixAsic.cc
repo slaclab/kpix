@@ -318,7 +318,8 @@ void KpixAsic::setTimingV7 ( unsigned int clkPeriod,  unsigned int resetOn,
    stringstream error;
 
    // Store clock period
-   this->clkPeriod = clkPeriod;
+   this->clkPeriod &= 0xFFFF0000;
+   this->clkPeriod |= (clkPeriod & 0xFFFF);
 
    // Trigger inhibit mode
    if ( ! trigInhRaw ) trigInhOff = bunchClkDly + (clkPeriod * 8 * trigInhOff) + clkPeriod;
@@ -456,7 +457,7 @@ void KpixAsic::getTimingV7 ( unsigned int *clkPeriod,  unsigned int *resetOn,
    stringstream error;
 
    // Store clock period
-   *clkPeriod = this->clkPeriod;
+   *clkPeriod = (this->clkPeriod & 0xFFFF);
 
    // Read register value
    for (i=0; i<8; i++) temp[i] = regGetValue(0x08+i,readEn);
@@ -544,7 +545,8 @@ void KpixAsic::setTimingV8 ( unsigned int clkPeriod,  unsigned int resetOn,
    }
 
    // Store clock period
-   this->clkPeriod = clkPeriod;
+   this->clkPeriod &= 0xFFFF0000;
+   this->clkPeriod |= (clkPeriod & 0xFFFF);
 
    // Trigger inhibit mode
    if ( ! trigInhRaw ) trigInhOff = bunchClkDly + (clkPeriod * 8 * trigInhOff) + clkPeriod;
@@ -637,7 +639,7 @@ void KpixAsic::getTimingV8 ( unsigned int *clkPeriod,  unsigned int *resetOn,
    }
 
    // Store clock period
-   *clkPeriod = this->clkPeriod;
+   *clkPeriod = (this->clkPeriod & 0xFFFF);
 
    // Read register value
    for (i=0; i<6; i++) temp[i] = regGetValue(0x08+i,readEn);
@@ -687,7 +689,7 @@ KpixAsic::KpixAsic ( ) {
    kpixVersion = 0;
    kpixAddress = 0;
    kpixSerial  = 0;
-   clkPeriod   = 1;
+   clkPeriod   = 50;
    enDebug     = false;
 
 #ifdef ONLINE_EN
@@ -720,7 +722,7 @@ KpixAsic::KpixAsic ( SidLink *sidLink, unsigned short version, unsigned short ad
    kpixVersion = version;
    kpixAddress = address;
    kpixSerial  = serial;
-   clkPeriod   = 1;
+   clkPeriod   = 50;
    enDebug     = false;
 
    // SID Link Object
@@ -870,7 +872,7 @@ void KpixAsic::regSetValue ( unsigned char address, unsigned int value, bool wri
       // Write register if write flag is set
       if ( writeEn ) {
          regWrite ( address );
-         if ( verifyEn ) {
+         if ( verifyEn && (clkPeriod & 0x80000000) == 0) {
             regVerify(address);
             regVerify(address);
          }
@@ -1976,7 +1978,7 @@ unsigned int KpixAsic::getTrigInh ( bool readEn, bool trigInhRaw ) {
    unsigned int bunchClkDly;
 
    // Store clock period
-   clkPeriod = this->clkPeriod;
+   clkPeriod = this->clkPeriod & 0xFFFF;
 
    // Version 0-7
    if ( kpixVersion <= 7 ) {
@@ -2850,6 +2852,13 @@ void KpixAsic::kpixDebug ( bool debug ) {
 
    // Local debug flag
    enDebug = debug;
+}
+
+
+// Disable register verification
+void KpixAsic::disableVerify ( bool disable ) { 
+   clkPeriod &= 0x7FFFFFFF;
+   if ( disable ) clkPeriod |= 0x80000000;
 }
 
 

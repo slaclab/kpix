@@ -90,6 +90,7 @@ class KpixAsic : public TObject {
       unsigned short kpixVersion;
 
       // Clock period used for timing
+      // Bit 31 used as register verify disable flag, set to 1 to disable verify
       unsigned int clkPeriod;
 
       // Register values & configuration
@@ -957,6 +958,9 @@ class KpixAsic : public TObject {
 
       // Turn on or off debugging for the class
       void kpixDebug ( bool debug );
+
+      // Disable register verify
+      void disableVerify ( bool disable );
 
       // Get debug flag
       bool kpixDebug ( );

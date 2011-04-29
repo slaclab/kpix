@@ -535,6 +535,9 @@ void KpixCalDist::runCalibration ( short channel ) {
    struct timeval         curTime, acqTime;
    unsigned long          diff, secUs;
 
+   // Disable Verify
+   for (x=0;x<kpixCount;x++) kpixAsic[x]->disableVerify(true);
+
    // Set Plot Directory
    if ( plotEn ) {
       gErrorIgnoreLevel = 5000; 
@@ -676,8 +679,10 @@ void KpixCalDist::runCalibration ( short channel ) {
 
                   // Count errors
                   errCnt++;
-                  if ( errCnt == 5 )
-                     throw(string("KpixCalDist::runDistribution -> Too many errors. Giving Up"));
+                  if ( errCnt == 5 ) {
+                     for (x=0;x<kpixCount;x++) kpixAsic[x]->disableVerify(false);
+                     throw(string("KpixCalDist::runCalibration -> Too many errors. Giving Up"));
+                  }
                }
             }
 
@@ -857,6 +862,10 @@ void KpixCalDist::runCalibration ( short channel ) {
    // Debug if enabled
    if ( enDebug )
       cout << "KpixCalDist::runCalibration -> Calibration Done\n";
+
+   // Re-enable verification
+   for (x=0;x<kpixCount;x++) kpixAsic[x]->disableVerify(false);
+
 }
 
 
