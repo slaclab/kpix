@@ -9,7 +9,7 @@
             <x>0</x>
             <y>0</y>
             <width>612</width>
-            <height>719</height>
+            <height>693</height>
         </rect>
     </property>
     <property name="caption">
@@ -263,12 +263,12 @@ Changing Settings</string>
     </widget>
     <widget class="QPushButton">
         <property name="name">
-            <cstring>calSetBrowse</cstring>
+            <cstring>baseDirBrowse</cstring>
         </property>
         <property name="geometry">
             <rect>
                 <x>520</x>
-                <y>640</y>
+                <y>580</y>
                 <width>70</width>
                 <height>28</height>
             </rect>
@@ -277,36 +277,49 @@ Changing Settings</string>
             <string>Browse</string>
         </property>
     </widget>
-    <widget class="QPushButton">
+    <widget class="QLineEdit">
         <property name="name">
-            <cstring>loadSettings</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>120</x>
-                <y>670</y>
-                <width>100</width>
-                <height>30</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Load Settings</string>
-        </property>
-    </widget>
-    <widget class="QPushButton">
-        <property name="name">
-            <cstring>clearFile</cstring>
+            <cstring>baseDirBox</cstring>
         </property>
         <property name="geometry">
             <rect>
                 <x>10</x>
-                <y>670</y>
-                <width>90</width>
-                <height>30</height>
+                <y>580</y>
+                <width>490</width>
+                <height>23</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>560</y>
+                <width>110</width>
+                <height>20</height>
             </rect>
         </property>
         <property name="text">
-            <string>Clear File</string>
+            <string>&lt;p align="left"&gt;Data Directory:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>calSetBrowse</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>520</x>
+                <y>620</y>
+                <width>70</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Browse</string>
         </property>
     </widget>
     <widget class="QLineEdit">
@@ -316,7 +329,7 @@ Changing Settings</string>
         <property name="geometry">
             <rect>
                 <x>10</x>
-                <y>640</y>
+                <y>630</y>
                 <width>490</width>
                 <height>23</height>
             </rect>
@@ -329,58 +342,13 @@ Changing Settings</string>
         <property name="geometry">
             <rect>
                 <x>10</x>
-                <y>620</y>
+                <y>610</y>
                 <width>190</width>
                 <height>20</height>
             </rect>
         </property>
         <property name="text">
             <string>&lt;p align="left"&gt;Calibration &amp; Settings File:&lt;/p&gt;</string>
-        </property>
-    </widget>
-    <widget class="QLabel">
-        <property name="name">
-            <cstring>textLabel1</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>10</x>
-                <y>570</y>
-                <width>110</width>
-                <height>20</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>&lt;p align="left"&gt;Data Directory:&lt;/p&gt;</string>
-        </property>
-    </widget>
-    <widget class="QLineEdit">
-        <property name="name">
-            <cstring>baseDirBox</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>10</x>
-                <y>590</y>
-                <width>490</width>
-                <height>23</height>
-            </rect>
-        </property>
-    </widget>
-    <widget class="QPushButton">
-        <property name="name">
-            <cstring>baseDirBrowse</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>520</x>
-                <y>590</y>
-                <width>70</width>
-                <height>28</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Browse</string>
         </property>
     </widget>
     <widget class="QPushButton">
@@ -390,7 +358,7 @@ Changing Settings</string>
         <property name="geometry">
             <rect>
                 <x>240</x>
-                <y>670</y>
+                <y>660</y>
                 <width>110</width>
                 <height>30</height>
             </rect>
@@ -401,12 +369,44 @@ Changing Settings</string>
     </widget>
     <widget class="QPushButton">
         <property name="name">
+            <cstring>clearFile</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>660</y>
+                <width>90</width>
+                <height>30</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Clear File</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>loadSettings</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>120</x>
+                <y>660</y>
+                <width>100</width>
+                <height>30</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Load Settings</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
             <cstring>quit</cstring>
         </property>
         <property name="geometry">
             <rect>
                 <x>490</x>
-                <y>680</y>
+                <y>660</y>
                 <width>100</width>
                 <height>30</height>
             </rect>

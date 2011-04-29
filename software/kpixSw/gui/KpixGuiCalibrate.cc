@@ -396,57 +396,62 @@ void KpixGuiCalibrate::run() {
 
             // Run calibration once for each channel
             for (x=chanMin->value(); x <= (unsigned int)chanMax->value(); x++) { 
+               int row = x % 32;
 
-               // Force Trigger
-               if ( enRun && calForceTrig->isChecked() ) {
+               // GEM option limits channels
+               if ( !gemOnly->isChecked() || ( row == 0 || row == 1 || row == 30 || row == 31 ) ) {
 
-                  // Generate new status
-                  temp.str("");
-                  temp << "Running Calibration, Force Trigger, ";
-                  temp << "Channel " << dec << setw(2) << setfill(' ') << x;
-                  temp << " Of " << dec << setw(2) << setfill(' ') << chanMax->value();
+                  // Force Trigger
+                  if ( enRun && calForceTrig->isChecked() ) {
 
-                  // Update status display
-                  event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusPrgMain,
-                                                 temp.str(), mainProgress,mainTotal);
-                  QApplication::postEvent(this,event);
+                     // Generate new status
+                     temp.str("");
+                     temp << "Running Calibration, Force Trigger, ";
+                     temp << "Channel " << dec << setw(2) << setfill(' ') << x;
+                     temp << " Of " << dec << setw(2) << setfill(' ') << chanMax->value();
 
-                  // First calibrate with forced trigger
-                  if ( verbose->isChecked() ) cout << "Forced Trigger Calibration" << endl;
-                  kpixCalDist->setPlotDir("Force_Trig");
-                  kpixRunWrite->setEventVar ( "ForceTrig",1.0 );
-                  for(y=0; y<asicCnt; y++) {
-                     asic[y]->setCntrlTrigSrc ( KpixAsic::KpixInternal );
-                     asic[y]->setCntrlTrigDisable ( true );
+                     // Update status display
+                     event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusPrgMain,
+                                                    temp.str(), mainProgress,mainTotal);
+                     QApplication::postEvent(this,event);
+
+                     // First calibrate with forced trigger
+                     if ( verbose->isChecked() ) cout << "Forced Trigger Calibration" << endl;
+                     kpixCalDist->setPlotDir("Force_Trig");
+                     kpixRunWrite->setEventVar ( "ForceTrig",1.0 );
+                     for(y=0; y<asicCnt; y++) {
+                        asic[y]->setCntrlTrigSrc ( KpixAsic::KpixInternal );
+                        asic[y]->setCntrlTrigDisable ( true );
+                     }
+                     kpixCalDist->runCalibration ( x );
+                     mainProgress++;
                   }
-                  kpixCalDist->runCalibration ( x );
-                  mainProgress++;
-               }
 
-               // Self Trigger
-               if ( enRun && calSelfTrig->isChecked() ) {
+                  // Self Trigger
+                  if ( enRun && calSelfTrig->isChecked() ) {
 
-                  // Generate new status
-                  temp.str("");
-                  temp << "Running Calibration, Self Trigger, ";
-                  temp << "Channel " << dec << setw(2) << setfill(' ') << x;
-                  temp << " Of " << dec << setw(2) << setfill(' ') << chanMax->value();
+                     // Generate new status
+                     temp.str("");
+                     temp << "Running Calibration, Self Trigger, ";
+                     temp << "Channel " << dec << setw(2) << setfill(' ') << x;
+                     temp << " Of " << dec << setw(2) << setfill(' ') << chanMax->value();
 
-                  // Update status display
-                  event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusPrgMain,
-                                                 temp.str(), mainProgress,mainTotal);
-                  QApplication::postEvent(this,event);
+                     // Update status display
+                     event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusPrgMain,
+                                                    temp.str(), mainProgress,mainTotal);
+                     QApplication::postEvent(this,event);
 
-                  // Next calibrate with self trigger
-                  if ( verbose->isChecked() ) cout << "Self Trigger Calibration" << endl;
-                  kpixCalDist->setPlotDir("Self_Trig");
-                  kpixRunWrite->setEventVar ( "ForceTrig",0.0 );
-                  for(y=0; y<asicCnt; y++) {
-                     asic[y]->setCntrlTrigSrc ( KpixAsic::KpixDisable );
-                     asic[y]->setCntrlTrigDisable ( false );
+                     // Next calibrate with self trigger
+                     if ( verbose->isChecked() ) cout << "Self Trigger Calibration" << endl;
+                     kpixCalDist->setPlotDir("Self_Trig");
+                     kpixRunWrite->setEventVar ( "ForceTrig",0.0 );
+                     for(y=0; y<asicCnt; y++) {
+                        asic[y]->setCntrlTrigSrc ( KpixAsic::KpixDisable );
+                        asic[y]->setCntrlTrigDisable ( false );
+                     }
+                     kpixCalDist->runCalibration ( x );
+                     mainProgress++;
                   }
-                  kpixCalDist->runCalibration ( x );
-                  mainProgress++;
                }
             }
          }

@@ -9,28 +9,12 @@
             <x>0</x>
             <y>0</y>
             <width>1119</width>
-            <height>789</height>
+            <height>711</height>
         </rect>
     </property>
     <property name="caption">
         <string>KPIX Calibration / Distribution Fitter</string>
     </property>
-    <widget class="QPushButton">
-        <property name="name">
-            <cstring>inFileBrowse</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>710</x>
-                <y>710</y>
-                <width>93</width>
-                <height>28</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Browse</string>
-        </property>
-    </widget>
     <widget class="QLabel">
         <property name="name">
             <cstring>textLabel1_3_2</cstring>
@@ -45,96 +29,6 @@
         </property>
         <property name="text">
             <string>&lt;p align="center"&gt;Data Directory&lt;/p&gt;</string>
-        </property>
-    </widget>
-    <widget class="QPushButton">
-        <property name="name">
-            <cstring>inFileOpen</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>820</x>
-                <y>710</y>
-                <width>60</width>
-                <height>28</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Open</string>
-        </property>
-    </widget>
-    <widget class="QPushButton">
-        <property name="name">
-            <cstring>inFileClose</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>900</x>
-                <y>710</y>
-                <width>60</width>
-                <height>28</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Close</string>
-        </property>
-    </widget>
-    <widget class="QLabel">
-        <property name="name">
-            <cstring>textLabel1</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>10</x>
-                <y>710</y>
-                <width>140</width>
-                <height>20</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>&lt;p align="right"&gt;Input Calibration File:&lt;/p&gt;</string>
-        </property>
-    </widget>
-    <widget class="QLabel">
-        <property name="name">
-            <cstring>textLabel1_2</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>10</x>
-                <y>750</y>
-                <width>140</width>
-                <height>20</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>&lt;p align="right"&gt;Output Calibration File:&lt;/p&gt;</string>
-        </property>
-    </widget>
-    <widget class="QLineEdit">
-        <property name="name">
-            <cstring>inFile</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>150</x>
-                <y>710</y>
-                <width>540</width>
-                <height>23</height>
-            </rect>
-        </property>
-    </widget>
-    <widget class="QLineEdit">
-        <property name="name">
-            <cstring>outFile</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>150</x>
-                <y>750</y>
-                <width>540</width>
-                <height>23</height>
-            </rect>
         </property>
     </widget>
     <widget class="QPushButton">
@@ -182,586 +76,206 @@
             </rect>
         </property>
     </widget>
-    <widget class="QPushButton">
+    <widget class="QCheckBox">
         <property name="name">
-            <cstring>outFileBrowse</cstring>
+            <cstring>reFitEn</cstring>
         </property>
         <property name="geometry">
             <rect>
-                <x>710</x>
-                <y>750</y>
-                <width>93</width>
-                <height>28</height>
+                <x>140</x>
+                <y>50</y>
+                <width>100</width>
+                <height>21</height>
             </rect>
         </property>
         <property name="text">
-            <string>Browse</string>
+            <string>Re-Fit Plots</string>
         </property>
     </widget>
-    <widget class="QPushButton">
+    <widget class="QCheckBox">
         <property name="name">
-            <cstring>closeWindow</cstring>
+            <cstring>logScale</cstring>
         </property>
         <property name="geometry">
             <rect>
-                <x>990</x>
-                <y>750</y>
-                <width>120</width>
-                <height>28</height>
+                <x>140</x>
+                <y>70</y>
+                <width>100</width>
+                <height>21</height>
             </rect>
         </property>
         <property name="text">
-            <string>Close Window</string>
+            <string>Log Scale</string>
         </property>
     </widget>
-    <widget class="QPushButton">
+    <widget class="QLabel">
         <property name="name">
-            <cstring>writePdf</cstring>
+            <cstring>textLabel1_2_3</cstring>
         </property>
         <property name="geometry">
             <rect>
-                <x>990</x>
-                <y>710</y>
-                <width>120</width>
-                <height>28</height>
+                <x>140</x>
+                <y>90</y>
+                <width>100</width>
+                <height>20</height>
             </rect>
         </property>
         <property name="text">
-            <string>Write Plot To PDF</string>
+            <string>&lt;p align="center"&gt;Gain&lt;/p&gt;</string>
         </property>
     </widget>
-    <widget class="QPushButton">
+    <widget class="QLabel">
         <property name="name">
-            <cstring>fitSaveAll</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>820</x>
-                <y>750</y>
-                <width>140</width>
-                <height>28</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Fit and Save All</string>
-        </property>
-        <property name="accel">
-            <string></string>
-        </property>
-    </widget>
-    <widget class="QProgressBar">
-        <property name="name">
-            <cstring>progressBar</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>20</x>
-                <y>670</y>
-                <width>220</width>
-                <height>24</height>
-            </rect>
-        </property>
-        <property name="frameShadow">
-            <enum>Plain</enum>
-        </property>
-    </widget>
-    <widget class="QTabWidget">
-        <property name="name">
-            <cstring>calTab</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>250</x>
-                <y>0</y>
-                <width>860</width>
-                <height>700</height>
-            </rect>
-        </property>
-        <widget class="QWidget">
-            <property name="name">
-                <cstring>tab</cstring>
-            </property>
-            <attribute name="title">
-                <string>Summary Table</string>
-            </attribute>
-            <widget class="QTable">
-                <property name="name">
-                    <cstring>summaryTable</cstring>
-                </property>
-                <property name="geometry">
-                    <rect>
-                        <x>0</x>
-                        <y>0</y>
-                        <width>860</width>
-                        <height>670</height>
-                    </rect>
-                </property>
-                <property name="numRows">
-                    <number>3</number>
-                </property>
-                <property name="numCols">
-                    <number>3</number>
-                </property>
-                <property name="readOnly">
-                    <bool>true</bool>
-                </property>
-            </widget>
-        </widget>
-        <widget class="QWidget">
-            <property name="name">
-                <cstring>tab</cstring>
-            </property>
-            <attribute name="title">
-                <string>Summary Plot</string>
-            </attribute>
-            <widget class="TQtWidget">
-                <property name="name">
-                    <cstring>summaryCanvas</cstring>
-                </property>
-                <property name="geometry">
-                    <rect>
-                        <x>0</x>
-                        <y>0</y>
-                        <width>860</width>
-                        <height>670</height>
-                    </rect>
-                </property>
-            </widget>
-        </widget>
-        <widget class="QWidget">
-            <property name="name">
-                <cstring>TabPage</cstring>
-            </property>
-            <attribute name="title">
-                <string>Calibration Plot</string>
-            </attribute>
-            <widget class="TQtWidget">
-                <property name="name">
-                    <cstring>calibCanvas</cstring>
-                </property>
-                <property name="geometry">
-                    <rect>
-                        <x>0</x>
-                        <y>0</y>
-                        <width>860</width>
-                        <height>670</height>
-                    </rect>
-                </property>
-            </widget>
-        </widget>
-        <widget class="QWidget">
-            <property name="name">
-                <cstring>TabPage</cstring>
-            </property>
-            <attribute name="title">
-                <string>Histogram Plot</string>
-            </attribute>
-            <widget class="TQtWidget">
-                <property name="name">
-                    <cstring>histCanvas</cstring>
-                </property>
-                <property name="geometry">
-                    <rect>
-                        <x>-2</x>
-                        <y>-6</y>
-                        <width>860</width>
-                        <height>680</height>
-                    </rect>
-                </property>
-            </widget>
-        </widget>
-    </widget>
-    <widget class="QGroupBox">
-        <property name="name">
-            <cstring>groupBox3</cstring>
+            <cstring>textLabel1_2_2</cstring>
         </property>
         <property name="geometry">
             <rect>
                 <x>10</x>
-                <y>580</y>
-                <width>230</width>
-                <height>80</height>
+                <y>90</y>
+                <width>100</width>
+                <height>20</height>
             </rect>
         </property>
-        <property name="title">
-            <string>Histogram Fit Results</string>
+        <property name="text">
+            <string>&lt;p align="center"&gt;KPIX Serial&lt;/p&gt;</string>
         </property>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel1_3_5</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>10</x>
-                    <y>30</y>
-                    <width>60</width>
-                    <height>20</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>&lt;p align="center"&gt;Mean&lt;/p&gt;</string>
-            </property>
-        </widget>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel1_3_5_2</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>80</x>
-                    <y>30</y>
-                    <width>60</width>
-                    <height>20</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>&lt;p align="center"&gt;Sigma&lt;/p&gt;</string>
-            </property>
-        </widget>
-        <widget class="QLineEdit">
-            <property name="name">
-                <cstring>histMean</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>10</x>
-                    <y>50</y>
-                    <width>60</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                    <pointsize>8</pointsize>
-                </font>
-            </property>
-            <property name="text">
-                <string>0</string>
-            </property>
-            <property name="readOnly">
-                <bool>true</bool>
-            </property>
-        </widget>
-        <widget class="QLineEdit">
-            <property name="name">
-                <cstring>histSigma</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>80</x>
-                    <y>50</y>
-                    <width>60</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                    <pointsize>8</pointsize>
-                </font>
-            </property>
-            <property name="text">
-                <string>0</string>
-            </property>
-            <property name="readOnly">
-                <bool>true</bool>
-            </property>
-        </widget>
-        <widget class="QLineEdit">
-            <property name="name">
-                <cstring>histRms</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>150</x>
-                    <y>50</y>
-                    <width>60</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                    <pointsize>8</pointsize>
-                </font>
-            </property>
-            <property name="text">
-                <string>0</string>
-            </property>
-            <property name="readOnly">
-                <bool>true</bool>
-            </property>
-        </widget>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel1_3_5_2_2</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>150</x>
-                    <y>30</y>
-                    <width>60</width>
-                    <height>20</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>&lt;p align="center"&gt;RMS&lt;/p&gt;</string>
-            </property>
-        </widget>
     </widget>
-    <widget class="QGroupBox">
+    <widget class="QComboBox">
         <property name="name">
-            <cstring>groupBox2</cstring>
+            <cstring>selSerial</cstring>
         </property>
         <property name="geometry">
             <rect>
                 <x>10</x>
-                <y>430</y>
-                <width>230</width>
-                <height>140</height>
+                <y>110</y>
+                <width>100</width>
+                <height>23</height>
             </rect>
         </property>
-        <property name="title">
-            <string>Calibration Fit Results</string>
+    </widget>
+    <widget class="QComboBox">
+        <item>
+            <property name="text">
+                <string>Normal</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Double</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Low</string>
+            </property>
+        </item>
+        <property name="name">
+            <cstring>selGain</cstring>
         </property>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel1_3_4_4</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>20</x>
-                    <y>20</y>
-                    <width>50</width>
-                    <height>20</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>&lt;p align="right"&gt;Range:&lt;/p&gt;</string>
-            </property>
-        </widget>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel1_3_3</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>140</x>
-                    <y>20</y>
-                    <width>70</width>
-                    <height>20</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>&lt;p align="center"&gt;Low&lt;/p&gt;</string>
-            </property>
-        </widget>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel1_3</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>70</x>
-                    <y>20</y>
-                    <width>60</width>
-                    <height>20</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>&lt;p align="center"&gt;High&lt;/p&gt;</string>
-            </property>
-        </widget>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel1_3_4</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>10</x>
-                    <y>50</y>
-                    <width>40</width>
-                    <height>20</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>&lt;p align="right"&gt;Gain:&lt;/p&gt;</string>
-            </property>
-        </widget>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel1_3_4_2</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>10</x>
-                    <y>80</y>
-                    <width>41</width>
-                    <height>20</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>&lt;p align="right"&gt;Icept:&lt;/p&gt;</string>
-            </property>
-        </widget>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel1_3_4_3</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>10</x>
-                    <y>110</y>
-                    <width>41</width>
-                    <height>20</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>&lt;p align="right"&gt;RMS:&lt;/p&gt;</string>
-            </property>
-        </widget>
-        <widget class="QLineEdit">
-            <property name="name">
-                <cstring>highRms</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>50</x>
-                    <y>110</y>
-                    <width>80</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                    <pointsize>8</pointsize>
-                </font>
-            </property>
-            <property name="text">
-                <string>0</string>
-            </property>
-            <property name="readOnly">
-                <bool>true</bool>
-            </property>
-        </widget>
-        <widget class="QLineEdit">
-            <property name="name">
-                <cstring>highIcept</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>50</x>
-                    <y>80</y>
-                    <width>80</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                    <pointsize>8</pointsize>
-                </font>
-            </property>
-            <property name="text">
-                <string>0</string>
-            </property>
-            <property name="readOnly">
-                <bool>true</bool>
-            </property>
-        </widget>
-        <widget class="QLineEdit">
-            <property name="name">
-                <cstring>highGain</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>50</x>
-                    <y>50</y>
-                    <width>80</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                    <pointsize>8</pointsize>
-                </font>
-            </property>
-            <property name="text">
-                <string>0</string>
-            </property>
-            <property name="readOnly">
-                <bool>true</bool>
-            </property>
-        </widget>
-        <widget class="QLineEdit">
-            <property name="name">
-                <cstring>lowGain</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>140</x>
-                    <y>50</y>
-                    <width>80</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                    <pointsize>8</pointsize>
-                </font>
-            </property>
-            <property name="text">
-                <string>0</string>
-            </property>
-            <property name="readOnly">
-                <bool>true</bool>
-            </property>
-        </widget>
-        <widget class="QLineEdit">
-            <property name="name">
-                <cstring>lowIcept</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>140</x>
-                    <y>80</y>
-                    <width>80</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                    <pointsize>8</pointsize>
-                </font>
-            </property>
-            <property name="text">
-                <string>0</string>
-            </property>
-            <property name="readOnly">
-                <bool>true</bool>
-            </property>
-        </widget>
-        <widget class="QLineEdit">
-            <property name="name">
-                <cstring>lowRms</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>140</x>
-                    <y>110</y>
-                    <width>80</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                    <pointsize>8</pointsize>
-                </font>
-            </property>
-            <property name="text">
-                <string>0</string>
-            </property>
-            <property name="readOnly">
-                <bool>true</bool>
-            </property>
-        </widget>
+        <property name="geometry">
+            <rect>
+                <x>140</x>
+                <y>110</y>
+                <width>100</width>
+                <height>23</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_2_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>140</y>
+                <width>100</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="center"&gt;Channel&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_2_2_2_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>140</x>
+                <y>140</y>
+                <width>100</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="center"&gt;Event Bucket&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QSpinBox">
+        <property name="name">
+            <cstring>selChannel</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>160</y>
+                <width>100</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="maxValue">
+            <number>1023</number>
+        </property>
+    </widget>
+    <widget class="QSpinBox">
+        <property name="name">
+            <cstring>selBucket</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>140</x>
+                <y>160</y>
+                <width>100</width>
+                <height>23</height>
+            </rect>
+        </property>
+        <property name="maxValue">
+            <number>3</number>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>prevPlot</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>190</y>
+                <width>100</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Prev Plot</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>nextPlot</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>140</x>
+                <y>190</y>
+                <width>100</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Next Plot</string>
+        </property>
     </widget>
     <widget class="QGroupBox">
         <property name="name">
@@ -770,7 +284,7 @@
         <property name="geometry">
             <rect>
                 <x>10</x>
-                <y>260</y>
+                <y>220</y>
                 <width>230</width>
                 <height>160</height>
             </rect>
@@ -1022,206 +536,683 @@
             </property>
         </widget>
     </widget>
-    <widget class="QPushButton">
+    <widget class="QGroupBox">
         <property name="name">
-            <cstring>prevPlot</cstring>
+            <cstring>groupBox2</cstring>
         </property>
         <property name="geometry">
             <rect>
                 <x>10</x>
-                <y>220</y>
-                <width>100</width>
+                <y>380</y>
+                <width>230</width>
+                <height>140</height>
+            </rect>
+        </property>
+        <property name="title">
+            <string>Calibration Fit Results</string>
+        </property>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel1_3_4_4</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>20</x>
+                    <y>20</y>
+                    <width>50</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>&lt;p align="right"&gt;Range:&lt;/p&gt;</string>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel1_3_3</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>140</x>
+                    <y>20</y>
+                    <width>70</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>&lt;p align="center"&gt;Low&lt;/p&gt;</string>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel1_3</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>70</x>
+                    <y>20</y>
+                    <width>60</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>&lt;p align="center"&gt;High&lt;/p&gt;</string>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel1_3_4</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>10</x>
+                    <y>50</y>
+                    <width>40</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>&lt;p align="right"&gt;Gain:&lt;/p&gt;</string>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel1_3_4_2</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>10</x>
+                    <y>80</y>
+                    <width>41</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>&lt;p align="right"&gt;Icept:&lt;/p&gt;</string>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel1_3_4_3</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>10</x>
+                    <y>110</y>
+                    <width>41</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>&lt;p align="right"&gt;RMS:&lt;/p&gt;</string>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>highRms</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>50</x>
+                    <y>110</y>
+                    <width>80</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                </font>
+            </property>
+            <property name="text">
+                <string>0</string>
+            </property>
+            <property name="readOnly">
+                <bool>true</bool>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>highIcept</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>50</x>
+                    <y>80</y>
+                    <width>80</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                </font>
+            </property>
+            <property name="text">
+                <string>0</string>
+            </property>
+            <property name="readOnly">
+                <bool>true</bool>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>highGain</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>50</x>
+                    <y>50</y>
+                    <width>80</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                </font>
+            </property>
+            <property name="text">
+                <string>0</string>
+            </property>
+            <property name="readOnly">
+                <bool>true</bool>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>lowGain</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>140</x>
+                    <y>50</y>
+                    <width>80</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                </font>
+            </property>
+            <property name="text">
+                <string>0</string>
+            </property>
+            <property name="readOnly">
+                <bool>true</bool>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>lowIcept</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>140</x>
+                    <y>80</y>
+                    <width>80</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                </font>
+            </property>
+            <property name="text">
+                <string>0</string>
+            </property>
+            <property name="readOnly">
+                <bool>true</bool>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>lowRms</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>140</x>
+                    <y>110</y>
+                    <width>80</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                </font>
+            </property>
+            <property name="text">
+                <string>0</string>
+            </property>
+            <property name="readOnly">
+                <bool>true</bool>
+            </property>
+        </widget>
+    </widget>
+    <widget class="QGroupBox">
+        <property name="name">
+            <cstring>groupBox3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>520</y>
+                <width>230</width>
+                <height>80</height>
+            </rect>
+        </property>
+        <property name="title">
+            <string>Histogram Fit Results</string>
+        </property>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel1_3_5</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>10</x>
+                    <y>30</y>
+                    <width>60</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>&lt;p align="center"&gt;Mean&lt;/p&gt;</string>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel1_3_5_2</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>80</x>
+                    <y>30</y>
+                    <width>60</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>&lt;p align="center"&gt;Sigma&lt;/p&gt;</string>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>histMean</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>10</x>
+                    <y>50</y>
+                    <width>60</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                </font>
+            </property>
+            <property name="text">
+                <string>0</string>
+            </property>
+            <property name="readOnly">
+                <bool>true</bool>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>histSigma</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>80</x>
+                    <y>50</y>
+                    <width>60</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                </font>
+            </property>
+            <property name="text">
+                <string>0</string>
+            </property>
+            <property name="readOnly">
+                <bool>true</bool>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>histRms</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>150</x>
+                    <y>50</y>
+                    <width>60</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                </font>
+            </property>
+            <property name="text">
+                <string>0</string>
+            </property>
+            <property name="readOnly">
+                <bool>true</bool>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel1_3_5_2_2</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>150</x>
+                    <y>30</y>
+                    <width>60</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>&lt;p align="center"&gt;RMS&lt;/p&gt;</string>
+            </property>
+        </widget>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>650</y>
+                <width>140</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Input Calibration File:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>inFile</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>650</y>
+                <width>540</width>
+                <height>23</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>680</y>
+                <width>140</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Output Calibration File:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>outFile</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>680</y>
+                <width>540</width>
+                <height>23</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>closeWindow</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>990</x>
+                <y>680</y>
+                <width>120</width>
                 <height>28</height>
             </rect>
         </property>
         <property name="text">
-            <string>Prev Plot</string>
+            <string>Close Window</string>
         </property>
     </widget>
     <widget class="QPushButton">
         <property name="name">
-            <cstring>nextPlot</cstring>
+            <cstring>fitSaveAll</cstring>
         </property>
         <property name="geometry">
             <rect>
-                <x>140</x>
-                <y>220</y>
-                <width>100</width>
+                <x>820</x>
+                <y>680</y>
+                <width>140</width>
                 <height>28</height>
             </rect>
         </property>
         <property name="text">
-            <string>Next Plot</string>
+            <string>Fit and Save All</string>
+        </property>
+        <property name="accel">
+            <string></string>
         </property>
     </widget>
-    <widget class="QLabel">
+    <widget class="QPushButton">
         <property name="name">
-            <cstring>textLabel1_2_2_2_2</cstring>
+            <cstring>inFileBrowse</cstring>
         </property>
         <property name="geometry">
             <rect>
-                <x>140</x>
-                <y>160</y>
-                <width>100</width>
-                <height>20</height>
+                <x>710</x>
+                <y>640</y>
+                <width>93</width>
+                <height>28</height>
             </rect>
         </property>
         <property name="text">
-            <string>&lt;p align="center"&gt;Event Bucket&lt;/p&gt;</string>
+            <string>Browse</string>
         </property>
     </widget>
-    <widget class="QLabel">
+    <widget class="QPushButton">
         <property name="name">
-            <cstring>textLabel1_2_2</cstring>
+            <cstring>inFileClose</cstring>
         </property>
         <property name="geometry">
             <rect>
-                <x>10</x>
-                <y>110</y>
-                <width>100</width>
-                <height>20</height>
+                <x>900</x>
+                <y>640</y>
+                <width>60</width>
+                <height>28</height>
             </rect>
         </property>
         <property name="text">
-            <string>&lt;p align="center"&gt;KPIX Serial&lt;/p&gt;</string>
+            <string>Close</string>
         </property>
     </widget>
-    <widget class="QComboBox">
+    <widget class="QPushButton">
         <property name="name">
-            <cstring>selSerial</cstring>
+            <cstring>writePdf</cstring>
         </property>
         <property name="geometry">
             <rect>
-                <x>10</x>
-                <y>130</y>
-                <width>100</width>
-                <height>23</height>
-            </rect>
-        </property>
-    </widget>
-    <widget class="QSpinBox">
-        <property name="name">
-            <cstring>selChannel</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>10</x>
-                <y>180</y>
-                <width>100</width>
-                <height>23</height>
-            </rect>
-        </property>
-        <property name="maxValue">
-            <number>1023</number>
-        </property>
-    </widget>
-    <widget class="QLabel">
-        <property name="name">
-            <cstring>textLabel1_2_3</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>140</x>
-                <y>110</y>
-                <width>100</width>
-                <height>20</height>
+                <x>990</x>
+                <y>640</y>
+                <width>120</width>
+                <height>28</height>
             </rect>
         </property>
         <property name="text">
-            <string>&lt;p align="center"&gt;Gain&lt;/p&gt;</string>
+            <string>Write Plot To PDF</string>
         </property>
     </widget>
-    <widget class="QSpinBox">
+    <widget class="QPushButton">
         <property name="name">
-            <cstring>selBucket</cstring>
+            <cstring>outFileBrowse</cstring>
         </property>
         <property name="geometry">
             <rect>
-                <x>140</x>
-                <y>180</y>
-                <width>100</width>
-                <height>23</height>
+                <x>710</x>
+                <y>680</y>
+                <width>93</width>
+                <height>28</height>
             </rect>
         </property>
-        <property name="maxValue">
-            <number>3</number>
+        <property name="text">
+            <string>Browse</string>
         </property>
     </widget>
-    <widget class="QComboBox">
-        <item>
-            <property name="text">
-                <string>Normal</string>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>inFileOpen</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>820</x>
+                <y>640</y>
+                <width>60</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Open</string>
+        </property>
+    </widget>
+    <widget class="QProgressBar">
+        <property name="name">
+            <cstring>progressBar</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>20</x>
+                <y>610</y>
+                <width>220</width>
+                <height>24</height>
+            </rect>
+        </property>
+        <property name="frameShadow">
+            <enum>Plain</enum>
+        </property>
+    </widget>
+    <widget class="QTabWidget">
+        <property name="name">
+            <cstring>calTab</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>250</x>
+                <y>0</y>
+                <width>860</width>
+                <height>640</height>
+            </rect>
+        </property>
+        <widget class="QWidget">
+            <property name="name">
+                <cstring>tab</cstring>
             </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>Double</string>
+            <attribute name="title">
+                <string>Summary Table</string>
+            </attribute>
+            <widget class="QTable">
+                <property name="name">
+                    <cstring>summaryTable</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>0</x>
+                        <y>0</y>
+                        <width>860</width>
+                        <height>610</height>
+                    </rect>
+                </property>
+                <property name="numRows">
+                    <number>3</number>
+                </property>
+                <property name="numCols">
+                    <number>3</number>
+                </property>
+                <property name="readOnly">
+                    <bool>true</bool>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QWidget">
+            <property name="name">
+                <cstring>tab</cstring>
             </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>Low</string>
+            <attribute name="title">
+                <string>Summary Plot</string>
+            </attribute>
+            <widget class="TQtWidget">
+                <property name="name">
+                    <cstring>summaryCanvas</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>0</x>
+                        <y>0</y>
+                        <width>860</width>
+                        <height>610</height>
+                    </rect>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QWidget">
+            <property name="name">
+                <cstring>TabPage</cstring>
             </property>
-        </item>
-        <property name="name">
-            <cstring>selGain</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>140</x>
-                <y>130</y>
-                <width>100</width>
-                <height>23</height>
-            </rect>
-        </property>
-    </widget>
-    <widget class="QLabel">
-        <property name="name">
-            <cstring>textLabel1_2_2_2</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>10</x>
-                <y>160</y>
-                <width>100</width>
-                <height>20</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>&lt;p align="center"&gt;Channel&lt;/p&gt;</string>
-        </property>
-    </widget>
-    <widget class="QCheckBox">
-        <property name="name">
-            <cstring>reFitEn</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>140</x>
-                <y>50</y>
-                <width>100</width>
-                <height>21</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Re-Fit Plots</string>
-        </property>
-    </widget>
-    <widget class="QCheckBox">
-        <property name="name">
-            <cstring>logScale</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>140</x>
-                <y>80</y>
-                <width>100</width>
-                <height>21</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Log Scale</string>
-        </property>
+            <attribute name="title">
+                <string>Calibration Plot</string>
+            </attribute>
+            <widget class="TQtWidget">
+                <property name="name">
+                    <cstring>calibCanvas</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>0</x>
+                        <y>0</y>
+                        <width>860</width>
+                        <height>610</height>
+                    </rect>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QWidget">
+            <property name="name">
+                <cstring>TabPage</cstring>
+            </property>
+            <attribute name="title">
+                <string>Histogram Plot</string>
+            </attribute>
+            <widget class="TQtWidget">
+                <property name="name">
+                    <cstring>histCanvas</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>-2</x>
+                        <y>-6</y>
+                        <width>860</width>
+                        <height>620</height>
+                    </rect>
+                </property>
+            </widget>
+        </widget>
     </widget>
 </widget>
 <customwidgets>
@@ -1256,7 +1247,7 @@
 </customwidgets>
 <images>
     <image name="image0">
-        <data format="PNG" length="340">89504e470d0a1a0a0000000d4948445200000020000000200806000000737a7af40000011b49444154789ced97db0e84200c44878d5f65133edea47c9509fbe0954bb1bab2f8e024269b8cd08374d035ec182df50100eac93705286a840c57f234be0aa0b25e8017600318e1b357e4514fa2773436f102800e267bed3cb204c0832c21f68ec6663d5cde027fdbe1f5a01e38d0b4e2fda2e7adf817402d75b5265e7ae4e86dbb01285e3a3cb8b088cd8f234be0815790e57754d98400bb6824c527cf93edc589d6e273af90dd014b73e3013da00248133089070ece03e9be9f00b451bb525c0530a9de17db0d31f4a0de5c5a7d085088611cbfd46300f97b963e49a2a889e132301bbfb9b8e425be1045b107ae36d5593df31cd0aebef4f843c9df0f09c099475f6a4e2d4400507fdf5308c38e9bfc3764c7660568a9e629f8027148aaf121ee81060000000049454e44ae426082</data>
+        <data format="PNG" length="342">89504e470d0a1a0a0000000d4948445200000020000000200806000000737a7af40000011d49444154789ced97510e84200c44cbc653b5098737a1a732e97eb8b88214ab2b8b1f4e62621c818776401d33434fbd00001051ba02d42493a87035cfe29b005aeb017800160099444a47ee21a2eaedb5cdbd04c00dce958eb5479e0040803c41eeedb52d7909c031c9658bd77d6a604ff38cd7939e5fc5df005a6968d571ac91bddd7601b06c3a614c3b235f6e479e208c610189e76bc5240cf985d2e01f4fc8a3da5154ac15f25f60ad6f801bd48009609b8059610cc97aa0ddf71380356a67063701cc6af7c576410c0510dda9d92700b518e6f1db7a0100caf7c43ac9a3688a616c588a5f1c5cf3725f8ba25a03678beaa8eeb90e58675f7bfca9f4ef870dc091475f2b4e2b4402d0febd6f211c3377f9376466b700f454f714bc014433eaccd710071d0000000049454e44ae426082</data>
     </image>
 </images>
 <connections>

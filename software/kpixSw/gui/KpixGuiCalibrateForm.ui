@@ -829,57 +829,15 @@
                 <string>&lt;p align="right"&gt;Calib Range:&lt;/p&gt;</string>
             </property>
         </widget>
-        <widget class="QSpinBox">
-            <property name="name">
-                <cstring>chanMin</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>90</x>
-                    <y>70</y>
-                    <width>50</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                    <pointsize>10</pointsize>
-                </font>
-            </property>
-            <property name="maxValue">
-                <number>63</number>
-            </property>
-        </widget>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel2_3_2_2_2_3_2_3_3_2_3</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>10</x>
-                    <y>70</y>
-                    <width>80</width>
-                    <height>20</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                    <pointsize>10</pointsize>
-                </font>
-            </property>
-            <property name="text">
-                <string>&lt;p align="right"&gt;Channels:&lt;/p&gt;</string>
-            </property>
-        </widget>
         <widget class="QCheckBox">
             <property name="name">
-                <cstring>calibAllChannels</cstring>
+                <cstring>calHighRange</cstring>
             </property>
             <property name="geometry">
                 <rect>
-                    <x>60</x>
-                    <y>100</y>
-                    <width>170</width>
+                    <x>20</x>
+                    <y>160</y>
+                    <width>160</width>
                     <height>21</height>
                 </rect>
             </property>
@@ -889,7 +847,28 @@
                 </font>
             </property>
             <property name="text">
-                <string>All Channels In Parrallel</string>
+                <string>High Range Calibration</string>
+            </property>
+        </widget>
+        <widget class="QCheckBox">
+            <property name="name">
+                <cstring>calSelfTrig</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>20</x>
+                    <y>140</y>
+                    <width>160</width>
+                    <height>21</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                    <pointsize>10</pointsize>
+                </font>
+            </property>
+            <property name="text">
+                <string>Self Trigger Calibration</string>
             </property>
         </widget>
         <widget class="QCheckBox">
@@ -898,7 +877,7 @@
             </property>
             <property name="geometry">
                 <rect>
-                    <x>60</x>
+                    <x>20</x>
                     <y>120</y>
                     <width>160</width>
                     <height>21</height>
@@ -916,13 +895,55 @@
                 <bool>true</bool>
             </property>
         </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel2_3_2_2_2_3_2_3_3_2_3</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>10</x>
+                    <y>70</y>
+                    <width>65</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                    <pointsize>10</pointsize>
+                </font>
+            </property>
+            <property name="text">
+                <string>&lt;p align="right"&gt;Channels:&lt;/p&gt;</string>
+            </property>
+        </widget>
+        <widget class="QSpinBox">
+            <property name="name">
+                <cstring>chanMin</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>80</x>
+                    <y>70</y>
+                    <width>50</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                    <pointsize>10</pointsize>
+                </font>
+            </property>
+            <property name="maxValue">
+                <number>63</number>
+            </property>
+        </widget>
         <widget class="QSpinBox">
             <property name="name">
                 <cstring>chanMax</cstring>
             </property>
             <property name="geometry">
                 <rect>
-                    <x>150</x>
+                    <x>140</x>
                     <y>70</y>
                     <width>50</width>
                     <height>23</height>
@@ -942,13 +963,13 @@
         </widget>
         <widget class="QCheckBox">
             <property name="name">
-                <cstring>calSelfTrig</cstring>
+                <cstring>calibAllChannels</cstring>
             </property>
             <property name="geometry">
                 <rect>
-                    <x>60</x>
-                    <y>140</y>
-                    <width>160</width>
+                    <x>20</x>
+                    <y>100</y>
+                    <width>170</width>
                     <height>21</height>
                 </rect>
             </property>
@@ -958,28 +979,7 @@
                 </font>
             </property>
             <property name="text">
-                <string>Self Trigger Calibration</string>
-            </property>
-        </widget>
-        <widget class="QCheckBox">
-            <property name="name">
-                <cstring>calHighRange</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>60</x>
-                    <y>160</y>
-                    <width>160</width>
-                    <height>21</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                    <pointsize>10</pointsize>
-                </font>
-            </property>
-            <property name="text">
-                <string>High Range Calibration</string>
+                <string>All Channels In Parrallel</string>
             </property>
         </widget>
     </widget>
@@ -994,6 +994,27 @@
                 <width>690</width>
                 <height>500</height>
             </rect>
+        </property>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>gemOnly</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>420</x>
+                <y>80</y>
+                <width>60</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="font">
+            <font>
+                <pointsize>10</pointsize>
+            </font>
+        </property>
+        <property name="text">
+            <string>GEM 9</string>
         </property>
     </widget>
 </widget>
