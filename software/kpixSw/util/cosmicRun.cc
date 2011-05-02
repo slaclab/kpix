@@ -60,6 +60,11 @@ class HistData {
          }
          return(ret);
       }
+
+      void init () {
+         last    = 0;
+         count   = 0;
+      }
 };
 
 // Global variable to catch cntrl-c
@@ -197,6 +202,9 @@ int main ( int argc, char **argv ) {
 
          // Dump config
          xmlConfig.writeConfig ((char *)cfgStart.str().c_str(), kpixFpga, kpixAsic, 2, true);
+
+         // Init records
+         for (channel=0; channel < 1024; channel++) histData[channel]->init();
 
          time(&tm);
          cout << "Starting Run at " << ctime(&tm);
