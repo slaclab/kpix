@@ -43,6 +43,7 @@
 #include <lockdev.h>
 #include <sys/ioctl.h>
 #include <termio.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -68,6 +69,8 @@ SidLink::SidLink () {
    udpPort   = 0;
    udpFd     = -1;
    udpAddr   = malloc(sizeof(struct sockaddr_in));
+   head      = 0;
+   tail      = -1;
 }
 
 
@@ -131,8 +134,10 @@ void SidLink::linkOpen ( string host, int port ) {
    struct addrinfo*   aiList=0;
    struct addrinfo    aiHints;
    const sockaddr_in* addr;
-   int                error;
+   int                error, ret;
    unsigned int       size;
+   unsigned int       rwin;
+   socklen_t          rwin_size=4;
 
    // Make sure no links are open
    if ( serFd >= 0 || usbDevice >= 0 || udpFd >= 0 ) 
@@ -159,11 +164,35 @@ void SidLink::linkOpen ( string host, int port ) {
    ((sockaddr_in *)udpAddr)->sin_family=AF_INET;
    ((sockaddr_in *)udpAddr)->sin_addr.s_addr=addr->sin_addr.s_addr;
    ((sockaddr_in *)udpAddr)->sin_port=htons(port);
+   cout << "Addr=" << dec << (((sockaddr_in *)udpAddr)->sin_addr.s_addr) << endl;
 
    // Set receive size
    size = 2000000;
-   setsockopt(udpFd, SOL_SOCKET, SO_RCVBUF, (char*)&size, sizeof(size));
+   ret = setsockopt(udpFd, SOL_SOCKET, SO_RCVBUF, (char*)&size, sizeof(size));
+   if(ret < 0 ) {
+      cout << "--------------------------------" << endl;
+      cout << "Error setting rx buffer size. Ret=" << dec << ret << endl;
+      cout << "--------------------------------" << endl;
+   }
+   usleep(100);
 
+   getsockopt(udpFd, SOL_SOCKET, SO_RCVBUF, &rwin, &rwin_size);
+   if(ret < 0 || size > rwin) {
+      cout << "--------------------------------" << endl;
+      cout << "Error setting rx buffer size."    << endl;
+      cout << "Wanted " << dec << size << " Got " << dec << rwin << endl;
+      cout << "Opt Size " << dec << rwin_size << endl;
+      cout << "Ret = " << dec << ret << endl;
+      cout << "--------------------------------" << endl;
+   }
+   else {
+      cout << "--------------------------------" << endl;
+      cout << "Success setting rx buffer size."    << endl;
+      cout << "Wanted " << dec << size << " Got " << dec << rwin << endl;
+      cout << "Opt Size " << dec << rwin_size << endl;
+      cout << "Ret = " << dec << ret << endl;
+      cout << "--------------------------------" << endl;
+   }
    // Debug
    if ( enDebug ) 
       cout << "SidLink::linkOpen -> Opened UDP device " << host << ":" << port << ". Fd=" << udpFd << "\n";
@@ -184,6 +213,7 @@ void SidLink::linkOpen ( int device ) {
    FT_STATUS    ftStatus;
    stringstream error;
    FT_HANDLE    tmpHandle;
+   UCHAR        latTimer;
 
    // Make sure no links are open
    if ( serFd >= 0 || usbDevice >= 0 || udpFd >= 0 ) 
@@ -201,6 +231,31 @@ void SidLink::linkOpen ( int device ) {
    }
    usbHandle = (void *)tmpHandle;
 
+   // Set USB mode
+   if ((ftStatus = FT_SetBitMode((FT_HANDLE)usbHandle,0xFF,0x40)) != FT_OK ) {
+      error << "SidLink::linkOpen -> Error setting bit mode for direct USB device ";
+      error << usbDevice << ", status=" << ftStatus;
+      throw error.str();
+   }
+
+   // Get Latency Timer value
+   if ((ftStatus = FT_GetLatencyTimer((FT_HANDLE)usbHandle,&latTimer)) != FT_OK ) {
+      error << "SidLink::linkOpen -> Error getting latency timer value for direct USB device ";
+      error << usbDevice << ", status=" << ftStatus;
+      throw error.str();
+   }
+   else {
+      cout << "SidLink::linkOpen -> Latency Timer Value: " << (int) latTimer << "\n";
+   }
+
+   // Set Latency Timer value
+   latTimer = 2;
+   if ((ftStatus = FT_SetLatencyTimer((FT_HANDLE)usbHandle,latTimer)) != FT_OK ) {
+      error << "SidLink::linkOpen -> Error setting latency timer value to " << latTimer << "ms for direct USB device ";
+      error << usbDevice << ", status=" << ftStatus;
+      throw error.str();
+   }
+
    if ( enDebug ) cout << "SidLink::linkOpen -> Opened direct USB device " << device << "\n";
 
    // Copy variables
@@ -215,7 +270,7 @@ void SidLink::linkOpen ( int device ) {
 void SidLink::linkOpen ( string rdPipe, string wrPipe ) {
 
    stringstream error;
-
+   
    // Make sure no links are open
    if ( serFd >= 0 || usbDevice >= 0 || udpFd >= 0 ) 
       throw string("SidLink::linkOpen -> SID Link Already Open");
@@ -273,7 +328,7 @@ int SidLink::linkFlush ( ) {
    fd_set         fds;
    int            ret;
 
-   if ( enDebug ) cout << "SidLink::linkOpen -> Flushing Link.\n";
+   if ( enDebug ) cout << "SidLink::linkFlush -> Flushing Link.\n";
 
    // Determine link for read, sim uses a seperate file descriptor
    if ( serFdRd > 0 ) fdes = serFdRd;
@@ -317,7 +372,7 @@ int SidLink::linkFlush ( ) {
 
       // USB device is open
       if ( usbDevice >= 0 ) {
-
+        
          // How many bytes are ready
          if ((ftStatus = FT_GetStatus((FT_HANDLE)usbHandle,&rxBytes,&txBytes,&eventWord)) != FT_OK ) {
             error << "SidLink::linkFlush -> Error getting status from direct USB device ";
@@ -475,6 +530,8 @@ int SidLink::linkRawWrite (unsigned short *data, short int size, unsigned char t
       y++;
    }
 
+   //for (i=0; i < 500; i++); //Small Delay
+
    // Debug if enabled
    if ( enDebug ) {
       cout << "SidLink::linkRawWrite -> Writing data to USB:";
@@ -497,7 +554,7 @@ int SidLink::linkRawWrite (unsigned short *data, short int size, unsigned char t
 
    // USB device is open
    if ( usbDevice >= 0 ) {
-
+      
       // Attempt to write to direct usb device
       if((ftStatus = FT_Write((FT_HANDLE)usbHandle, byteData, newSize, &wtotal)) != FT_OK) {
          error << "SidLink::linkRawWrite -> Error writing to direct USB device " << usbDevice 
@@ -509,7 +566,11 @@ int SidLink::linkRawWrite (unsigned short *data, short int size, unsigned char t
    free(byteData);
 
    // Check size
-   if ( wtotal != newSize ) throw string("SidLink::linkRawWrite -> Write Size Error");
+   if ( wtotal != newSize ) {
+      cout << "wtotal=" << dec << wtotal;
+      cout << "newSize=" << dec << newSize;
+      throw string("SidLink::linkRawWrite -> Write Size Error");
+   }
 
    if ( enDebug ) cout << "SidLink::linkRawWrite -> Write Done!\n";
    return(size);
@@ -519,9 +580,9 @@ int SidLink::linkRawWrite (unsigned short *data, short int size, unsigned char t
 // Method to read a word array from a KPIX device, raw interface
 // Pass word (16-bit) array and length
 // Return number of words read
-int SidLink::linkRawRead ( unsigned short *data, short int size, unsigned char type, bool sof){
+int SidLink::linkRawRead ( unsigned short *data, short int size, unsigned char type, bool sof, bool *eof){
 
-   unsigned char  *byteData;
+   unsigned char  byteData[8192];
    unsigned long  newSize;
    unsigned long  rcount;
    unsigned long  rxBytes;
@@ -531,21 +592,21 @@ int SidLink::linkRawRead ( unsigned short *data, short int size, unsigned char t
    FT_STATUS      ftStatus;
    stringstream   error;
    unsigned int   i;
-   unsigned long  rtotal;
+   unsigned int   rtotal;
    unsigned int   toCount;
    int            fdes;
    unsigned int   wordCnt;
    unsigned int   udpAddrLength;
    struct timeval timeout;
    fd_set         fds;
+   bool           rSof;
+   unsigned char  rType;
 
    // Check if no links are open
    if ( serFd < 0 && usbDevice < 0 && udpFd < 0 ) throw string("SidLink::linkRawRead -> KPIX Link Not Open");
 
    // First create byte array to contain byte
-   newSize = size * 3;
-   byteData = (unsigned char *) malloc(newSize);
-   if (byteData == NULL ) throw(string("SidLink::linkRawRead -> Malloc Error"));
+   newSize = size * 2;
 
    // Determine link for read, sim uses a seperate file descriptor
    if ( serFdRd > 0 ) fdes = serFdRd;
@@ -553,136 +614,138 @@ int SidLink::linkRawRead ( unsigned short *data, short int size, unsigned char t
 
    // Debug
    if ( enDebug ) cout << "SidLink::linkRawRead -> Reading!\n";
-
+   
    // Read until we get amount of data we want
    rtotal  = 0;
    toCount = 0;
+   
    while ( rtotal < newSize ) {
-
-      // UDP device is open
-      if ( udpFd >= 0 ) {
-         timeout.tv_sec=0;
-         timeout.tv_usec=1;
-         FD_ZERO(&fds);
-         FD_SET(udpFd,&fds);
-
-         // Is data waiting?
-         ret = select(udpFd+1,&fds,NULL,NULL,&timeout);
-         if ( ret < 0 || FD_ISSET(udpFd,&fds) == 0 ) rcount = 0;
-         else {
-            udpAddrLength = sizeof(struct sockaddr_in);
-            ret = recvfrom(udpFd,&(byteData[rtotal]),(newSize-rtotal),0,(struct sockaddr *)udpAddr,&udpAddrLength);
-            if ( ret > 0 ) rcount = ret;
-            else rcount = 0;
-         }
+   // If data is still available 
+      if ( head < tail ) {
+         if ( enDebug ) cout << "NewSize = " << dec << newSize << ", Head = " << head << ", Tail = " << tail
+              << ", rTotal = " << rtotal << ", Data = 0x" << hex << (int)rxBuffer[head] << endl;
+         byteData[rtotal++] = rxBuffer[head++];
       }
+      else {
+         // UDP device is open
+         if ( udpFd >= 0 ) {
+            timeout.tv_sec=0;
+            timeout.tv_usec=1;
+            FD_ZERO(&fds);
+            FD_SET(udpFd,&fds);
 
-      // Serial device is open
-      if ( fdes >= 0 ) {
-
-         // Attempt to read from device
-         ret = read(fdes, &(byteData[rtotal]), (newSize-rtotal));
-
-         // Read returns -1 if no data is waiting
-         if ( ret != -1 ) rcount = ret;
-         else rcount = 0;
-
-      }
-
-      // USB device is open
-      rxBytes = 0;
-      if ( usbDevice >= 0 ) {
-
-         // How many bytes are ready
-         if ((ftStatus = FT_GetStatus((FT_HANDLE)usbHandle,&rxBytes,&txBytes,&eventWord)) != FT_OK ) {
-            error << "SidLink::linkRawRead -> Error getting status from direct USB device ";
-            error << usbDevice << ", status=" << ftStatus;
-            free(byteData);
-            throw error.str();
-         }
-
-         // Data is ready
-         if ( rxBytes >= newSize ) {
-            if ( rxBytes > maxRxSize ) maxRxSize = rxBytes;
-
-            // Read from usb device
-            if((ftStatus = FT_Read((FT_HANDLE)usbHandle, byteData, newSize, &rcount)) != FT_OK) {
-               error << "SidLink::linkRawRead -> Error reading from direct USB device ";
-               error << usbDevice << ", status=" << ftStatus;
-               free(byteData);
-               throw error.str();
+            // Is data waiting?
+            ret = select(udpFd+1,&fds,NULL,NULL,&timeout);
+            if ( ret < 0 || FD_ISSET(udpFd,&fds) == 0 ) {
+               rcount = 0;
+            }
+            else {
+               udpAddrLength = sizeof(struct sockaddr_in);
+               ret = recvfrom(udpFd,&rxBuffer,8192,0,(struct sockaddr *)udpAddr,&udpAddrLength);
+               if ( ret > 0 ) {
+                 head = 1; tail = ret-1;
+                 rSof  = (rxBuffer[0] >> 7)     & 0x1;
+                 rType = (rxBuffer[0] >> 5)     & 0x3;
+                 last  = (rxBuffer[ret-1] >> 7) & 0x1;
+                 rcount = ret;
+               }
+               else { head = 1;tail = -1;rcount = 0; }
+               if ( enDebug ) cout << "rCount = " << dec << rcount << ", rTotal = " << rtotal
+                                   << ", Head = " << head << ", Tail = " << tail << ", SOF = " << rSof << ", Type = " << (int)rType << endl;
             }
          }
-         else rcount = 0;
-      } 
 
-      // Update total 
-      if ( rcount != 0 ) {
-         rtotal += rcount;
-         toCount = 0;
-      }
+         // Serial device is open
+         if ( fdes >= 0 ) {
 
-      // Check for timeout
-      else if ( timeoutEn ) {
-         toCount++;
-         if ( toCount >= Timeout ) {
-            free(byteData);
+            // Attempt to read from device
+            ret = read(fdes, &(byteData[rtotal]), (newSize-rtotal));
 
-            // Flush the link
-            ret = linkFlush();
-            error << "SidLink::linkRawRead -> Read Timeout. Read ";
-            error << dec << rtotal << " Bytes. Max Buffer=" << dec << maxRxSize;
-            error << ", Flush=" << dec << ret;
-            error << ", Size=" << dec << size;
-            error << ", RxBytes=" << dec << rxBytes;
-            throw error.str();
+            // Read returns -1 if no data is waiting
+            if ( ret != -1 ) rcount = ret;
+            else rcount = 0;
+
          }
-         usleep(1000);
-      }      
 
-      // Wait longer for simulation, 10mS
-      else usleep(10000);
+         // USB device is open
+         rxBytes = 0;
+         if ( usbDevice >= 0 ) {
+            
+            // How many bytes are ready
+            if ((ftStatus = FT_GetStatus((FT_HANDLE)usbHandle,&rxBytes,&txBytes,&eventWord)) != FT_OK ) {
+               error << "SidLink::linkRawRead -> Error getting status from direct USB device ";
+               error << usbDevice << ", status=" << ftStatus;
+               throw error.str();
+            }
+
+            // Data is ready
+            if ( rxBytes >= newSize ) {
+               if ( rxBytes > maxRxSize ) maxRxSize = rxBytes;
+
+               // Read from usb device
+               if((ftStatus = FT_Read((FT_HANDLE)usbHandle, byteData, newSize, &rcount)) != FT_OK) {
+                  error << "SidLink::linkRawRead -> Error reading from direct USB device ";
+                  error << usbDevice << ", status=" << ftStatus;
+                  throw error.str();
+               }
+            }
+            else rcount = 0;
+         } 
+         
+         // Update total 
+         if ( rcount != 0 ) {
+            toCount = 0;
+         }
+         // Check for timeout
+         else if ( timeoutEn ) {
+            toCount++;
+            if ( toCount >= Timeout ) {
+               tail = -1;
+               // Flush the link
+
+               error << "SidLink::linkRawRead -> Read Timeout. Read ";
+               error << dec << rtotal << " Bytes. Max Buffer=" << dec << maxRxSize;
+               error << ", Flush=" << dec << linkFlush();
+               error << ", Size=" << dec << size;
+               error << ", RxBytes=" << dec << rxBytes;
+               if ( enDebug ) cout << error.str() << endl;
+               throw error.str();
+            }
+            usleep(1000);
+         }      
+
+         // Wait longer for simulation, 10mS
+         else usleep(10000);
+      }
    }
 
    // Debug if enabled
    if ( enDebug ) {
-      cout << "SidLink::linkRawRead -> Read data from USB:";
+      cout << "SidLink::linkRawRead -> Read data:";
       for (i=0; i< rtotal; i++) 
          cout << " 0x" << setw(2) << setfill('0') << hex << (int)byteData[i];
       cout << "\n";
    }
-      
+
+   // Check word type
+   if ( head == newSize && rType != type ) { //((byteData[i] >> 4) & 0x03)
+      cout << "Expected Word Type : " << hex << (int)type << ", Got : " << (int)rType << endl; //(byteData[i] & 0x30)
+      throw(string("SidLink::linkRawRead -> Word Type Mimsatch"));
+   }
+
+   // Check SOF
+   if ( head == newSize && sof != rSof ) { //((byteData[i] & 0x40) != 0))
+      throw(string("SidLink::linkRawRead -> SOF Mimsatch"));
+   }
+
    // Process each byte of read data
    wordCnt = 0;
-   for (i=0; i < rtotal; i+=3) {
-
-      // Check aligment
-      if ( (byteData[i] & 0x80) == 0 || (byteData[i+1] & 0xC0) != 0 || (byteData[i+2] & 0xC0) != 0x40 ) {
-         free(byteData);
-         linkFlush();
-         throw(string("SidLink::linkRawRead -> Alignment Error"));
+      for (i=0; i < rtotal; i+=2) {
+         // Extract Data
+         data[wordCnt]  = (byteData[i] <<  8) & 0xFF00;
+         data[wordCnt] |=  byteData[i+1] & 0xFF;
+         wordCnt++;
       }
-
-      // Check word type
-      if ( ((byteData[i] >> 4) & 0x03) != type ) {
-         free(byteData);
-         linkFlush();
-         throw(string("SidLink::linkRawRead -> Word Type Mimsatch"));
-      }
-
-      // Check SOF
-      if ( i == 0 && (sof != ((byteData[i] & 0x40) != 0)) ) {
-         free(byteData);
-         linkFlush();
-         throw(string("SidLink::linkRawRead -> SOF Mimsatch"));
-      }
-
-      // Extract Data
-      data[wordCnt] = byteData[i] & 0x0F;
-      data[wordCnt] |= (byteData[i+1] <<  4) & 0x03F0;
-      data[wordCnt] |= (byteData[i+2] << 10) & 0xFC00;
-      wordCnt++;
-   }
 
    // Debug if enabled
    if ( enDebug ) {
@@ -692,7 +755,10 @@ int SidLink::linkRawRead ( unsigned short *data, short int size, unsigned char t
          cout << " 0x" << setw(4) << setfill('0') << hex << (int)data[i];
       cout << "\n";
    }
-   free(byteData);
+
+   if( last == 1 && head == tail ) *eof = true;
+   else *eof = false;
+
    return(wordCnt);
 }
 
@@ -701,11 +767,11 @@ int SidLink::linkRawRead ( unsigned short *data, short int size, unsigned char t
 // Pass word (16-bit) array and length
 // Return number of words written
 int SidLink::linkKpixWrite ( unsigned short int *data, short int size) {
-
+  bool last;
   // Sim Mode, all bytes are echoed
   if ( serFdRd > 0 ) {
      linkRawWrite (data, size, 0, true);
-     return(linkRawRead  (data, size, 0, true));
+     return(linkRawRead  (data, size, 0, true, &last));
   }
 
   // Normal Mode
@@ -717,15 +783,16 @@ int SidLink::linkKpixWrite ( unsigned short int *data, short int size) {
 // Pass word (16-bit) array and length
 // Return number of words read
 int SidLink::linkKpixRead ( unsigned short int *data, short int size ) {
-  return(linkRawRead (data, size, 0, true));
+  bool last;
+  return(linkRawRead (data, size, 0, true, &last));
 }
 
 
 // Method to read a word array from a KPIX device, sample data
 // Pass word (16-bit) array, length and first read flag
 // Return number of words read
-int SidLink::linkDataRead ( unsigned short int *data, short int size, bool first ) {
-  return(linkRawRead (data, size, 1, first));
+int SidLink::linkDataRead ( unsigned short int *data, short int size, bool first, bool *last ) {
+  return(linkRawRead (data, size, 1, first, last));
 }
 
 
@@ -733,11 +800,11 @@ int SidLink::linkDataRead ( unsigned short int *data, short int size, bool first
 // Pass word (16-bit) array and length
 // Return number of words written
 int SidLink::linkFpgaWrite ( unsigned short int *data, short int size) {
-
+  bool last;
   // Sim Mode, all bytes are echoed
   if ( serFdRd > 0 ) {
      linkRawWrite (data, size, 2, true);
-     return(linkRawRead  (data, size, 2, true));
+     return(linkRawRead  (data, size, 2, true, &last));
   }
 
   // Normal Mode
@@ -749,10 +816,13 @@ int SidLink::linkFpgaWrite ( unsigned short int *data, short int size) {
 // Pass word (16-bit) array and length
 // Return number of words read
 int SidLink::linkFpgaRead ( unsigned short int *data, short int size ) {
-  return(linkRawRead (data, size, 2, true));
+  bool last;
+  return(linkRawRead (data, size, 2, true, &last));
 }
 
 
 // Turn on or off debugging for the class
 void SidLink::linkDebug ( bool debug ) { enDebug = debug; }
 
+// Clear the head and tail to enable new data to be stored in buffer
+void SidLink::linkBufClear ( ) { head = 1; tail = -1; }
