@@ -261,9 +261,6 @@ int SidLink::linkFlush ( ) {
    FT_STATUS      ftStatus;
    int            count = 0;
    unsigned long  rcount = 0;
-   unsigned long  rxBytes;
-   unsigned long  txBytes;
-   unsigned long  eventWord;
    int            total = 0;
    int            fdes;
    unsigned char  buffer[1000];
@@ -317,25 +314,10 @@ int SidLink::linkFlush ( ) {
 
       // USB device is open
       if ( usbDevice >= 0 ) {
-
-         // How many bytes are ready
-         if ((ftStatus = FT_GetStatus((FT_HANDLE)usbHandle,&rxBytes,&txBytes,&eventWord)) != FT_OK ) {
-            error << "SidLink::linkFlush -> Error getting status from direct USB device ";
+         if ((ftStatus = FT_Purge((FT_HANDLE)usbHandle,FT_PURGE_RX | FT_PURGE_TX)) != FT_OK ) {
+            error << "SidLink::linkFlush -> Error purging device";
             error << usbDevice << ", status=" << ftStatus;
             throw error.str();
-         }
-
-         if ( rxBytes > 0 ) {
-
-            if ( rxBytes > 1000 ) rxBytes = 1000;
-
-            // Read from usb device
-            if((ftStatus = FT_Read((FT_HANDLE)usbHandle, buffer, rxBytes, &rcount)) != FT_OK) {
-               error << "SidLink::linkFlush -> Error reading from direct USB device ";
-               error << usbDevice << ", status=" << ftStatus;
-               throw error.str();
-            }
-            total += rcount;
          }
       }
    } while (rcount > 0);
@@ -346,6 +328,20 @@ int SidLink::linkFlush ( ) {
    return(total);
 }
 
+// Reset the device
+int SidLink::linkReset ( ) {
+   FT_STATUS      ftStatus;
+   stringstream   error;
+
+   // USB device is open
+   if ( usbDevice >= 0 ) {
+      if ((ftStatus = FT_ResetDevice((FT_HANDLE)usbHandle)) != FT_OK ) {
+         error << "SidLink::linkFlush -> Error resetting device";
+         error << usbDevice << ", status=" << ftStatus;
+         throw error.str();
+      }
+   }
+}
 
 // Method to close the link
 // Throws exception on device close failure

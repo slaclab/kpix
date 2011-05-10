@@ -259,6 +259,17 @@ int main ( int argc, char **argv ) {
          cout << error << endl;
          errCnt++;
          sleep(2);
+
+         // Flush link
+         if ( sidLink != NULL ) {
+            cout << "Flushing USB Device" << endl;
+            sidLink->linkFlush();
+            sleep(2);
+            cout << "Resetting USB Device" << endl;
+            sidLink->linkReset();
+            sleep(2);
+            cout << "Done." << endl;
+         }
       }
       cout << endl << "Run stopped at " << ctime(&tm);
 
@@ -278,7 +289,7 @@ int main ( int argc, char **argv ) {
       if ( kpixAsic[1] != NULL ) delete kpixAsic[1];
       if ( kpixFpga    != NULL ) delete kpixFpga;
       if ( sidLink     != NULL ) {
-         sleep(1);
+         cout << "Closing USB Link" << endl;
          sidLink->linkClose();
          sleep(1);
          delete sidLink;
