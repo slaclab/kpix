@@ -180,7 +180,7 @@ KpixFpga::KpixFpga ( SidLink *sidLink ) {
 
    unsigned int  i;
    stringstream tempString;
- 
+
    // Copy version & address
    enDebug = false;
    valid   = true;
@@ -1361,8 +1361,10 @@ void KpixFpga::fpgaDebug ( bool debug ) {
 // Get valid flag
 bool KpixFpga::getValid ( ) { return(valid); }
 
+
 // Get debug flag
 bool KpixFpga::fpgaDebug ( ) { return(enDebug); }
+
 
 // Set Defaults
 void KpixFpga::setDefaults ( unsigned int clkPeriod, bool kpixVer, bool writeEn ) {

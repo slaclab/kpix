@@ -102,9 +102,7 @@ void KpixAsic::sendCommand ( unsigned char command, bool bcast ) {
    frameData[0]  = (command & 0x007F);
    frameData[0] |= 0x0080; // Write
    frameData[0] |= 0x0000; // Command
-   frameData[0] |= ((kpixAddress << 9)  & 0x0600); // Assign lower 2-bits of kpixAddress
-   frameData[0] |= ((kpixAddress << 10) & 0xF000); // Assign upper 4-bits of kpixAddress
-
+   frameData[0] |= ((kpixAddress << 9) & 0x0600);
    if ( bcast ) frameData[0] |= 0x0800;
 
    // word 1 & 2 are 0
@@ -145,8 +143,7 @@ void KpixAsic::regWrite ( unsigned char address ) {
       frameData[0]  = (address & 0x007F);
       frameData[0] |= 0x0080; // Write
       frameData[0] |= 0x0100; // Reg Access
-      frameData[0] |= ((kpixAddress << 9)  & 0x0600); // Assign lower 2-bits of kpixAddress
-      frameData[0] |= ((kpixAddress << 10) & 0xF000); // Assign upper 4-bits of kpixAddress
+      frameData[0] |= ((kpixAddress << 9) & 0x0600);
 
       // word 1 & 2
       frameData[1] = (regData[address] & 0xFFFF);
@@ -186,8 +183,7 @@ void KpixAsic::regRead ( unsigned char address ) {
       // Format command, word 0
       frameWrData[0]  = (address & 0x007F);
       frameWrData[0] |= 0x0100; // Reg Access
-      frameWrData[0] |= ((kpixAddress << 9)  & 0x0600); // Assign lower 2-bits of kpixAddress
-      frameWrData[0] |= ((kpixAddress << 10) & 0xF000); // Assign upper 4-bits of kpixAddress
+      frameWrData[0] |= ((kpixAddress << 9) & 0x0600);
 
       // word 1 & 2 are 0
       frameWrData[1] = 0;

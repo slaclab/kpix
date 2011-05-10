@@ -389,7 +389,6 @@ void KpixCalDist::runDistribution ( short channel ) {
                // Channel matches target & targetted range
                if ( (chan == channel || channel < 0) && ( (range==1 && gain==2) || range==0) ) {
                   idx = kpixIdx*4096 + chan*4 + bucket;
-                  cout << "KpixIdx = " << kpixIdx << ", Idx = " << idx << endl;
                   if ( value[idx] == NULL ) value[idx] = new KpixHistogram();
                   if ( time[idx]  == NULL ) time[idx]  = new KpixHistogram();
                   value[idx]->fill(sample->getSampleValue());
@@ -735,16 +734,16 @@ void KpixCalDist::runCalibration ( short channel ) {
                }
             }
 
-         // Log event count
-         if ( enDebug && prgCount % 0x10 == 0) {
-            cout << "KpixCalDist::runCalibration -> ";
-            cout << "KPIX=" << kpixAsic[0]->getAddress();
-            cout << ", Channel=";
-            if ( channel == -1 ) cout << "All, ";
-            else if ( channel == -2 ) cout << "None, ";
-            else cout << "0x" << hex << setw(3) << setfill('0') << channel << ", ";
-            cout << "Mode=" << gain << ", ";
-            cout << "DAC4=0x" << hex << setw(2) << setfill('0') << cal;
+            // Log event count
+            if ( enDebug && prgCount % 0x10 == 0) {
+               cout << "KpixCalDist::runCalibration -> ";
+               cout << "Range=" << range << " ";
+               cout << "Channel=";
+               if ( channel == -1 ) cout << "All, ";
+               else if ( channel == -2 ) cout << "None, ";
+               else cout << "0x" << hex << setw(3) << setfill('0') << channel << ", ";
+               cout << "Mode=" << gain << ", ";
+               cout << "DAC4=0x" << hex << setw(2) << setfill('0') << cal;
 
                // Display each buckets values
                for (x=0; x < 4; x++) {
@@ -785,7 +784,7 @@ void KpixCalDist::runCalibration ( short channel ) {
 
                // Channel matches target
                if ( chan == channel || channel < 0 ) {
-               cout << "Address=" << dec << kpixAsic[kpixIdx]->getAddress() << ", KpixIdx=" << dec << kpixIdx << endl;
+
                   // Each bucket
                   plotCount = 0;
                   for ( bucket = 0; bucket < 4; bucket++ ) {

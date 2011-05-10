@@ -41,7 +41,7 @@
 
 #include <string>
 #include <TObject.h>
-#include <TSAXParser.h>
+
 
 #ifdef ONLINE_EN
 class SidLink;
@@ -55,7 +55,6 @@ class KpixFpga : public TObject {
       bool          regWriteable[0x40]; // Register is writable
       bool          regReset[0x40];     // Register is a reset on write register
 
-      
       // Debug flag
       bool enDebug;
 

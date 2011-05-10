@@ -32,12 +32,6 @@
 #include <stdio.h>
 using namespace std;
 
-#define CAL_FILE "/u1/w_si/samples/2011_03_18_17_35_29_calib_dist/calib_dist_fit.root"
-#define VERSION  10
-#define SERIAL   1001
-#define BASE_DIR "/u1/w_si/samples"
-#define DEFAULTS "cosmic_run.xml"
-
 class HistData {
    public:
       uint last;
@@ -112,13 +106,14 @@ int main ( int argc, char **argv ) {
    stringstream   error;
 
    // Get settings
-   if ( argc != 4 ) {
-      cout << "Usage: cosmicRun address serial cal_file" << endl;
+   if ( argc < 3 ) {
+      cout << "Usage: cosmicRun address serial [cal_file]" << endl;
       return(1);
    }
    address     = atoi(argv[1]);
    serial      = atoi(argv[2]);
-   calFile     = argv[3];
+   if ( argc == 4 ) calFile = argv[3];
+   else calFile = NULL;
    kpixVersion = atoi(getenv("KPIX_VERSION"));
    baseDir     = getenv("KPIX_BASE_DIR");
    clkPeriod   = atoi(getenv("KPIX_CLK_PER"));
@@ -131,7 +126,7 @@ int main ( int argc, char **argv ) {
    cout << "Using the following settings:" << endl;
    cout << "   address: " << dec << address << endl;
    cout << "    serial: " << dec << serial << endl;
-   cout << "   calFile: " << calFile << endl;
+   cout << "   calFile: " << ((calFile==NULL)?"None":calFile) << endl;
    cout << "   version: " << dec << kpixVersion << endl;
    cout << "   dataDir: " << baseDir << endl;
    cout << "  defaults: " << defaultFile << endl;
@@ -139,13 +134,19 @@ int main ( int argc, char **argv ) {
    // Catch signals
    signal (SIGINT,&sigTerm);
 
-   try {
-      // Open calibration constants
-      calData = new KpixCalibRead(calFile);
-      calString = calData->kpixRunRead->getRunTime();
-   } catch ( string error ) {
-      cout << "Error opening calibration constants from " << CAL_FILE << endl;
-      return(1);
+   if ( calFile != NULL ) {
+      try {
+         // Open calibration constants
+         calData = new KpixCalibRead(calFile);
+         calString = calData->kpixRunRead->getRunTime();
+      } catch ( string error ) {
+         cout << "Error opening calibration constants from " << calFile << endl;
+         return(1);
+      }
+   }
+   else {
+      calString = "";
+      calData   = NULL;
    }
 
    // Cycle through runs
@@ -198,7 +199,7 @@ int main ( int argc, char **argv ) {
          for (x=0; x<2; x++) kpixRunWrite->addAsic (kpixAsic[x]);
 
          // Copy calibration data
-         calData->copyCalibData ( kpixRunWrite );
+         if ( calData != NULL ) calData->copyCalibData ( kpixRunWrite );
 
          // Dump config
          xmlConfig.writeConfig ((char *)cfgStart.str().c_str(), kpixFpga, kpixAsic, 2, true);
