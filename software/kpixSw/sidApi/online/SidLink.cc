@@ -329,7 +329,7 @@ int SidLink::linkFlush ( ) {
 }
 
 // Reset the device
-int SidLink::linkReset ( ) {
+void SidLink::linkReset ( ) {
    FT_STATUS      ftStatus;
    stringstream   error;
 

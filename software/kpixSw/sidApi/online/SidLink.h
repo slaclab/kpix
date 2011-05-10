@@ -106,7 +106,7 @@ class SidLink {
       int linkFlush ( );
 
       //! Reset the link
-      int linkReset ( );
+      void linkReset ( );
 
       //! Method to close the link
       void linkClose ();
