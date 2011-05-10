@@ -277,7 +277,12 @@ int main ( int argc, char **argv ) {
       if ( kpixAsic[0] != NULL ) delete kpixAsic[0];
       if ( kpixAsic[1] != NULL ) delete kpixAsic[1];
       if ( kpixFpga    != NULL ) delete kpixFpga;
-      if ( sidLink     != NULL ) delete sidLink;
+      if ( sidLink     != NULL ) {
+         sleep(1);
+         sidLink->linkClose();
+         sleep(1);
+         delete sidLink;
+      }
       sidLink      = NULL;
       kpixFpga     = NULL;
       kpixAsic[0]  = NULL;
