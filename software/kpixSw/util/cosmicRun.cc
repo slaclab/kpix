@@ -97,6 +97,8 @@ int main ( int argc, char **argv ) {
    unsigned int   address;
    unsigned int   clkPeriod;
    char *         baseDir;
+   char *         deviceStr;
+   int            deviceInt;
    unsigned int   kpixVersion;
    unsigned int   channel;
    unsigned int   value;
@@ -116,6 +118,7 @@ int main ( int argc, char **argv ) {
    else calFile = NULL;
    kpixVersion = atoi(getenv("KPIX_VERSION"));
    baseDir     = getenv("KPIX_BASE_DIR");
+   deviceStr   = getenv("KPIX_DEVICE");
    clkPeriod   = atoi(getenv("KPIX_CLK_PER"));
    defaultFile = "cosmicRun.xml";
 
@@ -124,12 +127,17 @@ int main ( int argc, char **argv ) {
  
    // Dump settings
    cout << "Using the following settings:" << endl;
+   cout << "    device: " << deviceStr << endl;
    cout << "   address: " << dec << address << endl;
    cout << "    serial: " << dec << serial << endl;
    cout << "   calFile: " << ((calFile==NULL)?"None":calFile) << endl;
    cout << "   version: " << dec << kpixVersion << endl;
    cout << "   dataDir: " << baseDir << endl;
    cout << "  defaults: " << defaultFile << endl;
+
+   // Determine Device
+   if ( strstr(deviceStr,"/dev") != NULL ) deviceInt = -1;
+   else deviceInt = atoi(deviceStr)
 
    // Catch signals
    signal (SIGINT,&sigTerm);
@@ -165,9 +173,10 @@ int main ( int argc, char **argv ) {
          cfgStart.str("");
          cfgStop.str("");
 
-         // Create simulation link
+         // Create link
          sidLink = new SidLink();
-         sidLink->linkOpen ( 0 );
+         if ( deviceInt == -1 ) sidLink->linkOpen(deviceStr);
+         else sidLink->linkOpen(deviceInt)
 
          // Create FPGA object, set defaults
          kpixFpga = new KpixFpga(sidLink);
