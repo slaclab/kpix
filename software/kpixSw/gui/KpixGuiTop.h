@@ -48,7 +48,7 @@ class KpixGuiThreshScan;
 class KpixGuiRun;
 
 // Max support KPIX Address
-#define KPIX_MAX_ADDR 32
+#define KPIX_MAX_ADDR 3
 
 
 class KpixGuiTop : public KpixGuiTopForm, public QThread {

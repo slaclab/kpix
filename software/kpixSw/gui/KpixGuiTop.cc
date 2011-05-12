@@ -487,7 +487,7 @@ void KpixGuiTop::run() {
                   cout << "Found ASIC at address 0x" << hex << x << endl;
                }
                catch ( string error ) {
-                  cout << error << ": No ASIC at address 0x" << hex << x << endl;
+                  cout << "No ASIC at address 0x" << hex << x << endl;
                   delete asic[asicCnt];
                }
             }
