@@ -137,7 +137,7 @@ int main ( int argc, char **argv ) {
 
    // Determine Device
    if ( strstr(deviceStr,"/dev") != NULL ) deviceInt = -1;
-   else deviceInt = atoi(deviceStr)
+   else deviceInt = atoi(deviceStr);
 
    // Catch signals
    signal (SIGINT,&sigTerm);
@@ -176,7 +176,7 @@ int main ( int argc, char **argv ) {
          // Create link
          sidLink = new SidLink();
          if ( deviceInt == -1 ) sidLink->linkOpen(deviceStr);
-         else sidLink->linkOpen(deviceInt)
+         else sidLink->linkOpen(deviceInt);
 
          // Create FPGA object, set defaults
          kpixFpga = new KpixFpga(sidLink);

@@ -39,7 +39,12 @@
 class SidLink {
 
       // Timeout Value
-      static const unsigned int Timeout = 125;
+      static const unsigned int Timeout = 500;
+
+      // Buffer to store values from ethernet
+      unsigned char rxBuffer[8192];
+      int head, tail;
+      bool last;
 
       // Values used for USB version 
       int   usbDevice;
@@ -120,7 +125,7 @@ class SidLink {
       /*! Pass word (16-bit) array and length
       Return number of words read
 		*/
-      int linkRawRead ( unsigned short int *data, short int size, unsigned char type, bool sof);
+      int linkRawRead ( unsigned short int *data, short int size, unsigned char type, bool sof, bool *eof);
 
       //! Method to write a word array to a KPIX device
       /*! Pass word (16-bit) array and length
@@ -138,7 +143,7 @@ class SidLink {
       /*! Pass word (16-bit) array, length and first read flag
       Return number of words read
 		*/
-      int linkDataRead ( unsigned short int *data, short int size, bool first );
+      int linkDataRead ( unsigned short int *data, short int size, bool first, bool *last );
 
       //! Method to write a word array to the FPGA device
       /*! Pass word (16-bit) array and length
@@ -154,6 +159,8 @@ class SidLink {
 
       //! Turn on or off debugging for the class
       void linkDebug ( bool debug );
-      
+
+      //! Clear the head and tail to enable new data to be stored in buffer
+      void linkBufClear ( );
 };
 #endif
