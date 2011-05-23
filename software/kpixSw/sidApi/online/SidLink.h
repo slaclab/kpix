@@ -39,7 +39,7 @@
 class SidLink {
 
       // Timeout Value
-      static const unsigned int Timeout = 500;
+      static const unsigned int Timeout = 125;
 
       // Buffer to store values from ethernet
       unsigned char rxBuffer[8192];
@@ -125,7 +125,18 @@ class SidLink {
       /*! Pass word (16-bit) array and length
       Return number of words read
 		*/
-      int linkRawRead ( unsigned short int *data, short int size, unsigned char type, bool sof, bool *eof);
+      int linkRawRead ( unsigned short int *data, short int size, unsigned char type, bool sof, int *eof );
+
+      //! Method to read a word array from a KPIX device, using UDP interface
+      /*! Pass word (16-bit) array and length
+      Return number of words read
+		*/
+      int linkRawReadUdp ( unsigned short int *data, short int size, unsigned char type, bool sof, int *eof );
+      //! Method to read a word array from a KPIX device, using USB interface
+      /*! Pass word (16-bit) array and length
+      Return number of words read
+		*/
+      int linkRawReadUsb ( unsigned short int *data, short int size, unsigned char type, bool sof);
 
       //! Method to write a word array to a KPIX device
       /*! Pass word (16-bit) array and length
@@ -143,13 +154,13 @@ class SidLink {
       /*! Pass word (16-bit) array, length and first read flag
       Return number of words read
 		*/
-      int linkDataRead ( unsigned short int *data, short int size, bool first, bool *last );
+      int linkDataRead ( unsigned short int *data, short int size, bool first, int *last );
 
       //! Method to write a word array to the FPGA device
       /*! Pass word (16-bit) array and length
       Return number of words written
 		*/
-		int linkFpgaWrite ( unsigned short int *data, short int size);
+      int linkFpgaWrite ( unsigned short int *data, short int size);
 
       //! Method to read a word array from the FPGA device
       /*! Pass word (16-bit) array and length

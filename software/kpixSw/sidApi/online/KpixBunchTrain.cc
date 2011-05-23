@@ -91,13 +91,14 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
    unsigned int   empty;
    unsigned int   special;
    unsigned short data[MaxSamples*3+10];
+   int            eof;
    stringstream   error;
 
    // Debug
    if ( debug ) cout << "KpixBunchTrain::KpixBunchTrain -> Creating new bunchTrain.\n";
 
    // Get header first
-   link->linkDataRead(data,2,true);
+   link->linkDataRead(data,2,true,&eof);
    if ( debug ) cout << "KpixBunchTrain::KpixBunchTrain -> Read Header.\n";
    totalCount = 0;
 
@@ -105,7 +106,7 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
    while ( 1 ) {
 
       // Read three words
-      link->linkDataRead(&(data[totalCount*3+2]),3,false);
+      link->linkDataRead(&(data[totalCount*3+2]),3,false,&eof);
       if ( debug ) cout << "KpixBunchTrain::KpixBunchTrain -> Read Sample. Count=" << dec << totalCount << "\n";
 
       // Is this the end?
@@ -176,7 +177,7 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
    // Check checksum
    if ( checkSum != data[totalCount*3+2+2] ) {
       error.str("");
-      error << "KpixBunchTrain::KpixBunchTrain -> Checksum Error. TotalCount=" << dec << totalCount;
+      error << "KpixBunchTrain::KpixBunchTrain -> Checksum Error. Expected=" << dec << checkSum << ", Got=" << data[totalCount*3+2+2];
       for ( x=0; x < totalCount; x++) delete samplesByTime[x];
       totalCount = 0;
       throw(error.str());
@@ -220,6 +221,7 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug ) {
 
    // Throw exception on parity errors
    if ( parErrors > 0 ) throw(string("KpixBunchTrain::KpixBunchTrain -> Errors Detected."));
+
 }
 
 

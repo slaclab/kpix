@@ -511,11 +511,162 @@ int SidLink::linkRawWrite (unsigned short *data, short int size, unsigned char t
    return(size);
 }
 
-
 // Method to read a word array from a KPIX device, raw interface
 // Pass word (16-bit) array and length
 // Return number of words read
-int SidLink::linkRawRead ( unsigned short *data, short int size, unsigned char type, bool sof){
+int SidLink::linkRawRead ( unsigned short *data, short int size, unsigned char type, bool sof, int *eof ){
+   // Check if no links are open
+   if ( serFd < 0 && usbDevice < 0 && udpFd < 0 ) throw string("SidLink::linkRawRead -> KPIX Link Not Open");
+
+   // UDP device is open
+   if ( udpFd >= 0 )
+      return(linkRawReadUdp(data, size, type, sof, eof));
+   else {
+      *eof = -1;
+      return(linkRawReadUsb(data, size, type, sof));
+   }
+}
+
+// Method to read a word array from a KPIX device using UDP interface
+// Pass word (16-bit) array and length
+// Return number of words read
+int SidLink::linkRawReadUdp ( unsigned short *data, short int size, unsigned char type, bool sof, int *eof ){
+   unsigned char  byteData[8192];
+   unsigned long  newSize;
+   unsigned long  rcount;
+   unsigned long  rxBytes;
+   int            ret;
+   stringstream   error;
+   unsigned int   i;
+   unsigned int   rtotal;
+   unsigned int   toCount;
+   unsigned int   wordCnt;
+   unsigned int   udpAddrLength;
+   struct timeval timeout;
+   fd_set         fds;
+   bool           rSof;
+   unsigned char  rType;
+
+   // First create byte array to contain byte
+   newSize = size * 2;
+
+   // Debug
+   if ( enDebug ) cout << "SidLink::linkRawRead -> Reading!\n";
+
+   // Read until we get amount of data we want
+   rtotal  = 0;
+   toCount = 0;
+
+   while ( rtotal < newSize ) {
+   // If data is still available
+      if ( head < tail ) {
+         if ( enDebug ) cout << "NewSize = " << dec << newSize << ", Head = " << head << ", Tail = " << tail
+              << ", rTotal = " << rtotal << ", Data = 0x" << hex << (int)rxBuffer[head] << endl;
+         byteData[rtotal++] = rxBuffer[head++];
+      }
+      else {
+         // UDP device is open
+         if ( udpFd >= 0 ) {
+            timeout.tv_sec=0;
+            timeout.tv_usec=1;
+            FD_ZERO(&fds);
+            FD_SET(udpFd,&fds);
+
+            // Is data waiting?
+            ret = select(udpFd+1,&fds,NULL,NULL,&timeout);
+            if ( ret < 0 || FD_ISSET(udpFd,&fds) == 0 ) {
+               rcount = 0;
+            }
+            else {
+               udpAddrLength = sizeof(struct sockaddr_in);
+               ret = recvfrom(udpFd,&rxBuffer,8192,0,(struct sockaddr *)udpAddr,&udpAddrLength);
+               if ( ret > 0 ) {
+                 head = 1; tail = ret-1;
+                 rSof  = (rxBuffer[0] >> 7)     & 0x1;
+                 rType = (rxBuffer[0] >> 5)     & 0x3;
+                 last  = (rxBuffer[ret-1] >> 7) & 0x1;
+                 rcount = ret;
+               }
+               else { head = 1;tail = -1;rcount = 0; }
+               if ( enDebug ) cout << "rCount = " << dec << rcount << ", rTotal = " << rtotal
+                                   << ", Head = " << head << ", Tail = " << tail << ", SOF = " << rSof << ", Type = " << (int)rType << endl;
+            }
+         }
+
+         // Update total
+         if ( rcount != 0 ) {
+            toCount = 0;
+         }
+         // Check for timeout
+         else if ( timeoutEn ) {
+            toCount++;
+            if ( toCount >= Timeout ) {
+               tail = -1;
+               // Flush the link
+
+               error << "SidLink::linkRawRead -> Read Timeout. Read ";
+               error << dec << rtotal << " Bytes. Max Buffer=" << dec << maxRxSize;
+               error << ", Flush=" << dec << linkFlush();
+               error << ", Size=" << dec << size;
+               error << ", RxBytes=" << dec << rxBytes;
+               if ( enDebug ) cout << error.str() << endl;
+               throw error.str();
+            }
+            usleep(1000);
+         }
+
+         // Wait longer for simulation, 10mS
+         else usleep(10000);
+      }
+   }
+
+   // Debug if enabled
+   if ( enDebug ) {
+      cout << "SidLink::linkRawRead -> Read data:";
+      for (i=0; i< rtotal; i++)
+         cout << " 0x" << setw(2) << setfill('0') << hex << (int)byteData[i];
+      cout << "\n";
+   }
+
+   // Check word type
+   if ( head == newSize && rType != type ) { //((byteData[i] >> 4) & 0x03)
+      cout << "Expected Word Type : " << hex << (int)type << ", Got : " << (int)rType << endl; //(byteData[i] & 0x30)
+      throw(string("SidLink::linkRawRead -> Word Type Mimsatch"));
+   }
+
+   // Check SOF
+   if ( head == newSize && sof != rSof ) { //((byteData[i] & 0x40) != 0))
+      throw(string("SidLink::linkRawRead -> SOF Mimsatch"));
+   }
+
+   // Process each byte of read data
+   wordCnt = 0;
+      for (i=0; i < rtotal; i+=2) {
+         // Extract Data
+         data[wordCnt]  = (byteData[i] <<  8) & 0xFF00;
+         data[wordCnt] |=  byteData[i+1] & 0xFF;
+         wordCnt++;
+      }
+
+   // Debug if enabled
+   if ( enDebug ) {
+      cout << "SidLink::linkRawRead -> Read data from UDP:";
+      cout << " Sof=" << sof << ", Type=" << (int)type << ", Size=" << size << ":";
+      for (i=0; i< (unsigned int)size; i++)
+         cout << " 0x" << setw(4) << setfill('0') << hex << (int)data[i];
+      cout << "\n";
+   }
+
+   if( last == 1 && head == tail ) *eof = 1;
+   else *eof = 0;
+
+   return(wordCnt);
+}
+
+// Method to read a word array from a KPIX device using USB interface
+// Pass word (16-bit) array and length
+// Return number of words read
+int SidLink::linkRawReadUsb ( unsigned short *data, short int size, unsigned char type, bool sof ){
 
    unsigned char  *byteData;
    unsigned long  newSize;
@@ -535,9 +686,6 @@ int SidLink::linkRawRead ( unsigned short *data, short int size, unsigned char t
    struct timeval timeout;
    fd_set         fds;
 
-   // Check if no links are open
-   if ( serFd < 0 && usbDevice < 0 && udpFd < 0 ) throw string("SidLink::linkRawRead -> KPIX Link Not Open");
-
    // First create byte array to contain byte
    newSize = size * 3;
    byteData = (unsigned char *) malloc(newSize);
@@ -554,24 +702,6 @@ int SidLink::linkRawRead ( unsigned short *data, short int size, unsigned char t
    rtotal  = 0;
    toCount = 0;
    while ( rtotal < newSize ) {
-
-      // UDP device is open
-      if ( udpFd >= 0 ) {
-         timeout.tv_sec=0;
-         timeout.tv_usec=1;
-         FD_ZERO(&fds);
-         FD_SET(udpFd,&fds);
-
-         // Is data waiting?
-         ret = select(udpFd+1,&fds,NULL,NULL,&timeout);
-         if ( ret < 0 || FD_ISSET(udpFd,&fds) == 0 ) rcount = 0;
-         else {
-            udpAddrLength = sizeof(struct sockaddr_in);
-            ret = recvfrom(udpFd,&(byteData[rtotal]),(newSize-rtotal),0,(struct sockaddr *)udpAddr,&udpAddrLength);
-            if ( ret > 0 ) rcount = ret;
-            else rcount = 0;
-         }
-      }
 
       // Serial device is open
       if ( fdes >= 0 ) {
@@ -700,8 +830,9 @@ int SidLink::linkKpixWrite ( unsigned short int *data, short int size) {
 
   // Sim Mode, all bytes are echoed
   if ( serFdRd > 0 ) {
+     int eof;
      linkRawWrite (data, size, 0, true);
-     return(linkRawRead  (data, size, 0, true));
+     return(linkRawRead  (data, size, 0, true, &eof));
   }
 
   // Normal Mode
@@ -713,15 +844,16 @@ int SidLink::linkKpixWrite ( unsigned short int *data, short int size) {
 // Pass word (16-bit) array and length
 // Return number of words read
 int SidLink::linkKpixRead ( unsigned short int *data, short int size ) {
-  return(linkRawRead (data, size, 0, true));
+  int eof;
+  return(linkRawRead (data, size, 0, true, &eof));
 }
 
 
 // Method to read a word array from a KPIX device, sample data
 // Pass word (16-bit) array, length and first read flag
 // Return number of words read
-int SidLink::linkDataRead ( unsigned short int *data, short int size, bool first ) {
-  return(linkRawRead (data, size, 1, first));
+int SidLink::linkDataRead ( unsigned short int *data, short int size, bool first, int *last ) {
+  return(linkRawRead (data, size, 1, first, last));
 }
 
 
@@ -732,8 +864,9 @@ int SidLink::linkFpgaWrite ( unsigned short int *data, short int size) {
 
   // Sim Mode, all bytes are echoed
   if ( serFdRd > 0 ) {
+     int eof;
      linkRawWrite (data, size, 2, true);
-     return(linkRawRead  (data, size, 2, true));
+     return(linkRawRead  (data, size, 2, true, &eof));
   }
 
   // Normal Mode
@@ -745,10 +878,13 @@ int SidLink::linkFpgaWrite ( unsigned short int *data, short int size) {
 // Pass word (16-bit) array and length
 // Return number of words read
 int SidLink::linkFpgaRead ( unsigned short int *data, short int size ) {
-  return(linkRawRead (data, size, 2, true));
+  int eof;
+  return(linkRawRead (data, size, 2, true, &eof));
 }
 
 
 // Turn on or off debugging for the class
 void SidLink::linkDebug ( bool debug ) { enDebug = debug; }
 
+// Clear the head and tail to enable new data to be stored in buffer
+void SidLink::linkBufClear ( ) {head = 0; tail = -1;}
