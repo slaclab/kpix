@@ -236,7 +236,7 @@ class KpixFpga : public TObject {
       // Set readEn to false to disable real read from FPGA.
       unsigned short getClockPeriod ( bool readEn=true );
 
-      // Method to set FPGA digiization clock register.
+      // Method to set FPGA digitization clock register.
       // Default value = 50ns (20Mhz)
       // Pass value containing the desired clock period. Valid values are
       // multiples of 10ns from 10ns to 320 ns.
@@ -257,6 +257,28 @@ class KpixFpga : public TObject {
       // Method to set FPGA readout clock period.
       // Set readEn to false to disable real read from FPGA.
       unsigned short getClockPeriodRead ( bool readEn=true );
+
+      // Method to set Kpix Data Read Delay.
+      // Default value = 4
+      // Pass value containing the desired delay. Valid values are
+      // 0 to 8.
+      // Set writeEn to false to disable real write to KPIX
+      void setKpixReadDelay ( unsigned short delay, bool writeEn=true );
+
+      // Method to get Kpix Data Read Delay.
+      // Set readEn to false to disable real read from FPGA.
+      unsigned short getKpixReadDelay ( bool readEn=true );
+
+      // Method to set the clock edge to read Kpix Data.
+      // Default value = 1
+      // Pass value containing the desired delay. Valid values are
+      // 0 and 1.
+      // Set writeEn to false to disable real write to KPIX
+      void setKpixReadEdge ( unsigned short edge, bool writeEn=true );
+
+      // Method to get Kpix Data Read Edge.
+      // Set readEn to false to disable real read from FPGA.
+      unsigned short getKpixReadEdge ( bool readEn=true );
 
       // Method to get FPGA receive checksum error counter
       // Set readEn to false to disable real read from FPGA.

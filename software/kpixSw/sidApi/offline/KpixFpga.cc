@@ -645,6 +645,111 @@ unsigned short KpixFpga::getClockPeriodRead ( bool readEn ) {
    return(ret);
 }
 
+// Method to set Kpix Data Read Delay.
+// Default value = 3
+// Pass value containing the desired delay. Valid values are
+// 0 to 8.
+// Set writeEn to false to disable real write to KPIX
+void KpixFpga::setKpixReadDelay ( unsigned short delay, bool writeEn ) {
+
+   unsigned int value;
+   unsigned int clkSel, clkSelA, clkSelB, clkSelC, clkSelD;
+   
+   // Get register
+   clkSel  = regGetValue(0x03,false);
+   clkSelA = clkSel & 0xFF;
+   clkSelB = clkSel & 0xFF00; clkSelB = clkSelB >> 8;
+   clkSelC = clkSel & 0xFF0000; clkSelC = clkSelC >> 16;
+   clkSelD = clkSel & 0xFF000000; clkSelD = clkSelD >> 24;
+
+   // Verify range
+   if ( delay > clkSelA || delay > clkSelB || delay > clkSelC || delay > clkSelD ) 
+      throw string("KpixFpga::setKpixReadDelay -> Invalid Value");
+
+   // Get register
+   value  = regGetValue(0x05,false);
+   
+   // Output value
+   if ( enDebug ) {
+      cout << "KpixFpga::setKpixReadDelay -> Set KpixReadDelay =";
+      cout << setw(3) << setfill('0') << dec << delay << " clk cycles";
+      cout << ", WriteEn=" << writeEn << ".\n";
+   }
+
+   // Set proper bits
+   value &= 0xFFFFFF00;
+   value |= (delay & 0xFF);
+
+   // Set register
+   regSetValue(0x05,value,writeEn);
+}
+
+
+// Method to get Kpix Data Read Delay.
+// Set readEn to false to disable real read from FPGA.
+unsigned short KpixFpga::getKpixReadDelay ( bool readEn ) {
+
+   // Get Value
+   unsigned int val = regGetValue ( 0x05, readEn );
+
+   // Convert value
+   unsigned short ret = val & 0xFF;
+
+   // Debug
+   if ( enDebug ) {
+      cout << "KpixFpga::getKpixReadDelay -> KpixReadDelay=";
+      cout << hex << setfill('0') << setw(1) << ret << ".\n";
+   }
+   return(ret);
+}
+
+
+// Method to set the clock edge to read Kpix Data.
+// Default value = 1
+// Pass value containing the desired delay. Valid values are
+// 0 and 1.
+// Set writeEn to false to disable real write to KPIX
+void KpixFpga::setKpixReadEdge ( unsigned short edge, bool writeEn ) {
+
+   unsigned int value;
+   
+   // Get register
+   value  = regGetValue(0x05,false);
+   
+   // Output value
+   if ( enDebug ) {
+      cout << "KpixFpga::setKpixReadEdge -> Set KpixReadEdge =";
+      cout << setw(3) << setfill('0') << dec << edge << " edge";
+      cout << ", WriteEn=" << writeEn << ".\n";
+   }
+
+   // Set proper bits
+   value &= 0xFFFF00FF;
+   value |= ((edge << 8) & 0xFF00);
+
+   // Set register
+   regSetValue(0x05,value,writeEn);
+}
+
+
+// Method to get Kpix Data Read Edge.
+// Set readEn to false to disable real read from FPGA.
+unsigned short KpixFpga::getKpixReadEdge ( bool readEn ) {
+
+   // Get Value
+   unsigned int val = regGetValue ( 0x05, readEn );
+
+   // Convert value
+   unsigned short ret = val & 0xFF00;
+
+   // Debug
+   if ( enDebug ) {
+      cout << "KpixFpga::getKpixReadEdge -> KpixReadEdge=";
+      cout << hex << setfill('0') << setw(1) << ret << ".\n";
+   }
+   return(ret);
+}
+
 
 // Method to get FPGA receive checksum error counter
 // Set readEn to false to disable real read from FPGA.
