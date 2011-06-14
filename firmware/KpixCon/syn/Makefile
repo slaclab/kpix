@@ -34,6 +34,7 @@ tran:
 	@cd $(TOP_DIR)/build/$(PROJECT); ngdbuild \
       -f $(TOP_DIR)/syn/ngdbuild_options.txt \
       -sd $(TOP_DIR)/xil_cores \
+      -sd $(TOP_DIR)/eth_client/xil_cores \
       -dd $(TOP_DIR)/build/$(PROJECT)/bld \
       -uc $(TOP_DIR)/rtl/$(PROJECT).ucf \
       $(TOP_DIR)/build/$(PROJECT)/syn/$(PROJECT).edn \

@@ -48,24 +48,38 @@ add_file $core_dir/rtl_v7/readout_control_v7.vhd
 add_file $core_dir/rtl_v7/reg_rw_32_v7.vhd
 
 ## RTL Source Files
-add_file $top_dir/rtl/Usb.vhd
-add_file $top_dir/rtl/UsbWord.vhd
+add_file $top_dir/eth_client/rtl/1g/EthClientPackage.vhd
+add_file $top_dir/eth_client/rtl/1g/EthClientUdp.vhd
+add_file $top_dir/eth_client/rtl/1g/EthClientArp.vhd
+add_file $top_dir/eth_client/rtl/1g/EthClient.vhd
+add_file $top_dir/eth_client/rtl/1g/EthClientGtpTxRst.vhd
+add_file $top_dir/eth_client/rtl/1g/EthClientGtpRxRst.vhd
+add_file $top_dir/eth_client/rtl/1g/EthClientLoop.vhd
+add_file $top_dir/eth_client/rtl/1g/EthClientTest.vhd
+add_file $top_dir/eth_client/rtl/1g/EthClientGtp.vhd
+add_file $top_dir/eth_client/rtl/1g/EthInterface.vhd
+add_file $top_dir/rtl/KpixConPkg.vhd
 add_file $top_dir/rtl/KpixRspRx.vhd
 add_file $top_dir/rtl/KpixDataRx.vhd
 add_file $top_dir/rtl/KpixTrigRec.vhd
 add_file $top_dir/rtl/DownstreamData.vhd
+add_file $top_dir/rtl/KpixRespData.vhd
 add_file $top_dir/rtl/KpixTrainData.vhd
+add_file $top_dir/rtl/KpixDdrDataRx.vhd
+add_file $top_dir/rtl/KpixDdrData.vhd
 add_file $top_dir/rtl/KpixLocal.vhd
 add_file $top_dir/rtl/UpstreamData.vhd
 add_file $top_dir/rtl/KpixCmdTx.vhd
 add_file $top_dir/rtl/CmdControl.vhd
 add_file $top_dir/rtl/KpixControl.vhd
+add_file $top_dir/rtl/EthTestCounter.vhd
+add_file $top_dir/rtl/KpixDataFrmtr.vhd
 add_file $top_dir/rtl/KpixConCore.vhd
 add_file $top_dir/rtl/KpixCon.vhd
 
 ## Additional map options
 set_option -frequency 20
-set_option -disable_io_insertion 1
+set_option -disable_io_insertion 0
 
 ## Additional placeAndRoute options
 set_option -write_apr_constraint 0

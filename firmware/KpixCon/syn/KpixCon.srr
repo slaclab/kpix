@@ -1,0 +1,40 @@
+#Build: Synplify Premier with Design Planner D-2010.03, Build 093R, Feb 19 2010
+#install: /afs/slac.stanford.edu/g/reseng/vol9/synopsys/D-2010.03/fpga
+#OS: Linux
+
+#Hostname: ppa-pc83238-l
+
+$ Start of Compile
+#Fri Apr 22 12:50:37 2011
+
+Synopsys VHDL Compiler, version comp500rc, Build 027R, built Feb 19 2010
+Copyright (C) 1994-2010, Synopsys Inc.  All Rights Reserved
+
+@N: CD720 :"/afs/slac.stanford.edu/g/reseng/vol9/synopsys/D-2010.03/fpga/lib/vhd/std.vhd":123:18:123:21|Setting time resolution to ns
+@N:"/u/re/ausoori/projects/w_si/devel/firmware/KpixCon/syn/../rtl/KpixCon.vhd":27:7:27:13|Top entity is set to KpixCon.
+@E: CD255 :"/u/re/ausoori/projects/w_si/devel/firmware/KpixCon/syn/../rtl/KpixDdrData.vhd":468:21:468:23|No identifier "memrden" in scope
+1 error parsing file /u/re/ausoori/projects/w_si/devel/firmware/KpixCon/syn/../rtl/KpixDdrData.vhd
+@END
+1 error parsing file /u/re/ausoori/projects/w_si/devel/firmware/KpixCon/syn/../rtl/KpixLocal.vhd
+@END
+1 error parsing file /u/re/ausoori/projects/w_si/devel/firmware/KpixCon/syn/../rtl/UpstreamData.vhd
+@END
+1 error parsing file /u/re/ausoori/projects/w_si/devel/firmware/KpixCon/syn/../rtl/KpixCmdTx.vhd
+@END
+1 error parsing file /u/re/ausoori/projects/w_si/devel/firmware/KpixCon/syn/../rtl/CmdControl.vhd
+@END
+1 error parsing file /u/re/ausoori/projects/w_si/devel/firmware/KpixCon/syn/../rtl/KpixControl.vhd
+@END
+1 error parsing file /u/re/ausoori/projects/w_si/devel/firmware/KpixCon/syn/../rtl/EthTestCounter.vhd
+@END
+1 error parsing file /u/re/ausoori/projects/w_si/devel/firmware/KpixCon/syn/../rtl/KpixDataFrmtr.vhd
+@END
+1 error parsing file /u/re/ausoori/projects/w_si/devel/firmware/KpixCon/syn/../rtl/KpixConCore.vhd
+@END
+1 error parsing file /u/re/ausoori/projects/w_si/devel/firmware/KpixCon/syn/../rtl/KpixCon.vhd
+@END
+@E|Parse errors encountered - exiting
+Process took 0h:00m:01s realtime, 0h:00m:01s cputime
+# Fri Apr 22 12:50:38 2011
+
+###########################################################]
