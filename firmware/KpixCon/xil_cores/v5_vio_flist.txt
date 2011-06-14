@@ -1,0 +1,12 @@
+# Output products list for <v5_vio>
+_xmsgs/pn_parser.xmsgs
+v5_vio.cdc
+v5_vio.gise
+v5_vio.ngc
+v5_vio.vhd
+v5_vio.vho
+v5_vio.xco
+v5_vio.xise
+v5_vio_flist.txt
+v5_vio_readme.txt
+v5_vio_xmdf.tcl

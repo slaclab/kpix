@@ -1,0 +1,11 @@
+# Output products list for <v5_icon>
+_xmsgs/pn_parser.xmsgs
+v5_icon.gise
+v5_icon.ngc
+v5_icon.vhd
+v5_icon.vho
+v5_icon.xco
+v5_icon.xise
+v5_icon_flist.txt
+v5_icon_readme.txt
+v5_icon_xmdf.tcl
