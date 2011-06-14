@@ -1,0 +1,454 @@
+ #-----------------------------------------------------------------------------
+# Title         : Optical Interface FPGA Constraints File
+# Project       : W_SI KPIX Test FPGA
+#-----------------------------------------------------------------------------
+# File          : KpixCon.ucf
+# Author        : Ryan Herbst, rherbst@slac.stanford.edu
+# Created       : 07/07/2010
+#-----------------------------------------------------------------------------
+# Description:
+# This file contains all of the user constraints required to implement the
+# Optical Interface FPGA.
+#-----------------------------------------------------------------------------
+# Copyright (c) 2010 by Ryan Herbst. All rights reserved.
+#-----------------------------------------------------------------------------
+# Modification history
+# 07/07/2010: created.
+#-----------------------------------------------------------------------------
+CONFIG PART = XC5VLX50T-FF1136-1;
+
+#-----------------------------------------------------------------------------
+#-------------------------- Timing Constraints -------------------------------
+#-----------------------------------------------------------------------------
+# This section contains the timing constraints for the FPGA
+#-----------------------------------------------------------------------------
+
+# Define system clocks
+NET dllClk125 TNM_NET = FFS dllClk125;
+NET dllClk200 TNM_NET = FFS dllClk200;
+NET divClk    TNM_NET = FFS divClk;
+NET ddrClk    TNM_NET = FFS ddrClk;
+NET gtpClk    TNM_NET = FFS gtpClk;
+NET gtpClkRef TNM_NET = FFS gtpClkRef;
+
+# 60 Mhz System Clock
+TIMESPEC TS_dllClk125 = PERIOD dllClk125 125 Mhz HIGH 50%;
+TIMESPEC TS_dllClk200 = PERIOD dllClk200 200 Mhz HIGH 50%;
+TIMESPEC TS_ddrClk    = PERIOD ddrClk    125 Mhz HIGH 50%;
+TIMESPEC TS_divClk    = PERIOD divClk    60  Mhz HIGH 50%;
+TIMESPEC TS_gtpClk    = PERIOD gtpClk    125 Mhz HIGH 50%;
+TIMESPEC TS_gtpClkRef = PERIOD gtpClkRef 125 Mhz HIGH 50%;
+
+# Nets to ignore for timing
+NET "iFpgaRstL"      TIG;
+
+# Define time groups for inter-clock constraints
+TIMEGRP TG_dllClk125_r = RISING  dllClk125;
+TIMEGRP TG_dllClk200_r = RISING  dllClk200;
+TIMEGRP TG_divClk_r    = RISING  divClk;
+TIMEGRP TG_divClk_f    = FALLING divClk;
+
+# Inter Domain Constraints
+TIMESPEC TS_dllClk125_divClk  = FROM TG_dllClk125_r TO TG_divClk_r     8ns;
+TIMESPEC TS_divClk_dllClk125  = FROM TG_divClk_r    TO TG_dllClk125_r  8ns;
+TIMESPEC TS_divClk_dllClk200  = FROM TG_divClk_r    TO TG_dllClk200_r  8ns;
+
+# From To Delay Controls For Trigger Logic
+TIMEGRP  TG_TRIG_SRC = PADS("iNimInA") PADS("iNimInB") PADS("iBncInA") PADS("iBncInB");
+TIMEGRP  TG_TRIG_DST = PADS("oForceTrig");
+TIMESPEC TS_TRIG_IN  = FROM TG_TRIG_SRC TO FFS         6ns;
+TIMESPEC TS_TRIG_OUT = FROM FFS         TO TG_TRIG_DST 6ns;
+
+#-----------------------------------------------------------------------------
+#-------------------------- Global Clock & DCM Constraints -------------------
+#-----------------------------------------------------------------------------
+# This section defines how the global clocks in the design are allocated
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+#-------------------------- DCM Configurations -------------------------------
+#-----------------------------------------------------------------------------
+# This section defines parameters for the DCMs in this design
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+#-------------------------- Pin Location Constraints -------------------------
+#-----------------------------------------------------------------------------
+# This section contains the pin location constraints for the design
+#-----------------------------------------------------------------------------
+
+NET "iFpgaRstL"       LOC = "J14";
+NET "iSysClk125P"     LOC = "K17";
+NET "iSysClk125N"     LOC = "L18";
+NET "iJumpL(3)"       LOC = "AA24"; # Connected to dummy pin
+NET "iJumpL(2)"       LOC = "AA25"; # Connected to dummy pin
+NET "iJumpL(1)"       LOC = "AA26"; # Connected to dummy pin
+NET "iJumpL(0)"       LOC = "AA28"; # Connected to dummy pin
+NET "oLedL(3)"        LOC = "AH10";
+NET "oLedL(2)"        LOC = "AH8";
+NET "oLedL(1)"        LOC = "AF11";
+NET "oLedL(0)"        LOC = "AJ10";
+NET "oForceTrig"      LOC = "H23";
+NET "oClkOutA"        LOC = "N7";
+NET "oClkOutB"        LOC = "N8";
+NET "oClkOutC"        LOC = "M5";
+NET "oClkOutD"        LOC = "M6";
+NET "oReset"          LOC = "P5";
+NET "oCommand(0)"     LOC = "L4";
+NET "oCommand(1)"     LOC = "L5";
+NET "oCommand(2)"     LOC = "P7";
+NET "oCommand(3)"     LOC = "P6";
+NET "oCommand(4)"     LOC = "K7";
+NET "oCommand(5)"     LOC = "K6";
+NET "oCommand(6)"     LOC = "R6";
+NET "oCommand(7)"     LOC = "T6";
+NET "oCommand(8)"     LOC = "J6";
+NET "oCommand(9)"     LOC = "J5";
+NET "oCommand(10)"    LOC = "R7";
+NET "oCommand(11)"    LOC = "R8";
+NET "oCommand(12)"    LOC = "T8";
+NET "oCommand(13)"    LOC = "U7";
+NET "oCommand(14)"    LOC = "H7";
+NET "oCommand(15)"    LOC = "J7";
+NET "oCommand(16)"    LOC = "R9";
+NET "oCommand(17)"    LOC = "P9";
+NET "oCommand(18)"    LOC = "H5";
+NET "oCommand(19)"    LOC = "G5";
+NET "oCommand(20)"    LOC = "R11";
+NET "oCommand(21)"    LOC = "P10";
+NET "oCommand(22)"    LOC = "F5";
+NET "oCommand(23)"    LOC = "F6";
+NET "oCommand(24)"    LOC = "T10";
+NET "oCommand(25)"    LOC = "T11";
+NET "oCommand(26)"    LOC = "G6";
+NET "oCommand(27)"    LOC = "G7";
+NET "oCommand(28)"    LOC = "T9";
+NET "oCommand(29)"    LOC = "U10";
+NET "oCommand(30)"    LOC = "E6";
+NET "oCommand(31)"    LOC = "E7";
+NET "iData(0)"        LOC = "D11";
+NET "iData(1)"        LOC = "D10";
+NET "iData(2)"        LOC = "K11";
+NET "iData(3)"        LOC = "J11";
+NET "iData(4)"        LOC = "D12";
+NET "iData(5)"        LOC = "C12";
+NET "iData(6)"        LOC = "H10";
+NET "iData(7)"        LOC = "H9";
+NET "iData(8)"        LOC = "A13";
+NET "iData(9)"        LOC = "B12";
+NET "iData(10)"       LOC = "J10";
+NET "iData(11)"       LOC = "J9";
+NET "iData(12)"       LOC = "K8";
+NET "iData(13)"       LOC = "K9";
+NET "iData(14)"       LOC = "B13";
+NET "iData(15)"       LOC = "C13";
+NET "iData(16)"       LOC = "L10";
+NET "iData(17)"       LOC = "L11";
+NET "iData(18)"       LOC = "G11";
+NET "iData(19)"       LOC = "G12";
+NET "iData(20)"       LOC = "M8";
+NET "iData(21)"       LOC = "L8";
+NET "iData(22)"       LOC = "F11";
+NET "iData(23)"       LOC = "E11";
+NET "iData(24)"       LOC = "M10";
+NET "iData(25)"       LOC = "L9";
+NET "iData(26)"       LOC = "E12";
+NET "iData(27)"       LOC = "E13";
+NET "iData(28)"       LOC = "N10";
+NET "iData(29)"       LOC = "N9";
+NET "iData(30)"       LOC = "F13";
+NET "iData(31)"       LOC = "G13";
+NET "iBncInA"         LOC = "H22";
+NET "iBncInB"         LOC = "G22";
+NET "oBncOutA"        LOC = "K12";
+NET "oBncOutB"        LOC = "K13";
+NET "iNimInA"         LOC = "K14";
+NET "iNimInB"         LOC = "L14";
+NET "oDacDin"         LOC = "AB28"; # Connected to dummy pin
+NET "oDacCsL"         LOC = "AG28"; # Connected to dummy pin
+NET "oDacSclk"        LOC = "AH28"; # Connected to dummy pin
+NET "oDacClrL"        LOC = "AE28"; # Connected to dummy pin
+NET "ddr0ClkOutP"     LOC = "AD30";
+NET "ddr0ClkOutN"     LOC = "AC29";
+NET "ddr0LdL"         LOC = "AE34";
+NET "ddr0RdNWr"       LOC = "AF34";
+NET "ddr0Addr(0)"     LOC = "AE33";
+NET "ddr0Addr(1)"     LOC = "AF33";
+NET "ddr0Addr(2)"     LOC = "AB33";
+NET "ddr0Addr(3)"     LOC = "AC33";
+NET "ddr0Addr(4)"     LOC = "AB32";
+NET "ddr0Addr(5)"     LOC = "AC32";
+NET "ddr0Addr(6)"     LOC = "AD34";
+NET "ddr0Addr(7)"     LOC = "Y34";
+NET "ddr0Addr(8)"     LOC = "AA34";
+NET "ddr0Addr(9)"     LOC = "AA33";
+NET "ddr0Addr(10)"    LOC = "Y33";
+NET "ddr0Addr(11)"    LOC = "V29";
+NET "ddr0Addr(12)"    LOC = "W29";
+NET "ddr0Addr(13)"    LOC = "Y31";
+NET "ddr0Addr(14)"    LOC = "W31";
+NET "ddr0Addr(15)"    LOC = "V30";
+NET "ddr0Addr(16)"    LOC = "W27";
+NET "ddr0Addr(17)"    LOC = "Y27";
+NET "ddr0Addr(18)"    LOC = "W25";
+NET "ddr0Addr(19)"    LOC = "V25";
+NET "ddr0Addr(20)"    LOC = "W26";
+NET "ddr0Addr(21)"    LOC = "Y26";
+NET "ddr0Data(0)"     LOC = "AP32";
+NET "ddr0Data(1)"     LOC = "AN32";
+NET "ddr0Data(2)"     LOC = "AN33";
+NET "ddr0Data(3)"     LOC = "AN34";
+NET "ddr0Data(4)"     LOC = "AM32";
+NET "ddr0Data(5)"     LOC = "AM33";
+NET "ddr0Data(6)"     LOC = "AL33";
+NET "ddr0Data(7)"     LOC = "AL34";
+NET "ddr0Data(8)"     LOC = "AK32";
+NET "ddr0Data(9)"     LOC = "AG32";
+NET "ddr0Data(10)"    LOC = "AK33";
+NET "ddr0Data(11)"    LOC = "AK34";
+NET "ddr0Data(12)"    LOC = "AH33";
+NET "ddr0Data(13)"    LOC = "AG33";
+NET "ddr0Data(14)"    LOC = "AE32";
+NET "ddr0Data(15)"    LOC = "AD32";
+NET "ddr0Data(16)"    LOC = "AJ34";
+NET "ddr0Data(17)"    LOC = "AH34";
+NET "ddr1ClkOutP"     LOC = "T31";
+NET "ddr1ClkOutN"     LOC = "R31";
+NET "ddr1LdL"         LOC = "J34";
+NET "ddr1RdNWr"       LOC = "H34";
+NET "ddr1Addr(0)"     LOC = "H33";
+NET "ddr1Addr(1)"     LOC = "J32";
+NET "ddr1Addr(2)"     LOC = "F34";
+NET "ddr1Addr(3)"     LOC = "G33";
+NET "ddr1Addr(4)"     LOC = "E33";
+NET "ddr1Addr(5)"     LOC = "E32";
+NET "ddr1Addr(6)"     LOC = "E34";
+NET "ddr1Addr(7)"     LOC = "D34";
+NET "ddr1Addr(8)"     LOC = "C34";
+NET "ddr1Addr(9)"     LOC = "D32";
+NET "ddr1Addr(10)"    LOC = "C32";
+NET "ddr1Addr(11)"    LOC = "M30";
+NET "ddr1Addr(12)"    LOC = "L30";
+NET "ddr1Addr(13)"    LOC = "J31";
+NET "ddr1Addr(14)"    LOC = "J30";
+NET "ddr1Addr(15)"    LOC = "L29";
+NET "ddr1Addr(16)"    LOC = "E31";
+NET "ddr1Addr(17)"    LOC = "F31";
+NET "ddr1Addr(18)"    LOC = "J29";
+NET "ddr1Addr(19)"    LOC = "H29";
+NET "ddr1Addr(20)"    LOC = "F30";
+NET "ddr1Addr(21)"    LOC = "G30";
+NET "ddr1Data(0)"     LOC = "U31";
+NET "ddr1Data(1)"     LOC = "U32";
+NET "ddr1Data(2)"     LOC = "T34";
+NET "ddr1Data(3)"     LOC = "U33";
+NET "ddr1Data(4)"     LOC = "R32";
+NET "ddr1Data(5)"     LOC = "R33";
+NET "ddr1Data(6)"     LOC = "R34";
+NET "ddr1Data(7)"     LOC = "T33";
+NET "ddr1Data(8)"     LOC = "N32";
+NET "ddr1Data(9)"     LOC = "P34";
+NET "ddr1Data(10)"    LOC = "M32";
+NET "ddr1Data(11)"    LOC = "L33";
+NET "ddr1Data(12)"    LOC = "M33";
+NET "ddr1Data(13)"    LOC = "N33";
+NET "ddr1Data(14)"    LOC = "K32";
+NET "ddr1Data(15)"    LOC = "K33";
+NET "ddr1Data(16)"    LOC = "K34";
+NET "ddr1Data(17)"    LOC = "L34";
+NET "MGTCLK_P"        LOC = "H4";
+NET "MGTCLK_N"        LOC = "H3";
+
+#-----------------------------------------------------------------------------
+#-------------------------- IO Standard Constraints --------------------------
+#-----------------------------------------------------------------------------
+# This section defines the IO types, IO delays and other IO parameters 
+#-----------------------------------------------------------------------------
+
+NET "iFpgaRstL"       IOSTANDARD = "LVCMOS33";
+NET "iSysClk125P"     IOSTANDARD = "BLVDS_25";
+NET "iSysClk125N"     IOSTANDARD = "BLVDS_25";
+NET "iJumpL(3)"       IOSTANDARD = "LVCMOS33";
+NET "iJumpL(2)"       IOSTANDARD = "LVCMOS33";
+NET "iJumpL(1)"       IOSTANDARD = "LVCMOS33";
+NET "iJumpL(0)"       IOSTANDARD = "LVCMOS33";
+NET "oLedL(3)"        IOSTANDARD = "LVCMOS33";
+NET "oLedL(2)"        IOSTANDARD = "LVCMOS33";
+NET "oLedL(1)"        IOSTANDARD = "LVCMOS33";
+NET "oLedL(0)"        IOSTANDARD = "LVCMOS33";
+NET "oForceTrig"      IOSTANDARD = "LVCMOS33";
+#NET "oSysclk"         IOSTANDARD = "LVCMOS33" | CLOCK_DEDICATED_ROUTE = FALSE;
+NET "oClkOutA"        IOSTANDARD = "LVCMOS33";
+NET "oClkOutB"        IOSTANDARD = "LVCMOS33";
+NET "oClkOutC"        IOSTANDARD = "LVCMOS33";
+NET "oClkOutD"        IOSTANDARD = "LVCMOS33";
+NET "oReset"          IOSTANDARD = "LVCMOS33";
+NET "oCommand(0)"     IOSTANDARD = "LVCMOS33";
+NET "oCommand(1)"     IOSTANDARD = "LVCMOS33";
+NET "oCommand(2)"     IOSTANDARD = "LVCMOS33";
+NET "oCommand(3)"     IOSTANDARD = "LVCMOS33";
+NET "oCommand(4)"     IOSTANDARD = "LVCMOS33";
+NET "oCommand(5)"     IOSTANDARD = "LVCMOS33";
+NET "oCommand(6)"     IOSTANDARD = "LVCMOS33";
+NET "oCommand(7)"     IOSTANDARD = "LVCMOS33";
+NET "oCommand(8)"     IOSTANDARD = "LVCMOS33";
+NET "oCommand(9)"     IOSTANDARD = "LVCMOS33";
+NET "oCommand(10)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(11)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(12)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(13)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(14)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(15)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(16)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(17)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(18)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(19)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(20)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(21)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(22)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(23)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(24)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(25)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(26)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(27)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(28)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(29)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(30)"    IOSTANDARD = "LVCMOS33";
+NET "oCommand(31)"    IOSTANDARD = "LVCMOS33";
+NET "iData(0)"        IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(1)"        IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(2)"        IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(3)"        IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(4)"        IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(5)"        IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(6)"        IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(7)"        IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(8)"        IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(9)"        IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(10)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(11)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(12)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(13)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(14)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(15)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(16)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(17)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(18)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(19)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(20)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(21)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(22)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(23)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(24)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(25)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(26)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(27)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(28)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(29)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(30)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iData(31)"       IOSTANDARD = "LVCMOS33" | PULLDOWN;
+NET "iBncInA"         IOSTANDARD = "LVCMOS33";
+NET "iBncInB"         IOSTANDARD = "LVCMOS33";
+NET "oBncOutA"        IOSTANDARD = "LVCMOS33";
+NET "oBncOutB"        IOSTANDARD = "LVCMOS33";
+NET "iNimInA"         IOSTANDARD = "LVCMOS33";
+NET "iNimInB"         IOSTANDARD = "LVCMOS33";
+NET "oDacDin"         IOSTANDARD = "LVCMOS33";
+NET "oDacCsL"         IOSTANDARD = "LVCMOS33";
+NET "oDacSclk"        IOSTANDARD = "LVCMOS33";
+NET "oDacClrL"        IOSTANDARD = "LVCMOS33";
+NET "ddr0ClkOutP"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0ClkOutN"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0LdL"         IOSTANDARD = "HSTL_II_18";
+NET "ddr0RdNWr"       IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(0)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(1)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(2)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(3)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(4)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(5)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(6)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(7)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(8)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(9)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(10)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(11)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(12)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(13)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(14)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(15)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(16)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(17)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(18)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(19)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(20)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Addr(21)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(0)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(1)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(2)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(3)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(4)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(5)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(6)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(7)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(8)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(9)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(10)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(11)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(12)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(13)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(14)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(15)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(16)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr0Data(17)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1ClkOutP"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1ClkOutN"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1LdL"         IOSTANDARD = "HSTL_II_18";
+NET "ddr1RdNWr"       IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(0)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(1)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(2)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(3)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(4)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(5)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(6)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(7)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(8)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(9)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(10)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(11)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(12)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(13)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(14)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(15)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(16)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(17)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(18)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(19)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(20)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Addr(21)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(0)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(1)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(2)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(3)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(4)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(5)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(6)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(7)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(8)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(9)"     IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(10)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(11)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(12)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(13)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(14)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(15)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(16)"    IOSTANDARD = "HSTL_II_18";
+NET "ddr1Data(17)"    IOSTANDARD = "HSTL_II_18";
+
+#-----------------------------------------------------------------------------
+#-------------------------- Logic Location Constraints -----------------------
+#-----------------------------------------------------------------------------
+# This section defines constraints for various logic locations
+#-----------------------------------------------------------------------------
+inst U_KpixConCore/U_EthClientGtp/U_GTP LOC=GTP_DUAL_X0Y4;
