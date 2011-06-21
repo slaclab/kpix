@@ -112,6 +112,7 @@ int main ( int argc, char **argv ) {
    HistData       *histData[1023];
    stringstream   error;
    KpixPwrBk      kpixPwr;
+   unsigned int   maxAddr;
 
    // Get settings
    if ( argc < 3 ) {
@@ -126,6 +127,7 @@ int main ( int argc, char **argv ) {
    baseDir     = getenv("KPIX_BASE_DIR");
    deviceStr   = getenv("KPIX_DEVICE");
    clkPeriod   = atoi(getenv("KPIX_CLK_PER"));
+   maxAddr     = atoi(getenv("KPIX_MAX_ADDR"));
    defaultFile = "cosmicRun.xml";
    psFile      = getenv("KPIX_POWER");
    if ( getenv("KPIX_PORT") != NULL ) port = atoi(getenv("KPIX_PORT"));
@@ -179,67 +181,43 @@ int main ( int argc, char **argv ) {
       // Open power supply
       kpixPwr.open(psFile);
       kpixPwr.init();
-      cout << "Power Off" << endl;
-      kpixPwr.setOutput(false);
-      sleep(3);
-      cout << "Power On" << endl;
-      kpixPwr.setOutput(true);
-      sleep(3);
 
       // Create link
+      cout << "Setup Start" << endl;
       sidLink = new SidLink();
       //sidLink->linkDebug(true);
-      if ( port != 0 ) sidLink->linkOpen(deviceStr,port);
-      else if ( deviceInt == -1 ) sidLink->linkOpen(deviceStr);
-      else sidLink->linkOpen(deviceInt);
 
-      // Create FPGA object, set defaults
+      // Create FPGA object
       kpixFpga = new KpixFpga(sidLink);
-      kpixFpga->setDefaults(clkPeriod,(kpixVersion<10));
-      cout << "FPGA Version=0x" << hex << kpixFpga->getVersion() << endl;
 
       // Create the KPIX Devices
       kpixAsic[0] = new KpixAsic(sidLink,kpixVersion,address,serial,false);
-      kpixAsic[1] = new KpixAsic(sidLink,kpixVersion,32,0,true);
-
-      // Make sure we can talk to the devices
-      cout << "Reading Status" << endl;
-      kpixAsic[0]->getStatus (&cmdPerr, &dataPerr, &tempEn, &tempValue);
-      kpixAsic[1]->getStatus (&cmdPerr, &dataPerr, &tempEn, &tempValue);
-      cout << "Done" << endl;
+      kpixAsic[1] = new KpixAsic(sidLink,kpixVersion,maxAddr,0,true);
 
       // Set Defaults
-      cout << "Set defaults" << endl;
-      kpixAsic[0]->setDefaults(50);
-      kpixAsic[1]->setDefaults(50);
-      cout << "Done" << endl;
+      kpixAsic[0]->setDefaults(50,false);
+      kpixAsic[1]->setDefaults(50,false);
 
       // Configure devices with xml defaults
-      cout << "Set xml" << endl;
-      xmlConfig.readConfig ((char *)defaultFile.c_str(),kpixFpga,kpixAsic,2,true);
-      cout << "Done" << endl;
+      xmlConfig.readConfig ((char *)defaultFile.c_str(),kpixFpga,kpixAsic,2,false);
 
       // Generate file name
       outDir << baseDir << "/" << KpixRunWrite::genTimestamp() << "_run";
       mkdir(outDir.str().c_str(),0755);
       outFile << outDir.str() << "/run.root";
 
-      cfgStart.str("");
-      cfgStop.str("");
-      cfgStart << outDir.str() << "/run_start_" << dec << setw(3) << setfill('0') << attempt << ".xml";
-      cfgStop << outDir.str() << "/run_stop_" << dec << setw(3) << setfill('0') << attempt << ".xml";
-
       // Create Run Write Class To Store Data & Settings
       kpixRunWrite = new KpixRunWrite (outFile.str(),"run","Cosmic Run",calString);
       kpixRunWrite->addFpga  ( kpixFpga );
       for (x=0; x<2; x++) kpixRunWrite->addAsic (kpixAsic[x]);
 
+      // Copy calibration data
+      if ( calData != NULL ) calData->copyCalibData ( kpixRunWrite );
+      cout << "Setup Done" << endl;
+
       time(&tm);
       cout << "Starting Run at " << ctime(&tm);
       cout << "Storing data at " << outFile.str() << endl;
-
-      // Copy calibration data
-      if ( calData != NULL ) calData->copyCalibData ( kpixRunWrite );
 
    } catch ( string error ) {
       cout << "Error configuring kpix devices: " << error << endl;
@@ -268,8 +246,8 @@ int main ( int argc, char **argv ) {
          sleep(3);
 
          cout << "Power on" << endl;
-         kpixPwr.setOutput(false);
-         sleep(3);
+         kpixPwr.setOutput(true);
+         sleep(5);
 
          cout << "Open Port" << endl;
          if ( port != 0 ) sidLink->linkOpen(deviceStr,port);
@@ -278,10 +256,28 @@ int main ( int argc, char **argv ) {
          sleep(1);
 
          // Make sure we can talk to the devices
-         cout << "Reading Status" << endl;
-         kpixAsic[0]->getStatus (&cmdPerr, &dataPerr, &tempEn, &tempValue);
-         kpixAsic[1]->getStatus (&cmdPerr, &dataPerr, &tempEn, &tempValue);
-         cout << "Done" << endl;
+         minCnt = 0;
+         while(1) {
+            try {
+
+               cout << "Setup FPGA" << endl;
+               kpixFpga->setDefaults(clkPeriod,(kpixVersion<10));
+               cout << "Done" << endl;
+               sleep(1);
+               cout << "FPGA Version=0x" << hex << kpixFpga->getVersion() << endl;
+
+               cout << "Reading Kpix 0 Status" << endl;
+               kpixAsic[0]->getStatus (&cmdPerr, &dataPerr, &tempEn, &tempValue);
+               cout << "Reading Kpix 1 Status" << endl;
+               kpixAsic[1]->getStatus (&cmdPerr, &dataPerr, &tempEn, &tempValue);
+               cout << "Done" << endl;
+               break;
+            } catch (string error) {
+               minCnt++;
+               if ( minCnt > 4 ) throw(error);
+               sleep(1);
+            }
+         }
 
          // Set Defaults
          cout << "Set defaults" << endl;
@@ -326,7 +322,8 @@ int main ( int argc, char **argv ) {
                } catch (string error) {
                   minCnt++;
                   if ( minCnt > 4 ) throw(error);
-                  cout << endl << "Got Error: " << error << " -- retrying minCnt = " << dec << minCnt << " iteration = " << cycles << endl;
+                  cout << endl << "------------------------" << endl;
+                  cout << "Got Minor Error: " << error << " -- retrying minCnt = " << dec << minCnt << " iteration = " << cycles << endl;
                   sleep(1);
                   sidLink->linkFlush();
                   sleep(1);
@@ -363,7 +360,8 @@ int main ( int argc, char **argv ) {
          }
       } catch(string error) { 
          time(&tm);
-         cout << endl << "Got Error. iteration="  << cycles << " at " << ctime(&tm);
+         cout << endl << "------------------------" << endl;
+         cout << "Got Major Error. iteration="  << cycles << " at " << ctime(&tm);
          cout << error << endl;
          errCnt++;
          sleep(1);
@@ -395,5 +393,8 @@ int main ( int argc, char **argv ) {
    }
    delete kpixRunWrite;
    delete sidLink;
+
+   cout << "Power on" << endl;
+   kpixPwr.setOutput(true);
 }
 

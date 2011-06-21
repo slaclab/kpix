@@ -390,8 +390,7 @@ void SidLink::linkClose () {
    stringstream error;
 
    // Check if no links are open
-   if ( serFd < 0 && usbDevice < 0 && udpFd < 0 ) 
-      throw string("SidLink::linkClose -> Link Not Open");
+   if ( serFd < 0 && usbDevice < 0 && udpFd < 0 ) return;
 
    if ( enDebug ) 
       cout << "SidLink::linkClose -> Attempting to close USB device\n";
