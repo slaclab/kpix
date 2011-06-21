@@ -321,7 +321,8 @@ int main ( int argc, char **argv ) {
                   minCnt = 0;
                } catch (string error) {
                   minCnt++;
-                  if ( minCnt > 4 ) throw(error);
+                  //if ( minCnt > 4 ) throw(error);
+                  throw(error);
                   cout << endl << "------------------------" << endl;
                   cout << "Got Minor Error: " << error << " -- retrying minCnt = " << dec << minCnt << " iteration = " << cycles << endl;
                   sleep(1);
