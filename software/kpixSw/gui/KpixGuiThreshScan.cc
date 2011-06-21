@@ -32,6 +32,7 @@
 #include <qcheckbox.h>
 #include <TH2F.h>
 #include <KpixAsic.h>
+#include <SidLink.h>
 #include <KpixFpga.h>
 #include <KpixRunVar.h>
 #include <KpixRunWrite.h>
@@ -336,6 +337,7 @@ void KpixGuiThreshScan::customEvent ( QCustomEvent *event ) {
 
    // Error Event
    if ( event->type() == KPIX_GUI_EVENT_ERROR ) {
+      asic[0]->getSidLink()->linkFlush();
       eventError = (KpixGuiEventError *)event;
       errorMsg->showMessage(eventError->errorMsg);
       update();

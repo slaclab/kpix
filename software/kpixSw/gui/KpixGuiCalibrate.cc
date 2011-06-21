@@ -37,6 +37,7 @@
 #include <TMultiGraph.h>
 #include <KpixCalDist.h>
 #include <KpixAsic.h>
+#include <SidLink.h>
 #include <KpixRunWrite.h>
 #include <KpixRunVar.h>
 #include "KpixGuiCalibrate.h"
@@ -541,6 +542,7 @@ void KpixGuiCalibrate::customEvent ( QCustomEvent *event ) {
 
    // Error Event
    if ( event->type() == KPIX_GUI_EVENT_ERROR ) {
+      asic[0]->getSidLink()->linkFlush();
       eventError = (KpixGuiEventError *)event;
       errorMsg->showMessage(eventError->errorMsg);
       update();

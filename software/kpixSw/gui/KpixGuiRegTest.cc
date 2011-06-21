@@ -32,6 +32,7 @@
 #include <qcheckbox.h>
 #include <qtable.h>
 #include <KpixAsic.h>
+#include <SidLink.h>
 #include <KpixRegisterTest.h>
 #include "KpixGuiRegTest.h"
 #include "KpixGuiTop.h"
@@ -259,6 +260,7 @@ void KpixGuiRegTest::customEvent ( QCustomEvent *event ) {
 
    // Error Event
    if ( event->type() == KPIX_GUI_EVENT_ERROR ) {
+      asic[0]->getSidLink()->linkFlush();
       eventError = (KpixGuiEventError *)event;
       errorMsg->showMessage(eventError->errorMsg);
       update();

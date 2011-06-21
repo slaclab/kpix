@@ -18,6 +18,7 @@ setenv KPIX_VERSION  9
 setenv KPIX_CLK_PER  50
 setenv KPIX_CAL_FILE
 setenv KPIX_DEF_FILE default.xml
+setenv KPIX_MAX_ADDR 3
 
 # Setup path
 if ($?PATH) then

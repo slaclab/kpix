@@ -36,6 +36,7 @@
 // Forward declarations
 class SidLink;
 class KpixSample;
+class KpixAsic;
 
 /** \ingroup online */
 
@@ -44,7 +45,7 @@ class KpixSample;
 class KpixBunchTrain {
 
       // Define max number of samples that can be received
-      static const unsigned int MaxSamples = (1024*4+20) * 3;
+      static const unsigned int MaxSamples = (1024*4+20) * 32;
 
       // Array of sample data sorted by sample time, pointers
       KpixSample *samplesByTime[MaxSamples+1];
@@ -68,8 +69,10 @@ class KpixBunchTrain {
       /*! Pass the following values for construction
       link      = SID Link to receive data
       debug     = Debug flag
+      asicCnt   = Asic Count (optional)
+      asics     = Asic List  (optional)
 		*/
-      KpixBunchTrain ( SidLink *link, bool debug );
+      KpixBunchTrain ( SidLink *link, bool debug, unsigned int asicCnt = 0, KpixAsic **asics = NULL );
 
       //! Method to return an sample by KPIX/channel/bucket
       /*! Pass KPIX serial, channel number & bucket number

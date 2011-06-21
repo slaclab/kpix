@@ -342,7 +342,7 @@ void KpixThreshScan::runThreshold ( short channel ) {
                while (1) {
                   try {
                      kpixAsic[0]->cmdCalibrate(kpixCount>1); // Broadcast if count != 1
-                     train = new KpixBunchTrain ( kpixAsic[0]->getSidLink(), kpixAsic[0]->kpixDebug() );
+                     train = new KpixBunchTrain ( kpixAsic[0]->getSidLink(), kpixAsic[0]->kpixDebug(), kpixCount, kpixAsic );
                      break;
                   } catch (string error) {
                      if ( enDebug ) {

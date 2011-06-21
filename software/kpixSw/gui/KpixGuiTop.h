@@ -47,10 +47,6 @@ class KpixGuiCalibrate;
 class KpixGuiThreshScan;
 class KpixGuiRun;
 
-// Max support KPIX Address
-#define KPIX_MAX_ADDR 32
-
-
 class KpixGuiTop : public KpixGuiTopForm, public QThread {
 
       // ASIC & FPGA Containers
@@ -58,7 +54,7 @@ class KpixGuiTop : public KpixGuiTopForm, public QThread {
       unsigned int  asicVersion;
       unsigned int  defClkPeriod;
       unsigned int  cmdType;
-      KpixAsic      *asic[KPIX_MAX_ADDR+1];
+      KpixAsic      *asic[33];
       KpixFpga      *fpga;
       KpixRunRead   *runRead;
       SidLink       *sidLink;

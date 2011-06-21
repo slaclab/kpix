@@ -55,6 +55,7 @@
 #include <KpixCalibRead.h>
 #include <KpixSample.h>
 #include <KpixProgress.h>
+#include <SidLink.h>
 #include "KpixGuiRunNetwork.h"
 #include "KpixGuiEventData.h"
 #include "KpixGuiError.h"
@@ -591,11 +592,12 @@ void KpixGuiRun::run() {
                      else asic[0]->cmdAcquire(true);
 
                      // Get bunch train data
-                     train = new KpixBunchTrain ( asic[0]->getSidLink(), false );
+                     train = new KpixBunchTrain ( asic[0]->getSidLink(), false, asicCnt, asic );
                      break;
 
                   } catch ( string error ) {
                      cout << "KpixGuiRun::run -> Caught Error: " << error << "\n";
+                     asic[x]->getSidLink()->linkFlush();
                      errCnt++;
                      if ( errCnt == 5 ) 
                         throw(string("KpixGuiRun::run -> Too many errors. Giving Up"));

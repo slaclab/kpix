@@ -46,6 +46,7 @@
 #include <TF1.h>
 #include <TMinuit.h>
 #include <unistd.h>
+#include "SidLink.h"
 #include "KpixCalDist.h"
 #include "KpixHistogram.h"
 #include "KpixRunWrite.h"
@@ -354,7 +355,7 @@ void KpixCalDist::runDistribution ( short channel ) {
          while (1) {
             try {
                kpixAsic[0]->cmdCalibrate(kpixCount>1); // Broadcast if count != 1
-               train = new KpixBunchTrain (kpixAsic[0]->getSidLink(), kpixAsic[0]->kpixDebug());
+               train = new KpixBunchTrain (kpixAsic[0]->getSidLink(), kpixAsic[0]->kpixDebug(), kpixCount, kpixAsic );
                break;
             } catch (string error) {
                if ( enDebug ) {
@@ -362,6 +363,7 @@ void KpixCalDist::runDistribution ( short channel ) {
                   // Display error
                   cout << "KpixCalDist::runDistribution -> ";
                   cout << "Caught Error: " << error << "\n";
+                  kpixAsic[0]->getSidLink()->linkFlush();
                }
 
                // Count errors
@@ -667,7 +669,7 @@ void KpixCalDist::runCalibration ( short channel ) {
             while (1) {
                try {
                   kpixAsic[0]->cmdCalibrate(kpixCount > 1); // Broadcast for count > 1
-                  train = new KpixBunchTrain ( kpixAsic[0]->getSidLink(), kpixAsic[0]->kpixDebug() );
+                  train = new KpixBunchTrain ( kpixAsic[0]->getSidLink(), kpixAsic[0]->kpixDebug(), kpixCount, kpixAsic );
                   break;
                } catch (string error) {
                   if ( enDebug ) {
@@ -675,6 +677,7 @@ void KpixCalDist::runCalibration ( short channel ) {
                      // Display error
                      cout << "KpixCalDist::runCalibration -> ";
                      cout << "Caught Error: " << error << "\n";
+                     kpixAsic[0]->getSidLink()->linkFlush();
                   }
 
                   // Count errors

@@ -80,6 +80,8 @@ int main ( int argc, char **argv ) {
    string            rateString;
    unsigned int      rateLimit;
 
+   try { 
+
    // Set Default Options
    deviceString = "/dev/ttyUSB0";
    deviceInt    = -1;
@@ -164,6 +166,7 @@ int main ( int argc, char **argv ) {
       kpixGuiThreshView = new KpixGuiThreshView(baseDir);
       kpixGuiThreshView->show();
    }
+
    if ( modeString == "run" ) {
 
       // Open serial link
@@ -186,8 +189,9 @@ int main ( int argc, char **argv ) {
 
    a.connect( &a, SIGNAL( lastWindowClosed() ), &a, SLOT( quit() ) );
 
-   try { return a.exec(); }
-   catch (string error) {
+   return a.exec(); 
+
+   } catch (string error) {
       cout << "KpixGui -> An error was thrown: " << error << endl;
    }
 }

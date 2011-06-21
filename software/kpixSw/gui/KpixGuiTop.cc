@@ -397,6 +397,8 @@ void KpixGuiTop::closeEvent(QCloseEvent *e) {
 void KpixGuiTop::run() {
    KpixGuiEventStatus *event;
    KpixGuiEventError  *error;
+   unsigned int       kpixMaxAddr;
+   char               *kpixMaxAddrStr;
    unsigned int       x;
    bool               temp1,temp2,temp3;
    unsigned char      temp4;
@@ -459,16 +461,23 @@ void KpixGuiTop::run() {
             // Create object
             fpga = new KpixFpga(sidLink);
 
+            // Get ASIC Count
+            kpixMaxAddrStr = getenv("KPIX_MAX_ADDR");
+            if ( kpixMaxAddrStr == NULL ) kpixMaxAddr = 3;
+            else kpixMaxAddr = atoi(kpixMaxAddrStr);
+
             // Set defaults
             xmlFile = getenv("KPIX_DEF_FILE");
             fpga->setDefaults(defClkPeriod,(asicVersion<10));
+            sleep(1);
+            cout << "Fpga Version=0x" << hex << setw(8) << setfill('0') << fpga->getVersion() << endl;
             
             // Find Each Address
             cout << "Searching For ASICs" << endl;
-            for (x=0; x <= KPIX_MAX_ADDR; x++) {
+            for (x=0; x <= kpixMaxAddr; x++) {
 
                // Create an ASIC object for test
-               asic[asicCnt] = new KpixAsic(sidLink,asicVersion,x,0,x==KPIX_MAX_ADDR);
+               asic[asicCnt] = new KpixAsic(sidLink,asicVersion,x,0,x==kpixMaxAddr);
 
                // Attempt to find each ASIC
                try {
@@ -576,6 +585,7 @@ void KpixGuiTop::customEvent ( QCustomEvent *event ) {
 
    // Error Event
    if ( event->type() == KPIX_GUI_EVENT_ERROR ) {
+      sidLink->linkFlush();
       eventError = (KpixGuiEventError *)event;
       errorMsg->showMessage(eventError->errorMsg);
       update();

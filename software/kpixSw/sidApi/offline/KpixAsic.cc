@@ -251,6 +251,7 @@ void KpixAsic::regVerify ( unsigned char address ) {
       frameWrData[0]  = (address & 0x007F);
       frameWrData[0] |= 0x0100; // Reg Access
       frameWrData[0] |= ((kpixAddress << 9) & 0x0600);
+      frameWrData[0] |= ((kpixAddress << 10) & 0xF000);
 
       // word 1 & 2 are 0
       frameWrData[1] = 0;

@@ -41,10 +41,12 @@ class SidLink {
       // Timeout Value
       static const unsigned int Timeout = 125;
 
+      // Buffer size
+      static const unsigned int qsize = 20000;
+
       // Buffer to store values from ethernet
-      unsigned char rxBuffer[8192];
-      int head, tail;
-      bool last;
+      unsigned int qdata[qsize];
+      unsigned int qread, qwrite;
 
       // Values used for USB version 
       int   usbDevice;
@@ -69,6 +71,12 @@ class SidLink {
 
       // Debug flag
       bool enDebug;
+
+      // Internal queue functions
+      bool qpush ( unsigned short value, unsigned int type, bool sof, bool eof );
+      bool qpop  ( unsigned short *value, unsigned int *type, bool *sof, bool *eof );
+      bool qready ();
+      void qinit ();
 
    public:
 
@@ -170,8 +178,6 @@ class SidLink {
 
       //! Turn on or off debugging for the class
       void linkDebug ( bool debug );
-
-      //! Clear the head and tail to enable new data to be stored in buffer
-      void linkBufClear ( );
+      
 };
 #endif

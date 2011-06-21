@@ -23,6 +23,7 @@
 #include <KpixConfigXml.h>
 #include <KpixCalibRead.h>
 #include <KpixSample.h>
+#include <KpixPwrBk.h>
 #include <SidLink.h>
 #include <SidLink.h>
 #include <iostream>
@@ -85,6 +86,7 @@ int main ( int argc, char **argv ) {
    unsigned char  tempValue;
    unsigned int   x;
    unsigned int   errCnt;
+   unsigned int   minCnt;
    time_t         tm, lastTm;
    stringstream   outDir;
    stringstream   outFile;
@@ -93,19 +95,23 @@ int main ( int argc, char **argv ) {
    unsigned int   triggers;
    unsigned int   cycles;
    char *         calFile;
+   char *         psFile;
    unsigned int   serial;
    unsigned int   address;
    unsigned int   clkPeriod;
    char *         baseDir;
    char *         deviceStr;
+   unsigned int   port;
    int            deviceInt;
    unsigned int   kpixVersion;
    unsigned int   channel;
+   unsigned int   attempt;
    unsigned int   value;
    KpixSample     *sample;
    string         defaultFile;
    HistData       *histData[1023];
    stringstream   error;
+   KpixPwrBk      kpixPwr;
 
    // Get settings
    if ( argc < 3 ) {
@@ -121,6 +127,9 @@ int main ( int argc, char **argv ) {
    deviceStr   = getenv("KPIX_DEVICE");
    clkPeriod   = atoi(getenv("KPIX_CLK_PER"));
    defaultFile = "cosmicRun.xml";
+   psFile      = getenv("KPIX_POWER");
+   if ( getenv("KPIX_PORT") != NULL ) port = atoi(getenv("KPIX_PORT"));
+   else port = 0;
 
    // Create records
    for (channel=0; channel < 1024; channel++) histData[channel] = new HistData(channel);
@@ -128,12 +137,19 @@ int main ( int argc, char **argv ) {
    // Dump settings
    cout << "Using the following settings:" << endl;
    cout << "    device: " << deviceStr << endl;
+   cout << "      port: " << port << endl;
    cout << "   address: " << dec << address << endl;
    cout << "    serial: " << dec << serial << endl;
    cout << "   calFile: " << ((calFile==NULL)?"None":calFile) << endl;
    cout << "   version: " << dec << kpixVersion << endl;
    cout << "   dataDir: " << baseDir << endl;
    cout << "  defaults: " << defaultFile << endl;
+   cout << "     Power: " << psFile << endl;
+
+   outDir.str("");
+   outFile.str("");
+   cfgStart.str("");
+   cfgStop.str("");
 
    // Determine Device
    if ( strstr(deviceStr,"/dev") != NULL ) deviceInt = -1;
@@ -157,58 +173,126 @@ int main ( int argc, char **argv ) {
       calData   = NULL;
    }
 
+   attempt   = 0;
+   try {
+
+      // Open power supply
+      kpixPwr.open(psFile);
+      kpixPwr.init();
+      cout << "Power Off" << endl;
+      kpixPwr.setOutput(false);
+      sleep(3);
+      cout << "Power On" << endl;
+      kpixPwr.setOutput(true);
+      sleep(3);
+
+      // Create link
+      sidLink = new SidLink();
+      //sidLink->linkDebug(true);
+      if ( port != 0 ) sidLink->linkOpen(deviceStr,port);
+      else if ( deviceInt == -1 ) sidLink->linkOpen(deviceStr);
+      else sidLink->linkOpen(deviceInt);
+
+      // Create FPGA object, set defaults
+      kpixFpga = new KpixFpga(sidLink);
+      kpixFpga->setDefaults(clkPeriod,(kpixVersion<10));
+      cout << "FPGA Version=0x" << hex << kpixFpga->getVersion() << endl;
+
+      // Create the KPIX Devices
+      kpixAsic[0] = new KpixAsic(sidLink,kpixVersion,address,serial,false);
+      kpixAsic[1] = new KpixAsic(sidLink,kpixVersion,32,0,true);
+
+      // Make sure we can talk to the devices
+      cout << "Reading Status" << endl;
+      kpixAsic[0]->getStatus (&cmdPerr, &dataPerr, &tempEn, &tempValue);
+      kpixAsic[1]->getStatus (&cmdPerr, &dataPerr, &tempEn, &tempValue);
+      cout << "Done" << endl;
+
+      // Set Defaults
+      cout << "Set defaults" << endl;
+      kpixAsic[0]->setDefaults(50);
+      kpixAsic[1]->setDefaults(50);
+      cout << "Done" << endl;
+
+      // Configure devices with xml defaults
+      cout << "Set xml" << endl;
+      xmlConfig.readConfig ((char *)defaultFile.c_str(),kpixFpga,kpixAsic,2,true);
+      cout << "Done" << endl;
+
+      // Generate file name
+      outDir << baseDir << "/" << KpixRunWrite::genTimestamp() << "_run";
+      mkdir(outDir.str().c_str(),0755);
+      outFile << outDir.str() << "/run.root";
+
+      cfgStart.str("");
+      cfgStop.str("");
+      cfgStart << outDir.str() << "/run_start_" << dec << setw(3) << setfill('0') << attempt << ".xml";
+      cfgStop << outDir.str() << "/run_stop_" << dec << setw(3) << setfill('0') << attempt << ".xml";
+
+      // Create Run Write Class To Store Data & Settings
+      kpixRunWrite = new KpixRunWrite (outFile.str(),"run","Cosmic Run",calString);
+      kpixRunWrite->addFpga  ( kpixFpga );
+      for (x=0; x<2; x++) kpixRunWrite->addAsic (kpixAsic[x]);
+
+      time(&tm);
+      cout << "Starting Run at " << ctime(&tm);
+      cout << "Storing data at " << outFile.str() << endl;
+
+      // Copy calibration data
+      if ( calData != NULL ) calData->copyCalibData ( kpixRunWrite );
+
+   } catch ( string error ) {
+      cout << "Error configuring kpix devices: " << error << endl;
+      return(1);
+   }
+
    // Cycle through runs
+   cycles    = 0;
    errCnt    = 0;
    gotCntrlC = false;
    while ( ! gotCntrlC ) {
       try {
-         sidLink      = NULL;
-         kpixFpga     = NULL;
-         kpixAsic[0]  = NULL;
-         kpixAsic[1]  = NULL;
-         kpixRunWrite = NULL;
          trainData    = NULL;
-         outDir.str("");
-         outFile.str("");
+
          cfgStart.str("");
          cfgStop.str("");
+         cfgStart << outDir.str() << "/run_start_" << dec << setw(3) << setfill('0') << attempt << ".xml";
+         cfgStop << outDir.str() << "/run_stop_" << dec << setw(3) << setfill('0') << attempt << ".xml";
 
-         // Create link
-         sidLink = new SidLink();
-         if ( deviceInt == -1 ) sidLink->linkOpen(deviceStr);
+         cout << "Close Port" << endl;
+         sidLink->linkClose();
+         sleep(1);
+
+         cout << "Power off" << endl;
+         kpixPwr.setOutput(false);
+         sleep(3);
+
+         cout << "Power on" << endl;
+         kpixPwr.setOutput(false);
+         sleep(3);
+
+         cout << "Open Port" << endl;
+         if ( port != 0 ) sidLink->linkOpen(deviceStr,port);
+         else if ( deviceInt == -1 ) sidLink->linkOpen(deviceStr);
          else sidLink->linkOpen(deviceInt);
-
-         // Create FPGA object, set defaults
-         kpixFpga = new KpixFpga(sidLink);
-         kpixFpga->setDefaults(clkPeriod,(kpixVersion<10));
-
-         // Create the KPIX Devices
-         kpixAsic[0] = new KpixAsic(sidLink,kpixVersion,address,serial,false);
-         kpixAsic[0]->setDefaults(50);
-         kpixAsic[1] = new KpixAsic(sidLink,kpixVersion,3,0,true);
-         kpixAsic[1]->setDefaults(50);
+         sleep(1);
 
          // Make sure we can talk to the devices
+         cout << "Reading Status" << endl;
          kpixAsic[0]->getStatus (&cmdPerr, &dataPerr, &tempEn, &tempValue);
          kpixAsic[1]->getStatus (&cmdPerr, &dataPerr, &tempEn, &tempValue);
+         cout << "Done" << endl;
+
+         // Set Defaults
+         cout << "Set defaults" << endl;
+         kpixAsic[0]->setDefaults(50);
+         kpixAsic[1]->setDefaults(50);
+         cout << "Done" << endl;
 
          // Configure devices with xml defaults
+         cout << "Set xml" << endl;
          xmlConfig.readConfig ((char *)defaultFile.c_str(),kpixFpga,kpixAsic,2,true);
-
-         // Generate file name
-         outDir << baseDir << "/" << KpixRunWrite::genTimestamp() << "_run";
-         mkdir(outDir.str().c_str(),0755);
-         outFile << outDir.str() << "/run.root";
-         cfgStart << outDir.str() << "/run_start.xml";
-         cfgStop << outDir.str() << "/run_stop.xml";
-
-         // Create Run Write Class To Store Data & Settings
-         kpixRunWrite = new KpixRunWrite (outFile.str(),"run","Cosmic Run",calString);
-         kpixRunWrite->addFpga  ( kpixFpga );
-         for (x=0; x<2; x++) kpixRunWrite->addAsic (kpixAsic[x]);
-
-         // Copy calibration data
-         if ( calData != NULL ) calData->copyCalibData ( kpixRunWrite );
+         cout << "Done" << endl;
 
          // Dump config
          xmlConfig.writeConfig ((char *)cfgStart.str().c_str(), kpixFpga, kpixAsic, 2, true);
@@ -218,7 +302,6 @@ int main ( int argc, char **argv ) {
 
          time(&tm);
          cout << "Starting Run at " << ctime(&tm);
-         cout << "Storing data at " << outFile.str() << endl;
          cout << "Hit cntrl-c to stop run and save data" << endl;
 
          // Keep running until cntrl-c
@@ -227,12 +310,28 @@ int main ( int argc, char **argv ) {
          triggers = 0;
          while ( !gotCntrlC ) {
 
-            // Send start command
-            kpixAsic[0]->cmdAcquire(true);
+            minCnt = 0;
+            do {
+               try {
 
-            // Get bunch train data
-            trainData = new KpixBunchTrain ( sidLink, false);
-            kpixRunWrite->addBunchTrain(trainData);
+                  // Send start command
+                  //sidLink->linkDebug(true);
+                  kpixAsic[0]->cmdAcquire(true);
+
+                  // Get bunch train data
+                  trainData = new KpixBunchTrain ( sidLink, false, 2, kpixAsic);
+                  //trainData = new KpixBunchTrain ( sidLink, true, 2, kpixAsic);
+                  kpixRunWrite->addBunchTrain(trainData);
+                  minCnt = 0;
+               } catch (string error) {
+                  minCnt++;
+                  if ( minCnt > 4 ) throw(error);
+                  cout << endl << "Got Error: " << error << " -- retrying minCnt = " << dec << minCnt << " iteration = " << cycles << endl;
+                  sleep(1);
+                  sidLink->linkFlush();
+                  sleep(1);
+               }
+            } while ( minCnt != 0 );
 
             // Check first 8 channels for duplicating data
             for (x=0; x < trainData->getSampleCount(); x++) {
@@ -264,21 +363,13 @@ int main ( int argc, char **argv ) {
          }
       } catch(string error) { 
          time(&tm);
-         cout << endl << "Got Error at " << ctime(&tm);
+         cout << endl << "Got Error. iteration="  << cycles << " at " << ctime(&tm);
          cout << error << endl;
          errCnt++;
-         sleep(2);
-
-         // Flush link
-         if ( sidLink != NULL ) {
-            cout << "Flushing USB Device" << endl;
-            sidLink->linkFlush();
-            sleep(2);
-            cout << "Resetting USB Device" << endl;
-            sidLink->linkReset();
-            sleep(2);
-            cout << "Done." << endl;
-         }
+         sleep(1);
+         cout << "Flushing USB Device" << endl;
+         sidLink->linkFlush();
+         cout << "Done." << endl;
       }
       cout << endl << "Run stopped at " << ctime(&tm);
 
@@ -293,30 +384,16 @@ int main ( int argc, char **argv ) {
 
       // Clean up
       if ( trainData != NULL ) delete trainData;
-      if ( kpixRunWrite != NULL ) delete kpixRunWrite;
-      if ( kpixAsic[0] != NULL ) delete kpixAsic[0];
-      if ( kpixAsic[1] != NULL ) delete kpixAsic[1];
-      if ( kpixFpga    != NULL ) delete kpixFpga;
-      if ( sidLink     != NULL ) {
-         cout << "Closing USB Link" << endl;
-         sidLink->linkClose();
-         sleep(1);
-         delete sidLink;
-      }
-      sidLink      = NULL;
-      kpixFpga     = NULL;
-      kpixAsic[0]  = NULL;
-      kpixAsic[1]  = NULL;
-      kpixRunWrite = NULL;
-      trainData    = NULL;
 
       // Stop if things are unrecoverable
-      if ( errCnt > 10 ) {
+      if ( errCnt > 4 ) {
          time(&tm);
          cout << "Could not recover error state. Giving up at " << ctime(&tm);
          gotCntrlC = true;
       }
       else sleep(5);
    }
+   delete kpixRunWrite;
+   delete sidLink;
 }
 
