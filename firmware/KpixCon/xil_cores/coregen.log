@@ -1,77 +1,65 @@
 Welcome to Xilinx CORE Generator.
 Help system initialized.
 Opening project file
-/afs/slac.stanford.edu/u/re/ausoori/projects/w_si/devel/firmware/KpixCon/xil_cor
+/afs/slac.stanford.edu/u/ey/rherbst/projects/w_si/devel/firmware/KpixCon/xil_cor
 es/coregen.cgp.
+INFO:sim:760 - You can use the CORE Generator IP upgrade flow to upgrade the
+   selected IP Fifo_Generator v6.1 to a more recent version.
+INFO:sim:760 - You can use the CORE Generator IP upgrade flow to upgrade the
+   selected IP Fifo_Generator v6.1 to a more recent version.
+INFO:sim:760 - You can use the CORE Generator IP upgrade flow to upgrade the
+   selected IP Fifo_Generator v6.1 to a more recent version.
+INFO:sim:760 - You can use the CORE Generator IP upgrade flow to upgrade the
+   selected IP Fifo_Generator v6.1 to a more recent version.
+INFO:sim:760 - You can use the CORE Generator IP upgrade flow to upgrade the
+   selected IP Block_Memory_Generator v4.1 to a more recent version.
 Project, 'coregen', initialised from file
-'/afs/slac.stanford.edu/u/re/ausoori/projects/w_si/devel/firmware/KpixCon/xil_co
+'/afs/slac.stanford.edu/u/ey/rherbst/projects/w_si/devel/firmware/KpixCon/xil_co
 res/coregen.cgp'.
-Recustomize and Generate (Under Current Project Settings)Applying current project options...
-Finished applying current project options.
-Initialising IP model...
-Finished initialising IP model.
-Customizing IP...
-Release 12.1 - Xilinx CORE Generator IP GUI Launcher M.53d (lin64)
-Copyright (c) 1995-2010 Xilinx, Inc.  All rights reserved.
-Initialising IP model...
-Finished initialising IP model.
-Cancelled Customization.
-Recustomize and Generate (Under Current Project Settings)Applying current project options...
-Finished applying current project options.
-Initialising IP model...
-Finished initialising IP model.
-Customizing IP...
-Release 12.1 - Xilinx CORE Generator IP GUI Launcher M.53d (lin64)
-Copyright (c) 1995-2010 Xilinx, Inc.  All rights reserved.
-Initialising IP model...
-Finished initialising IP model.
-Cancelled Customization.
 Closed project file.
 Opening project file
-/afs/slac.stanford.edu/u/re/ausoori/projects/w_si/devel/firmware/KpixCon/eth_cli
-ent/xil_cores/v4_cores.cgp.
-Project, 'v4_cores', initialised from file
-'/afs/slac.stanford.edu/u/re/ausoori/projects/w_si/devel/firmware/KpixCon/eth_cl
-ient/xil_cores/v4_cores.cgp'.
-Recustomize and Generate (Under Current Project Settings)Applying current project options...
-Finished applying current project options.
-Initialising IP model...
-Finished initialising IP model.
-Customizing IP...
-Release 12.1 - Xilinx CORE Generator IP GUI Launcher M.53d (lin64)
+/afs/slac.stanford.edu/u/ey/rherbst/projects/w_si/devel/firmware/KpixCon/eth_cli
+ent/xil_cores/v5_cores.cgp.
+INFO:sim:760 - You can use the CORE Generator IP upgrade flow to upgrade the
+   selected IP Fifo_Generator v6.1 to a more recent version.
+INFO:sim:760 - You can use the CORE Generator IP upgrade flow to upgrade the
+   selected IP Fifo_Generator v6.1 to a more recent version.
+INFO:sim:760 - You can use the CORE Generator IP upgrade flow to upgrade the
+   selected IP Fifo_Generator v6.1 to a more recent version.
+INFO:sim:760 - You can use the CORE Generator IP upgrade flow to upgrade the
+   selected IP Fifo_Generator v6.1 to a more recent version.
+INFO:sim:760 - You can use the CORE Generator IP upgrade flow to upgrade the
+   selected IP Fifo_Generator v6.1 to a more recent version.
+INFO:sim:760 - You can use the CORE Generator IP upgrade flow to upgrade the
+   selected IP Fifo_Generator v6.1 to a more recent version.
+Project, 'v5_cores', initialised from file
+'/afs/slac.stanford.edu/u/ey/rherbst/projects/w_si/devel/firmware/KpixCon/eth_cl
+ient/xil_cores/v5_cores.cgp'.
+Recustomize and Generate (Under Original Project Settings)Customizing IP...
+Release 12.4 - Xilinx CORE Generator IP GUI Launcher M.81d (lin64)
 Copyright (c) 1995-2010 Xilinx, Inc.  All rights reserved.
-Initialising IP model...
+Initializing IP model...
 Finished initialising IP model.
 Cancelled Customization.
-Recustomize and Generate (Under Current Project Settings)Applying current project options...
-Finished applying current project options.
-Initialising IP model...
-Finished initialising IP model.
-Customizing IP...
-Release 12.1 - Xilinx CORE Generator IP GUI Launcher M.53d (lin64)
+Recustomize and Generate (Under Original Project Settings)Customizing IP...
+Release 12.4 - Xilinx CORE Generator IP GUI Launcher M.81d (lin64)
 Copyright (c) 1995-2010 Xilinx, Inc.  All rights reserved.
-Initialising IP model...
+Initializing IP model...
 Finished initialising IP model.
 Finished Customizing.
 Generating IP...
-Initialising IP model...
-Finished initialising IP model.
-Initialising IP model...
-Finished initialising IP model.
-Initialising IP model...
+Initializing IP model...
 Finished initialising IP model.
 XST: Design Hierarchy Analysis
 XST: HDL Analysis
 XST: HDL Synthesis
 XST: Advanced HDL Synthesis
 XST: Low Level Synthesis
-XST: Partition Report
-XST: Final Report
 Generating Implementation files.
 Generating NGC file.
 Finished Generation Stage.
 Generating IP instantiation template...
-Generating the VHDL instantiation template.
+VHDL instantiation template already present, so not regenerating.
 Finished generating IP instantiation template.
 Generating metadata file...
 Finished generating metadata file.
@@ -79,62 +67,23 @@ Generating metadata file...
 Finished generating metadata file.
 Generating ISE file...
 Finished ISE file generation.
-Creating readme './tmp/_cg/v5_fifo_15x1k_readme.txt'.
 Generating FLIST file...
 Finished FLIST file generation.
 Preparing output directory...
 Finished preparing output directory.
+Launching readme viewer...
+Launched readme viewer.
 Moving files to output directory...
 Finished moving files to output directory
-Saved options for project 'v4_cores'.
-Recustomize and Generate (Under Current Project Settings)Applying current project options...
-Finished applying current project options.
-Initialising IP model...
-Finished initialising IP model.
-Customizing IP...
-Release 12.1 - Xilinx CORE Generator IP GUI Launcher M.53d (lin64)
+Saved options for project 'v5_cores'.
+Recustomize and Generate (Under Original Project Settings)Customizing IP...
+Release 12.4 - Xilinx CORE Generator IP GUI Launcher M.81d (lin64)
 Copyright (c) 1995-2010 Xilinx, Inc.  All rights reserved.
-Initialising IP model...
-Finished initialising IP model.
-ERROR:coreutil - ERROR:sim - Data_Count_Width: Value '11' is out of range
-   '[1..10]'.
-Cancelled Customization.
-Recustomize and Generate (Under Current Project Settings)Applying current project options...
-Finished applying current project options.
-Initialising IP model...
-Finished initialising IP model.
-Customizing IP...
-Release 12.1 - Xilinx CORE Generator IP GUI Launcher M.53d (lin64)
-Copyright (c) 1995-2010 Xilinx, Inc.  All rights reserved.
-Initialising IP model...
-Finished initialising IP model.
-Cancelled Customization.
-Recustomize and Generate (Under Current Project Settings)Applying current project options...
-Finished applying current project options.
-Initialising IP model...
-Finished initialising IP model.
-Customizing IP...
-Release 12.1 - Xilinx CORE Generator IP GUI Launcher M.53d (lin64)
-Copyright (c) 1995-2010 Xilinx, Inc.  All rights reserved.
-Initialising IP model...
-Finished initialising IP model.
-Cancelled Customization.
-Recustomize and Generate (Under Current Project Settings)Applying current project options...
-Finished applying current project options.
-Initialising IP model...
-Finished initialising IP model.
-Customizing IP...
-Release 12.1 - Xilinx CORE Generator IP GUI Launcher M.53d (lin64)
-Copyright (c) 1995-2010 Xilinx, Inc.  All rights reserved.
-Initialising IP model...
+Initializing IP model...
 Finished initialising IP model.
 Finished Customizing.
 Generating IP...
-Initialising IP model...
-Finished initialising IP model.
-Initialising IP model...
-Finished initialising IP model.
-Initialising IP model...
+Initializing IP model...
 Finished initialising IP model.
 XST: HDL Compilation
 XST: Design Hierarchy Analysis
@@ -142,13 +91,12 @@ XST: HDL Analysis
 XST: HDL Synthesis
 XST: Advanced HDL Synthesis
 XST: Low Level Synthesis
-XST: Partition Report
-XST: Final Report
 Generating Implementation files.
+Generating the VHDL wrapper.
 Generating NGC file.
 Finished Generation Stage.
 Generating IP instantiation template...
-Generating the VHDL instantiation template.
+VHDL instantiation template already present, so not regenerating.
 Finished generating IP instantiation template.
 Generating metadata file...
 Finished generating metadata file.
@@ -156,12 +104,13 @@ Generating metadata file...
 Finished generating metadata file.
 Generating ISE file...
 Finished ISE file generation.
-Creating readme './tmp/_cg/v5_fifo_17x1k_readme.txt'.
 Generating FLIST file...
 Finished FLIST file generation.
 Preparing output directory...
 Finished preparing output directory.
+Launching readme viewer...
+Launched readme viewer.
 Moving files to output directory...
 Finished moving files to output directory
-Saved options for project 'v4_cores'.
+Saved options for project 'v5_cores'.
 Closed project file.

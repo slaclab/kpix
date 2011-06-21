@@ -162,6 +162,13 @@ begin
                fifoEOFin   <= kpxRspEOF (conv_integer(muxSel));
                kpixLRspAck <= '0';
                kpxRspAck   <= conv_5to32(muxSel(4 downto 0));
+         else
+            fifoWr      <= '0';
+            fifoDin     <= (others=>'0');
+            fifoSOFin   <= '0';
+            fifoEOFin   <= '0';
+            kpixLRspAck <= '0';
+            kpxRspAck   <= (OTHERS=>'0');
          end if;
       else
          fifoWr      <= '0';

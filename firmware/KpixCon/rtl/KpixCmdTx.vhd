@@ -293,7 +293,7 @@ begin
                      end if;
 
                      -- Get Kpix Enables, commands with write bit set
-                     if locData(11) = '1' and locData(8) = '1' and locData(7) = '1' then
+                     if locData(11) = '1' and locData(8) = '0' and locData(7) = '1' then
                         kpixSel  <= (OTHERS=>'1') after tpd;
                         kpixSelL <= '1'           after tpd;
                      else
@@ -355,7 +355,7 @@ begin
                      end if;
 
                      -- Get Kpix Enables, commands with write bit set
-                     if locData(11) = '1' and locData(8) = '1' and locData(7) = '1' then
+                     if locData(11) = '1' and locData(8) = '0' and locData(7) = '1' then
                         kpixSel  <= (OTHERS=>'1') after tpd;
                         kpixSelL <= '1'           after tpd;
                      else
@@ -417,7 +417,7 @@ begin
                      end if;
 
                      -- Get Kpix Enables, commands with write bit set
-                     if locData(11) = '1' and locData(8) = '1' and locData(7) = '1' then
+                     if locData(11) = '1' and locData(8) = '0' and locData(7) = '1' then
                         kpixSel  <= (OTHERS=>'1') after tpd;
                         kpixSelL <= '1'           after tpd;
                      else

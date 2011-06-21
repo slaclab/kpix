@@ -219,7 +219,7 @@ begin
 
    -- Local read mux and write control
    process ( locAddress, readData, jumpL, scratchPad, intClkSelA, intClkSelB, 
-             intClkSelC, intClkSelD, intWriteEn, checkErrCnt ) begin
+             intClkSelC, intClkSelD, intWriteEn, checkErrCnt, intRdPhase, intRdEdge ) begin
       case locAddress is
 
          -- Version / Master Reset Register

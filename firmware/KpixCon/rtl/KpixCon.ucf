@@ -44,12 +44,14 @@ NET "iFpgaRstL"      TIG;
 
 # Define time groups for inter-clock constraints
 TIMEGRP TG_dllClk125_r = RISING  dllClk125;
+TIMEGRP TG_ddrClk_r    = RISING  ddrClk;
 TIMEGRP TG_dllClk200_r = RISING  dllClk200;
 TIMEGRP TG_divClk_r    = RISING  divClk;
 TIMEGRP TG_divClk_f    = FALLING divClk;
 
 # Inter Domain Constraints
 TIMESPEC TS_dllClk125_divClk  = FROM TG_dllClk125_r TO TG_divClk_r     8ns;
+TIMESPEC TS_dllClk125_ddrClk  = FROM TG_dllClk125_r TO TG_ddrClk_r     2ns;
 TIMESPEC TS_divClk_dllClk125  = FROM TG_divClk_r    TO TG_dllClk125_r  8ns;
 TIMESPEC TS_divClk_dllClk200  = FROM TG_divClk_r    TO TG_dllClk200_r  8ns;
 

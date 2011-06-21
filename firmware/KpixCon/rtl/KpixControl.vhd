@@ -308,7 +308,7 @@ begin
 
 
    -- Choose external trigger source
-   process ( extControl, bncInA, bncInB, nimInA, nimInB ) begin
+   process ( extControl, bncInA, bncInB, nimInA, nimInB, calStrobeOut ) begin
       case extControl(22 downto 20) is
          when "000"  => extRecord <= '0';
          when "001"  => extRecord <= not nimInA;

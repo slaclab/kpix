@@ -200,7 +200,6 @@ architecture KpixLocal of KpixLocal is
    signal v8_analog_state0   : std_logic;
    signal v8_analog_state1   : std_logic;
    signal v8_read_state      : std_logic;
-   signal kpixClkL           : std_logic;
    signal reg_clock          : std_logic;
    signal reg_sel1           : std_logic;
    signal reg_sel0           : std_logic;

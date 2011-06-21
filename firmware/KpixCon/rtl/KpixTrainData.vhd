@@ -134,7 +134,6 @@ architecture KpixTrainData of KpixTrainData is
    signal intEnableB      : std_logic;
    signal intEnableC      : std_logic;
    signal intEnableD      : std_logic;
-   signal intReq          : std_logic;
    signal intSOF          : std_logic;
    signal intEOF          : std_logic;
    signal intPad          : std_logic;
@@ -195,7 +194,7 @@ begin
    trainDebug (62)           <= intEOF;
    trainDebug (61)           <= sumWr;
    trainDebug (60)           <= intFull;
-   trainDebug (59)           <= intReq;
+   trainDebug (59)           <= '0';
    trainDebug (58 downto 57) <= muxSel;
    trainDebug (56 downto 53) <= curState;
    trainDebug (52)           <= muxFifoWr;
@@ -300,7 +299,7 @@ begin
 
    -- Combinitorial source selector
    process ( muxEn, muxSel, fifoWrA, fifoWrB, fifoWrC, fifoWrD,
-             fifoDataA, fifoDataB, fifoDataC, fifoDataD ) begin
+             fifoDataA, fifoDataB, fifoDataC, fifoDataD, intFull ) begin
       if muxEn = '1' then
          case muxSel is 
             when "00" =>

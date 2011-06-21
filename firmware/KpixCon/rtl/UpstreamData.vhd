@@ -59,12 +59,12 @@ entity UpstreamData is
       locFifoData   : in    std_logic_vector(15 downto 0);   -- FIFO Word
 
       -- Interface to USB word transmitter, sysclock
+      txFifoValid   : out   std_logic;
+      txFifoReady   : in    std_logic;
       txFifoData    : out   std_logic_vector(15 downto 0);   -- TX FIFO Data
       txFifoSOF     : out   std_logic;                       -- TX FIFO Start of Frame
       txFifoEOF     : out   std_logic;                       -- TX FIFO End of Frame
       txFifoType    : out   std_logic_vector(1  downto 0);   -- TX FIFO Data Type
-      txFifoRd      : in    std_logic;                       -- TX FIFO Read
-      txFifoEmpty   : out   std_logic;                       -- TX FIFO Empty
 
       -- Flag indicating if there is space for another train of data
       trainFifoFull : out   std_logic;                       -- Train FIFO is full
@@ -97,7 +97,10 @@ architecture UpstreamData of UpstreamData is
    signal intKpixRspAck: std_logic;
    signal intLocFifoAck: std_logic;
    signal pktNum       : std_logic_vector(4  downto 0);
-   
+   signal intValid     : std_logic;
+   signal txFifoRd     : std_logic;
+   signal txFifoEmpty  : std_logic;
+
    -- State machine, reciever
    constant ST_IDLE  : std_logic := '0';
    constant ST_MOVE  : std_logic := '1';
@@ -287,26 +290,44 @@ begin
 
    -- Async FIFO
    U_UsFifo : afifo_20x8k port map (
-      din    => fifoDin,
-      rd_clk => gtpClk,
-      rd_en  => txFifoRd,
-      rst    => sysRst,
-      wr_clk => sysClk,
-      wr_en  => muxFifoWr,
-      dout   => fifoDout,
-      empty  => txFifoEmpty,
-      full   => fifoFull,
+      din           => fifoDin,
+      rd_clk        => gtpClk,
+      rd_en         => txFifoRd,
+      rst           => sysRst,
+      wr_clk        => sysClk,
+      wr_en         => muxFifoWr,
+      dout          => fifoDout,
+      empty         => txFifoEmpty,
+      full          => fifoFull,
       wr_data_count => fifoCount
    );
 
+   -- Ping pong between halfs
+   process ( gtpClk, gtpClkRst ) begin
+      if gtpClkRst = '1' then
+         intValid <= '0' after tpd;
+      elsif rising_edge(gtpClk) then
+         if txFifoRd = '1' then
+            intValid <= '1' after tpd;
+         elsif txFifoReady = '1' then
+            intValid <= '0' after tpd;
+         end if;
+
+      end if;
+   end process;
+
    -- FIFO Full Indication
    trainFifoFull <= '0' when fifoCount = 0 else '1';
+
+   -- Fifo ready control
+   txFifoRd <= '1' when txFifoEmpty = '0' and (intValid = '0' or txFifoReady = '1') else '0';
    
    -- Connect outgoing FIFO data
-   txFifoData <= fifoDout(15 downto 0);
-   txFifoType <= fifoDout(17 downto 16);
-   txFifoSOF  <= fifoDout(18);
-   txFifoEOF  <= fifoDout(19);
+   txFifoData  <= fifoDout(15 downto 0);
+   txFifoType  <= fifoDout(17 downto 16);
+   txFifoSOF   <= fifoDout(18);
+   txFifoEOF   <= fifoDout(19);
+   txFifoValid <= intValid;
 
 end UpstreamData;
 

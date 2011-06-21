@@ -219,12 +219,12 @@ package KpixConPkg is
          locFifoSOF    : in    std_logic;                       -- FIFO Word SOF
          locFifoEOF    : in    std_logic;                       -- FIFO Word EOF
          locFifoData   : in    std_logic_vector(15 downto 0);   -- FIFO Word
+         txFifoValid   : out   std_logic;
+         txFifoReady   : in    std_logic;
          txFifoData    : out   std_logic_vector(15 downto 0);   -- TX FIFO Data
          txFifoSOF     : out   std_logic;                       -- TX FIFO Start of Frame
          txFifoEOF     : out   std_logic;                       -- TX FIFO End of Frame
          txFifoType    : out   std_logic_vector(1  downto 0);   -- TX FIFO Data Type
-         txFifoRd      : in    std_logic;                       -- TX FIFO Read
-         txFifoEmpty   : out   std_logic;                       -- TX FIFO Empty
          trainFifoFull : out   std_logic;                       -- Train FIFO is full
          csControl     : inout std_logic_vector(35 downto 0)    -- Chip Scope Control
       );
@@ -402,8 +402,6 @@ package KpixConPkg is
    -- Kpix Data Processor
    component KpixDataRx
       port (
-         sysClk       : in    std_logic;                       -- 60Mhz system clock
-         sysRst       : in    std_logic;                       -- System reset
          kpixClk      : in    std_logic;                       -- 20Mhz kpix clock
          kpixRst      : in    std_logic;                       -- System reset
          fifoReq      : out   std_logic;                       -- FIFO Write Request
@@ -591,6 +589,7 @@ package KpixConPkg is
          ethRxData     : in     std_logic_vector(7 downto 0);
          ethRxGood     : in     std_logic;
          ethRxError    : in     std_logic;
+         ethRxCount    : in     std_logic_vector(15 downto 0);
          csControl     : inout  std_logic_vector(35 downto 0)  -- Chip Scope Control
       );
    end component;

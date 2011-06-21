@@ -115,15 +115,12 @@ architecture KpixConCore of KpixConCore is
    -- Local signals
    signal sysRst        : std_logic;
    signal kpixRst       : std_logic;
-   signal usbRxLedL     : std_logic;
-   signal usbTxLedL     : std_logic;
-   signal usbLoopEnL    : std_logic;
    signal txFifoData    : std_logic_vector(15 downto 0);
    signal txFifoSOF     : std_logic;
    signal txFifoEOF     : std_logic;
    signal txFifoType    : std_logic_vector(1  downto 0);
-   signal txFifoRd      : std_logic;
-   signal txFifoEmpty   : std_logic;
+   signal txFifoReady   : std_logic;
+   signal txFifoValid   : std_logic;
    signal rxFifoData    : std_logic_vector(15 downto 0);
    signal rxFifoSOF     : std_logic;
    signal rxFifoType    : std_logic_vector(1  downto 0);
@@ -184,24 +181,13 @@ architecture KpixConCore of KpixConCore is
    signal macAddr         : MacAddrType;
    signal udpTxValid      : std_logic;
    signal udpTxReady      : std_logic;
-   signal udpTxEOF        : std_logic;
    signal udpTxLength     : std_logic_vector(15 downto 0);
    signal udpTxData       : std_logic_vector(7  downto 0);
    signal udpRxValid      : std_logic;
    signal udpRxData       : std_logic_vector(7 downto 0);
    signal udpRxGood       : std_logic;
    signal udpRxError      : std_logic;
-   signal ethTxLength     : std_logic_vector(15 downto 0);
-   signal ethTxEmpty      : std_logic;
-   signal ethTxSOF        : std_logic;
-   signal ethTxEOF        : std_logic;
-   signal ethTxData       : std_logic_vector(15 downto 0);
-   signal ethTxType       : std_logic_vector(1  downto 0);
-   signal ethTxRd         : std_logic;
-   signal ethRxValid      : std_logic;
-   signal ethRxData       : std_logic_vector(7 downto 0);
-   signal ethRxGood       : std_logic;
-   signal ethRxError      : std_logic;
+   signal udpRxCount      : std_logic_vector(15 downto 0);
    signal gtpClkRst       : std_logic;
    signal reset_r         : std_logic_vector(3 downto 0);
    
@@ -214,7 +200,6 @@ architecture KpixConCore of KpixConCore is
    signal csControl4        : std_logic_vector(35 downto 0);
    signal csStat            : std_logic_vector(15 downto 0);
    signal csCntrl           : std_logic_vector(15 downto 0);
-   signal pktNum            : std_logic_vector(3  downto 0);
    signal sysDebug          : std_logic_vector(63 downto 0);
    signal EthGtpRst         : std_logic;
    signal EthIntRst         : std_logic;
@@ -232,8 +217,8 @@ begin
    
    -- Define LEDs
    ledL(3) <= not kpixRunLed;
-   ledL(2) <= usbTxLedL;
-   ledL(1) <= usbRxLedL;
+   ledL(2) <= '1';
+   ledL(1) <= '1';
    ledL(0) <= kpixRst;
 
    -- ADC & DAC are unused for now
@@ -330,7 +315,6 @@ begin
       ipAddr      => ipAddr,
       macAddr     => macAddr,
       udpTxValid  => udpTxValid,
-      udpTxEOF    => udpTxEOF,
       udpTxReady  => udpTxReady,
       udpTxData   => udpTxData,
       udpTxLength => udpTxLength,
@@ -338,6 +322,7 @@ begin
       udpRxData   => udpRxData,
       udpRxGood   => udpRxGood,
       udpRxError  => udpRxError,
+      udpRxCount  => udpRxCount,
       gtpRxN      => RXN_0,
       gtpRxP      => RXP_0,
       gtpTxN      => TXN_0,
@@ -349,14 +334,13 @@ begin
    EthIntRst <= sysRst or csCntrl(0);
    -- Ethernet Interface
    U_EthInterface : EthInterface port map (
-      sysClk      => sysClk,      sysRst      => EthIntRst,
       gtpClk      => gtpClkRef,   gtpClkRst   => gtpClkRst,
-      ethTxRd     => txFifoRd,    ethTxEmpty  => txFifoEmpty,
+      ethTxValid  => txFifoValid, ethTxReady  => txFifoReady,
       ethTxSOF    => txFifoSOF,   ethTxEOF    => txFifoEOF,
       ethTxData   => txFifoData,  ethTxType   => txFifoType,
       udpTxValid  => udpTxValid,  udpTxLength => udpTxLength,
-      udpTxEOF    => udpTxEOF,    udpTxReady  => udpTxReady,
-      udpTxData   => udpTxData,   csControl   => csControl4
+      udpTxReady  => udpTxReady,
+      udpTxData   => udpTxData,   csControl   => open
    );
 
    U_KpixDataFrmtr : KpixDataFrmtr port map (
@@ -367,6 +351,7 @@ begin
       rxFifoWr    => rxFifoWr,     rxFifoFull  => rxFifoFull,
       ethRxValid  => udpRxValid,   ethRxData   => udpRxData,
       ethRxGood   => udpRxGood,    ethRxError  => udpRxError,
+      ethRxCount  => udpRxCount,
       csControl   => csControl4
    );
 
@@ -411,9 +396,9 @@ begin
       kpixRspData   => kpixRspData,    kpixRspWr     => kpixRspWr,
       locFifoReq    => locFifoReq,     locFifoWr     => locFifoWr,
       locFifoAck    => locFifoAck,     locFifoSOF    => locFifoSOF,
-      locFifoData   => locFifoData,    txFifoData    => txFifoData,
+      locFifoData   => locFifoData,    txFifoValid   => txFifoValid,
+      txFifoReady   => txFifoReady,    txFifoData    => txFifoData,
       txFifoSOF     => txFifoSOF,      txFifoType    => txFifoType,
-      txFifoRd      => txFifoRd,       txFifoEmpty   => txFifoEmpty,
       trainFifoFull => trainFifoFull,  locFifoEOF    => locFifoEOF,
       kpixRspEOF    => kpixRspEOF,     trainFifoEOF  => trainFifoEOF,
       txFifoEOF     => txFifoEOF,      csControl     => csControl2
@@ -460,7 +445,8 @@ begin
       kpixRunLed    => kpixRunLed,
       checkSumErr   => checkSumErr,    coreState     => coreState,
       csControl1    => csControl1,     csControl2    => csControl2,
-      csControl3    => csControl4
+      csControl3    => open
+      --csControl3    => csControl4
    );
 
 
@@ -519,6 +505,7 @@ begin
    sysDebug (49)           <= udpTxReady;
    sysDebug (48)           <= udpRxValid;
    sysDebug (47 downto 32) <= trainFifoData;
+   sysDebug (31 downto 11) <= (others=>'0');
 --    sysDebug (31 downto 16) <= kpixRspData;
 --    sysDebug (15 downto  8) <= udpTxData;
 --    sysDebug (7  downto  0) <= udpRxData;

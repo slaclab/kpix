@@ -48,6 +48,7 @@ entity KpixDataFrmtr is port (
       ethRxData     : in     std_logic_vector(7 downto 0);
       ethRxGood     : in     std_logic;
       ethRxError    : in     std_logic;
+      ethRxCount    : in     std_logic_vector(15 downto 0);
 
       -- Debug
       csControl     : inout  std_logic_vector(35 downto 0)  -- Chip Scope Control
@@ -61,31 +62,52 @@ end KpixDataFrmtr;
 architecture KpixDataFrmtr of KpixDataFrmtr is 
 
    -- Local signals
-   signal locRxFifoData  : std_logic_vector(7  downto 0);
-   signal locRxFifoDin   : std_logic_vector(7  downto 0);
-   signal locRxFifoRd    : std_logic;
-   signal locRxFifoWr    : std_logic;
-   signal locRxFifoFull  : std_logic;
-   signal locRxFifoEmpty : std_logic;
-   signal intRxFifoData  : std_logic_vector(15 downto 0);
-   signal intRxFifoSOF   : std_logic;
-   signal intRxFifoType  : std_logic_vector(1  downto 0);
-   signal intRxFifoWr    : std_logic;
-   signal writeRx        : std_logic;
+   signal ethRxGoodError   : std_logic;
+   signal dataFifoRd       : std_logic;
+   signal dataFifoDout     : std_logic_vector(7 downto 0);
+   signal countFifoRd      : std_logic;
+   signal countFifoEmpty   : std_logic;
+   signal countFifoDout    : std_logic_vector(15 downto 0);
+   signal countFifoError   : std_logic;
+   signal countFifoGood    : std_logic;
+   signal rxCount          : std_logic_vector(15 downto 0);
+   signal rxCntRst         : std_logic;
+   signal intFifoData      : std_logic_vector(15 downto 0);
+   signal intFifoSOF       : std_logic;
+   signal intFifoType      : std_logic_vector(1  downto 0);
+   signal intFifoWr        : std_logic;
+   signal nxtFifoData      : std_logic_vector(15 downto 0);
+   signal nxtFifoSOF       : std_logic;
+   signal nxtFifoType      : std_logic_vector(1  downto 0);
+   signal nxtFifoWr        : std_logic;
+   signal intFirst         : std_logic;
+   signal nxtFirst         : std_logic;
    
    -- Chip Scope signals
-   constant enChipScope  : integer := 0;
+   constant enChipScope  : integer := 1;
    signal   ethDebug     : std_logic_vector(63 downto 0);
+
+   -- RX States
+   constant ST_RX_IDLE   : std_logic_vector(2 downto 0) := "000";
+   constant ST_RX_READ   : std_logic_vector(2 downto 0) := "001";
+   constant ST_RX_HEADA  : std_logic_vector(2 downto 0) := "010";
+   constant ST_RX_HEADB  : std_logic_vector(2 downto 0) := "011";
+   constant ST_RX_HIGH   : std_logic_vector(2 downto 0) := "100";
+   constant ST_RX_LOW    : std_logic_vector(2 downto 0) := "101";
+   constant ST_RX_DUMP   : std_logic_vector(2 downto 0) := "110";
+   signal   curRXState   : std_logic_vector(2 downto 0);
+   signal   nxtRXState   : std_logic_vector(2 downto 0);
    
 begin
 
    ----------------------------------------------------------
    ------------------ Debug Block ---------------------------
-   
-   ethDebug (20)          <= intRxFifoSOF;
-   ethDebug (18)          <= intRxFifoWr;
-   ethDebug (17 downto 16)<= intRxFifoType;
-   ethDebug (15 downto 0) <= intRxFifoData;
+   ethDebug(63 downto 32) <= (others=>'0');
+   ethDebug(31 downto 16) <= intFifoData;
+   ethDebug(15 downto  5) <= (others=>'0');
+   ethDebug(4)            <= intFifoSOF;
+   ethDebug(3 downto 2)   <= intFifoType;
+   ethDebug(0)            <= intFifoWr;
 
    chipscope : if (enChipScope = 1) generate   
       U_KpixDataFrmtr_EmacClk_ila : v5_ila port map (
@@ -97,75 +119,221 @@ begin
    
    ---------------------- Debug Block ----------------------------
    ---------------------------------------------------------------
-   
-   rxFifoSOF              <= intRxFifoSOF;
-   rxFifoType             <= intRxFifoType;
-   rxFifoWr               <= intRxFifoWr;
-   rxFifoData             <= intRxFifoData;
-
+  
    -- Receiver Data Fifo
    U_RxDataFifo : afifo_20x8k port map (
       wr_clk            => emacClk,
       rd_clk            => sysClk,
       rst               => sysRst,
       din(19 downto 8)  => (OTHERS => '0'),
-      din(7  downto 0)  => locRxFifoDin,
-      wr_en             => locRxFifoWr,
-      rd_en             => locRxFifoRd,
+      din(7  downto 0)  => ethRxData,
+      wr_en             => ethRxValid,
+      rd_en             => dataFifoRd,
       dout(19 downto 8) => open,
-      dout(7  downto 0) => locRxFifoData,
-      full              => locRxFifoFull,
-      empty             => locRxFifoEmpty,
+      dout(7 downto 0)  => dataFifoDout,
+      full              => open,
+      empty             => open,
       wr_data_count     => open
    );
-   -- Forward FIFO status
-   locRxFifoRd  <= not locRxFifoEmpty after tpd;
-   locRxFifoWr  <= ethRxValid         after tpd;
-   locRxFifoDin <= ethRxData          after tpd;
-   
+
+   -- Receiver Count Fifo
+   U_RxCountFifo : afifo_20x8k port map (
+      wr_clk             => emacClk,
+      rd_clk             => sysClk,
+      rst                => sysRst,
+      din(19 downto 18)  => (OTHERS => '0'),
+      din(17)            => ethRxError,
+      din(16)            => ethRxGood,
+      din(15 downto 0)   => ethRxCount,
+      wr_en              => ethRxGoodError,
+      rd_en              => countFifoRd,
+      dout(19 downto 18) => open,
+      dout(17)           => countFifoError,
+      dout(16)           => countFifoGood,
+      dout(15 downto 0)  => countFifoDout,
+      full               => open,
+      empty              => countFifoEmpty,
+      wr_data_count      => open
+   );
+   ethRxGoodError <= ethRxError or ethRxGood;
+
+   -- Data output
+   rxFifoData <= intFifoData;
+   rxFifoSOF  <= intFifoSOF;
+   rxFifoType <= intFifoType;
+   rxFifoWr   <= intFifoWr;
+
    -- Convert byte data into 16-bit words
    process (sysClk, sysRst ) begin
       if sysRst = '1' then
-         intRxFifoData <= (others=>'0') after tpd;
-         intRxFifoSOF  <= '0'           after tpd;
-         intRxFifoType <= "00"          after tpd;
-         intRxFifoWr   <= '0'           after tpd;
-         writeRx       <= '0'           after tpd;
-         
+         intFifoData <= (others=>'0') after tpd;
+         intFifoSOF  <= '0'           after tpd;
+         intFifoType <= (others=>'0') after tpd;
+         intFifoWr   <= '0'           after tpd;
+         intFirst    <= '0'           after tpd;
+         rxCount     <= (others=>'0') after tpd;
+         curRxState  <= ST_RX_IDLE    after tpd;
       elsif rising_edge(sysClk) then
 
-         -- FIFO Write
-         writeRx     <= locRxFifoRd        after tpd;
-         
-         if (writeRx = '1' and rxFifoFull = '0') then
-            -- Byte 0
-            if locRxFifoData(7) = '1' then
-               intRxFifoData(3 downto 0) <= locRxFifoData(3 downto 0) after tpd;
-               intRxFifoType             <= locRxFifoData(5 downto 4) after tpd;
-               intRxFifoSOF              <= locRxFifoData(6)          after tpd;
-               intRxFifoWr               <= '0'                       after tpd;
-               
-           else
+         -- Read counter
+         if rxCntRst = '1' then
+            rxCount <= (others=>'0') after tpd;
+         elsif dataFifoRd = '1' then
+            rxCount <= rxCount + 1 after tpd;
+         end if;
 
-               -- Byte 1 
-               if locRxFifoData(6) = '0' then
-                  intRxFifoData(9 downto 4) <= locRxFifoData(5 downto 0) after tpd;
-                  intRxFifoWr               <= '0'                       after tpd;
-                  
-              -- Byte 2
-               else 
-                  intRxFifoData(15 downto 10) <= locRxFifoData(5 downto 0) after tpd;
-                  intRxFifoWr                 <= '1'                       after tpd;
-                  
-               end if;
-            end if;
-         else
-            intRxFifoData <= (others=>'0') after tpd;
-            intRxFifoSOF  <= '0'           after tpd;
-            intRxFifoType <= "00"          after tpd;
-            intRxFifoWr   <= '0'           after tpd;
-        end if;
+         -- Track first
+         intFirst <= nxtFirst after tpd;
+
+         -- Output
+         intFifoData <= nxtFifoData   after tpd;
+         intFifoSOF  <= nxtFifoSOF    after tpd;
+         intFifoType <= nxtFifoType   after tpd;
+         intFifoWr   <= nxtFifoWr     after tpd;
+         
+         -- State
+         curRxState <= nxtRxState after tpd;
       end if;
+   end process;
+
+
+   process ( dataFifoDout, countFifoEmpty, countFifoDout,
+             countFifoError, countFifoGood, intFifoData, intFifoType ) begin
+      case curRxState is
+
+         when ST_RX_IDLE =>
+            rxCntRst     <= '1';
+            dataFifoRd   <= '0';
+            nxtFifoData  <= (others=>'0');
+            nxtFifoSOF   <= '0';
+            nxtFifoType  <= (others=>'0');
+            nxtFifoWr    <= '0';
+            nxtFirst     <= '0';
+
+            -- Count fifo has data
+            if countFifoEmpty = '0' then
+               countFifoRd <= '1';
+               nxtRxState  <= ST_RX_READ;
+            else
+               countFifoRd <= '0';
+               nxtRxState  <= curRxState;
+            end if;
+
+         when ST_RX_READ =>
+            rxCntRst     <= '0';
+            countFifoRd  <= '0';
+            nxtFifoData  <= (others=>'0');
+            nxtFifoSOF   <= '0';
+            nxtFifoType  <= (others=>'0');
+            nxtFifoWr    <= '0';
+            dataFifoRd   <= '1';
+            nxtFirst     <= '0';
+
+            if countFifoError = '1' then
+               nxtRxState <= ST_RX_DUMP;
+            else
+               nxtRxState <= ST_RX_HEADA;
+            end if;
+
+         when ST_RX_DUMP =>
+            rxCntRst     <= '0';
+            countFifoRd  <= '0';
+            nxtFifoData  <= (others=>'0');
+            nxtFifoSOF   <= '0';
+            nxtFifoType  <= (others=>'0');
+            nxtFifoWr    <= '0';
+            nxtFirst     <= '0';
+
+            if rxCount = countFifoDout then
+               nxtRxState <= ST_RX_IDLE;
+               dataFifoRd <= '0';
+            else
+               nxtRxState <= curRxState;
+               dataFifoRd <= '1';
+            end if;
+
+         when ST_RX_HEADA =>
+            rxCntRst     <= '0';
+            countFifoRd  <= '0';
+            nxtFifoData  <= (others=>'0');
+            nxtFifoSOF   <= dataFifoDout(7);
+            nxtFifoType  <= dataFifoDout(5 downto 4);
+            nxtFifoWr    <= '0';
+            nxtFirst     <= '1';
+
+            if rxCount = countFifoDout then
+               nxtRxState <= ST_RX_IDLE;
+               dataFifoRd <= '0';
+            else
+               nxtRxState <= ST_RX_HEADB;
+               dataFifoRd <= '1';
+            end if;
+
+         when ST_RX_HEADB =>
+            rxCntRst     <= '0';
+            countFifoRd  <= '0';
+            nxtFifoData  <= (others=>'0');
+            nxtFifoSOF   <= intFifoSOF;
+            nxtFifoType  <= intFifoType;
+            nxtFifoWr    <= '0';
+            nxtFirst     <= '1';
+
+            if rxCount = countFifoDout then
+               nxtRxState <= ST_RX_IDLE;
+               dataFifoRd <= '0';
+            else
+               nxtRxState <= ST_RX_HIGH;
+               dataFifoRd <= '1';
+            end if;
+
+         when ST_RX_HIGH =>
+            rxCntRst                 <= '0';
+            countFifoRd              <= '0';
+            nxtFifoData(15 downto 8) <= dataFifoDout;
+            nxtFifoData(7  downto 0) <= (others=>'0');
+            nxtFifoSOF               <= intFifoSOF and intFirst;
+            nxtFifoType              <= intFifoType;
+            nxtFifoWr                <= '0';
+            nxtFirst                 <= intFirst;
+
+            if rxCount = countFifoDout then
+               nxtRxState <= ST_RX_IDLE;
+               dataFifoRd <= '0';
+            else
+               nxtRxState <= ST_RX_LOW;
+               dataFifoRd <= '1';
+            end if;
+
+         when ST_RX_LOW  =>
+            rxCntRst                 <= '0';
+            countFifoRd              <= '0';
+            nxtFifoData(15 downto 8) <= intFifoData(15 downto 8);
+            nxtFifoData(7  downto 0) <= dataFifoDout;
+            nxtFifoSOF               <= intFifoSOF and intFirst;
+            nxtFifoType              <= intFifoType;
+            nxtFirst                 <= '0';
+            nxtFifoWr                <= '1';
+
+            -- Detect last
+            if rxCount = countFifoDout then
+               nxtRxState <= ST_RX_IDLE;
+               dataFifoRd <= '0';
+            else
+               nxtRxState <= ST_RX_HIGH;
+               dataFifoRd <= '1';
+            end if;
+
+         when others =>
+            rxCntRst     <= '0';
+            dataFifoRd   <= '0';
+            countFifoRd  <= '0';
+            nxtFifoData  <= (others=>'0');
+            nxtFifoSOF   <= '0';
+            nxtFifoType  <= (others=>'0');
+            nxtFifoWr    <= '0';
+            nxtFirst     <= '0';
+            nxtRxState   <= ST_RX_IDLE;
+      end case;
    end process;
 
 end KpixDataFrmtr;

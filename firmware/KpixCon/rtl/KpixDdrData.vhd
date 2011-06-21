@@ -161,20 +161,20 @@ architecture KpixDdrData of KpixDdrData is
 begin
 
    -- Debug
-   ddrDebug (63)           <= memRdDen;
-   ddrDebug (62)           <= not intEmpty;
-   ddrDebug (61)           <= regData(18);
-   ddrDebug (60)           <= memWrEnB and memWrB;
-   ddrDebug (59)           <= memWrEnA and memWrA;
-   ddrDebug (58)           <= memRdEnB and memRdB;
-   ddrDebug (57)           <= memRdEnA and memRdA;
-   ddrDebug (56)           <= curState(1);
-   ddrDebug (55)           <= curState(0);
-   ddrDebug (54 downto 36) <= intAddr(19 downto 1);
-   ddrDebug (35)           <= sramAck;
-   ddrDebug (34)           <= intFull;
-   ddrDebug (33 downto 32) <= counter;
-   ddrDebug (31 downto  0) <= intData;-- when csEnable(4) = '1' else outData;
+   --ddrDebug (63)           <= memRdDen;
+   --ddrDebug (62)           <= not intEmpty;
+   --ddrDebug (61)           <= regData(18);
+   --ddrDebug (60)           <= memWrEnB and memWrB;
+   --ddrDebug (59)           <= memWrEnA and memWrA;
+   --ddrDebug (58)           <= memRdEnB and memRdB;
+   --ddrDebug (57)           <= memRdEnA and memRdA;
+   --ddrDebug (56)           <= curState(1);
+   --ddrDebug (55)           <= curState(0);
+   --ddrDebug (54 downto 36) <= intAddr(19 downto 1);
+   --ddrDebug (35)           <= sramAck;
+   --ddrDebug (34)           <= intFull;
+   --ddrDebug (33 downto 32) <= counter;
+   --ddrDebug (31 downto  0) <= intData;-- when csEnable(4) = '1' else outData;
    
   debug <= sysDebug(0) when csEnable(5) = '0' else sysDebug(1);
 
@@ -528,11 +528,19 @@ begin
    -- Pipeline stage
    process ( ddrClk, ddrRst ) begin
       if ddrRst = '1' then
-         fifoDin <= (OTHERS=>'0') after tpd;
-         intWr   <= '0'           after tpd;
+         fifoDin   <= (OTHERS=>'0') after tpd;
+         intWr     <= '0'           after tpd;
+         readAFull <= '0'           after tpd;
       elsif rising_edge(ddrClk) then
          intWr   <= memRdDen and ddrRdData(35) after tpd;
          fifoDin <= ddrRdData after tpd;
+
+         if intCnt > 450 then
+            readAFull <= '1' after tpd;
+         else
+            readAFull <= '0' after tpd;
+         end if;
+
       end if;
    end process;
    
@@ -594,7 +602,6 @@ begin
    process ( sysClk, sysRst ) begin
       if sysRst = '1' then
          curState  <= "00"          after tpd;
-         readAFull <= '0'           after tpd;
          sramEOF   <= '0'           after tpd;
          sramSOF   <= '0'           after tpd;
          sramData  <= (OTHERS=>'0') after tpd;
@@ -604,12 +611,6 @@ begin
          sramEOF   <= regData(17) after tpd;
          sramSOF   <= regData(16) after tpd;
          sramData  <= regData(15 downto 0) after tpd;
-
-         if intCnt > 450 then
-            readAFull <= '1' after tpd;
-         else
-            readAFull <= '0' after tpd;
-         end if;
 
          if intEOF = '1' then
             counter <= counter + 1 after tpd;

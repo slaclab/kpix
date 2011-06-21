@@ -229,7 +229,6 @@ architecture KpixCon of KpixCon is
    signal resetL        : std_logic;                     -- Reset to KPIX devices
    signal command       : std_logic_vector(31 downto 0); -- Command to KPIX devices
    signal commandL      : std_logic_vector(31 downto 0); -- Inverted command to KPIX devices
-   signal kpixData      : std_logic_vector(31 downto 0); -- Data from from KPIX devices
    signal data          : std_logic_vector(31 downto 0); -- Data from from KPIX devices
    signal dataL         : std_logic_vector(31 downto 0); -- Inverted data from from KPIX devices
    signal bncInA        : std_logic;                     -- BNC Interface A input
@@ -261,7 +260,6 @@ architecture KpixCon of KpixCon is
    signal tmpClk270     : std_logic;
    signal sysClk270     : std_logic;
    signal dllClk125     : std_logic;
-   signal dllClk20      : std_logic;
    signal divCount      : std_logic_vector(4 downto 0);
    signal divClk        : std_logic;
    signal sysClk200     : std_logic;
@@ -331,7 +329,7 @@ begin
    dllRst <= not fpgaRstL;
 
    -- 200Mhz clock multiplier
-   U_ClkMultDll : DCM 
+   U_ClkMultDll : DCM_ADV 
       generic map (
          DFS_FREQUENCY_MODE    => "LOW",  DLL_FREQUENCY_MODE    => "HIGH",
          --DUTY_CYCLE_CORRECTION => false,
@@ -341,6 +339,7 @@ begin
          CLKFX_MULTIPLY        => 8,      CLKFX_DIVIDE          => 5, -- 125*8/5 = 200 MHz
          CLKDV_DIVIDE          => 2.0,
          DESKEW_ADJUST         => "SYSTEM_SYNCHRONOUS",
+         DCM_PERFORMANCE_MODE  => "MAX_SPEED", 
          CLKIN_PERIOD          => 8.0,
          FACTORY_JF            => X"F0F0"
       )
@@ -351,10 +350,18 @@ begin
          CLK2X    => open,        CLK2X180 => open,
          CLKDV    => open,        CLKFX    => dllClk200,
          CLKFX180 => open,        LOCKED   => kpixLock,
-         PSDONE   => open,        STATUS   => open,
-         DSSEN    => '0',         PSCLK    => '0',
-         PSEN     => '0',         PSINCDEC => '0',
-         RST      => dllRst
+         PSDONE   => open,
+         PSCLK    => '0',
+         PSEN     => '0',
+         PSINCDEC => '0',
+         RST      => dllRst,
+         DCLK     => '0',
+         DADDR    => (others=>'0'),
+         DI       => (others=>'0'),
+         DO       => open,
+         DRDY     => open,
+         DWE      => '0',
+         DEN      => '0'
       );
 
    -- Connect 200Mhz clock to global buffer
@@ -650,6 +657,7 @@ begin
          CLKFX_DIVIDE          => 1,
          CLKDV_DIVIDE          => 2.0,         
          CLKIN_PERIOD          => 8.0,
+         DCM_PERFORMANCE_MODE  => "MAX_SPEED", 
          FACTORY_JF            => X"F0F0",
          DESKEW_ADJUST         => "SYSTEM_SYNCHRONOUS"
       )
