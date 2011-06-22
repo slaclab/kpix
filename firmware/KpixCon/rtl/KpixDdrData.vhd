@@ -499,7 +499,12 @@ begin
          S  => '0'
       );
    end generate;
-   
+  
+
+
+
+
+
    U_DdrFifo: afifo_35x512 port map(
       rd_clk             => sysClk,
       rd_en              => intRd,
@@ -507,8 +512,10 @@ begin
       dout(33)           => intEOF,
       dout(32)           => intPad,
       dout(31 downto 0)  => intData,
-      rst                => ddrRst,
-      wr_clk             => ddrClk,
+      --rst                => ddrRst,
+      rst                => sysRst,
+      --wr_clk             => ddrClk,
+      wr_clk             => sysClk,
       wr_en              => intWr,
       din                => fifoDin(34 downto 0),
       empty              => intEmpty,
@@ -525,24 +532,31 @@ begin
    intValid <= sramAck and not intEmpty;
 --    intWr    <= memRdDen and ddrRdData(35);
 
+   intWr                <= trainWr(0);
+   fifoDin(34)          <= trainSOF(0);
+   fifoDin(33)          <= trainEOF(0);
+   fifoDin(32)          <= trainPad(0);
+   fifoDin(31 downto 0) <= trainData(0);
+   trainAck(0)          <= trainReq(0) when intCnt < 500 else '0';
+
    -- Pipeline stage
-   process ( ddrClk, ddrRst ) begin
-      if ddrRst = '1' then
-         fifoDin   <= (OTHERS=>'0') after tpd;
-         intWr     <= '0'           after tpd;
-         readAFull <= '0'           after tpd;
-      elsif rising_edge(ddrClk) then
-         intWr   <= memRdDen and ddrRdData(35) after tpd;
-         fifoDin <= ddrRdData after tpd;
-
-         if intCnt > 450 then
-            readAFull <= '1' after tpd;
-         else
-            readAFull <= '0' after tpd;
-         end if;
-
-      end if;
-   end process;
+   --process ( ddrClk, ddrRst ) begin
+      --if ddrRst = '1' then
+         --fifoDin   <= (OTHERS=>'0') after tpd;
+         --intWr     <= '0'           after tpd;
+         --readAFull <= '0'           after tpd;
+      --elsif rising_edge(ddrClk) then
+         --intWr   <= memRdDen and ddrRdData(35) after tpd;
+         --fifoDin <= ddrRdData after tpd;
+--
+         --if intCnt > 450 then
+            --readAFull <= '1' after tpd;
+         --else
+            --readAFull <= '0' after tpd;
+         --end if;
+--
+      --end if;
+   --end process;
    
    -- 32-bit to 16-bit conversion
    process ( curState, intSOF, intEOF, intPad, intData, intEmpty, sramAck ) begin
@@ -621,7 +635,8 @@ begin
    -- Handles SRAM partition A
    ddrDataRxA: KpixDdrDataRx port map (
       sysClk    => sysClk,           sysRst    => sysRst,
-      trainReq  => trainReq(0),      trainAck  => trainAck(0),
+      --trainReq  => trainReq(0),      trainAck  => trainAck(0),
+      trainReq  => trainReq(0),      trainAck  => open,
       trainSOF  => trainSOF(0),      trainEOF  => trainEOF(0),
       trainPad  => trainPad(0),      trainWr   => trainWr(0),
       trainData => trainData(0),     memWr     => memWrA,
