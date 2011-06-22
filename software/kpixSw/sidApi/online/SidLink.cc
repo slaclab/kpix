@@ -626,35 +626,37 @@ int SidLink::linkRawReadUdp ( unsigned short *data, short int size, unsigned cha
       FD_SET(udpFd,&fds);
 
       // Is data waiting?
-      ret = select(udpFd+1,&fds,NULL,NULL,&timeout);
-      if ( ret > 0 && FD_ISSET(udpFd,&fds) ) {
-         udpAddrLength = sizeof(struct sockaddr_in);
-         ret = recvfrom(udpFd,&qbuffer,8192,0,(struct sockaddr *)udpAddr,&udpAddrLength);
-         if ( ret > 0 ) {
-            udpx = 0;
-            while ( udpx < (uint)ret ) {
-               rSof    = (qbuffer[udpx] >> 7) & 0x1;
-               rEof    = (qbuffer[udpx] >> 6) & 0x1;
-               rType   = (qbuffer[udpx] >> 4) & 0x3;
-               udpcnt  = (qbuffer[udpx] << 8) & 0xF00;
-               udpx++;
-               udpcnt += (qbuffer[udpx]     ) & 0xFF;
-               udpcnt -= 1;
-               udpx++;
-
-               if ( udpcnt > 4001 ) break;
-
-               for ( x=0; x < udpcnt; x++ ) {
-                  value  = (qbuffer[udpx] << 8) & 0xFF00;
+      if ( ! qready() ) {
+         ret = select(udpFd+1,&fds,NULL,NULL,&timeout);
+         if ( ret > 0 && FD_ISSET(udpFd,&fds) ) {
+            udpAddrLength = sizeof(struct sockaddr_in);
+            ret = recvfrom(udpFd,&qbuffer,8192,0,(struct sockaddr *)udpAddr,&udpAddrLength);
+            if ( ret > 0 ) {
+               udpx = 0;
+               while ( udpx < (uint)ret ) {
+                  rSof    = (qbuffer[udpx] >> 7) & 0x1;
+                  rEof    = (qbuffer[udpx] >> 6) & 0x1;
+                  rType   = (qbuffer[udpx] >> 4) & 0x3;
+                  udpcnt  = (qbuffer[udpx] << 8) & 0xF00;
                   udpx++;
-                  value += (qbuffer[udpx] & 0xFF);
+                  udpcnt += (qbuffer[udpx]     ) & 0xFF;
+                  udpcnt -= 1;
                   udpx++;
-                  qpush(value,rType,(rSof&&x==0),(rEof && x == (udpcnt-1)));
-               }
-               if ( enDebug ) {
-                  cout << "SidLink::linkRawReadUdp -> Read " << dec << x << " words from UDP. ";
-                  cout << "Type=" << dec << rType << ", SOF=" << dec << rSof << ", EOF=" << dec << rEof;
-                  cout << ", Ret=" << dec << ret << endl;
+
+                  if ( udpcnt > 4001 ) break;
+
+                  for ( x=0; x < udpcnt; x++ ) {
+                     value  = (qbuffer[udpx] << 8) & 0xFF00;
+                     udpx++;
+                     value += (qbuffer[udpx] & 0xFF);
+                     udpx++;
+                     qpush(value,rType,(rSof&&x==0),(rEof && x == (udpcnt-1)));
+                  }
+                  if ( enDebug ) {
+                     cout << "SidLink::linkRawReadUdp -> Read " << dec << x << " words from UDP. ";
+                     cout << "Type=" << dec << rType << ", SOF=" << dec << rSof << ", EOF=" << dec << rEof;
+                     cout << ", Ret=" << dec << ret << endl;
+                  }
                }
             }
          }
