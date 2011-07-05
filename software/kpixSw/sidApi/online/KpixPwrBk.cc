@@ -95,7 +95,7 @@ void KpixPwrBk::init() {
       usleep(250000);
       read(sockFd,rxBuffer,500);
 
-      command = "VOLT00075\r";
+      command = "VOLT00065\r";
       write(sockFd,command.c_str(),command.length());
       usleep(250000);
       read(sockFd,rxBuffer,500);
