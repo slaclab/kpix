@@ -48,10 +48,7 @@ entity KpixRspRx is
 
       -- Status Data
       statusValue : out   std_logic_vector(31 downto 0);   -- KPIX status register
-      statusRx    : out   std_logic;                       -- KPIX status received
-
-      -- Kpix version
-      kpixVer     : in    std_logic                        -- Kpix Version
+      statusRx    : out   std_logic                        -- KPIX status received
 
    );
 end KpixRspRx;
@@ -137,11 +134,7 @@ begin
                shiftCount <= shiftCount + 1 after tpd;
 
                -- Shift in data
-               if kpixVer = '0' then
-                  shiftData(54 downto 0) <= intData & shiftData(54 downto 1) after tpd;
-               else
-                  shiftData(47 downto 0) <= intData & shiftData(47 downto 1) after tpd;
-               end if;
+               shiftData(47 downto 0) <= intData & shiftData(47 downto 1) after tpd;
 
                -- Bit 4 is the frame type bit
                if shiftCount = 4 then
@@ -161,14 +154,9 @@ begin
                shiftCount <= shiftCount + 1 after tpd;
 
                -- Shift in data
-               if kpixVer = '0' then
-                  shiftData(54 downto 0) <= intData & shiftData(54 downto 1) after tpd;
-               else
-                  shiftData(47 downto 0) <= intData & shiftData(47 downto 1) after tpd;
-               end if;
+               shiftData(47 downto 0) <= intData & shiftData(47 downto 1) after tpd;
 
-               -- Bit 54 is the last bit
-               if (kpixVer = '0' and shiftCount = 54) or (kpixVer = '1' and shiftCount = 47) then
+               if shiftCount = 47 then
                   curState <= ST_CHECK after tpd;
                end if;
 
@@ -194,29 +182,16 @@ begin
                fifoSOF <= '1' after tpd;
 
                -- Output first word of data
-               if kpixVer = '0' then
-                  fifoData(15 downto 11) <= (others=>'0')           after tpd;
-                  fifoData(10 downto  9) <= kpixAddr                after tpd;
-                  fifoData(8)            <= shiftData(12)           after tpd;
-                  fifoData(7)            <= shiftData(13)           after tpd;
-                  fifoData(6  downto  0) <= shiftData(20 downto 14) after tpd;
-                  checkSum(15 downto 11) <= (others=>'0')           after tpd;
-                  checkSum(10 downto  9) <= kpixAddr                after tpd;
-                  checkSum(8)            <= shiftData(12)           after tpd;
-                  checkSum(7)            <= shiftData(13)           after tpd;
-                  checkSum(6  downto  0) <= shiftData(20 downto 14) after tpd;
-               else
-                  fifoData(15 downto 11) <= (others=>'0')           after tpd;
-                  fifoData(10 downto  9) <= kpixAddr                after tpd;
-                  fifoData(8)            <= shiftData(5)            after tpd;
-                  fifoData(7)            <= shiftData(6)            after tpd;
-                  fifoData(6  downto  0) <= shiftData(13 downto 7)  after tpd;
-                  checkSum(15 downto 11) <= (others=>'0')           after tpd;
-                  checkSum(10 downto  9) <= kpixAddr                after tpd;
-                  checkSum(8)            <= shiftData(5)            after tpd;
-                  checkSum(7)            <= shiftData(6)            after tpd;
-                  checkSum(6  downto  0) <= shiftData(13 downto 7)  after tpd;
-               end if;
+               fifoData(15 downto 11) <= (others=>'0')           after tpd;
+               fifoData(10 downto  9) <= kpixAddr                after tpd;
+               fifoData(8)            <= shiftData(5)            after tpd;
+               fifoData(7)            <= shiftData(6)            after tpd;
+               fifoData(6  downto  0) <= shiftData(13 downto 7)  after tpd;
+               checkSum(15 downto 11) <= (others=>'0')           after tpd;
+               checkSum(10 downto  9) <= kpixAddr                after tpd;
+               checkSum(8)            <= shiftData(5)            after tpd;
+               checkSum(7)            <= shiftData(6)            after tpd;
+               checkSum(6  downto  0) <= shiftData(13 downto 7)  after tpd;
 
             -- Write data 0
             when ST_REQ0 =>
@@ -226,13 +201,8 @@ begin
                   fifoSOF  <= '0' after tpd;
 
                   -- Output second word of data
-                  if kpixVer = '0' then
-                     fifoData <= shiftData(37 downto 22) after tpd;
-                     checkSum <= checkSum + shiftData(37 downto 22) after tpd;
-                  else
-                     fifoData <= shiftData(30 downto 15) after tpd;
-                     checkSum <= checkSum + shiftData(30 downto 15) after tpd;
-                  end if;
+                  fifoData <= shiftData(30 downto 15) after tpd;
+                  checkSum <= checkSum + shiftData(30 downto 15) after tpd;
               
                   -- Next state
                   curState <= ST_REQ1 after tpd;
@@ -243,14 +213,8 @@ begin
 
                -- Output third word of data
                fifoSOF  <= '0'                     after tpd;
-
-               if kpixVer = '0' then
-                  fifoData <= shiftData(53 downto 38) after tpd;
-                  checkSum <= checkSum + shiftData(53 downto 38) after tpd;
-               else
-                  fifoData <= shiftData(46 downto 31) after tpd;
-                  checkSum <= checkSum + shiftData(46 downto 31) after tpd;
-               end if;
+               fifoData <= shiftData(46 downto 31) after tpd;
+               checkSum <= checkSum + shiftData(46 downto 31) after tpd;
            
                -- Next state
                curState <= ST_REQ2 after tpd;
@@ -278,8 +242,7 @@ begin
                -- Increment shift counter
                shiftCount <= shiftCount + 1 after tpd;
 
-               -- Bit 459 is the last bit
-               if (kpixVer = '0' and shiftCount = 469) or (kpixVer = '1' and shiftCount = 463) then
+               if shiftCount = 463 then
                   curState <= ST_IDLE after tpd;
                end if;
 
@@ -290,47 +253,22 @@ begin
    end process;
 
 
-   -- Parity computation
-   process ( shiftData, kpixVer ) begin
-      if kpixVer = '0' then
+   -- Header parity calculation
+   headParErr <= shiftData(0)  xor shiftData(1)  xor shiftData(2)  xor shiftData(3)  xor 
+                 shiftData(4)  xor shiftData(5)  xor shiftData(6)  xor shiftData(7)  xor 
+                 shiftData(8)  xor shiftData(9)  xor shiftData(10) xor shiftData(11) xor 
+                 shiftData(12) xor shiftData(13) xor shiftData(14);
 
-         -- Header parity calculation
-         headParErr <= shiftData(0)  xor shiftData(1)  xor shiftData(2)  xor shiftData(3)  xor 
-                       shiftData(4)  xor shiftData(5)  xor shiftData(6)  xor shiftData(7)  xor 
-                       shiftData(8)  xor shiftData(9)  xor shiftData(10) xor shiftData(11) xor 
-                       shiftData(12) xor shiftData(13) xor shiftData(14) xor shiftData(15) xor 
-                       shiftData(16) xor shiftData(17) xor shiftData(18) xor shiftData(19) xor 
-                       shiftData(20) xor shiftData(21);
-
-         -- Data parity calculation
-         dataParErr <= shiftData(22) xor shiftData(23) xor shiftData(24) xor shiftData(25) xor 
-                       shiftData(26) xor shiftData(27) xor shiftData(28) xor shiftData(29) xor 
-                       shiftData(30) xor shiftData(31) xor shiftData(32) xor shiftData(33) xor 
-                       shiftData(34) xor shiftData(35) xor shiftData(36) xor shiftData(37) xor 
-                       shiftData(38) xor shiftData(39) xor shiftData(40) xor shiftData(41) xor 
-                       shiftData(42) xor shiftData(43) xor shiftData(44) xor shiftData(45) xor 
-                       shiftData(46) xor shiftData(47) xor shiftData(48) xor shiftData(49) xor 
-                       shiftData(50) xor shiftData(51) xor shiftData(52) xor shiftData(53) xor
-                       shiftData(54);
-      else
-         -- Header parity calculation
-         headParErr <= shiftData(0)  xor shiftData(1)  xor shiftData(2)  xor shiftData(3)  xor 
-                       shiftData(4)  xor shiftData(5)  xor shiftData(6)  xor shiftData(7)  xor 
-                       shiftData(8)  xor shiftData(9)  xor shiftData(10) xor shiftData(11) xor 
-                       shiftData(12) xor shiftData(13) xor shiftData(14);
-
-         -- Data parity calculation
-         dataParErr <= shiftData(15) xor shiftData(16) xor shiftData(17) xor shiftData(18) xor 
-                       shiftData(19) xor shiftData(20) xor shiftData(21) xor shiftData(22) xor 
-                       shiftData(23) xor shiftData(24) xor shiftData(25) xor shiftData(26) xor 
-                       shiftData(27) xor shiftData(28) xor shiftData(29) xor shiftData(30) xor 
-                       shiftData(31) xor shiftData(32) xor shiftData(33) xor shiftData(34) xor 
-                       shiftData(35) xor shiftData(36) xor shiftData(37) xor shiftData(38) xor 
-                       shiftData(39) xor shiftData(40) xor shiftData(41) xor shiftData(42) xor 
-                       shiftData(43) xor shiftData(44) xor shiftData(45) xor shiftData(46) xor
-                       shiftData(47);
-      end if;
-   end process;
+   -- Data parity calculation
+   dataParErr <= shiftData(15) xor shiftData(16) xor shiftData(17) xor shiftData(18) xor 
+                 shiftData(19) xor shiftData(20) xor shiftData(21) xor shiftData(22) xor 
+                 shiftData(23) xor shiftData(24) xor shiftData(25) xor shiftData(26) xor 
+                 shiftData(27) xor shiftData(28) xor shiftData(29) xor shiftData(30) xor 
+                 shiftData(31) xor shiftData(32) xor shiftData(33) xor shiftData(34) xor 
+                 shiftData(35) xor shiftData(36) xor shiftData(37) xor shiftData(38) xor 
+                 shiftData(39) xor shiftData(40) xor shiftData(41) xor shiftData(42) xor 
+                 shiftData(43) xor shiftData(44) xor shiftData(45) xor shiftData(46) xor
+                 shiftData(47);
 
 end KpixRspRx;
 

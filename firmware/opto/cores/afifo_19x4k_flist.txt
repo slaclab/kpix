@@ -1,0 +1,12 @@
+# Output products list for <afifo_19x4k>
+_xmsgs/pn_parser.xmsgs
+afifo_19x4k.gise
+afifo_19x4k.ngc
+afifo_19x4k.vhd
+afifo_19x4k.vho
+afifo_19x4k.xco
+afifo_19x4k.xise
+afifo_19x4k_flist.txt
+afifo_19x4k_readme.txt
+afifo_19x4k_xmdf.tcl
+fifo_generator_ug175.pdf

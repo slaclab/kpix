@@ -48,7 +48,7 @@ entity KpixLocal is
       serData       : in    std_logic;                       -- Command data in
 
       -- Core state, Used for clock generation
-      coreState     : out   std_logic_vector(2 downto 0);    -- Core state value
+      coreState     : out   std_logic_vector(3 downto 0);    -- Core state value
 
       -- Outgoing response line
       rspData       : out   std_logic;                       -- Response Data out
@@ -58,9 +58,6 @@ entity KpixLocal is
 
       -- Trigger control register
       trigControl   : in    std_logic_vector(31 downto 0);   -- Trigger control register
-
-      -- kpix version
-      kpixVer       : in    std_logic;                       -- Kpix Version 0=less than 8, 1=8+
 
       -- Bunch crossing
       kpixBunch     : out   std_logic_vector(12 downto 0);   -- Bunch count value
@@ -151,30 +148,6 @@ architecture KpixLocal of KpixLocal is
 
 
    -- Local signals
-   signal v7_command         : std_logic;
-   signal v7_data_out        : std_logic;
-   signal v7_out_reset_l     : std_logic;
-   signal v7_int_reset_l     : std_logic;
-   signal v7_reg_clock       : std_logic;
-   signal v7_reg_sel1        : std_logic;
-   signal v7_reg_sel0        : std_logic;
-   signal v7_pwr_up_acq      : std_logic;
-   signal v7_reset_load      : std_logic;
-   signal v7_leakage_null    : std_logic;
-   signal v7_offset_null     : std_logic;
-   signal v7_thresh_off      : std_logic;
-   signal v7_trig_inh        : std_logic;
-   signal v7_cal_strobe      : std_logic;
-   signal v7_pwr_up_acq_dig  : std_logic;
-   signal v7_sel_cell        : std_logic;
-   signal v7_desel_all_cells : std_logic;
-   signal v7_ramp_period     : std_logic;
-   signal v7_precharge_bus   : std_logic;
-   signal v7_reg_data        : std_logic;
-   signal v7_reg_wr_ena      : std_logic;
-   signal v7_analog_state0   : std_logic;
-   signal v7_analog_state1   : std_logic;
-   signal v7_read_state      : std_logic;
    signal v8_command         : std_logic;
    signal v8_data_out        : std_logic;
    signal v8_out_reset_l     : std_logic;
@@ -257,25 +230,6 @@ begin
    -- Inverted copy of kpix clock
    kpixClkL <= not kpixClk;
 
-   -- Local copy of core, v7
-   U_DigCore_v7: memory_array_control_v7 port map (
-      sysclk          => kpixClk,             reset           => reset,
-      command         => v7_command,          data_out        => v7_data_out,
-      out_reset_l     => v7_out_reset_l,      int_reset_l     => v7_int_reset_l,
-      reg_clock       => v7_reg_clock,        reg_sel1        => v7_reg_sel1,
-      reg_sel0        => v7_reg_sel0,         pwr_up_acq      => v7_pwr_up_acq,
-      reset_load      => v7_reset_load,       leakage_null    => v7_leakage_null,
-      offset_null     => v7_offset_null,      thresh_off      => v7_thresh_off,
-      trig_inh        => v7_trig_inh,         cal_strobe      => v7_cal_strobe,
-      pwr_up_acq_dig  => v7_pwr_up_acq_dig,   sel_cell        => v7_sel_cell,
-      desel_all_cells => v7_desel_all_cells,  ramp_period     => v7_ramp_period,
-      precharge_bus   => v7_precharge_bus,    reg_data        => v7_reg_data,
-      reg_wr_ena      => v7_reg_wr_ena,       rdback          => '0',
-      analog_state0   => v7_analog_state0,    analog_state1   => v7_analog_state1, 
-      read_state      => v7_read_state
-   );
-
-
    -- Local copy of core, v8
    U_DigCore_v8: memory_array_control port map (
       sysclk          => kpixClk,             reset           => reset,
@@ -301,38 +255,37 @@ begin
 
 
    -- Reset loopback
-   v7_int_reset_l <= v7_out_reset_l;
    v8_int_reset_l <= v8_out_reset_l;
 
    -- Enable inputs for active core
-   v7_command <= serData and not kpixVer;
-   v8_command <= serData and kpixVer;
+   v8_command <= serData;
 
    -- response data
    rspData <= int_data_out;
 
    -- Choose outputs from active core
-   int_data_out    <= v7_data_out        when kpixVer = '0' else v8_data_out;
-   reg_clock       <= v7_reg_clock       when kpixVer = '0' else v8_reg_clock;
-   reg_sel1        <= v7_reg_sel1        when kpixVer = '0' else v8_reg_sel1;
-   reg_sel0        <= v7_reg_sel0        when kpixVer = '0' else v8_reg_sel0;
-   pwr_up_acq      <= v7_pwr_up_acq      when kpixVer = '0' else v8_pwr_up_acq;
-   reset_load      <= v7_reset_load      when kpixVer = '0' else v8_reset_load;
-   leakage_null    <= v7_leakage_null    when kpixVer = '0' else v8_leakage_null;
-   offset_null     <= v7_offset_null     when kpixVer = '0' else v8_offset_null;
-   thresh_off      <= v7_thresh_off      when kpixVer = '0' else v8_thresh_off;
-   trig_inh        <= v7_trig_inh        when kpixVer = '0' else v8_trig_inh;
-   cal_strobe      <= v7_cal_strobe      when kpixVer = '0' else v8_cal_strobe;
-   pwr_up_acq_dig  <= v7_pwr_up_acq_dig  when kpixVer = '0' else v8_pwr_up_acq_dig;
-   sel_cell        <= v7_sel_cell        when kpixVer = '0' else v8_sel_cell;
-   desel_all_cells <= v7_desel_all_cells when kpixVer = '0' else v8_desel_all_cells;
-   ramp_period     <= v7_ramp_period     when kpixVer = '0' else v8_ramp_period;
-   precharge_bus   <= v7_precharge_bus   when kpixVer = '0' else v8_precharge_bus;
-   reg_data        <= v7_reg_data        when kpixVer = '0' else v8_reg_data;
-   reg_wr_ena      <= v7_reg_wr_ena      when kpixVer = '0' else v8_reg_wr_ena;
-   coreState(0)    <= v7_analog_state0   when kpixVer = '0' else v8_analog_state0;
-   coreState(1)    <= v7_analog_state1   when kpixVer = '0' else v8_analog_state1;
-   coreState(2)    <= v7_read_state      when kpixVer = '0' else v8_read_state;
+   int_data_out    <= v8_data_out;
+   reg_clock       <= v8_reg_clock;
+   reg_sel1        <= v8_reg_sel1;
+   reg_sel0        <= v8_reg_sel0;
+   pwr_up_acq      <= v8_pwr_up_acq;
+   reset_load      <= v8_reset_load;
+   leakage_null    <= v8_leakage_null;
+   offset_null     <= v8_offset_null;
+   thresh_off      <= v8_thresh_off;
+   trig_inh        <= v8_trig_inh;
+   cal_strobe      <= v8_cal_strobe;
+   pwr_up_acq_dig  <= v8_pwr_up_acq_dig;
+   sel_cell        <= v8_sel_cell;
+   desel_all_cells <= v8_desel_all_cells;
+   ramp_period     <= v8_ramp_period;
+   precharge_bus   <= v8_precharge_bus;
+   reg_data        <= v8_reg_data;
+   reg_wr_ena      <= v8_reg_wr_ena;
+   coreState(0)    <= v8_analog_state0;
+   coreState(1)    <= v8_analog_state1;
+   coreState(2)    <= v8_read_state;
+   coreState(3)    <= v8_precharge_bus;
 
 
 

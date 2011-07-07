@@ -190,7 +190,7 @@ architecture Opto of Opto is
          clkSelB       : out   std_logic_vector(4  downto 0); -- Clock selection
          clkSelC       : out   std_logic_vector(4  downto 0); -- Clock selection
          clkSelD       : out   std_logic_vector(4  downto 0); -- Clock selection
-         coreState     : out   std_logic_vector(2  downto 0); -- State of internal core
+         coreState     : out   std_logic_vector(3  downto 0); -- State of internal core
          ledL          : out   std_logic_vector(3  downto 0); -- FPGA LEDs
          debug         : out   std_logic_vector(31 downto 0); -- Debug connector
          usbDin        : in    std_logic_vector(7  downto 0); -- USB Controller Data In
@@ -237,7 +237,7 @@ architecture Opto of Opto is
    signal clkSelB       : std_logic_vector(4  downto 0); -- Clock selection
    signal clkSelC       : std_logic_vector(4  downto 0); -- Clock selection
    signal clkSelD       : std_logic_vector(4  downto 0); -- Clock selection
-   signal coreState     : std_logic_vector(2  downto 0); -- State of internal core
+   signal coreState     : std_logic_vector(3  downto 0); -- State of internal core
    signal ledL          : std_logic_vector(3  downto 0); -- FPGA LEDs
    signal debug         : std_logic_vector(31 downto 0); -- Debug connector
    signal dbgClk        : std_logic;                     -- Debug clock
@@ -376,8 +376,12 @@ begin
             divCount <= (others=>'0');
             divClk   <= not divClk;
 
+            -- Precharge extension
+            if coreState(3) = '1' then
+               clkSel <= "11111";
+
             -- Clock rate select
-            case coreState is
+            else case coreState(2 downto 0) is
 
                -- Idle
                when "000" => clkSel <= clkSelD;
@@ -394,6 +398,7 @@ begin
                -- Default
                when others => clkSel <= clkSelD;
             end case;
+            end if;
          else
             divCount <= divCount + 1;
          end if;

@@ -36,9 +36,6 @@ entity KpixCmdTx is
       -- Checksum error
       checkSumErr   : out   std_logic;                     -- Checksum error flag
 
-      -- Kpix version
-      kpixVer       : in    std_logic;                     -- Kpix Version
-
       -- FIFO Interface
       fifoData      : in    std_logic_vector(15 downto 0); -- RX FIFO Data
       fifoSOF       : in    std_logic;                     -- RX FIFO Start of Frame
@@ -162,34 +159,18 @@ begin
                   fifoRdEn  <= '0' after tpd;   
 
                   -- Setup command
-                  if kpixVer = '0' then
-                     txSerData(3  downto 0)  <= "1010"        after tpd; -- Marker
-                     txSerData(4)            <= '0'           after tpd; -- Frame Type
-                     txSerData(11 downto 5)  <= "0000000"     after tpd; -- Address = 0
-                     txSerData(12)           <= '0'           after tpd; -- C/R Bit
-                     txSerData(13)           <= '1'           after tpd; -- Write bit
-                     txSerData(54 downto 21) <= (others=>'0') after tpd; -- Unused write data
+                  txSerData(3  downto 0)  <= "1010"        after tpd; -- Marker
+                  txSerData(4)            <= '0'           after tpd; -- Frame Type
+                  txSerData(11 downto 5)  <= "0000000"     after tpd; -- Address = 0
+                  txSerData(5)            <= '0'           after tpd; -- C/R Bit
+                  txSerData(6)            <= '1'           after tpd; -- Write bit
+                  txSerData(47 downto 14) <= (others=>'0') after tpd; -- Unused write data
 
-                     -- Calibrate ?
-                     if genCalibrate = '1' then
-                        txSerData(20 downto 14) <= "0000011"     after tpd; -- CMD ID
-                     else
-                        txSerData(20 downto 14) <= "0000010"     after tpd; -- CMD ID
-                     end if;
+                  -- Calibrate ?
+                  if genCalibrate = '1' then
+                     txSerData(13 downto 7) <= "0000011"     after tpd; -- CMD ID
                   else
-                     txSerData(3  downto 0)  <= "1010"        after tpd; -- Marker
-                     txSerData(4)            <= '0'           after tpd; -- Frame Type
-                     txSerData(11 downto 5)  <= "0000000"     after tpd; -- Address = 0
-                     txSerData(5)            <= '0'           after tpd; -- C/R Bit
-                     txSerData(6)            <= '1'           after tpd; -- Write bit
-                     txSerData(47 downto 14) <= (others=>'0') after tpd; -- Unused write data
-
-                     -- Calibrate ?
-                     if genCalibrate = '1' then
-                        txSerData(13 downto 7) <= "0000011"     after tpd; -- CMD ID
-                     else
-                        txSerData(13 downto 7) <= "0000010"     after tpd; -- CMD ID
-                     end if;
+                     txSerData(13 downto 7) <= "0000010"     after tpd; -- CMD ID
                   end if;
 
                   -- Broadcast
@@ -221,20 +202,11 @@ begin
                   else
 
                      -- Get command frame data
-                     if kpixVer = '0' then
-                        txSerData(3  downto 0)  <= "1010"              after tpd; -- Marker
-                        txSerData(4)            <= '0'                 after tpd; -- Frame Type
-                        txSerData(11 downto 5)  <= "0000000"           after tpd; -- Address = 0
-                        txSerData(12)           <= locData(8)          after tpd; -- C/R Bit
-                        txSerData(13)           <= locData(7)          after tpd; -- Write bit
-                        txSerData(20 downto 14) <= locData(6 downto 0) after tpd; -- CMD ID
-                     else
-                        txSerData(3  downto 0)  <= "1010"              after tpd; -- Marker
-                        txSerData(4)            <= '0'                 after tpd; -- Frame Type
-                        txSerData(5)            <= locData(8)          after tpd; -- C/R Bit
-                        txSerData(6)            <= locData(7)          after tpd; -- Write bit
-                        txSerData(13 downto 7)  <= locData(6 downto 0) after tpd; -- CMD ID
-                     end if;
+                     txSerData(3  downto 0)  <= "1010"              after tpd; -- Marker
+                     txSerData(4)            <= '0'                 after tpd; -- Frame Type
+                     txSerData(5)            <= locData(8)          after tpd; -- C/R Bit
+                     txSerData(6)            <= locData(7)          after tpd; -- Write bit
+                     txSerData(13 downto 7)  <= locData(6 downto 0) after tpd; -- CMD ID
 
                      -- Get Kpix Enables, commands with write bit set
                      if locData(11) = '1' and locData(8) = '0' and locData(7) = '1' then
@@ -267,20 +239,11 @@ begin
                   if locSOF = '1' then
 
                      -- Get command frame data
-                     if kpixVer = '0' then
-                        txSerData(3  downto 0)  <= "1010"              after tpd; -- Marker
-                        txSerData(4)            <= '0'                 after tpd; -- Frame Type
-                        txSerData(11 downto 5)  <= "0000000"           after tpd; -- Address = 0
-                        txSerData(12)           <= locData(8)          after tpd; -- C/R Bit
-                        txSerData(13)           <= locData(7)          after tpd; -- Write bit
-                        txSerData(20 downto 14) <= locData(6 downto 0) after tpd; -- CMD ID
-                     else
-                        txSerData(3  downto 0)  <= "1010"              after tpd; -- Marker
-                        txSerData(4)            <= '0'                 after tpd; -- Frame Type
-                        txSerData(5)            <= locData(8)          after tpd; -- C/R Bit
-                        txSerData(6)            <= locData(7)          after tpd; -- Write bit
-                        txSerData(13 downto 7)  <= locData(6 downto 0) after tpd; -- CMD ID
-                     end if;
+                     txSerData(3  downto 0)  <= "1010"              after tpd; -- Marker
+                     txSerData(4)            <= '0'                 after tpd; -- Frame Type
+                     txSerData(5)            <= locData(8)          after tpd; -- C/R Bit
+                     txSerData(6)            <= locData(7)          after tpd; -- Write bit
+                     txSerData(13 downto 7)  <= locData(6 downto 0) after tpd; -- CMD ID
 
                      -- Get Kpix Enables, commands with write bit set
                      if locData(11) = '1' and locData(8) = '1' and locData(7) = '1' then
@@ -304,11 +267,7 @@ begin
                   else
 
                      -- Get lower bits of data
-                     if kpixVer = '0' then
-                        txSerData(37 downto 22) <= locData after tpd;
-                     else
-                        txSerData(30 downto 15) <= locData after tpd;
-                     end if;
+                     txSerData(30 downto 15) <= locData after tpd;
 
                      -- Checksum
                      checkSum <= checkSum + locData after tpd;
@@ -328,20 +287,11 @@ begin
                   if locSOF = '1' then
 
                      -- Get command frame data
-                     if kpixVer = '0' then
-                        txSerData(3  downto 0)  <= "1010"              after tpd; -- Marker
-                        txSerData(4)            <= '0'                 after tpd; -- Frame Type
-                        txSerData(11 downto 5)  <= "0000000"           after tpd; -- Address = 0
-                        txSerData(12)           <= locData(8)          after tpd; -- C/R Bit
-                        txSerData(13)           <= locData(7)          after tpd; -- Write bit
-                        txSerData(20 downto 14) <= locData(6 downto 0) after tpd; -- CMD ID
-                     else
-                        txSerData(3  downto 0)  <= "1010"              after tpd; -- Marker
-                        txSerData(4)            <= '0'                 after tpd; -- Frame Type
-                        txSerData(5)            <= locData(8)          after tpd; -- C/R Bit
-                        txSerData(6)            <= locData(7)          after tpd; -- Write bit
-                        txSerData(13 downto 7)  <= locData(6 downto 0) after tpd; -- CMD ID
-                     end if;
+                     txSerData(3  downto 0)  <= "1010"              after tpd; -- Marker
+                     txSerData(4)            <= '0'                 after tpd; -- Frame Type
+                     txSerData(5)            <= locData(8)          after tpd; -- C/R Bit
+                     txSerData(6)            <= locData(7)          after tpd; -- Write bit
+                     txSerData(13 downto 7)  <= locData(6 downto 0) after tpd; -- CMD ID
 
                      -- Get Kpix Enables, commands with write bit set
                      if locData(11) = '1' and locData(8) = '1' and locData(7) = '1' then
@@ -365,11 +315,7 @@ begin
                   else
 
                      -- Get upper bits of data
-                     if kpixVer = '0' then
-                        txSerData(53 downto 38) <= locData after tpd;
-                     else
-                        txSerData(46 downto 31) <= locData after tpd;
-                     end if;
+                     txSerData(46 downto 31) <= locData after tpd;
 
                      -- Checksum
                      checkSum <= checkSum + locData after tpd;
@@ -389,20 +335,11 @@ begin
                   if locSOF = '1' then
 
                      -- Get command frame data
-                     if kpixVer = '0' then
-                        txSerData(3  downto 0)  <= "1010"              after tpd; -- Marker
-                        txSerData(4)            <= '0'                 after tpd; -- Frame Type
-                        txSerData(11 downto 5)  <= "0000000"           after tpd; -- Address = 0
-                        txSerData(12)           <= locData(8)          after tpd; -- C/R Bit
-                        txSerData(13)           <= locData(7)          after tpd; -- Write bit
-                        txSerData(20 downto 14) <= locData(6 downto 0) after tpd; -- CMD ID
-                     else
-                        txSerData(3  downto 0)  <= "1010"              after tpd; -- Marker
-                        txSerData(4)            <= '0'                 after tpd; -- Frame Type
-                        txSerData(5)            <= locData(8)          after tpd; -- C/R Bit
-                        txSerData(6)            <= locData(7)          after tpd; -- Write bit
-                        txSerData(13 downto 7)  <= locData(6 downto 0) after tpd; -- CMD ID
-                     end if;
+                     txSerData(3  downto 0)  <= "1010"              after tpd; -- Marker
+                     txSerData(4)            <= '0'                 after tpd; -- Frame Type
+                     txSerData(5)            <= locData(8)          after tpd; -- C/R Bit
+                     txSerData(6)            <= locData(7)          after tpd; -- Write bit
+                     txSerData(13 downto 7)  <= locData(6 downto 0) after tpd; -- CMD ID
 
                      -- Get Kpix Enables, commands with write bit set
                      if locData(11) = '1' and locData(8) = '1' and locData(7) = '1' then
@@ -443,19 +380,14 @@ begin
             when TX_DATA =>
 
                -- Store header and data parity
-               if kpixVer = '0' then
-                  txSerData(21) <= headParCalc after tpd;
-                  txSerData(54) <= dataParCalc after tpd;
-               else
-                  txSerData(14) <= headParCalc after tpd;
-                  txSerData(47) <= dataParCalc after tpd;
-               end if;
+               txSerData(14) <= headParCalc after tpd;
+               txSerData(47) <= dataParCalc after tpd;
 
                -- Output data
                txDataBit <= txSerData(conv_integer(txCount)) after tpd;
 
                -- Last bit
-               if (kpixVer = '0' and txCount = 54) or (kpixVer = '1' and txCount = 47) then
+               if txCount = 47 then
                   curState <= TX_DONE       after tpd;
                   txCount  <= (others=>'0') after tpd;
                else
@@ -481,45 +413,21 @@ begin
    end process;
 
 
-   -- Parity computation
-   process ( txSerData, kpixVer ) begin
-      if kpixVer = '0' then
+   -- Header parity calculation
+   headParCalc <= txSerData(0)  xor txSerData(1)  xor txSerData(2)  xor txSerData(3)  xor 
+                  txSerData(4)  xor txSerData(5)  xor txSerData(6)  xor txSerData(7)  xor 
+                  txSerData(8)  xor txSerData(9)  xor txSerData(10) xor txSerData(11) xor 
+                  txSerData(12) xor txSerData(13);
 
-         -- Header parity calculation
-         headParCalc <= txSerData(0)  xor txSerData(1)  xor txSerData(2)  xor txSerData(3)  xor 
-                        txSerData(4)  xor txSerData(5)  xor txSerData(6)  xor txSerData(7)  xor 
-                        txSerData(8)  xor txSerData(9)  xor txSerData(10) xor txSerData(11) xor 
-                        txSerData(12) xor txSerData(13) xor txSerData(14) xor txSerData(15) xor 
-                        txSerData(16) xor txSerData(17) xor txSerData(18) xor txSerData(19) xor 
-                        txSerData(20);
-
-         -- Data parity calculation
-         dataParCalc <= txSerData(22) xor txSerData(23) xor txSerData(24) xor txSerData(25) xor 
-                        txSerData(26) xor txSerData(27) xor txSerData(28) xor txSerData(29) xor 
-                        txSerData(30) xor txSerData(31) xor txSerData(32) xor txSerData(33) xor 
-                        txSerData(34) xor txSerData(35) xor txSerData(36) xor txSerData(37) xor 
-                        txSerData(38) xor txSerData(39) xor txSerData(40) xor txSerData(41) xor 
-                        txSerData(42) xor txSerData(43) xor txSerData(44) xor txSerData(45) xor 
-                        txSerData(46) xor txSerData(47) xor txSerData(48) xor txSerData(49) xor 
-                        txSerData(50) xor txSerData(51) xor txSerData(52) xor txSerData(53);
-      else
-         -- Header parity calculation
-         headParCalc <= txSerData(0)  xor txSerData(1)  xor txSerData(2)  xor txSerData(3)  xor 
-                        txSerData(4)  xor txSerData(5)  xor txSerData(6)  xor txSerData(7)  xor 
-                        txSerData(8)  xor txSerData(9)  xor txSerData(10) xor txSerData(11) xor 
-                        txSerData(12) xor txSerData(13);
-
-         -- Data parity calculation
-         dataParCalc <= txSerData(15) xor txSerData(16) xor txSerData(17) xor txSerData(18) xor 
-                        txSerData(19) xor txSerData(20) xor txSerData(21) xor txSerData(22) xor 
-                        txSerData(23) xor txSerData(24) xor txSerData(25) xor txSerData(26) xor 
-                        txSerData(27) xor txSerData(28) xor txSerData(29) xor txSerData(30) xor 
-                        txSerData(31) xor txSerData(32) xor txSerData(33) xor txSerData(34) xor 
-                        txSerData(35) xor txSerData(36) xor txSerData(37) xor txSerData(38) xor 
-                        txSerData(39) xor txSerData(40) xor txSerData(41) xor txSerData(42) xor 
-                        txSerData(43) xor txSerData(44) xor txSerData(45) xor txSerData(46);
-      end if;
-   end process;
+   -- Data parity calculation
+   dataParCalc <= txSerData(15) xor txSerData(16) xor txSerData(17) xor txSerData(18) xor 
+                  txSerData(19) xor txSerData(20) xor txSerData(21) xor txSerData(22) xor 
+                  txSerData(23) xor txSerData(24) xor txSerData(25) xor txSerData(26) xor 
+                  txSerData(27) xor txSerData(28) xor txSerData(29) xor txSerData(30) xor 
+                  txSerData(31) xor txSerData(32) xor txSerData(33) xor txSerData(34) xor 
+                  txSerData(35) xor txSerData(36) xor txSerData(37) xor txSerData(38) xor 
+                  txSerData(39) xor txSerData(40) xor txSerData(41) xor txSerData(42) xor 
+                  txSerData(43) xor txSerData(44) xor txSerData(45) xor txSerData(46);
 
 
    -- Serial data out to KPIX devices

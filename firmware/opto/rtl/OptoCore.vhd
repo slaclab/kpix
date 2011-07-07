@@ -37,7 +37,7 @@ entity OptoCore is
       clkSelB       : out   std_logic_vector(4  downto 0); -- Clock selection
       clkSelC       : out   std_logic_vector(4  downto 0); -- Clock selection
       clkSelD       : out   std_logic_vector(4  downto 0); -- Clock selection
-      coreState     : out   std_logic_vector(2  downto 0); -- State of internal core
+      coreState     : out   std_logic_vector(3  downto 0); -- State of internal core
 
       -- Jumper & LEDS
       jumpL         : in    std_logic_vector(3  downto 0); -- Test jumpers, active low
@@ -193,7 +193,7 @@ architecture OptoCore of OptoCore is
          readData      : out   std_logic_vector(31 downto 0);   -- Read Data
          writeEn       : in    std_logic;                       -- Write strobe
          address       : in    std_logic_vector(7  downto 0);   -- Address select
-         coreState     : out   std_logic_vector(2  downto 0);   -- State of internal core
+         coreState     : out   std_logic_vector(3  downto 0);   -- State of internal core
          trainFifoFull : in    std_logic;                       -- Train FIFO is full
          kpixRunLed    : out   std_logic;                       -- Kpix RUN LED
          reset         : out   std_logic;                       -- Kpix Reset

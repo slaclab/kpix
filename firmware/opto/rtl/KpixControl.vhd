@@ -45,7 +45,7 @@ entity KpixControl is
       address       : in    std_logic_vector(7  downto 0);   -- Address select
 
       -- Core state
-      coreState     : out   std_logic_vector(2 downto 0);    -- Core state value
+      coreState     : out   std_logic_vector(3 downto 0);    -- Core state value
 
       -- Train Buffer Status
       trainFifoFull : in    std_logic;                       -- Train FIFO is full
@@ -172,8 +172,7 @@ architecture KpixControl of KpixControl is
          serDataA      : out   std_logic;                     -- Serial data out A
          serDataB      : out   std_logic;                     -- Serial data out B
          serDataC      : out   std_logic;                     -- Serial data out C
-         serDataD      : out   std_logic;                     -- Serial data out D
-         kpixVer       : in    std_logic                      -- Kpix Version
+         serDataD      : out   std_logic                      -- Serial data out D
       );
    end component;
 
@@ -191,8 +190,7 @@ architecture KpixControl of KpixControl is
          kpixEnable  : in    std_logic;                       -- Kpix Enable
          rspData     : in    std_logic;                       -- Incoming serial data
          statusValue : out   std_logic_vector(31 downto 0);   -- KPIX status register
-         statusRx    : out   std_logic;                       -- KPIX status received
-         kpixVer     : in    std_logic                        -- Kpix Version
+         statusRx    : out   std_logic                        -- KPIX status received
       );
    end component;
 
@@ -211,11 +209,10 @@ architecture KpixControl of KpixControl is
          bncInB        : in    std_logic;                       -- BNC Interface B input
          reset         : in    std_logic;                       -- Kpix reset
          serData       : in    std_logic;                       -- Command data in
-         coreState     : out   std_logic_vector(2 downto 0);    -- Core state value
+         coreState     : out   std_logic_vector(3 downto 0);    -- Core state value
          rspData       : out   std_logic;                       -- Response Data out
          forceTrig     : out   std_logic;                       -- Force trigger signal
          trigControl   : in    std_logic_vector(31 downto 0);   -- Trigger control register
-         kpixVer       : in    std_logic;                       -- Kpix Version
          kpixBunch     : out   std_logic_vector(12 downto 0);   -- Bunch count value
          calStrobeOut  : out   std_logic
       );
@@ -499,7 +496,7 @@ begin
       forceTrig   => forceTrig,  trigControl  => trigControl,
       nimInA      => nimInA,     nimInB       => nimInB,
       bncInA      => bncInA,     bncInB       => bncInB,
-      kpixVer     => kpixVer,    coreState    => coreState,
+      coreState    => coreState,
       kpixBunch   => kpixBunch,  calStrobeOut => calStrobeOut
    );
 
@@ -534,7 +531,7 @@ begin
       genAcquire  => genAcquire,  genCalibrate => genCalibrate,
       serDataA    => serDataA,    serDataB     => serDataB,
       serDataC    => serDataC,    serDataD     => serDataD,
-      checkSumErr => checkSumErr, kpixVer      => kpixVer
+      checkSumErr => checkSumErr
    );
 
 
@@ -545,9 +542,8 @@ begin
       fifoSOF    => kpixAFifoSOF, fifoData    => kpixAFifoData,
       parError   => parErrorA,    kpixAddr    => "00",
       kpixEnable => kpixEnA,      rspData     => intRspDataA,
-      kpixVer    => kpixVer,      statusValue => statusValueA,
+      statusValue => statusValueA,
       statusRx   => statusRxA
-
    );
 
 
@@ -558,7 +554,7 @@ begin
       fifoSOF    => kpixBFifoSOF, fifoData   => kpixBFifoData,
       parError   => parErrorB,    kpixAddr   => "01",
       kpixEnable => kpixEnB,      rspData    => intRspDataB,
-      kpixVer    => kpixVer,      statusValue => statusValueB,
+      statusValue => statusValueB,
       statusRx   => statusRxB
    );
 
@@ -570,7 +566,7 @@ begin
       fifoSOF    => kpixCFifoSOF, fifoData   => kpixCFifoData,
       parError   => parErrorC,    kpixAddr   => "10",
       kpixEnable => kpixEnC,      rspData    => intRspDataC,
-      kpixVer    => kpixVer,      statusValue => statusValueC,
+      statusValue => statusValueC,
       statusRx   => statusRxC
    );
 
@@ -582,7 +578,7 @@ begin
       fifoSOF    => kpixDFifoSOF, fifoData    => kpixDFifoData,
       parError   => parErrorD,    kpixAddr    => "11",
       kpixEnable => kpixEnD,      rspData     => rspDataD,
-      kpixVer    => kpixVer,      statusValue => open,
+      statusValue => open,
       statusRx   => open
    );
 

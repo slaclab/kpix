@@ -56,7 +56,6 @@ entity KpixDataRx is
       kpixAddr      : in    std_logic_vector(1  downto 0);   -- Kpix address
       kpixColCnt    : in    std_logic_vector(4  downto 0);   -- Kpix column count
       kpixEnable    : in    std_logic;                       -- Kpix Enable
-      kpixVer       : in    std_logic;                       -- Kpix Version, 0=1-7,1=8+
 
       -- Readout state
       inReadout     : out   std_logic;                       -- Readout active
@@ -69,6 +68,25 @@ end KpixDataRx;
 
 -- Define architecture
 architecture KpixDataRx of KpixDataRx is
+
+   component icon_single PORT (
+      CONTROL0 : INOUT STD_LOGIC_VECTOR(35 DOWNTO 0));
+   end component;
+
+   component ila_32d_8t_512 PORT (
+      CONTROL : INOUT STD_LOGIC_VECTOR(35 DOWNTO 0);
+      CLK : IN STD_LOGIC;
+      DATA : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+      TRIG0 : IN STD_LOGIC_VECTOR(7 DOWNTO 0));
+   end component;
+
+   -- Chipscope attributes
+   attribute syn_black_box : boolean;
+   attribute syn_noprune   : boolean;
+   attribute syn_black_box of icon_single    : component is TRUE;
+   attribute syn_noprune   of icon_single    : component is TRUE;
+   attribute syn_black_box of ila_32d_8t_512 : component is TRUE;
+   attribute syn_noprune   of ila_32d_8t_512 : component is TRUE;
 
    -- Data buffer
    component dpram_sync_1kx14 port (
@@ -139,6 +157,9 @@ architecture KpixDataRx of KpixDataRx is
    signal dataDecode     : std_logic_vector(12 downto 0);
    signal txWord         : std_logic_vector(3  downto 0);
    signal txWordCase     : std_logic_vector(3  downto 0);
+   signal csControl      : STD_LOGIC_VECTOR(35 DOWNTO 0);
+   signal csData         : STD_LOGIC_VECTOR(31 DOWNTO 0);
+   signal csTrig         : STD_LOGIC_VECTOR(7  DOWNTO 0);
 
    -- State machine, receiver
    constant RX_IDLE    : std_logic_vector(2 downto 0) := "001";
@@ -246,7 +267,7 @@ begin
 
 
    -- Async state machine
-   process ( curRxState, intData, kpixVer, rxBitCnt, serData, 
+   process ( curRxState, intData, rxBitCnt, serData, 
              headParErr, memWrReady, rxColCnt, curRxRow, curRxWord ) begin
       case curRxState is 
 
@@ -281,11 +302,10 @@ begin
             memWrDone    <= '0';
 
             -- Header data shift is done
-            if (kpixVer = '0' and rxBitCnt = 22) or (kpixVer = '1' and rxBitCnt = 15) then
+            if rxBitCnt = 15 then
 
                -- Marker is in error
-               if (kpixVer = '0' and serData(3  downto 0) /= "1010") or 
-                  (kpixVer = '1' and serData(10 downto 7) /= "1010") then
+               if serData(10 downto 7) /= "1010" then
                   nxtRxState   <= RX_DUMP;
                   rxBitCntRst  <= '0';
                   nxtWriteErr  <= '0';
@@ -293,7 +313,7 @@ begin
                   nxtRxWord    <= (others=>'0');
 
                -- Header is a command response type
-               elsif (kpixVer = '0' and serData(4) = '0') or (kpixVer = '1' and serData(11) = '0') then
+               elsif serData(11) = '0' then
                   nxtRxState   <= RX_RESP;
                   rxBitCntRst  <= '0';
                   nxtRxRow     <= (others=>'0');
@@ -474,30 +494,6 @@ begin
       addrb(8 downto 0) => memRdAddr,
       doutb             => memRdData
    );
-
-
-   -- For simulation only
---   log_file: process ( kpixClk )
---      file     logFile : text;
---      variable logLine : Line;
---   begin
---      if rising_edge(kpixClk) then
---         if curMemWrEn = '1' then
---            file_open(logFile,"readout_data.txt",APPEND_MODE);
---            write(logLine,now);
---            write(logLine,string'("   Memory Write: Row="));
---            hwrite(logLine,to_stdulogicvector("000"&curRxRow));
---            write(logLine,string'(" Col="));
---            hwrite(logLine,to_stdulogicvector("000"&curMemWrAddr(8 downto 4)));
---            write(logLine,string'(" Word="));
---            hwrite(logLine,to_stdulogicvector(curMemWrAddr(3 downto 0)));
---            write(logLine,string'(" Data="));
---            hwrite(logLine,to_stdulogicvector("00"&curMemWrData));
---            writeline(logFile,logLine);
---            file_close(logFile);       
---         end if;
---      end if;
---   end process;
 
 
    -- Ensure there are never any address collisions
@@ -884,21 +880,10 @@ begin
 
 
    -- Header parity calculation
-   process ( serData, kpixVer ) begin
-      if kpixVer = '0' then
-         headParErr <= serData(0)  xor serData(1)  xor serData(2)  xor serData(3)  xor 
-                       serData(4)  xor serData(5)  xor serData(6)  xor serData(7)  xor 
-                       serData(8)  xor serData(9)  xor serData(10) xor serData(11) xor 
-                       serData(12) xor serData(13) xor serData(14) xor serData(15) xor 
-                       serData(16) xor serData(17) xor serData(18) xor serData(19) xor 
-                       serData(20) xor serData(21);
-      else
-         headParErr <= serData(7)  xor serData(8)  xor serData(9)  xor serData(10) xor 
-                       serData(11) xor serData(12) xor serData(13) xor serData(14) xor 
-                       serData(15) xor serData(16) xor serData(17) xor serData(18) xor 
-                       serData(19) xor serData(20) xor serData(21);
-      end if;
-   end process;
+   headParErr <= serData(7)  xor serData(8)  xor serData(9)  xor serData(10) xor 
+                 serData(11) xor serData(12) xor serData(13) xor serData(14) xor 
+                 serData(15) xor serData(16) xor serData(17) xor serData(18) xor 
+                 serData(19) xor serData(20) xor serData(21);
 
 
    -- Data parity error
@@ -906,6 +891,37 @@ begin
                  memRdData(4)  xor memRdData(5)  xor memRdData(6)  xor memRdData(7)  xor 
                  memRdData(8)  xor memRdData(9)  xor memRdData(10) xor memRdData(11) xor 
                  memRdData(12) xor memRdData(13);
+
+
+   -- Debug
+   CsGen: if CsEnable = 1 generate
+      U_Icon : icon_single port map (
+         CONTROL0 => csControl
+      );
+
+      U_Ila : ila_32d_8t_512 port map (
+         CONTROL => csControl,
+         CLK     => kpixClk,
+         DATA    => csData,
+         TRIG0   => csTrig
+      );
+   end generate;
+
+   csTrig(7  downto 0) <= csData(7 downto 0);
+
+   csData(31 downto 29) <= rxColCnt(2 downto 0);
+   csData(28 downto 24) <= curRxRow;
+   csData(23 downto 19) <= txRow;
+   csData(18 downto 14) <= txColCnt;
+   csData(13 downto 11) <= curTxState;
+   csData(10 downto  8) <= curRxState;
+   csData(7)            <= curWriteErr;
+   csData(6)            <= fifoAck;
+   csData(5)            <= curTxWr;
+   csData(4)            <= curTxReq;
+   csData(3 downto 2)   <= memCount;
+   csData(1)            <= memRdDone;
+   csData(0)            <= memWrDone;
 
 end KpixDataRx;
 

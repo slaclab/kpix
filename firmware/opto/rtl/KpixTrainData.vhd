@@ -102,7 +102,6 @@ architecture KpixTrainData of KpixTrainData is
          kpixAddr     : in    std_logic_vector(1  downto 0);   -- Kpix address
          kpixColCnt   : in    std_logic_vector(4  downto 0);   -- Column count
          kpixEnable   : in    std_logic;                       -- Kpix Enable
-         kpixVer      : in    std_logic;                       -- Kpix version
          inReadout    : out   std_logic;                       -- Start of train marker
          rspData      : in    std_logic                        -- Incoming serial data
       );
@@ -578,7 +577,7 @@ begin
    intEnableC <= kpixEnC and not dropData;
 
    -- Generate column count
-   kpixColCnt <= "00001" when kpixVer = '0' else "01111";
+   kpixColCnt <= "11111" when kpixVer = '0' else "01111";
 
 
    -- Kpix 0, serial data reciver
@@ -588,10 +587,15 @@ begin
       fifoWr     => fifoWrA,     fifoData     => fifoDataA,
       rawData    => rawData,     dataError    => parErrorA,
       kpixAddr   => "00",        kpixColCnt   => kpixColCnt,
-      kpixEnable => intEnableA,  kpixVer      => kpixVer,
+      kpixEnable => intEnableA,  
       inReadout  => inReadoutA,  rspData      => rspDataA
-      --inReadout  => inReadoutA,  rspData      => '0'
    );
+
+   --fifoReqA <= '0';
+   --fifoWrA <= '0';
+   --fifoDataA <= (others=>'0');
+   --parErrorA <= '0';
+   --inReadoutA <= '0';
 
 
    -- Kpix 1, serial data reciver
@@ -601,10 +605,16 @@ begin
       fifoWr     => fifoWrB,     fifoData     => fifoDataB,
       rawData    => rawData,     dataError    => parErrorB,
       kpixAddr   => "01",        kpixColCnt   => kpixColCnt,
-      kpixEnable => intEnableB,  kpixVer      => kpixVer,
+      kpixEnable => intEnableB,  
       inReadout  => inReadoutB,  rspData      => rspDataB
-      --inReadout  => inReadoutB,  rspData      => '0'
    );
+
+
+   --fifoReqB <= '0';
+   --fifoWrB <= '0';
+   --fifoDataB <= (others=>'0');
+   --parErrorB <= '0';
+   --inReadoutB <= '0';
 
 
    -- Kpix 2, serial data reciver
@@ -614,7 +624,7 @@ begin
       fifoWr     => fifoWrC,     fifoData     => fifoDataC,
       rawData    => rawData,     dataError    => parErrorC,
       kpixAddr   => "10",        kpixColCnt   => kpixColCnt,
-      kpixEnable => intEnableC,  kpixVer      => kpixVer,
+      kpixEnable => intEnableC,  
       inReadout  => inReadoutC,  rspData      => rspDataC
    );
 
