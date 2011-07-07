@@ -377,7 +377,7 @@ begin
             divClk   <= not divClk;
 
             -- Precharge extension
-            if coreState(3) = '1' then
+            if coreState = "1010" then
                clkSel <= "11111";
 
             -- Clock rate select
