@@ -86,6 +86,9 @@ int main ( int argc, char **argv ) {
    uint            col;
    uint            row;
    uint            count;
+   uint            train;
+   uint            trainLast;
+   uint            trainCnt;
    KpixSample      *sample;
 
    gStyle->SetOptStat(kFALSE);
@@ -134,11 +137,21 @@ int main ( int argc, char **argv ) {
    }
 
    // Go through each sample
+   trainLast = 0;
+   trainCnt  = 0;
    count = calibRead->kpixRunRead->getSampleCount();
    for ( x=0; x < count; x++ ) {
 
       sample  = calibRead->kpixRunRead->getSample(x);
       channel = sample->getKpixChannel();
+      train   = sample->getTrainNum();
+      
+      if ( train != trainLast && trainLast != 0 ) {
+         cout << "Train " << dec << trainLast << " had " << dec << trainCnt << " samples" << endl;
+         trainCnt = 0;
+      }
+      trainLast = train;
+      trainCnt++;
 
       // Convert channel
       col = channel / 32;
