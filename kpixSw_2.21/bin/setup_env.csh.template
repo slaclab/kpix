@@ -1,0 +1,36 @@
+# Set Kpix Software Base Directory
+setenv KPIX_SW ${PWD}/../
+
+# QT Base Directory
+setenv QTDIR /afs/slac/g/reseng/qt/qt_3.3.8
+
+# Root Base Directory
+setenv ROOTSYS /afs/slac/g/reseng/root/root_5.20
+
+# Kpix GUI Settings. run 'kpixGui -h' for more info
+#setenv KPIX_DEVICE   /dev/ttyUSB0
+setenv KPIX_DEVICE   0
+#setenv KPIX_DEVICE   172.16.10.1
+#setenv KPIX_PORT     1000
+setenv KPIX_BASE_DIR /u1/w_si/samples/
+#setenv KPIX_VERSION  8
+setenv KPIX_VERSION  9
+setenv KPIX_CLK_PER  50
+setenv KPIX_CAL_FILE
+setenv KPIX_DEF_FILE default.xml
+setenv KPIX_MAX_ADDR 3
+
+# Setup path
+if ($?PATH) then
+   setenv PATH ${QTDIR}/bin:${ROOTSYS}/bin:${KPIX_SW}/bin:${PATH}
+else
+   setenv PATH ${QTDIR}/bin:${ROOTSYS}/bin:${KPIX_SW}/bin
+endif
+
+# Setup library path
+if ($?LD_LIBRARY_PATH) then
+   setenv LD_LIBRARY_PATH ${QTDIR}/lib:${ROOTSYS}/lib:${KPIX_SW}/bin:${LD_LIBRARY_PATH}
+else
+   setenv LD_LIBRARY_PATH ${QTDIR}/lib:${ROOTSYS}/lib:${KPIX_SW}/bin
+endif
+

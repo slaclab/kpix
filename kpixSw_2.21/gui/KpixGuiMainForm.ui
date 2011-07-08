@@ -1,0 +1,236 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>KpixGuiMainForm</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>KpixGuiMainForm</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>390</width>
+            <height>534</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>KPIX Main</string>
+    </property>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel2_3_2_2_2_3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>10</y>
+                <width>80</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="frameShape">
+            <enum>NoFrame</enum>
+        </property>
+        <property name="frameShadow">
+            <enum>Plain</enum>
+        </property>
+        <property name="text">
+            <string>&lt;p align="left"&gt;KPIX List: &lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>180</y>
+                <width>80</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Description:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>270</y>
+                <width>90</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="right"&gt;Run Variables:&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QTable">
+        <column>
+            <property name="text">
+                <string>Address</string>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Serial</string>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Version</string>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Pos Pixel</string>
+            </property>
+        </column>
+        <property name="name">
+            <cstring>kpixList</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>30</y>
+                <width>370</width>
+                <height>140</height>
+            </rect>
+        </property>
+        <property name="font">
+            <font>
+                <pointsize>8</pointsize>
+            </font>
+        </property>
+        <property name="numRows">
+            <number>0</number>
+        </property>
+        <property name="numCols">
+            <number>4</number>
+        </property>
+        <property name="readOnly">
+            <bool>false</bool>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>addRunVar</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>80</x>
+                <y>430</y>
+                <width>110</width>
+                <height>26</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Add Run Variable</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>delRunVar</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>200</x>
+                <y>430</y>
+                <width>110</width>
+                <height>26</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Delete Selected</string>
+        </property>
+    </widget>
+    <widget class="QTable">
+        <column>
+            <property name="text">
+                <string>Name</string>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Value</string>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Desciption</string>
+            </property>
+        </column>
+        <property name="name">
+            <cstring>runVarTable</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>290</y>
+                <width>370</width>
+                <height>130</height>
+            </rect>
+        </property>
+        <property name="numRows">
+            <number>0</number>
+        </property>
+        <property name="numCols">
+            <number>3</number>
+        </property>
+        <property name="readOnly">
+            <bool>false</bool>
+        </property>
+    </widget>
+    <widget class="QTextEdit">
+        <property name="name">
+            <cstring>runDesc</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>200</y>
+                <width>370</width>
+                <height>68</height>
+            </rect>
+        </property>
+    </widget>
+</widget>
+<connections>
+    <connection>
+        <sender>addRunVar</sender>
+        <signal>pressed()</signal>
+        <receiver>KpixGuiMainForm</receiver>
+        <slot>addRunVar_pressed()</slot>
+    </connection>
+    <connection>
+        <sender>delRunVar</sender>
+        <signal>pressed()</signal>
+        <receiver>KpixGuiMainForm</receiver>
+        <slot>delRunVar_pressed()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">KpixGuiMainForm.ui.h</include>
+</includes>
+<slots>
+    <slot>clockPeriodChanged()</slot>
+    <slot>timeValueChanged()</slot>
+    <slot>updatePressed()</slot>
+    <slot>settingChanged()</slot>
+    <slot>dacValueChanged()</slot>
+    <slot>undoPressed()</slot>
+    <slot>checkSumErrorsClr_pressed()</slot>
+    <slot>parErrorsClr_pressed()</slot>
+    <slot>deadCountClr_pressed()</slot>
+    <slot>trainNumberClr_pressed()</slot>
+    <slot>kpixReScan_pressed()</slot>
+    <slot>serialChanged()</slot>
+    <slot>addRunVar_pressed()</slot>
+    <slot>delRunVar_pressed()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>
