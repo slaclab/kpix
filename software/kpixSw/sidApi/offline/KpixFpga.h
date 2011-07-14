@@ -472,6 +472,10 @@ class KpixFpga : public TObject {
       // Method to reset KPIX dead time counter.
       void cmdRstDeadCount ();
 
+      // Set/Get Run Enable Register
+      void setRunEnable (bool en);
+      bool getRunEnable () ;
+
       // Deconstructor
       virtual ~KpixFpga ( );
 

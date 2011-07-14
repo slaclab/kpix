@@ -297,6 +297,7 @@ int main ( int argc, char **argv ) {
          for (channel=0; channel < 1024; channel++) histData[channel]->init();
 
          time(&tm);
+         kpixFpga->setRunEnable(true);
          cout << "Starting Run at " << ctime(&tm);
          cout << "Hit cntrl-c to stop run and save data" << endl;
 
@@ -371,6 +372,7 @@ int main ( int argc, char **argv ) {
          cout << "Done." << endl;
       }
       cout << endl << "Run stopped at " << ctime(&tm);
+      kpixFpga->setRunEnable(false);
 
       // Dump settings
       try {

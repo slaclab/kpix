@@ -316,16 +316,16 @@ void KpixGuiRun::run() {
    else runCmd = true;
 
    // Create network port if enabled
-   //if ( netEnable->isChecked() ) network = new KpixGuiRunNetwork(netPort->text().toInt());
-   //else network = NULL;
+   if ( netEnable->isChecked() ) network = new KpixGuiRunNetwork(netPort->text().toInt());
+   else network = NULL;
    network = NULL;
 
    // Create index lookup table
-   //maxAddress = 0; 
-   //for (x=0; x < asicCnt; x++) if ( asic[x]->getAddress() > maxAddress ) maxAddress = asic[x]->getAddress();
-   //kpixIdxLookup = (unsigned int *)malloc((maxAddress+1)*sizeof(unsigned int));     
-   //if ( kpixIdxLookup == NULL ) throw(string("KpixGuiRun::run -> Malloc Error"));
-   //for (x=0; x < asicCnt; x++) kpixIdxLookup[asic[x]->getAddress()] = x;
+   maxAddress = 0; 
+   for (x=0; x < asicCnt; x++) if ( asic[x]->getAddress() > maxAddress ) maxAddress = asic[x]->getAddress();
+   kpixIdxLookup = (unsigned int *)malloc((maxAddress+1)*sizeof(unsigned int));     
+   if ( kpixIdxLookup == NULL ) throw(string("KpixGuiRun::run -> Malloc Error"));
+   for (x=0; x < asicCnt; x++) kpixIdxLookup[asic[x]->getAddress()] = x;
 
    // Total progress 
    gettimeofday(&curTime, NULL); 
@@ -339,7 +339,7 @@ void KpixGuiRun::run() {
 
    // Don't show status box
    gStyle->SetOptStat(kFALSE);
-/*
+
    // Create tracking histograms
    if ( enPlot ) {
       histR0 = (KpixHistogram **) malloc(sizeof(KpixHistogram *) * (asicCnt-1) * 4096);
@@ -375,7 +375,6 @@ void KpixGuiRun::run() {
       calData = NULL;
    }
 
-
    chGainR0  = NULL;
    chMeanR0  = NULL;
    chGainR1  = NULL;
@@ -383,8 +382,10 @@ void KpixGuiRun::run() {
    eventCnt  = 0;
    eventVars = NULL;
    eventCmd  = NULL;
-*/
+
    try {
+
+      fpga->setRunEnable(true);
 
       // Create Run Write Class To Store Data & Settings
       kpixRunWrite = new KpixRunWrite (outDataFile,"run",desc,calString);
@@ -394,7 +395,7 @@ void KpixGuiRun::run() {
       delError = "";
 
       try {
-/*
+
          // Load Calibration Constants
          if ( calFile != "" ) {
 
@@ -471,30 +472,30 @@ void KpixGuiRun::run() {
          }
 
          if ( calData != NULL ) delete calData;
-*/
+
 
          // Add run variables
-         //for (x=0; x< runVarCount; x++) kpixRunWrite->addRunVar ( runVars[x]->name(), runVars[x]->description(),
-                                                                  //runVars[x]->value());
+         for (x=0; x< runVarCount; x++) kpixRunWrite->addRunVar ( runVars[x]->name(), runVars[x]->description(),
+                                                                  runVars[x]->value());
 
          // Create run variable list
-         //eventCnt = eventTable->numRows();
-         //eventVars = (double **) malloc(sizeof(double *)*eventCnt);
-         //eventCmd  = (double *) malloc(sizeof(double)*eventCnt);
-         //if ( eventVars == NULL ) throw(string("KpixGuiRun::run -> Malloc Error"));
+         eventCnt = eventTable->numRows();
+         eventVars = (double **) malloc(sizeof(double *)*eventCnt);
+         eventCmd  = (double *) malloc(sizeof(double)*eventCnt);
+         if ( eventVars == NULL ) throw(string("KpixGuiRun::run -> Malloc Error"));
 
          // Add event variables
-         //for (x=0; x< eventCnt; x++) {
-            //if ( eventTable->text(x,0) != "" ) {
-               //kpixRunWrite->addEventVar (eventTable->text(x,0).ascii(),
-                                          //eventTable->text(x,2).ascii(),
-                                          //eventTable->text(x,1).toDouble());
-//
-            //}
-            //eventVars[x] = (double *)malloc(sizeof(double));
-            //eventCmd[x] = eventTable->text(x,1).toDouble();
-            //if ( eventVars[x] == NULL ) throw(string("KpixGuiRun::run -> Malloc Error"));
-         //}
+         for (x=0; x< eventCnt; x++) {
+            if ( eventTable->text(x,0) != "" ) {
+               kpixRunWrite->addEventVar (eventTable->text(x,0).ascii(),
+                                          eventTable->text(x,2).ascii(),
+                                          eventTable->text(x,1).toDouble());
+
+            }
+            eventVars[x] = (double *)malloc(sizeof(double));
+            eventCmd[x] = eventTable->text(x,1).toDouble();
+            if ( eventVars[x] == NULL ) throw(string("KpixGuiRun::run -> Malloc Error"));
+         }
 
          // Update status display
          event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusMsg,"Running");
@@ -528,7 +529,7 @@ void KpixGuiRun::run() {
                      kpixRunWrite->setEventVar(eventTable->text(x,0).ascii(),eventTable->text(x,1).toDouble());
                }
             }
-/*
+
             // Possible network stop point
             if ( network != NULL ) {
                
@@ -568,7 +569,7 @@ void KpixGuiRun::run() {
                   netCount--;
                }
             }
-*/
+
             // Skip Last Run If Stopped
             if ( enRun ) {
 
@@ -612,7 +613,7 @@ void KpixGuiRun::run() {
 
                // Add sample to run
                if ( enRaw ) kpixRunWrite->addBunchTrain(train);
-/*
+
                // Plots Enabled
                if ( enPlot ) {
 
@@ -640,7 +641,7 @@ void KpixGuiRun::run() {
                      }
                   }
                }
-*/
+
                if ( train->getSampleCount() > 0 ) triggers++;
                delete train;
             }
@@ -665,7 +666,7 @@ void KpixGuiRun::run() {
                event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusRun,temp.str(),iters,rate,triggers);
                QApplication::postEvent(this,event);
                rate = 0;
-/*
+
                // Look through plots list
                if ( enPlot ) {
                   for (x=0; x < 16; x++) {
@@ -748,7 +749,7 @@ void KpixGuiRun::run() {
                   data = new KpixGuiEventData(KpixProgress::KpixDataTH1F,32,(void **)plot);
                   QApplication::postEvent(this,data);
                }
-*/
+
             } else rate++;
          } // Run stopped
 
@@ -758,7 +759,7 @@ void KpixGuiRun::run() {
       event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusRun,"Storing Histograms",iters,0,triggers);
 
       QApplication::postEvent(this,event);
-/*
+
       // Store histograms
       if ( enPlot ) {
 
@@ -901,17 +902,16 @@ void KpixGuiRun::run() {
          // Set Directory
          kpixRunWrite->setDir("/");
       }
-*/
 
       // Cleanup
-      //for (x=0; x< eventCnt; x++) free(eventVars[x]);
-      //free(eventVars);
-      //free(eventCmd);
-      //if ( chGainR0 != NULL ) free(chGainR0);
-      //if ( chMeanR0 != NULL ) free(chMeanR0);
-      //if ( chGainR1 != NULL ) free(chGainR1);
-      //if ( chMeanR1 != NULL ) free(chMeanR1);
-      //free(kpixIdxLookup);
+      for (x=0; x< eventCnt; x++) free(eventVars[x]);
+      free(eventVars);
+      free(eventCmd);
+      if ( chGainR0 != NULL ) free(chGainR0);
+      if ( chMeanR0 != NULL ) free(chMeanR0);
+      if ( chGainR1 != NULL ) free(chGainR1);
+      if ( chMeanR1 != NULL ) free(chMeanR1);
+      free(kpixIdxLookup);
       delete kpixRunWrite;
 
       // Log
@@ -928,6 +928,7 @@ void KpixGuiRun::run() {
    if ( network != NULL ) delete network;
 
    // Update status display
+   try { fpga->setRunEnable(false); } catch (string error) {}
    event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusDone,"Done");
    QApplication::postEvent(this,event);
 }
@@ -999,7 +1000,7 @@ void KpixGuiRun::customEvent ( QCustomEvent *event ) {
             status->setText(eventStatus->statusMsg);
             break;
       }
-/*
+
       // Clear plot selections
       for (x=0; x< 16; x++) {
          dispKpix[x] = -1;
@@ -1022,7 +1023,7 @@ void KpixGuiRun::customEvent ( QCustomEvent *event ) {
             }
          }
       }
-*/
+
       update();
    }
 

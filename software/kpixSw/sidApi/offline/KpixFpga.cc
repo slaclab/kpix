@@ -219,6 +219,8 @@ KpixFpga::KpixFpga ( SidLink *sidLink ) {
    regReset[0x0D]     = true;
    regWriteable[0x0E] = true;  // External Run Register
    regReset[0x0E]     = false;
+   regWriteable[0x0F] = true;  // Run Enable Register
+   regReset[0x0F]     = false;
 }
 
 
@@ -350,6 +352,7 @@ string KpixFpga::regGetName ( unsigned char address ) {
    if ( address == 0x0C ) temp = "Train Number Reg";
    if ( address == 0x0D ) temp = "Dead Counter Reg";
    if ( address == 0x0E ) temp = "External Run Reg";
+   if ( address == 0x0F ) temp = "Run Enable Reg";
 
    // Return value
    return(temp);
@@ -1537,3 +1540,20 @@ void KpixFpga::dumpSettings () {
    cout << "          CalDelay = " << (int)getCalDelay(false)     << "\n";
    cout << "        TrigSource = " << (int)getTrigSource(false)   << "\n";
 }
+
+// Set/Get Run Enable Register
+void KpixFpga::setRunEnable(bool en) {
+   if ( enDebug ) cout << "KpixFpga::setRunEnable -> Set runEnable=" << en << endl;
+   regSetValue ( 0x0F, en, true );
+}
+
+// Set/Get Run Enable Register
+bool KpixFpga::getRunEnable() {
+   bool ret;
+
+   ret = regGetValue ( 0x0F, true );
+
+   if ( enDebug ) cout << "KpixFpga::getRunEnable -> runEnable=" << ret << endl;
+   return(ret);
+}
+

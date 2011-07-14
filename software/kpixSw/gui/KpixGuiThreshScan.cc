@@ -197,6 +197,8 @@ void KpixGuiThreshScan::run() {
    kpixThreshScan = NULL;
    try {
 
+      fpga->setRunEnable(false);
+
       // Create Run Write Class To Store Data & Settings
       kpixRunWrite = new KpixRunWrite (outDataFile,"thresh_scan",desc);
       for (x=0; x<asicCnt; x++) kpixRunWrite->addAsic ( asic[x] );
@@ -269,6 +271,7 @@ void KpixGuiThreshScan::run() {
    }
 
    // Update status display
+   try { fpga->setRunEnable(false); } catch (string error) {}
    event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusDone,"Done");
    QApplication::postEvent(this,event);
 }

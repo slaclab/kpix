@@ -35,6 +35,7 @@
 #include <TH1F.h>
 #include <TQtWidget.h>
 #include <TMultiGraph.h>
+#include <KpixFpga.h>
 #include <KpixCalDist.h>
 #include <KpixAsic.h>
 #include <SidLink.h>
@@ -248,6 +249,7 @@ void KpixGuiCalibrate::run() {
 
    kpixCalDist=NULL;
    try {
+      fpga->setRunEnable(true);
 
       // Create Run Write Class To Store Data & Settings
       kpixRunWrite = new KpixRunWrite (outDataFile,"calib_dist",desc);
@@ -473,6 +475,7 @@ void KpixGuiCalibrate::run() {
    }
 
    // Update status display
+   try { fpga->setRunEnable(false); } catch (string error) {}
    event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusDone,"Done");
    QApplication::postEvent(this,event);
 }
