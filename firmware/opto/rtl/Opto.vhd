@@ -221,7 +221,8 @@ architecture Opto of Opto is
          dacDin        : out   std_logic;                     -- Cal Data Data
          dacSclk       : out   std_logic;                     -- Cal Data Clock
          dacCsL        : out   std_logic;                     -- Cal Data Chip Select
-         dacClrL       : out   std_logic                      -- Cal Data Clear
+         dacClrL       : out   std_logic;                     -- Cal Data Clear
+         trainNumClk   : in    std_logic 
       );
    end component;
 
@@ -232,7 +233,7 @@ architecture Opto of Opto is
    signal kpixClkL      : std_logic;                     --
    signal kpixLock      : std_logic;                     --
    signal jumpL         : std_logic_vector(3  downto 0); -- Test jumpers, active low
-   signal clkSel        : std_logic_vector(7  downto 0); -- Clock selection
+   signal clkSel        : std_logic_vector(9  downto 0); -- Clock selection
    signal clkSelA       : std_logic_vector(4  downto 0); -- Clock selection
    signal clkSelB       : std_logic_vector(4  downto 0); -- Clock selection
    signal clkSelC       : std_logic_vector(4  downto 0); -- Clock selection
@@ -276,36 +277,39 @@ architecture Opto of Opto is
    signal dllRst        : std_logic;
    signal tmpClk20      : std_logic;
    signal dllClk20      : std_logic;
-   signal divCount      : std_logic_vector(7 downto 0);
+   signal divCount      : std_logic_vector(9 downto 0);
    signal divClk        : std_logic;
    signal sysClk200     : std_logic;
    signal dllClk200     : std_logic;
+   signal trainNumClk   : std_logic;
+   signal itrainNumClk  : std_logic;
+   signal trainNumCnt   : std_logic_vector(15 downto 0);
 
 begin
 
    -- Core module
    U_OptoCore: OptoCore port map (
-      fpgaRstL  => fpgaRstL,   sysClk20  => sysClk20,
-      kpixClk   => kpixClk,    kpixLock  => kpixLock,
-      clkSelA   => clkSelA,    clkSelB   => clkSelB,
-      clkSelC   => clkSelC,    clkSelD   => clkSelD,
-      coreState => coreState,  jumpL     => jumpL,     
-      ledL      => ledL,       debug     => debug,
-      usbDin    => usbDin,     usbDout   => usbDout,
-      usbRdL    => usbRdL,     usbWr     => usbWr,
-      usbTxeL   => usbTxeL,    usbRxfL   => usbRxfL,
-      usbPwrEnL => usbPwrEnL,  usbDenL   => usbDenL,
-      reset     => reset,      forceTrig => forceTrig,
-      commandA  => commandA,   commandB  => commandB,
-      commandC  => commandC,   dataA     => dataA,
-      dataB     => dataB,      dataC     => dataC,
-      bncInA    => bncInA,     bncInB    => bncInB,
-      bncOutA   => bncOutA,    bncOutB   => bncOutB,
-      nimInA    => nimInA,     nimInB    => nimInB,
-      adcSData  => adcSData,   adcSclk   => adcSclk,
-      adcCsL    => adcCsL,     dacDin    => dacDin,
-      dacSclk   => dacSclk,    dacCsL    => dacCsL,
-      dacClrL   => dacClrL
+      fpgaRstL  => fpgaRstL,   sysClk20    => sysClk20,
+      kpixClk   => kpixClk,    kpixLock    => kpixLock,
+      clkSelA   => clkSelA,    clkSelB     => clkSelB,
+      clkSelC   => clkSelC,    clkSelD     => clkSelD,
+      coreState => coreState,  jumpL       => jumpL,     
+      ledL      => ledL,       debug       => debug,
+      usbDin    => usbDin,     usbDout     => usbDout,
+      usbRdL    => usbRdL,     usbWr       => usbWr,
+      usbTxeL   => usbTxeL,    usbRxfL     => usbRxfL,
+      usbPwrEnL => usbPwrEnL,  usbDenL     => usbDenL,
+      reset     => reset,      forceTrig   => forceTrig,
+      commandA  => commandA,   commandB    => commandB,
+      commandC  => commandC,   dataA       => dataA,
+      dataB     => dataB,      dataC       => dataC,
+      bncInA    => bncInA,     bncInB      => bncInB,
+      bncOutA   => bncOutA,    bncOutB     => bncOutB,
+      nimInA    => nimInA,     nimInB      => nimInB,
+      adcSData  => adcSData,   adcSclk     => adcSclk,
+      adcCsL    => adcCsL,     dacDin      => dacDin,
+      dacSclk   => dacSclk,    dacCsL      => dacCsL,
+      dacClrL   => dacClrL,    trainNumClk => trainNumClk
    );
 
 
@@ -367,7 +371,7 @@ begin
       if kpixLock = '0' then
          divCount  <= (others=>'0');
          divClk    <= '0';
-         clkSel    <= "00000100";
+         clkSel    <= "0000000100";
       elsif rising_edge(sysClk200) then
 
          -- Invert clock each time count reaches div value
@@ -378,25 +382,25 @@ begin
 
             -- Precharge extension
             if coreState = "1010" then
-               clkSel <= "11111111";
+               clkSel <= "1111111111";
 
             -- Clock rate select
             else case coreState(2 downto 0) is
 
                -- Idle
-               when "000" => clkSel <= "000" & clkSelD;
+               when "000" => clkSel <= "00000" & clkSelD;
 
                -- Acquisition
-               when "001" => clkSel <= "000" & clkSelA;
+               when "001" => clkSel <= "00000" & clkSelA;
 
                -- Digitization
-               when "010" => clkSel <= "000" & clkSelB;
+               when "010" => clkSel <= "00000" & clkSelB;
 
                -- Readout
-               when "100" => clkSel <= "000" & clkSelC;
+               when "100" => clkSel <= "00000" & clkSelC;
 
                -- Default
-               when others => clkSel <= "000" & clkSelD;
+               when others => clkSel <= "00000" & clkSelD;
             end case;
             end if;
          else
@@ -424,6 +428,29 @@ begin
       D0 => '1',      
       D1 => '0',      
       R  => '0',      
+      S  => '0'
+   );
+
+
+   -- Control clock divide counter
+   process ( sysClk20, kpixLock ) begin
+      if kpixLock = '0' then
+         trainNumCnt <= (others=>'0');
+      elsif rising_edge(sysClk20) then
+         if trainNumCnt = 10000 then
+            trainNumCnt  <= (others=>'0');
+            itrainNumClk <= not itrainNumClk;
+         else
+            trainNumCnt  <= trainNumCnt + 1;
+         end if;
+      end if;
+   end process;
+
+
+   U_BUFTrain: BUFGMUX port map (
+      O  => trainNumClk,
+      I0 => itrainNumClk,
+      I1 => '0',
       S  => '0'
    );
 

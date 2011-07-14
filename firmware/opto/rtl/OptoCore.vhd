@@ -83,7 +83,10 @@ entity OptoCore is
       dacDin        : out   std_logic;                     -- Cal Data Data
       dacSclk       : out   std_logic;                     -- Cal Data Clock
       dacCsL        : out   std_logic;                     -- Cal Data Chip Select
-      dacClrL       : out   std_logic                      -- Cal Data Clear
+      dacClrL       : out   std_logic;                     -- Cal Data Clear
+
+      -- Train number
+      trainNumClk   : in    std_logic
    );
 end OptoCore;
 
@@ -232,9 +235,10 @@ architecture OptoCore of OptoCore is
          serDataA      : out   std_logic;                       -- Serial data out A
          serDataB      : out   std_logic;                       -- Serial data out B
          serDataC      : out   std_logic;                       -- Serial data out C
-         rspDataA    : in    std_logic;                         -- Incoming serial data A
-         rspDataB    : in    std_logic;                         -- Incoming serial data B
-         rspDataC    : in    std_logic                          -- Incoming serial data C
+         rspDataA      : in    std_logic;                       -- Incoming serial data A
+         rspDataB      : in    std_logic;                       -- Incoming serial data B
+         rspDataC      : in    std_logic;                       -- Incoming serial data C
+         trainNumClk   : in    std_logic
       );
    end component;
 
@@ -468,9 +472,9 @@ begin
       serDataC      => commandC,       rspDataA      => dataA,
       rspDataB      => dataB,          rspDataC      => dataC,
       trainFifoFull => trainFifoFull,  kpixRunLed    => kpixRunLed,
-      checkSumErr   => checkSumErr,    coreState     => coreState
+      checkSumErr   => checkSumErr,    coreState     => coreState,
+      trainNumClk   => trainNumClk
    );
-
 
 
    -- Command Decoder

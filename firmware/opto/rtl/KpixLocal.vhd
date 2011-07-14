@@ -63,7 +63,12 @@ entity KpixLocal is
       kpixBunch     : out   std_logic_vector(12 downto 0);   -- Bunch count value
 
       -- Cal strobe out
-      calStrobeOut  : out   std_logic
+      calStrobeOut  : out   std_logic;
+
+      -- Train number
+      trainNumRst   : in    std_logic;
+      trainNumClk   : in    std_logic
+
    );
 end KpixLocal;
 
@@ -450,7 +455,7 @@ begin
             leakage_null, offset_null, thresh_off, trig_inh, cal_strobe,
             pwr_up_acq_dig, sel_cell, desel_all_cells, ramp_period,
             precharge_bus, reg_data, reg_wr_ena, kpixClk, bcPhase, edgeForceTrig,
-            trigEnable, calStrobeDelay, nimInA, nimInB, bncInA, bncInB ) begin
+            trigEnable, calStrobeDelay, nimInA, nimInB, bncInA, bncInB, trainNumRst, trainNumClk ) begin
       case bncASel is
          when "00000" => bncOutA <= not reg_clock;
          when "00001" => bncOutA <= not reg_sel1;
@@ -478,6 +483,8 @@ begin
          when "10111" => bncOutA <= bncInA;
          when "11000" => bncOutA <= bncInB;
          when "11001" => bncOutA <= not bcPhase;
+         when "11010" => bncOutA <= trainNumRst;
+         when "11011" => bncOutA <= trainNumClk;
          when others  => bncOutA <= '1';
       end case;
    end process;
@@ -488,7 +495,7 @@ begin
             leakage_null, offset_null, thresh_off, trig_inh, cal_strobe,
             pwr_up_acq_dig, sel_cell, desel_all_cells, ramp_period,
             precharge_bus, reg_data, reg_wr_ena, kpixClk, bcPhase, edgeForceTrig,
-            trigEnable, calStrobeDelay, nimInA, nimInB, bncInA, bncInB ) begin
+            trigEnable, calStrobeDelay, nimInA, nimInB, bncInA, bncInB, trainNumRst, trainNumClk ) begin
       case bncBSel is
          when "00000" => bncOutB <= not reg_clock;
          when "00001" => bncOutB <= not reg_sel1;
@@ -516,6 +523,8 @@ begin
          when "10111" => bncOutB <= bncInA;
          when "11000" => bncOutB <= bncInB;
          when "11001" => bncOutB <= not bcPhase;
+         when "11010" => bncOutB <= trainNumRst;
+         when "11011" => bncOutB <= trainNumClk;
          when others  => bncOutB <= not '0';
       end case;
    end process;

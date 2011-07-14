@@ -110,7 +110,10 @@ entity KpixControl is
       -- Incoming serial data streams
       rspDataA    : in    std_logic;                         -- Incoming serial data A
       rspDataB    : in    std_logic;                         -- Incoming serial data B
-      rspDataC    : in    std_logic                          -- Incoming serial data C
+      rspDataC    : in    std_logic;                         -- Incoming serial data C
+
+      -- Train number
+      trainNumClk : in    std_logic
    );
 end KpixControl;
 
@@ -125,6 +128,7 @@ architecture KpixControl of KpixControl is
          kpixRst      : in    std_logic;                       -- System reset
          trainNum     : out   std_logic_vector(31 downto 0);   -- Train sequence number
          trainNumRst  : in    std_logic;                       -- Train sequence number reset
+         trainNumClk  : in    std_logic;
          acqDone      : out   std_logic;                       -- Kpix Cycle Complete
          isRunning    : in    std_logic;                       -- Sequence is running
          deadCount    : in    std_logic_vector(12 downto 0);   -- Inter-train dead count
@@ -214,14 +218,14 @@ architecture KpixControl of KpixControl is
          forceTrig     : out   std_logic;                       -- Force trigger signal
          trigControl   : in    std_logic_vector(31 downto 0);   -- Trigger control register
          kpixBunch     : out   std_logic_vector(12 downto 0);   -- Bunch count value
-         calStrobeOut  : out   std_logic
+         calStrobeOut  : out   std_logic;
+         trainNumClk   : in    std_logic;
+         trainNumRst   : in    std_logic 
       );
    end component;
 
 
    -- Local signals
-   signal trainNum      : std_logic_vector(31 downto 0);
-   signal trainNumRst   : std_logic;
    signal isRunning     : std_logic;
    signal deadCount     : std_logic_vector(31 downto 0);
    signal deadCountRst  : std_logic;
@@ -271,7 +275,11 @@ architecture KpixControl of KpixControl is
    signal statusRxC     : std_logic;
    signal kpixBunch     : std_logic_vector(12 downto 0);
    signal calStrobeOut  : std_logic; 
-
+   signal runEnable     : std_logic_vector(31 downto 0);
+   signal runEnableA    : std_logic;
+   signal runEnableB    : std_logic;
+   signal trainNum      : std_logic_vector(31 downto 0);
+   signal trainNumRst   : std_logic;
 
    -- Register delay for simulation
    constant tpd:time := 0.5 ns;
@@ -301,7 +309,7 @@ begin
 
    -- Read data mux
    process ( address, cntrlReg, parErrCount, dataErrCount, 
-             extControl, trigControl, trainNum, deadCount ) begin
+             extControl, trigControl, trainNum, deadCount, runEnable ) begin
       case address is
          when "00001000" => readData <= cntrlReg;
          when "00001001" => readData <= x"0000" & parErrCount & dataErrCount;
@@ -309,6 +317,7 @@ begin
          when "00001100" => readData <= trainNum;
          when "00001101" => readData <= deadCount;
          when "00001110" => readData <= extControl;
+         when "00001111" => readData <= runEnable;
          when others     => readData <= (others=>'0');
       end case;
    end process;
@@ -321,8 +330,8 @@ begin
          parErrRst    <= '0'           after tpd;
          extControl   <= (others=>'0') after tpd;
          trigControl  <= (others=>'0') after tpd;
-         trainNumRst  <= '0'           after tpd;
          deadCountRst <= '0'           after tpd;
+         runEnable    <= (others=>'0') after tpd;
       elsif rising_edge(kpixClk) then
 
          -- Write strobe
@@ -330,12 +339,11 @@ begin
             if address = "00001000" then cntrlReg     <= writeData after tpd; end if;
             if address = "00001001" then parErrRst    <= '1'       after tpd; end if;
             if address = "00001011" then trigControl  <= writeData after tpd; end if;
-            if address = "00001100" then trainNumRst  <= '1'       after tpd; end if;
             if address = "00001101" then deadCountRst <= '1'       after tpd; end if;
             if address = "00001110" then extControl   <= writeData after tpd; end if;
+            if address = "00001111" then runEnable    <= writeData after tpd; end if;
          else
             parErrRst    <= '0' after tpd;
-            trainNumRst  <= '0' after tpd;
             deadCountRst <= '0' after tpd;
          end if;
       end if;
@@ -488,16 +496,17 @@ begin
 
    -- Local Kpix Core
    U_KpixLocal: KpixLocal port map (
-      kpixClk     => kpixClk,    kpixRst      => kpixRst,
+      kpixClk     => kpixClk,    kpixRst       => kpixRst,
       bncOutA     => bncOutA,
-      bncOutB     => bncOutB,    bncASel      => bncASel,
-      bncBSel     => bncBSel,    reset        => kpixRst,
-      serData     => serDataD,   rspData      => rspDataD,
-      forceTrig   => forceTrig,  trigControl  => trigControl,
-      nimInA      => nimInA,     nimInB       => nimInB,
-      bncInA      => bncInA,     bncInB       => bncInB,
-      coreState    => coreState,
-      kpixBunch   => kpixBunch,  calStrobeOut => calStrobeOut
+      bncOutB     => bncOutB,    bncASel       => bncASel,
+      bncBSel     => bncBSel,    reset         => kpixRst,
+      serData     => serDataD,   rspData       => rspDataD,
+      forceTrig   => forceTrig,  trigControl   => trigControl,
+      nimInA      => nimInA,     nimInB        => nimInB,
+      bncInA      => bncInA,     bncInB        => bncInB,
+      coreState   => coreState,
+      kpixBunch   => kpixBunch,   calStrobeOut => calStrobeOut,
+      trainNumRst => trainNumRst, trainNumClk  => trainNumClk
    );
 
 
@@ -513,6 +522,7 @@ begin
       kpixEnB      => kpixEnB,                kpixEnC     => kpixEnC,
       rspDataA     => intRspDataA,            rspDataB    => intRspDataB,
       rspDataC     => intRspDataC,            trainNumRst => trainNumRst,
+      trainNumClk  => trainNumClk,
       acqDone      => acqDone,                extRecord   => extRecord,
       rawData      => rawData,                kpixVer     => kpixVer,
       statusValueA => statusValueA,           statusRxA   => statusRxA,
@@ -581,6 +591,16 @@ begin
       statusValue => open,
       statusRx   => open
    );
+
+
+   -- Train number clock generation
+   process (trainNumClk ) begin
+      if rising_edge(trainNumClk) then
+         runEnableA  <= runEnable(0)   after tpd;
+         runEnableB  <= runEnableA     after tpd;
+         trainNumRst <= not runEnableB after tpd;
+      end if;
+   end process;
 
 end KpixControl;
 

@@ -33,6 +33,7 @@ entity KpixTrainData is
       kpixRst      : in    std_logic;                       -- System reset
 
       -- Train Number
+      trainNumClk  : in    std_logic;
       trainNumRst  : in    std_logic;                       -- Train sequence number reset
       trainNum     : out   std_logic_vector(31 downto 0);   -- Train sequence number
       acqDone      : out   std_logic;                       -- Kpix Cycle Complete
@@ -158,7 +159,12 @@ architecture KpixTrainData of KpixTrainData is
    signal muxEn           : std_logic;
    signal muxSel          : std_logic_vector(1  downto 0);
    signal intTrainNum     : std_logic_vector(31 downto 0);
-   signal trainNumInc     : std_logic;
+   signal intTrainNumReg  : std_logic_vector(31 downto 0);
+   signal intTrainNumLoc  : std_logic_vector(31 downto 0);
+   signal intTrainNew     : std_logic;
+   signal intTrainNewA    : std_logic;
+   signal intTrainNewB    : std_logic;
+   signal intTrainNewC    : std_logic;
    signal intStatusValueA : std_logic_vector(31 downto 0);
    signal intStatusRxA    : std_logic;
    signal intStatusValueB : std_logic_vector(31 downto 0);
@@ -224,20 +230,35 @@ begin
       end if;
    end process;
 
+   -- Train number counter
+   process (kpixClk, kpixRst ) begin
+      if trainNumRst = '1' then
+         intTrainNum <= (others=>'0') after tpd;
+         intTrainNew <= '0'           after tpd;
+      elsif rising_edge(trainNumClk) then
+         intTrainNum <= intTrainNum + 1 after tpd;
+         intTrainNew <= not intTrainNew after tpd;
+      end if;
+   end process;
+
 
    -- End of train detector and event counter, checksum
    process (kpixClk, kpixRst ) begin
       if kpixRst = '1' then
-         eventCount  <= (others=>'0') after tpd;
-         checkSum    <= (others=>'0') after tpd;
-         intTrainNum <= (others=>'0') after tpd;
+         eventCount     <= (others=>'0') after tpd;
+         checkSum       <= (others=>'0') after tpd;
+         intTrainNewA   <= '0'           after tpd;
+         intTrainNewB   <= '0'           after tpd;
+         intTrainNewC   <= '0'           after tpd;
+         intTrainNumLoc <= (others=>'0') after tpd;
       elsif rising_edge(kpixClk) then
+         intTrainNewA <= intTrainNew  after tpd;
+         intTrainNewB <= intTrainNewA after tpd;
+         intTrainNewC <= intTrainNewB after tpd;
 
-         -- Train number
-         if trainNumRst = '1' then
-            intTrainNum <= (others=>'0') after tpd;
-         elsif trainNumInc = '1' then
-            intTrainNum <= intTrainNum + 1 after tpd;
+         -- Detect new value
+         if ( intTrainNewC /= intTrainNewB ) then
+            intTrainNumLoc <= intTrainNum after tpd;
          end if;
 
          -- New train, reset marker, counter and checksum
@@ -342,7 +363,7 @@ begin
          muxEn           <= '0'           after tpd;
          intData         <= (others=>'0') after tpd;
          intSOF          <= '0'           after tpd;
-         trainNumInc     <= '0'           after tpd;
+         intTrainNumReg  <= (others=>'0') after tpd;
          intStatusValueA <= (others=>'0') after tpd;
          intStatusRxA    <= '0'           after tpd;
          intStatusValueB <= (others=>'0') after tpd;
@@ -398,9 +419,10 @@ begin
                muxStatSel <= "00" after tpd;
 
                -- Setup first word of FIFO data
-               intSOF    <= '1'                      after tpd;
-               intData   <= intTrainNum(15 downto 0) after tpd;
-               statusClr <= '0'                      after tpd;
+               intSOF         <= '1'                         after tpd;
+               intData        <= intTrainNumLoc(15 downto 0) after tpd;
+               intTrainNumReg <= intTrainNumLoc              after tpd;
+               statusClr      <= '0'                         after tpd;
 
             -- Write header data 0
             when ST_HEAD0 =>
@@ -409,9 +431,8 @@ begin
                if fifoAck = '1' then
 
                   -- Setup second word of FIFO data
-                  intSOF      <= '0'                        after tpd;
-                  intData     <= intTrainNum(31 downto 16)  after tpd;
-                  trainNumInc <= '1'                        after tpd;
+                  intSOF       <= '0'                          after tpd;
+                  intData      <= intTrainNumReg(31 downto 16) after tpd;
 
                   -- Select Kpix 0
                   muxEn    <= '1'      after tpd;
@@ -421,9 +442,6 @@ begin
 
             -- Accept data from KPIX 0 if ready
             when ST_KPIX0 =>
-
-               -- Clear train number increment flag
-               trainNumInc <= '0' after tpd;
 
                -- Pass data from selected source
                intData <= muxFifoData after tpd;

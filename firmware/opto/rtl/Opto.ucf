@@ -24,28 +24,35 @@ CONFIG PART = xc3s400-pq208-4;
 #-----------------------------------------------------------------------------
 
 # Define system clocks
-NET dllClk20  TNM_NET = FFS dllClk20;
-NET dllClk200 TNM_NET = FFS dllClk200;
-NET divClk    TNM_NET = FFS divClk;
+NET dllClk20     TNM_NET = FFS dllClk20;
+NET dllClk200    TNM_NET = FFS dllClk200;
+NET divClk       TNM_NET = FFS divClk;
+NET itrainNumClk TNM_NET = FFS itrainNumClk;
 
 # 20 Mhz System Clock
-TIMESPEC TS_dllClk20  = PERIOD dllClk20  20  Mhz HIGH 50%;
-TIMESPEC TS_dllClk200 = PERIOD dllClk200 200 Mhz HIGH 50%;
-TIMESPEC TS_divClk    = PERIOD divClk    60  Mhz HIGH 50%;
+TIMESPEC TS_dllClk20     = PERIOD dllClk20     20  Mhz HIGH 50%;
+TIMESPEC TS_dllClk200    = PERIOD dllClk200    200 Mhz HIGH 50%;
+TIMESPEC TS_divClk       = PERIOD divClk       60  Mhz HIGH 50%;
+TIMESPEC TS_itrainNumClk = PERIOD itrainNumClk 1   Mhz HIGH 50%;
 
 # Nets to ignore for timing
 NET "iFpgaRstL"      TIG;
 
 # Define time groups for inter-clock constraints
-TIMEGRP TG_dllClk20_r  = RISING  dllClk20;
-TIMEGRP TG_dllClk200_r = RISING  dllClk200;
-TIMEGRP TG_divClk_r    = RISING  divClk;
-TIMEGRP TG_divClk_f    = FALLING divClk;
+TIMEGRP TG_dllClk20_r     = RISING  dllClk20;
+TIMEGRP TG_dllClk200_r    = RISING  dllClk200;
+TIMEGRP TG_divClk_r       = RISING  divClk;
+TIMEGRP TG_divClk_f       = FALLING divClk;
+TIMEGRP TG_itrainNumClk_r = RISING  itrainNumClk;
 
 # Inter Domain Constraints
-TIMESPEC TS_dllClk20_divClk   = FROM TG_dllClk20_r TO TG_divClk_r     8ns;
-TIMESPEC TS_divClk_dllClk20   = FROM TG_divClk_r   TO TG_dllClk20_r   8ns;
-TIMESPEC TS_divClk_dllClk200  = FROM TG_divClk_r   TO TG_dllClk200_r  8ns;
+TIMESPEC TS_dllClk20_divClk   = FROM TG_dllClk20_r     TO TG_divClk_r       8ns;
+TIMESPEC TS_divClk_dllClk20   = FROM TG_divClk_r       TO TG_dllClk20_r     8ns;
+TIMESPEC TS_divClk_dllClk200  = FROM TG_divClk_r       TO TG_dllClk200_r    8ns;
+TIMESPEC TS_train_divClk      = FROM TG_itrainNumClk_r TO TG_divClk_r       8ns;
+TIMESPEC TS_train_dllClk20    = FROM TG_itrainNumClk_r TO TG_dllClk20_r     8ns;
+TIMESPEC TS_divClk_train      = FROM TG_divClk_r       TO TG_itrainNumClk_r 8ns;
+TIMESPEC TS_dllClk20_train    = FROM TG_dllClk20_r     TO TG_itrainNumClk_r 8ns;
 
 # From To Delay Controls For Trigger Logic
 TIMEGRP  TG_TRIG_SRC = PADS("iNimInA") PADS("iNimInB") PADS("iBncInA") PADS("iBncInB");
