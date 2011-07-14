@@ -127,149 +127,6 @@
             <string>&lt;p align="right"&gt;BNC B Out: &lt;/p&gt;</string>
         </property>
     </widget>
-    <widget class="QComboBox">
-        <item>
-            <property name="text">
-                <string>RegClock</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>RegSel1</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>RegSel0</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>PwrUpAcq</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>ResetLoad</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>LeakageNull</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>OffsetNull</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>ThreshOff</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>TrigInh</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>CalStrobe</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>PwerUpAcqDig</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>SelCell</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>DeselAllCells</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>RampPeriod</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>PrechargeBus</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>RegData</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>RegWrEn</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>KpixClk</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>ForceTrig</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>TrigEnable</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>CalStrobeDly</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>NIM A</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>NIM B</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>BNC A</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>BNC B</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>Bunch Clock Phase</string>
-            </property>
-        </item>
-        <property name="name">
-            <cstring>bncSourceA</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>150</x>
-                <y>10</y>
-                <width>146</width>
-                <height>27</height>
-            </rect>
-        </property>
-    </widget>
     <widget class="QLabel">
         <property name="name">
             <cstring>textLabel2_3_2_2_2_3_2_2</cstring>
@@ -396,149 +253,6 @@
         </property>
         <property name="text">
             <string>&lt;p align="right"&gt;Raw Data: &lt;/p&gt;</string>
-        </property>
-    </widget>
-    <widget class="QComboBox">
-        <item>
-            <property name="text">
-                <string>RegClock</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>RegSel1</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>RegSel0</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>PwrUpAcq</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>ResetLoad</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>LeakageNull</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>OffsetNull</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>ThreshOff</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>TrigInh</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>CalStrobe</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>PwerUpAcqDig</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>SelCell</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>DeselAllCells</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>RampPeriod</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>PrechargeBus</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>RegData</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>RegWrEn</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>KpixClk</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>ForceTrig</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>TrigEnable</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>CalStrobeDly</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>NIM A</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>NIM B</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>BNC A</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>BNC B</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>Bunch Clock Phase</string>
-            </property>
-        </item>
-        <property name="name">
-            <cstring>bncSourceB</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>150</x>
-                <y>40</y>
-                <width>146</width>
-                <height>27</height>
-            </rect>
         </property>
     </widget>
     <widget class="QLabel">
@@ -730,6 +444,312 @@
                 <x>150</x>
                 <y>70</y>
                 <width>81</width>
+                <height>27</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QComboBox">
+        <item>
+            <property name="text">
+                <string>RegClock</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RegSel1</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RegSel0</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>PwrUpAcq</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>ResetLoad</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>LeakageNull</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>OffsetNull</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>ThreshOff</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>TrigInh</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>CalStrobe</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>PwerUpAcqDig</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>SelCell</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>DeselAllCells</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RampPeriod</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>PrechargeBus</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RegData</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RegWrEn</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>KpixClk</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>ForceTrig</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>TrigEnable</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>CalStrobeDly</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>NIM A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>NIM B</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>BNC A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>BNC B</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Bunch Clock Phase</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>TrainNumRst</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>TrainNumClk</string>
+            </property>
+        </item>
+        <property name="name">
+            <cstring>bncSourceB</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>40</y>
+                <width>146</width>
+                <height>27</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QComboBox">
+        <item>
+            <property name="text">
+                <string>RegClock</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RegSel1</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RegSel0</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>PwrUpAcq</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>ResetLoad</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>LeakageNull</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>OffsetNull</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>ThreshOff</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>TrigInh</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>CalStrobe</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>PwerUpAcqDig</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>SelCell</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>DeselAllCells</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RampPeriod</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>PrechargeBus</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RegData</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>RegWrEn</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>KpixClk</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>ForceTrig</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>TrigEnable</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>CalStrobeDly</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>NIM A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>NIM B</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>BNC A</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>BNC B</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>Bunch Clock Phase</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>TrainNumRst</string>
+            </property>
+        </item>
+        <item>
+            <property name="text">
+                <string>TrainNumClk</string>
+            </property>
+        </item>
+        <property name="name">
+            <cstring>bncSourceA</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>10</y>
+                <width>146</width>
                 <height>27</height>
             </rect>
         </property>

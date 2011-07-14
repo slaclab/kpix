@@ -102,7 +102,9 @@ class KpixFpga : public TObject {
          KpixBncNimB           = 0x16,
          KpixBncBncA           = 0x17,
          KpixBncBncB           = 0x18,
-         KpixBncBcPhase        = 0x19
+         KpixBncBcPhase        = 0x19,
+         KpixTrainNumRst       = 0x1A,
+         KpixTrainNumClk       = 0x1B
       };
 
       enum KpixExtRun {
