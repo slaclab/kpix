@@ -232,7 +232,7 @@ architecture Opto of Opto is
    signal kpixClkL      : std_logic;                     --
    signal kpixLock      : std_logic;                     --
    signal jumpL         : std_logic_vector(3  downto 0); -- Test jumpers, active low
-   signal clkSel        : std_logic_vector(4  downto 0); -- Clock selection
+   signal clkSel        : std_logic_vector(7  downto 0); -- Clock selection
    signal clkSelA       : std_logic_vector(4  downto 0); -- Clock selection
    signal clkSelB       : std_logic_vector(4  downto 0); -- Clock selection
    signal clkSelC       : std_logic_vector(4  downto 0); -- Clock selection
@@ -276,7 +276,7 @@ architecture Opto of Opto is
    signal dllRst        : std_logic;
    signal tmpClk20      : std_logic;
    signal dllClk20      : std_logic;
-   signal divCount      : std_logic_vector(4 downto 0);
+   signal divCount      : std_logic_vector(7 downto 0);
    signal divClk        : std_logic;
    signal sysClk200     : std_logic;
    signal dllClk200     : std_logic;
@@ -367,7 +367,7 @@ begin
       if kpixLock = '0' then
          divCount  <= (others=>'0');
          divClk    <= '0';
-         clkSel    <= "00100";
+         clkSel    <= "00000100";
       elsif rising_edge(sysClk200) then
 
          -- Invert clock each time count reaches div value
@@ -378,25 +378,25 @@ begin
 
             -- Precharge extension
             if coreState = "1010" then
-               clkSel <= "11111";
+               clkSel <= "11111111";
 
             -- Clock rate select
             else case coreState(2 downto 0) is
 
                -- Idle
-               when "000" => clkSel <= clkSelD;
+               when "000" => clkSel <= "000" & clkSelD;
 
                -- Acquisition
-               when "001" => clkSel <= clkSelA;
+               when "001" => clkSel <= "000" & clkSelA;
 
                -- Digitization
-               when "010" => clkSel <= clkSelB;
+               when "010" => clkSel <= "000" & clkSelB;
 
                -- Readout
-               when "100" => clkSel <= clkSelC;
+               when "100" => clkSel <= "000" & clkSelC;
 
                -- Default
-               when others => clkSel <= clkSelD;
+               when others => clkSel <= "000" & clkSelD;
             end case;
             end if;
          else
