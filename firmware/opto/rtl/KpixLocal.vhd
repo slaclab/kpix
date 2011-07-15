@@ -483,8 +483,8 @@ begin
          when "10111" => bncOutA <= bncInA;
          when "11000" => bncOutA <= bncInB;
          when "11001" => bncOutA <= not bcPhase;
-         when "11010" => bncOutA <= trainNumRst;
-         when "11011" => bncOutA <= trainNumClk;
+         when "11010" => bncOutA <= not trainNumRst;
+         when "11011" => bncOutA <= not trainNumClk;
          when others  => bncOutA <= '1';
       end case;
    end process;
@@ -523,8 +523,8 @@ begin
          when "10111" => bncOutB <= bncInA;
          when "11000" => bncOutB <= bncInB;
          when "11001" => bncOutB <= not bcPhase;
-         when "11010" => bncOutB <= trainNumRst;
-         when "11011" => bncOutB <= trainNumClk;
+         when "11010" => bncOutB <= not trainNumRst;
+         when "11011" => bncOutB <= not trainNumClk;
          when others  => bncOutB <= not '0';
       end case;
    end process;
