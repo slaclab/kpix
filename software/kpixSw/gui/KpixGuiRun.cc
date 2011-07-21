@@ -103,7 +103,7 @@ KpixGuiRun::KpixGuiRun ( KpixGuiTop *parent ) : KpixGuiRunForm() {
 KpixGuiRun::~KpixGuiRun ( ) {
    unsigned int x;
    for (x=0; x<32; x++) if ( plots[x] != NULL ) delete plots[x];
-   //for (x=0; x< runVarCount; x++) delete runVars[x];
+   for (x=0; x< runVarCount; x++) delete runVars[x];
    if ( runView != NULL ) delete runView;
 }
 
@@ -190,7 +190,7 @@ void KpixGuiRun::startRun_pressed ( ) {
    // Get Config Data
    baseDir = parent->getBaseDir();
    desc    = parent->getRunDescription();
-   //runVars = parent->getRunVarList(&runVarCount);
+   runVars = parent->getRunVarList(&runVarCount);
    calFile = parent->getCalFile();
 
    // Generate directory name based on time
@@ -472,7 +472,6 @@ void KpixGuiRun::run() {
          }
 
          if ( calData != NULL ) delete calData;
-
 
          // Add run variables
          for (x=0; x< runVarCount; x++) kpixRunWrite->addRunVar ( runVars[x]->name(), runVars[x]->description(),
@@ -961,8 +960,8 @@ void KpixGuiRun::customEvent ( QCustomEvent *event ) {
          case KpixGuiEventStatus::StatusDone:
 
             // Delete run variables
-            //for (x=0; x< runVarCount; x++) delete runVars[x];
-            //if ( runVarCount != 0 ) free(runVars);
+            for (x=0; x< runVarCount; x++) delete runVars[x];
+            if ( runVarCount != 0 ) free(runVars);
 
             // Update flags
             isRunning = false;
