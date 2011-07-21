@@ -318,7 +318,6 @@ void KpixGuiRun::run() {
    // Create network port if enabled
    if ( netEnable->isChecked() ) network = new KpixGuiRunNetwork(netPort->text().toInt());
    else network = NULL;
-   network = NULL;
 
    // Create index lookup table
    maxAddress = 0; 
