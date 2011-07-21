@@ -21,6 +21,7 @@
 #include <string>
 #include <signal.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <qapplication.h>
 #include <SidLink.h>
 #include <KpixAsic.h>

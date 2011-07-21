@@ -19,6 +19,7 @@
 #include "KpixConfigXml.h"
 #include "KpixFpga.h"
 #include "KpixAsic.h"
+#include <stdlib.h>
 #include <TXMLAttr.h>
 #include <TFile.h>
 #include <fstream>

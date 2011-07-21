@@ -17,6 +17,7 @@
 // 06/23/2009: Removed namespaces.
 //-----------------------------------------------------------------------------
 #include <string>
+#include <stdlib.h>
 #include "KpixHistogram.h"
 using namespace std;
 

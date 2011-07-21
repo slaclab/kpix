@@ -18,6 +18,7 @@
 #include <sstream>
 #include <iostream>
 #include <string>
+#include <unistd.h>
 #include <qsocket.h>
 #include "KpixGuiRunNetwork.h"
 using namespace std;
@@ -29,10 +30,7 @@ KpixGuiRunNetwork::KpixGuiRunNetwork ( short unsigned int port ) : QServerSocket
    message = "";
 
    // Check status
-   if ( !ok() ) {
-      qWarning("Failed To Bind To Port");
-      exit(1);
-   }
+   if ( !ok() ) qWarning("Failed To Bind To Port");
    status = "Waiting For Network Client Connection";
 }
 

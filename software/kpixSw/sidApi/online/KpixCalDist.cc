@@ -37,6 +37,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <stdlib.h>
 #include <sys/time.h>
 #include <TStyle.h>
 #include <TH1F.h>

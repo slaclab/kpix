@@ -24,6 +24,7 @@
 #include <string>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <qlineedit.h>
 #include <qtable.h>
 #include <qcombobox.h>

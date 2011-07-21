@@ -24,7 +24,10 @@
 #include <string>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <qlineedit.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <qprogressbar.h>
 #include <qapplication.h>
 #include <qcheckbox.h>

@@ -44,6 +44,7 @@
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <TString.h>

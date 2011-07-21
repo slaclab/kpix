@@ -21,6 +21,7 @@
 #include <string>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <qlineedit.h>
 #include <qfiledialog.h>
 #include <qapplication.h>

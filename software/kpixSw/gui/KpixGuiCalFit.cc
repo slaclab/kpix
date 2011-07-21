@@ -24,6 +24,9 @@
 #include <string>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <qlineedit.h>
 #include <qfiledialog.h>
 #include <qprogressbar.h>
