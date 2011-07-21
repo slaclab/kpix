@@ -29,6 +29,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <stdlib.h>
 #include <signal.h>
 #include <stdio.h>
 using namespace std;
