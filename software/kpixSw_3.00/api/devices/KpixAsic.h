@@ -28,6 +28,14 @@ class KpixAsic : public Device {
       // Dummy
       bool dummy_;
 
+      // Process channel mode settings
+      string writeChanMode();
+      void readChanMode();
+
+      // Process timing settings
+      string writeTiming();
+      void readTiming();
+
    public:
 
       //! Constructor

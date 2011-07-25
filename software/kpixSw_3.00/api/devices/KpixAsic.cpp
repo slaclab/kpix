@@ -73,6 +73,28 @@ KpixAsic::KpixAsic ( uint version, uint address, bool dummy ) : Device("asic",ad
 KpixAsic::~KpixAsic ( ) {
 }
 
+// Process channel mode settings
+string KpixAsic::writeChanMode() {
+   stringstream err;
+
+}
+
+void KpixAsic::readChanMode() {
+
+
+}
+
+// Process timing settings
+string KpixAsic::writeTiming() {
+
+}
+
+void KpixAsic::readTiming() {
+
+
+
+}
+
 //! Method to read variables from registers
 string KpixAsic::read() {
 
