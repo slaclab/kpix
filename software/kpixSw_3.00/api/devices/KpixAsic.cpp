@@ -76,12 +76,112 @@ KpixAsic::~KpixAsic ( ) {
 // Process channel mode settings
 string KpixAsic::writeChanMode() {
    stringstream err;
+   stringstream var;
+   stringstream regA;
+   stringstream regB;
+   uint         col;
+   uint         row;
+   string       varVal;
+   string       defVal;
 
+   // Clear errors
+   err.str("");
+
+   // Get default value
+   defVal = variables_["KpixChanModeDefault"].get();
+
+   // Each column
+   for ( col=0; x < channels()/32; col++ ) {
+      regA.str("");
+      regA << "Channel Mode A 0x" << setw(2) << setfill('0') << hex << col;
+      regB.str("");
+      regB << "Channel Mode B 0x" << setw(2) << setfill('0') << hex << col;
+
+      // Each row
+      for ( row=0; x < 32; row++ ) {
+
+         // Get mode
+         var.str("");
+         var << "KpixChanMode" << setw(4) << setfill('0') << dec << col*32 + row;
+         varVal = variables_[var.str()].get();
+
+         // Use default?
+         if ( varVal == "" ) varVal = defVal;
+
+         // Debug
+         if ( debug_ ) cout << "KpixAsic::writeChanMode -> Address 0x" << hex << setw(4) << setfill('0') << address_
+                            << " Set Channel " << dec << (col*32+row) << " = " << varVal << endl;
+
+         // Figure out mode
+         if ( varVal == "CalibThreshA" ) { // 3
+            registers_[regA.str()].set(1,row,1);
+            registers_[regB.str()].set(1,row,1);
+         }
+         else if ( varVal == "ThreshA" ) { // 2
+            registers_[regA.str()].set(0,row,1);
+            registers_[regB.str()].set(1,row,1);
+         }
+         else if ( varVal == "Disable" ) { // 1
+            registers_[regA.str()].set(1,row,1);
+            registers_[regB.str()].set(0,row,1);
+         }
+         else if ( varVal == "ThreshB" ) { // 0
+            registers_[regA.str()].set(0,row,1);
+            registers_[regB.str()].set(0,row,1);
+         }
+         else { 
+            registers_[regA.str()].set(1,row,1); // Default to disable
+            registers_[regB.str()].set(0,row,1);
+
+            // Show error
+            if ( debug_ ) cout << "KpixAsic::writeChanMode -> Address 0x" << hex << setw(4) << setfill('0') << address_
+                               << " Invalid Mode. Channel " << dec << (col*32+row) << " = " << varVal << endl;
+            err << "KpixAsic::writeChanMode -> Address 0x" << hex << setw(4) << setfill('0') << address_
+                << " Invalid Mode. Channel " << dec << (col*32+row) << " = " << varVal << endl;
+         }
+      }
+   }
+   return(err.str(""));
 }
 
 void KpixAsic::readChanMode() {
+   stringstream var;
+   stringstream regA;
+   stringstream regB;
+   uint         col;
+   uint         row;
+   uint         regValA;
+   uint         regValB;
 
+   // Set default
+   variables_["KpixChanModeDefault"].set("Disable");
 
+   // Each column
+   for ( col=0; x < channels()/32; col++ ) {
+      regA.str("");
+      regA << "Channel Mode A 0x" << setw(2) << setfill('0') << hex << col;
+      regB.str("");
+      regB << "Channel Mode B 0x" << setw(2) << setfill('0') << hex << col;
+
+      // Each row
+      for ( row=0; x < 32; row++ ) {
+         var.str("");
+         var << "KpixChanMode" << setw(4) << setfill('0') << dec << col*32 + row;
+
+         // Determine register value
+         switch ( registers_[regB.str()].get(row,1), registers_[regB.str()].get(row,1) ) {
+            case 0:  variables_[var.str()].set("ThreshB");      break;
+            case 1:  variables_[var.str()].set("Disable");      break;
+            case 2:  variables_[var.str()].set("ThreshA");      break;
+            case 3:  variables_[var.str()].set("CalibThreshA"); break;
+            default: variables_[var.str()].set("Disable");      break;
+         }
+
+         // Debug
+         if ( debug_ ) cout << "KpixAsic::readChanMode -> Address 0x" << hex << setw(4) << setfill('0') << address_
+                            << " Get Channel " << dec << (col*32+row) << " = " << variables_[var.str()].get() << endl;
+      }
+   }
 }
 
 // Process timing settings
