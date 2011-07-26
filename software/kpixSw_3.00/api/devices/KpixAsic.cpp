@@ -16,13 +16,17 @@
 
 #include "KpixAsic.h"
 #include "Register.h"
+#include "Variable.h"
 #include <sstream>
+#include <iostream>
+#include <string>
 #include <iomanip>
 using namespace std;
 
 //! Constructor
 KpixAsic::KpixAsic ( uint version, uint address, bool dummy ) : Device("asic",address) {
    stringstream tmp;
+   stringstream var;
    uint         x;
 
    // Copy values
@@ -67,6 +71,25 @@ KpixAsic::KpixAsic ( uint version, uint address, bool dummy ) : Device("asic",ad
          registers_.insert(pair<string,Register*>(tmp.str(),new Register(0x60+x,true,true)));
       }
    }
+
+   // Setup channel mode enum
+   vector<string> chanModes;
+   chanModes[0] = "ThreshB";
+   chanModes[1] = "Disable";
+   chanModes[2] = "Calib";
+   chanModes[3] = "ThreshA";
+
+   // Setup channel mode variables
+   if ( ! dummy_ ) {
+      for ( x=0; x < channels(); x++ ) {
+         var.str("");
+         var << "KpixChanMode" << setw(4) << setfill('0') << dec << x;
+         variables_.insert(pair<string,Variable*>(var.str(), new Variable(chanModes)));
+      }
+      variables_.insert(pair<string,Variable*>("KpixChanModeDefault",new Variable(chanModes)));
+   }
+
+
 }
 
 //! Deconstructor
@@ -81,67 +104,58 @@ string KpixAsic::writeChanMode() {
    stringstream regB;
    uint         col;
    uint         row;
-   string       varVal;
-   string       defVal;
+   uint         defVal;
+   bool         defOk;
+   uint         varVal;
+   bool         varOk;
+
+   if ( dummy_ ) return("");
 
    // Clear errors
    err.str("");
 
    // Get default value
-   defVal = variables_["KpixChanModeDefault"].get();
+   defVal = variables_["KpixChanModeDefault"]->getReg(&defOk);
 
    // Each column
-   for ( col=0; x < channels()/32; col++ ) {
+   for ( col=0; col < channels()/32; col++ ) {
       regA.str("");
       regA << "Channel Mode A 0x" << setw(2) << setfill('0') << hex << col;
       regB.str("");
       regB << "Channel Mode B 0x" << setw(2) << setfill('0') << hex << col;
 
       // Each row
-      for ( row=0; x < 32; row++ ) {
+      for ( row=0; row < 32; row++ ) {
 
          // Get mode
          var.str("");
          var << "KpixChanMode" << setw(4) << setfill('0') << dec << col*32 + row;
-         varVal = variables_[var.str()].get();
+         varVal = variables_[var.str()]->getReg(&varOk);
 
          // Use default?
-         if ( varVal == "" ) varVal = defVal;
+         if ( !varOk ) {
+            varVal = defVal;
+            varOk  = defOk;
+         }
 
-         // Debug
-         if ( debug_ ) cout << "KpixAsic::writeChanMode -> Address 0x" << hex << setw(4) << setfill('0') << address_
-                            << " Set Channel " << dec << (col*32+row) << " = " << varVal << endl;
+         // Set register values
+         registers_[regB.str()]->set((varVal>>1)&0x1,row,1);
+         registers_[regA.str()]->set(varVal&0x1,row,1);
 
-         // Figure out mode
-         if ( varVal == "CalibThreshA" ) { // 3
-            registers_[regA.str()].set(1,row,1);
-            registers_[regB.str()].set(1,row,1);
-         }
-         else if ( varVal == "ThreshA" ) { // 2
-            registers_[regA.str()].set(0,row,1);
-            registers_[regB.str()].set(1,row,1);
-         }
-         else if ( varVal == "Disable" ) { // 1
-            registers_[regA.str()].set(1,row,1);
-            registers_[regB.str()].set(0,row,1);
-         }
-         else if ( varVal == "ThreshB" ) { // 0
-            registers_[regA.str()].set(0,row,1);
-            registers_[regB.str()].set(0,row,1);
-         }
-         else { 
-            registers_[regA.str()].set(1,row,1); // Default to disable
-            registers_[regB.str()].set(0,row,1);
-
-            // Show error
+         // Show error
+         if ( !varOk ) {
             if ( debug_ ) cout << "KpixAsic::writeChanMode -> Address 0x" << hex << setw(4) << setfill('0') << address_
-                               << " Invalid Mode. Channel " << dec << (col*32+row) << " = " << varVal << endl;
+                               << " Invalid Mode. Channel " << dec << (col*32+row);
             err << "KpixAsic::writeChanMode -> Address 0x" << hex << setw(4) << setfill('0') << address_
-                << " Invalid Mode. Channel " << dec << (col*32+row) << " = " << varVal << endl;
+                << " Invalid Mode. Channel " << dec << (col*32+row);
+         }
+         else {
+            if ( debug_ ) cout << "KpixAsic::writeChanMode -> Address 0x" << hex << setw(4) << setfill('0') << address_
+                               << " Set " << var.str() << " = " << variables_[var.str()]->get() << endl;
          }
       }
    }
-   return(err.str(""));
+   return(err.str());
 }
 
 void KpixAsic::readChanMode() {
@@ -150,43 +164,34 @@ void KpixAsic::readChanMode() {
    stringstream regB;
    uint         col;
    uint         row;
-   uint         regValA;
-   uint         regValB;
 
-   // Set default
-   variables_["KpixChanModeDefault"].set("Disable");
+   if ( dummy_ ) return;
 
    // Each column
-   for ( col=0; x < channels()/32; col++ ) {
+   for ( col=0; col < channels()/32; col++ ) {
       regA.str("");
       regA << "Channel Mode A 0x" << setw(2) << setfill('0') << hex << col;
       regB.str("");
       regB << "Channel Mode B 0x" << setw(2) << setfill('0') << hex << col;
 
       // Each row
-      for ( row=0; x < 32; row++ ) {
+      for ( row=0; row < 32; row++ ) {
          var.str("");
          var << "KpixChanMode" << setw(4) << setfill('0') << dec << col*32 + row;
 
-         // Determine register value
-         switch ( registers_[regB.str()].get(row,1), registers_[regB.str()].get(row,1) ) {
-            case 0:  variables_[var.str()].set("ThreshB");      break;
-            case 1:  variables_[var.str()].set("Disable");      break;
-            case 2:  variables_[var.str()].set("ThreshA");      break;
-            case 3:  variables_[var.str()].set("CalibThreshA"); break;
-            default: variables_[var.str()].set("Disable");      break;
-         }
+         // Set register value
+         variables_[var.str()]->setReg((registers_[regB.str()]->get(row,1), registers_[regB.str()]->get(row,1)));
 
          // Debug
          if ( debug_ ) cout << "KpixAsic::readChanMode -> Address 0x" << hex << setw(4) << setfill('0') << address_
-                            << " Get Channel " << dec << (col*32+row) << " = " << variables_[var.str()].get() << endl;
+                            << " Get " << var.str() << " = " << variables_[var.str()]->get() << endl;
       }
    }
 }
 
 // Process timing settings
 string KpixAsic::writeTiming() {
-
+   return("");
 }
 
 void KpixAsic::readTiming() {
@@ -202,6 +207,7 @@ string KpixAsic::read() {
 
 
 
+   readChanMode();
 
    
    return(Device::read());
@@ -209,12 +215,13 @@ string KpixAsic::read() {
 
 //! Method to write variables to registers
 string KpixAsic::write( string xml ) {
+   stringstream err;
+
    Device::write(xml);
 
+   err << writeChanMode();
 
-
-
-
+   return(err.str());
 }
 
 //! Return version

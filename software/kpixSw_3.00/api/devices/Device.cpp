@@ -73,7 +73,7 @@ string Device::get ( string variable ) {
 }
 
 //! Return a vector of registers
-vector<Register *> Device::registers() {
+map<string,Register *> Device::registers() {
    return(registers_);
 }
 

@@ -42,7 +42,10 @@ void Variable::set ( string value ) {
 
 //! Method to set variable register value
 void Variable::setReg ( uint value ) {
-   if ( value < values_.size() ) value_ = values_.at(value);
+   if ( values_.size() != 0 ) {
+      if ( value < values_.size() ) value_ = values_.at(value);
+      else value_ = "";
+   } 
    else value_ = value;
 }
 
@@ -54,6 +57,12 @@ string Variable::get ( ) {
 //! Method to get variable register value
 uint Variable::getReg (bool *ok) {
    *ok = true;
+
+   if ( value_ == "" ) {
+      *ok = false;
+      return(0);
+   }
+
    if ( values_.size() != 0 ) {
       for (uint x; x < values_.size(); x++) {
          if (value_ == values_.at(x)) return(x);
