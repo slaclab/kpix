@@ -40,7 +40,7 @@ bool Register::stale() { return(stale_); }
 
 //! Method to set register value
 void Register::set ( uint value, uint bit, uint mask ) {
-   uint newVal; 
+   uint newVal = value_;
 
    newVal &= (0xFFFFFFFF ^ (mask << bit));
    newVal |= ((value & mask) << bit);

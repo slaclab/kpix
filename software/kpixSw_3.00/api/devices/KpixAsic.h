@@ -55,6 +55,18 @@ class KpixAsic : public Device {
       // Process status
       void readStatus();
 
+      // Method To Convert DAC Value To Voltage
+      static string dacToVolt(string dacValue);
+
+      // Update DAC voltages
+      void updateDacVoltages();
+
+      // Update calibration charge
+      void updateCalibCharge();
+
+      // Update temperature value
+      void updateTemperature();
+
    public:
 
       //! Constructor

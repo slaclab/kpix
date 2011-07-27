@@ -17,6 +17,7 @@
 #define __REGISTER_H__
 
 #include <string>
+#include <sys/types.h>
 using namespace std;
 
 //! Class to contain generic register data.

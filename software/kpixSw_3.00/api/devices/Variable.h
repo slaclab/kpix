@@ -18,6 +18,7 @@
 
 #include <string>
 #include <vector>
+#include <sys/types.h>
 using namespace std;
 
 //! Class to contain generic variable data.

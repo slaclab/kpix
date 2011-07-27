@@ -21,6 +21,7 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include <math.h>
 using namespace std;
 
 //! Constructor
@@ -38,6 +39,9 @@ KpixAsic::KpixAsic ( uint version, uint address, bool dummy ) : Device("asic",ad
    // Copy values
    version_ = version;
    dummy_   = dummy;
+
+   // Serial number variable
+   variables_.insert(pair<string,Variable*>("SerialNumber", new Variable()));
 
    // Create Registers: name, address, writeEn, testEn
    registers_.insert(pair<string,Register*>("Status",      new Register(0x00,false,false)));
@@ -120,6 +124,18 @@ KpixAsic::KpixAsic ( uint version, uint address, bool dummy ) : Device("asic",ad
    variables_.insert(pair<string,Variable*>("DacRstThreshB",     new Variable()));
    variables_.insert(pair<string,Variable*>("DacTrigThreshB",    new Variable()));
 
+   // Setup DAC Voltage Variables
+   variables_.insert(pair<string,Variable*>("DacCalibVolt",          new Variable()));
+   variables_.insert(pair<string,Variable*>("DacRampThreshVolt",     new Variable()));
+   variables_.insert(pair<string,Variable*>("DacRangeThreshVolt",    new Variable()));
+   variables_.insert(pair<string,Variable*>("DacDefaultAnalogVolt",  new Variable()));
+   variables_.insert(pair<string,Variable*>("DacEventThreshRefVolt", new Variable()));
+   variables_.insert(pair<string,Variable*>("DacShaperBiasVolt",     new Variable()));
+   variables_.insert(pair<string,Variable*>("DacRstThreshAVolt",     new Variable()));
+   variables_.insert(pair<string,Variable*>("DacTrigThreshAVolt",    new Variable()));
+   variables_.insert(pair<string,Variable*>("DacRstThreshBVolt",     new Variable()));
+   variables_.insert(pair<string,Variable*>("DacTrigThreshBVolt",    new Variable()));
+
    // Setup calib variables
    variables_.insert(pair<string,Variable*>("CalCount",  new Variable()));
    variables_.insert(pair<string,Variable*>("Cal0Delay", new Variable()));
@@ -195,6 +211,12 @@ KpixAsic::KpixAsic ( uint version, uint address, bool dummy ) : Device("asic",ad
    variables_.insert(pair<string,Variable*>("StatTempEn",      new Variable()));
    variables_.insert(pair<string,Variable*>("StatTempIdValue", new Variable()));
 
+   // Other variables
+   variables_.insert(pair<string,Variable*>("StatTemp",      new Variable()));
+   variables_.insert(pair<string,Variable*>("Bucket0Charge", new Variable()));
+   variables_.insert(pair<string,Variable*>("Bucket1Charge", new Variable()));
+   variables_.insert(pair<string,Variable*>("Bucket2Charge", new Variable()));
+   variables_.insert(pair<string,Variable*>("Bucket3Charge", new Variable()));
 }
 
 
@@ -509,6 +531,8 @@ string KpixAsic::writeDacs() {
    bool         okAll;
    stringstream err;
 
+   if ( dummy_ ) return("");
+
    // Get variables
    okAll = true;
    dacCalib          = variables_["DacCalib"]->getReg(&ok);          if ( !ok ) okAll = false;
@@ -611,6 +635,8 @@ void KpixAsic::readDacs() {
    uint dacTrigThreshA;
    uint dacRstThreshB;
    uint dacTrigThreshB;
+
+   if ( dummy_ ) return;
 
    // Get registers
    dacRstThreshA     = registers_["Event A Reset Dac"]->get(0,0xFF);
@@ -845,6 +871,8 @@ string KpixAsic::writeControl() {
    bool         okAll;
    stringstream err;
 
+   if ( dummy_ ) return("");
+
    // Get variables
    okAll = true;
    cntrlCalibHigh    = variables_["CntrlCalibHigh"]->getReg(&ok);    if ( !ok ) okAll = false;
@@ -945,6 +973,8 @@ void KpixAsic::readControl() {
    uint cntrlDiffTime;
    uint cntrlTrigDisable;
    uint cntrlMonSource;
+
+   if ( dummy_ ) return;
 
    // Get registers
    cntrlCalibHigh    = registers_["Control"]->get(11,0x1);
@@ -1060,6 +1090,11 @@ string KpixAsic::read() {
    readControl();
    readChanMode();
    readStatus();
+
+   // Update other variables
+   updateDacVoltages();
+   updateCalibCharge();
+   updateTemperature();
    
    // Return XML string
    return(Device::read());
@@ -1080,6 +1115,10 @@ string KpixAsic::write( string xml ) {
    err << writeConfig();
    err << writeControl();
    err << writeChanMode();
+
+   // Update other variables
+   updateDacVoltages();
+   updateCalibCharge();
 
    // Return errors
    return(err.str());
@@ -1105,5 +1144,150 @@ uint KpixAsic::channels() {
       case 10: return(1024); break;
       default: return(0);    break;
    }
+}
+
+
+// Method To Convert DAC Value To Voltage
+string KpixAsic::dacToVolt(string dacValue) {
+   stringstream tmp;
+   double       volt;
+   uint         value;
+
+   // Convert to int
+   value = atoi(dacValue.c_str());
+
+   // Change to voltage
+   if ( value >= 0xf6 ) volt = 2.5 - ((double)(0xff-value))*50.0*0.0001;
+   else volt =(double)value * 100.0 * 0.0001;
+
+   // Return as string
+   tmp.str("");
+   tmp << volt;
+   return(tmp.str());
+}
+ 
+
+// Update DAC voltage variables
+void KpixAsic::updateDacVoltages() {
+   string       dacCalib;
+   string       dacRampThresh;
+   string       dacRangeThresh;
+   string       dacDefaultAnalog;
+   string       dacEventThreshRef;
+   string       dacShaperBias;
+   string       dacRstThreshA;
+   string       dacTrigThreshA;
+   string       dacRstThreshB;
+   string       dacTrigThreshB;
+   stringstream tmp;
+
+   // Get variable values
+   dacCalib          = variables_["DacCalib"]->get();
+   dacRampThresh     = variables_["DacRampThresh"]->get();
+   dacRangeThresh    = variables_["DacRangeThresh"]->get();
+   dacDefaultAnalog  = variables_["DacDefaultAnalog"]->get();
+   dacEventThreshRef = variables_["DacEventThreshRef"]->get();
+   dacShaperBias     = variables_["DacShaperBias"]->get();
+   dacRstThreshA     = variables_["DacRstThreshA"]->get();
+   dacTrigThreshA    = variables_["DacTrigThreshA"]->get();
+   dacRstThreshB     = variables_["DacRstThreshB"]->get();
+   dacTrigThreshB    = variables_["DacTrigThreshB"]->get();
+
+   // Set variable voltages
+   variables_["DacCalibVolt"]->set(dacToVolt(dacCalib));
+   variables_["DacRampThreshVolt"]->set(dacToVolt(dacRampThresh));
+   variables_["DacRangeThreshVolt"]->set(dacToVolt(dacRangeThresh));
+   variables_["DacDefaultAnalogVolt"]->set(dacToVolt(dacDefaultAnalog));
+   variables_["DacEventThreshRefVolt"]->set(dacToVolt(dacEventThreshRef));
+   variables_["DacShaperBiasVolt"]->set(dacToVolt(dacShaperBias));
+   variables_["DacRstThreshAVolt"]->set(dacToVolt(dacRstThreshA));
+   variables_["DacTrigThreshAVolt"]->set(dacToVolt(dacTrigThreshA));
+   variables_["DacRstThreshBVolt"]->set(dacToVolt(dacRstThreshB));
+   variables_["DacTrigThreshBVolt"]->set(dacToVolt(dacTrigThreshB));
+}
+
+
+// Update calibration charge
+void KpixAsic::updateCalibCharge() {
+   uint         cntrlCalibHigh;
+   uint         cntrlPosPixel;
+   uint         dacCalib;
+   double       b0Charge;
+   double       bnCharge;
+   double       dacCalibVolt;
+   stringstream tmp;
+   bool         ok;
+
+   // Get variables
+   dacCalib       = variables_["DacCalib"]->getReg(&ok);
+   cntrlCalibHigh = variables_["CntrlCalibHigh"]->getReg(&ok);
+   cntrlPosPixel  = variables_["CntrlPosPixel"]->getReg(&ok);
+
+   // Change to voltage
+   if ( dacCalib >= 0xf6 ) dacCalibVolt = 2.5 - ((double)(0xff-dacCalib))*50.0*0.0001;
+   else dacCalibVolt =(double)dacCalib * 100.0 * 0.0001;
+
+   // Compute charge
+   if ( cntrlPosPixel ) bnCharge = (2.5 - dacCalibVolt) * 200e-15;
+   else bnCharge = dacCalibVolt * 200e-15;
+
+   // Check for high range
+   if ( cntrlCalibHigh ) b0Charge = bnCharge * 22;
+   else b0Charge = bnCharge;
+
+   // Set bucket 0
+   tmp.str("");
+   tmp << b0Charge;
+   variables_["Bucket0Charge"]->set(tmp.str());
+
+   // Other buckets
+   tmp.str("");
+   tmp << bnCharge;
+   variables_["Bucket1Charge"]->set(tmp.str());
+   variables_["Bucket2Charge"]->set(tmp.str());
+   variables_["Bucket3Charge"]->set(tmp.str());
+}
+
+
+// Update temperature value
+void KpixAsic::updateTemperature() {
+   uint         statTempIdValue;
+   int          g[8];
+   int          d[8];
+   int          de;
+   int          i;
+   double       temp;
+   bool         ok;
+   stringstream tmp;
+
+   // Get variables
+   statTempIdValue = variables_["StatTempIdValue"]->getReg(&ok);
+
+   // Convert number to binary
+   for (i=7; i >= 0; i--) {
+      if ( statTempIdValue >= (unsigned int)pow(2,i) ) {
+         g[i] = 1;
+         statTempIdValue -= (unsigned int)pow(2,i);
+      }
+      else g[i] = 0;
+   }
+
+   // Convert grey code to decimal
+   d[7] = g[7];
+   for (i=6; i >= 0; i--) d[i]=d[i+1]^g[i];
+
+   // Convert back to an integer
+   de = 0;
+   for (i=0; i<8; i++) if ( d[i] != 0 ) de += (int)pow(2,i);
+
+   // Convert to temperature
+   temp=-30.2+127.45/233*(255-de-20.75);
+
+   // Convert to string
+   tmp.str("");
+   tmp << temp;
+
+   // Set variables
+   variables_["StatTemp"]->set(tmp.str());
 }
 

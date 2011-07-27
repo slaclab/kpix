@@ -19,6 +19,7 @@
 #include "Variable.h"
 #include <libxml/parser.h>
 #include <sstream>
+#include <string.h>
 using namespace std;
 
 //! Constructor
