@@ -30,11 +30,30 @@ class KpixAsic : public Device {
 
       // Process channel mode settings
       string writeChanMode();
-      void readChanMode();
+      void   readChanMode();
 
       // Process timing settings
       string writeTiming();
-      void readTiming();
+      void   readTiming();
+
+      // Process DAC settings
+      string writeDacs();
+      void   readDacs();
+
+      // Process calib settings
+      string writeCalib();
+      void   readCalib();
+
+      // Process config settings
+      string writeConfig();
+      void   readConfig();
+
+      // Process control settings
+      string writeControl();
+      void   readControl();
+
+      // Process status
+      void readStatus();
 
    public:
 
