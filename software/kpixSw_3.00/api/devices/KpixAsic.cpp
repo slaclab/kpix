@@ -423,18 +423,18 @@ string KpixAsic::writeTiming() {
    // Debug if enabled
    if ( debug_ ) {
       cout << "KpixAsic::writeTiming -> Address 0x" << hex << setw(4) << setfill('0') << address_ << " writing timing: " << endl;
-      cout << "                         clkPeriodAcq      = " << dec << clkPeriodAcq      << endl;
-      cout << "                         resetOn           = " << dec << resetOn           << endl;
-      cout << "                         resetOff          = " << dec << resetOff          << endl;
-      cout << "                         leakageNullOff    = " << dec << leakageNullOff    << endl;
-      cout << "                         offsetNullOff     = " << dec << offsetNullOff     << endl;
-      cout << "                         threshOff         = " << dec << threshOff         << endl;
-      cout << "                         trigInhibitOff    = " << dec << trigInhibitOff    << endl;
-      cout << "                         powerUpOn         = " << dec << powerUpOn         << endl;
-      cout << "                         deselDelay        = " << dec << deselDelay        << endl;
-      cout << "                         bunchClkDelay     = " << dec << bunchClkDelay     << endl;
-      cout << "                         digitizationDelay = " << dec << digitizationDelay << endl;
-      cout << "                         bunchClockCount   = " << dec << bunchClockCount   << endl;
+      cout << "                         clkPeriodAcq      = " << variables_["clkPeriodAcq"]->get()      << endl;
+      cout << "                         resetOn           = " << variables_["resetOn"]->get()           << endl;
+      cout << "                         resetOff          = " << variables_["resetOff"]->get()          << endl;
+      cout << "                         leakageNullOff    = " << variables_["leakageNullOff"]->get()    << endl;
+      cout << "                         offsetNullOff     = " << variables_["offsetNullOff"]->get()     << endl;
+      cout << "                         threshOff         = " << variables_["threshOff"]->get()         << endl;
+      cout << "                         trigInhibitOff    = " << variables_["trigInhibitOff"]->get()    << endl;
+      cout << "                         powerUpOn         = " << variables_["powerUpOn"]->get()         << endl;
+      cout << "                         deselDelay        = " << variables_["deselDelay"]->get()        << endl;
+      cout << "                         bunchClkDelay     = " << variables_["bunchClkDelay"]->get()     << endl;
+      cout << "                         digitizationDelay = " << variables_["digitizationDelay"]->get() << endl;
+      cout << "                         bunchClockCount   = " << variables_["bunchClockCount"]->get()   << endl;
    }
 
    return(err.str());
@@ -500,18 +500,18 @@ void KpixAsic::readTiming() {
    // Debug if enabled
    if ( debug_ ) {
       cout << "KpixAsic::readTiming -> Address 0x" << hex << setw(4) << setfill('0') << address_ << " reading timing: " << endl;
-      cout << "                        clkPeriodAcq      = " << dec << clkPeriodAcq      << endl;
-      cout << "                        resetOn           = " << dec << resetOn           << endl;
-      cout << "                        resetOff          = " << dec << resetOff          << endl;
-      cout << "                        leakageNullOff    = " << dec << leakageNullOff    << endl;
-      cout << "                        offsetNullOff     = " << dec << offsetNullOff     << endl;
-      cout << "                        threshOff         = " << dec << threshOff         << endl;
-      cout << "                        trigInhibitOff    = " << dec << trigInhibitOff    << endl;
-      cout << "                        powerUpOn         = " << dec << powerUpOn         << endl;
-      cout << "                        deselDelay        = " << dec << deselDelay        << endl;
-      cout << "                        bunchClkDelay     = " << dec << bunchClkDelay     << endl;
-      cout << "                        digitizationDelay = " << dec << digitizationDelay << endl;
-      cout << "                        bunchClockCount   = " << dec << bunchClockCount   << endl;
+      cout << "                         clkPeriodAcq      = " << variables_["clkPeriodAcq"]->get()      << endl;
+      cout << "                         resetOn           = " << variables_["resetOn"]->get()           << endl;
+      cout << "                         resetOff          = " << variables_["resetOff"]->get()          << endl;
+      cout << "                         leakageNullOff    = " << variables_["leakageNullOff"]->get()    << endl;
+      cout << "                         offsetNullOff     = " << variables_["offsetNullOff"]->get()     << endl;
+      cout << "                         threshOff         = " << variables_["threshOff"]->get()         << endl;
+      cout << "                         trigInhibitOff    = " << variables_["trigInhibitOff"]->get()    << endl;
+      cout << "                         powerUpOn         = " << variables_["powerUpOn"]->get()         << endl;
+      cout << "                         deselDelay        = " << variables_["deselDelay"]->get()        << endl;
+      cout << "                         bunchClkDelay     = " << variables_["bunchClkDelay"]->get()     << endl;
+      cout << "                         digitizationDelay = " << variables_["digitizationDelay"]->get() << endl;
+      cout << "                         bunchClockCount   = " << variables_["bunchClockCount"]->get()   << endl;
    }
 }
 
@@ -604,20 +604,19 @@ string KpixAsic::writeDacs() {
           << " Bad dac value detected" << endl;
       if ( debug_ ) cout << "KpixAsic::writeDacs -> Address 0x" << hex << setw(4) << setfill('0') << address_
                          << " Bad dac value detected" << endl;
-   } else {
-      if ( debug_ ) {
-         cout << "KpixAsic::writeDacs -> Address 0x" << hex << setw(4) << setfill('0') << address_ << " writing dacs: " << endl;
-         cout << "                       dacCalib          = " << dec << dacCalib << endl;
-         cout << "                       dacRampThresh     = " << dec << dacRampThresh << endl;
-         cout << "                       dacRangeThresh    = " << dec << dacRangeThresh << endl;
-         cout << "                       dacDefaultAnalog  = " << dec << dacDefaultAnalog << endl;
-         cout << "                       dacEventThreshRef = " << dec << dacEventThreshRef << endl;
-         cout << "                       dacShaperBias     = " << dec << dacShaperBias << endl;
-         cout << "                       dacRstThreshA     = " << dec << dacRstThreshA << endl;
-         cout << "                       dacTrigThreshA    = " << dec << dacTrigThreshA << endl;
-         cout << "                       dacRstThreshB     = " << dec << dacRstThreshB << endl;
-         cout << "                       dacTrigThreshB    = " << dec << dacTrigThreshB << endl;
-      }
+   } 
+   if ( debug_ ) {
+      cout << "KpixAsic::writeDacs -> Address 0x" << hex << setw(4) << setfill('0') << address_ << " writing dacs: " << endl;
+      cout << "                       dacCalib          = " << variables_["dacCalib"]->get() << endl;
+      cout << "                       dacRampThresh     = " << variables_["dacRampThresh"]->get() << endl;
+      cout << "                       dacRangeThresh    = " << variables_["dacRangeThresh"]->get() << endl;
+      cout << "                       dacDefaultAnalog  = " << variables_["dacDefaultAnalog"]->get() << endl;
+      cout << "                       dacEventThreshRef = " << variables_["dacEventThreshRef"]->get() << endl;
+      cout << "                       dacShaperBias     = " << variables_["dacShaperBias"]->get() << endl;
+      cout << "                       dacRstThreshA     = " << variables_["dacRstThreshA"]->get() << endl;
+      cout << "                       dacTrigThreshA    = " << variables_["dacTrigThreshA"]->get() << endl;
+      cout << "                       dacRstThreshB     = " << variables_["dacRstThreshB"]->get() << endl;
+      cout << "                       dacTrigThreshB    = " << variables_["dacTrigThreshB"]->get() << endl;
    }
 
    return(err.str());
@@ -665,16 +664,16 @@ void KpixAsic::readDacs() {
    // Debug
    if ( debug_ ) {
       cout << "KpixAsic::readDacs -> Address 0x" << hex << setw(4) << setfill('0') << address_ << " reading dacs: " << endl;
-      cout << "                      dacCalib          = " << dec << dacCalib << endl;
-      cout << "                      dacRampThresh     = " << dec << dacRampThresh << endl;
-      cout << "                      dacRangeThresh    = " << dec << dacRangeThresh << endl;
-      cout << "                      dacDefaultAnalog  = " << dec << dacDefaultAnalog << endl;
-      cout << "                      dacEventThreshRef = " << dec << dacEventThreshRef << endl;
-      cout << "                      dacShaperBias     = " << dec << dacShaperBias << endl;
-      cout << "                      dacRstThreshA     = " << dec << dacRstThreshA << endl;
-      cout << "                      dacTrigThreshA    = " << dec << dacTrigThreshA << endl;
-      cout << "                      dacRstThreshB     = " << dec << dacRstThreshB << endl;
-      cout << "                      dacTrigThreshB    = " << dec << dacTrigThreshB << endl;
+      cout << "                      dacCalib          = " << variables_["dacCalib"]->get() << endl;
+      cout << "                      dacRampThresh     = " << variables_["dacRampThresh"]->get() << endl;
+      cout << "                      dacRangeThresh    = " << variables_["dacRangeThresh"]->get() << endl;
+      cout << "                      dacDefaultAnalog  = " << variables_["dacDefaultAnalog"]->get() << endl;
+      cout << "                      dacEventThreshRef = " << variables_["dacEventThreshRef"]->get() << endl;
+      cout << "                      dacShaperBias     = " << variables_["dacShaperBias"]->get() << endl;
+      cout << "                      dacRstThreshA     = " << variables_["dacRstThreshA"]->get() << endl;
+      cout << "                      dacTrigThreshA    = " << variables_["dacTrigThreshA"]->get() << endl;
+      cout << "                      dacRstThreshB     = " << variables_["dacRstThreshB"]->get() << endl;
+      cout << "                      dacTrigThreshB    = " << variables_["dacTrigThreshB"]->get() << endl;
    }
 }
 
@@ -715,15 +714,14 @@ string KpixAsic::writeCalib() {
           << " Bad calib value detected" << endl;
       if ( debug_ ) cout << "KpixAsic::writeCalib -> Address 0x" << hex << setw(4) << setfill('0') << address_
                          << " Bad calib value detected" << endl;
-   } else {
-      if ( debug_ ) {
-         cout << "KpixAsic::writeCalib -> Address 0x" << hex << setw(4) << setfill('0') << address_ << " writing calib: " << endl;
-         cout << "                        calCount  = " << dec << calCount << endl;
-         cout << "                        cal0Delay = " << dec << cal0Delay << endl;
-         cout << "                        cal1Delay = " << dec << cal1Delay << endl;
-         cout << "                        cal2Delay = " << dec << cal2Delay << endl;
-         cout << "                        cal3Delay = " << dec << cal3Delay << endl;
-      }
+   } 
+   if ( debug_ ) {
+      cout << "KpixAsic::writeCalib -> Address 0x" << hex << setw(4) << setfill('0') << address_ << " writing calib: " << endl;
+      cout << "                        calCount  = " << variables_["calCount"]->get()  << endl;
+      cout << "                        cal0Delay = " << variables_["cal0Delay"]->get() << endl;
+      cout << "                        cal1Delay = " << variables_["cal1Delay"]->get() << endl;
+      cout << "                        cal2Delay = " << variables_["cal2Delay"]->get() << endl;
+      cout << "                        cal3Delay = " << variables_["cal3Delay"]->get() << endl;
    }
 
    return(err.str());
@@ -759,11 +757,11 @@ void KpixAsic::readCalib() {
    // Debug
    if ( debug_ ) {
       cout << "KpixAsic::readCalib -> Address 0x" << hex << setw(4) << setfill('0') << address_ << " reading calib: " << endl;
-      cout << "                       calCount  = " << dec << calCount << endl;
-      cout << "                       cal0Delay = " << dec << cal0Delay << endl;
-      cout << "                       cal1Delay = " << dec << cal1Delay << endl;
-      cout << "                       cal2Delay = " << dec << cal2Delay << endl;
-      cout << "                       cal3Delay = " << dec << cal3Delay << endl;
+      cout << "                       calCount  = " << variables_["calCount"]->get()  << endl;
+      cout << "                       cal0Delay = " << variables_["cal0Delay"]->get() << endl;
+      cout << "                       cal1Delay = " << variables_["cal1Delay"]->get() << endl;
+      cout << "                       cal2Delay = " << variables_["cal2Delay"]->get() << endl;
+      cout << "                       cal3Delay = " << variables_["cal3Delay"]->get() << endl;
    }
 }
 
@@ -801,15 +799,14 @@ string KpixAsic::writeConfig() {
           << " Bad config value detected" << endl;
       if ( debug_ ) cout << "KpixAsic::writeConfig -> Address 0x" << hex << setw(4) << setfill('0') << address_
                          << " Bad config value detected" << endl;
-   } else {
-      if ( debug_ ) {
-         cout << "KpixAsic::writeConfig -> Address 0x" << hex << setw(4) << setfill('0') << address_ << " writing config: " << endl;
-         cout << "                         cfgTestData    = " << dec << cfgTestData << endl;
-         cout << "                         cfgAutoReadDis = " << dec << cfgAutoReadDis << endl;
-         cout << "                         cfgForceTemp   = " << dec << cfgForceTemp << endl;
-         cout << "                         cfgDisableTemp = " << dec << cfgDisableTemp << endl;
-         cout << "                         cfgAutoStatus  = " << dec << cfgAutoStatus << endl;
-      }
+   } 
+   if ( debug_ ) {
+      cout << "KpixAsic::writeConfig -> Address 0x" << hex << setw(4) << setfill('0') << address_ << " writing config: " << endl;
+      cout << "                         cfgTestData    = " << variables_["cfgTestData"]->get() << endl;
+      cout << "                         cfgAutoReadDis = " << variables_["cfgAutoReadDis"]->get() << endl;
+      cout << "                         cfgForceTemp   = " << variables_["cfgForceTemp"]->get() << endl;
+      cout << "                         cfgDisableTemp = " << variables_["cfgDisableTemp"]->get() << endl;
+      cout << "                         cfgAutoStatus  = " << variables_["cfgAutoStatus"]->get() << endl;
    }
 
    return(err.str());
@@ -840,11 +837,11 @@ void KpixAsic::readConfig() {
    // Debug
    if ( debug_ ) {
       cout << "KpixAsic::readConfig -> Address 0x" << hex << setw(4) << setfill('0') << address_ << " reading config: " << endl;
-      cout << "                        cfgTestData    = " << dec << cfgTestData << endl;
-      cout << "                        cfgAutoReadDis = " << dec << cfgAutoReadDis << endl;
-      cout << "                        cfgForceTemp   = " << dec << cfgForceTemp << endl;
-      cout << "                        cfgDisableTemp = " << dec << cfgDisableTemp << endl;
-      cout << "                        cfgAutoStatus  = " << dec << cfgAutoStatus << endl;
+      cout << "                        cfgTestData    = " << variables_["cfgTestData"]->get() << endl;
+      cout << "                        cfgAutoReadDis = " << variables_["cfgAutoReadDis"]->get() << endl;
+      cout << "                        cfgForceTemp   = " << variables_["cfgForceTemp"]->get() << endl;
+      cout << "                        cfgDisableTemp = " << variables_["cfgDisableTemp"]->get() << endl;
+      cout << "                        cfgAutoStatus  = " << variables_["cfgAutoStatus"]->get() << endl;
    }
 }
 
@@ -928,27 +925,26 @@ string KpixAsic::writeControl() {
           << " Bad control value detected" << endl;
       if ( debug_ ) cout << "KpixAsic::writeControl -> Address 0x" << hex << setw(4) << setfill('0') << address_
                          << " Bad control value detected" << endl;
-   } else {
-      if ( debug_ ) {
-         cout << "KpixAsic::writeControl -> Address 0x" << hex << setw(4) << setfill('0') << address_ << " writing control: " << endl;
-         cout << "                          cntrlCalibHigh    = " << dec << cntrlCalibHigh << endl;
-         cout << "                          cntrlForceLowGain = " << dec << cntrlForceLowGain << endl;
-         cout << "                          cntrlLeakNullDis  = " << dec << cntrlLeakNullDis << endl;
-         cout << "                          cntrlDoubleGain   = " << dec << cntrlDoubleGain << endl;
-         cout << "                          cntrlNearNeighbor = " << dec << cntrlNearNeighbor << endl;
-         cout << "                          cntrlPosPixel     = " << dec << cntrlPosPixel << endl;
-         cout << "                          cntrlDisPerReset  = " << dec << cntrlDisPerReset << endl;
-         cout << "                          cntrlEnDcReset    = " << dec << cntrlEnDcReset << endl;
-         cout << "                          cntrlCalSource    = " << dec << cntrlCalSource << endl;
-         cout << "                          cntrlTrigSource   = " << dec << cntrlTrigSource << endl;
-         cout << "                          cntrlShortIntEn   = " << dec << cntrlShortIntEn << endl;
-         cout << "                          cntrlDisPwrCycle  = " << dec << cntrlDisPwrCycle << endl;
-         cout << "                          cntrlFeCurr       = " << dec << cntrlFeCurr << endl;
-         cout << "                          cntrlHoldTime     = " << dec << cntrlHoldTime << endl;
-         cout << "                          cntrlDiffTime     = " << dec << cntrlDiffTime << endl;
-         cout << "                          cntrlTrigDisable  = " << dec << cntrlTrigDisable << endl;
-         cout << "                          cntrlMonSource    = " << dec << cntrlMonSource << endl;
-      }
+   } 
+   if ( debug_ ) {
+      cout << "KpixAsic::writeControl -> Address 0x" << hex << setw(4) << setfill('0') << address_ << " writing control: " << endl;
+      cout << "                          cntrlCalibHigh    = " << variables_["cntrlCalibHigh"]->get() << endl;
+      cout << "                          cntrlForceLowGain = " << variables_["cntrlForceLowGain"]->get() << endl;
+      cout << "                          cntrlLeakNullDis  = " << variables_["cntrlLeakNullDis"]->get() << endl;
+      cout << "                          cntrlDoubleGain   = " << variables_["cntrlDoubleGain"]->get() << endl;
+      cout << "                          cntrlNearNeighbor = " << variables_["cntrlNearNeighbor"]->get() << endl;
+      cout << "                          cntrlPosPixel     = " << variables_["cntrlPosPixel"]->get() << endl;
+      cout << "                          cntrlDisPerReset  = " << variables_["cntrlDisPerReset"]->get() << endl;
+      cout << "                          cntrlEnDcReset    = " << variables_["cntrlEnDcReset"]->get() << endl;
+      cout << "                          cntrlCalSource    = " << variables_["cntrlCalSource"]->get() << endl;
+      cout << "                          cntrlTrigSource   = " << variables_["cntrlTrigSource"]->get() << endl;
+      cout << "                          cntrlShortIntEn   = " << variables_["cntrlShortIntEn"]->get() << endl;
+      cout << "                          cntrlDisPwrCycle  = " << variables_["cntrlDisPwrCycle"]->get() << endl;
+      cout << "                          cntrlFeCurr       = " << variables_["cntrlFeCurr"]->get() << endl;
+      cout << "                          cntrlHoldTime     = " << variables_["cntrlHoldTime"]->get() << endl;
+      cout << "                          cntrlDiffTime     = " << variables_["cntrlDiffTime"]->get() << endl;
+      cout << "                          cntrlTrigDisable  = " << variables_["cntrlTrigDisable"]->get() << endl;
+      cout << "                          cntrlMonSource    = " << variables_["cntrlMonSource"]->get() << endl;
    }
 
    return(err.str());
@@ -1029,23 +1025,23 @@ void KpixAsic::readControl() {
    // Debug
    if ( debug_ ) {
       cout << "KpixAsic::readControl -> Address 0x" << hex << setw(4) << setfill('0') << address_ << " reading control: " << endl;
-      cout << "                         cntrlCalibHigh    = " << dec << cntrlCalibHigh << endl;
-      cout << "                         cntrlForceLowGain = " << dec << cntrlForceLowGain << endl;
-      cout << "                         cntrlLeakNullDis  = " << dec << cntrlLeakNullDis << endl;
-      cout << "                         cntrlDoubleGain   = " << dec << cntrlDoubleGain << endl;
-      cout << "                         cntrlNearNeighbor = " << dec << cntrlNearNeighbor << endl;
-      cout << "                         cntrlPosPixel     = " << dec << cntrlPosPixel << endl;
-      cout << "                         cntrlDisPerReset  = " << dec << cntrlDisPerReset << endl;
-      cout << "                         cntrlEnDcReset    = " << dec << cntrlEnDcReset << endl;
-      cout << "                         cntrlCalSource    = " << dec << cntrlCalSource << endl;
-      cout << "                         cntrlTrigSource   = " << dec << cntrlTrigSource << endl;
-      cout << "                         cntrlShortIntEn   = " << dec << cntrlShortIntEn << endl;
-      cout << "                         cntrlDisPwrCycle  = " << dec << cntrlDisPwrCycle << endl;
-      cout << "                         cntrlFeCurr       = " << dec << cntrlFeCurr << endl;
-      cout << "                         cntrlHoldTime     = " << dec << cntrlHoldTime << endl;
-      cout << "                         cntrlDiffTime     = " << dec << cntrlDiffTime << endl;
-      cout << "                         cntrlTrigDisable  = " << dec << cntrlTrigDisable << endl;
-      cout << "                         cntrlMonSource    = " << dec << cntrlMonSource << endl;
+      cout << "                         cntrlCalibHigh    = " << variables_["cntrlCalibHigh"]->get() << endl;
+      cout << "                         cntrlForceLowGain = " << variables_["cntrlForceLowGain"]->get() << endl;
+      cout << "                         cntrlLeakNullDis  = " << variables_["cntrlLeakNullDis"]->get() << endl;
+      cout << "                         cntrlDoubleGain   = " << variables_["cntrlDoubleGain"]->get() << endl;
+      cout << "                         cntrlNearNeighbor = " << variables_["cntrlNearNeighbor"]->get() << endl;
+      cout << "                         cntrlPosPixel     = " << variables_["cntrlPosPixel"]->get() << endl;
+      cout << "                         cntrlDisPerReset  = " << variables_["cntrlDisPerReset"]->get() << endl;
+      cout << "                         cntrlEnDcReset    = " << variables_["cntrlEnDcReset"]->get() << endl;
+      cout << "                         cntrlCalSource    = " << variables_["cntrlCalSource"]->get() << endl;
+      cout << "                         cntrlTrigSource   = " << variables_["cntrlTrigSource"]->get() << endl;
+      cout << "                         cntrlShortIntEn   = " << variables_["cntrlShortIntEn"]->get() << endl;
+      cout << "                         cntrlDisPwrCycle  = " << variables_["cntrlDisPwrCycle"]->get() << endl;
+      cout << "                         cntrlFeCurr       = " << variables_["cntrlFeCurr"]->get() << endl;
+      cout << "                         cntrlHoldTime     = " << variables_["cntrlHoldTime"]->get() << endl;
+      cout << "                         cntrlDiffTime     = " << variables_["cntrlDiffTime"]->get() << endl;
+      cout << "                         cntrlTrigDisable  = " << variables_["cntrlTrigDisable"]->get() << endl;
+      cout << "                         cntrlMonSource    = " << variables_["cntrlMonSource"]->get() << endl;
    }
 }
 
@@ -1071,10 +1067,10 @@ void KpixAsic::readStatus() {
    // Debug
    if ( debug_ ) {
       cout << "KpixAsic::readStatus -> Address 0x" << hex << setw(4) << setfill('0') << address_ << " reading status: " << endl;
-      cout << "                        statCmdPerr     = " << dec << statCmdPerr << endl;
-      cout << "                        statDataPerr    = " << dec << statDataPerr << endl;
-      cout << "                        statTempEn      = " << dec << statTempEn << endl;
-      cout << "                        statTempIdValue = " << dec << statTempIdValue << endl;
+      cout << "                        statCmdPerr     = " << variables_["statCmdPerr"]->get() << endl;
+      cout << "                        statDataPerr    = " << variables_["statDataPerr"]->get() << endl;
+      cout << "                        statTempEn      = " << variables_["statTempEn"]->get() << endl;
+      cout << "                        statTempIdValue = " << variables_["statTempIdValue"]->get() << endl;
    }
 }
 

@@ -60,6 +60,12 @@ class Register {
       //! Method to get stale flag
       bool stale ();
 
+      //! Method to force stale flag
+      void setStale ();
+
+      //! Method to clear stale flag
+      void clrStale ();
+
       //! Method to set register value
       /*!
        * Update the shadow register with the new value. Optional start

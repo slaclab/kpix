@@ -38,6 +38,12 @@ bool Register::testEn() { return(testEn_); }
 //! Method to get stale flag
 bool Register::stale() { return(stale_); }
 
+//! Method to force stale flag
+void Register::setStale () { stale_ = true; }
+
+//! Method to clear stale flag
+void Register::clrStale () { stale_ = false; }
+
 //! Method to set register value
 void Register::set ( uint value, uint bit, uint mask ) {
    uint newVal = value_;
@@ -47,7 +53,7 @@ void Register::set ( uint value, uint bit, uint mask ) {
 
    if ( newVal != value_ ) {
       value_ = newVal;
-      stale_ = true;
+      setStale();
    }
 }
 
@@ -58,14 +64,14 @@ uint Register::get ( uint bit, uint mask ) {
 
 //! Method called when writing data to device. 
 uint Register::write () {
-   stale_ = false;
+   clrStale();
    return(value_);
 }
 
 //! Method called when reading data from device
 void Register::read (uint value) {
    value_ = value;
-   stale_ = false;
+   clrStale();
 }
 
 //! Method called when verifying register
