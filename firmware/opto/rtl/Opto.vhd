@@ -382,7 +382,8 @@ begin
 
             -- Precharge extension
             if coreState = "1010" then
-               clkSel <= "1111111111";
+               --clkSel <= "1111111111";
+               clkSel <= "00000" & clkSelB;
 
             -- Clock rate select
             else case coreState(2 downto 0) is

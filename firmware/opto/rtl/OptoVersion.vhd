@@ -19,7 +19,7 @@ USE ieee.std_logic_1164.ALL;
 
 package Version is
 
-constant FpgaVersion : std_logic_vector(31 downto 0) := x"C0000034"; -- MAKE_VERSION
+constant FpgaVersion : std_logic_vector(31 downto 0) := x"C0000035"; -- MAKE_VERSION
 
 end Version;
 
@@ -27,5 +27,7 @@ end Version;
 -- Revision History:
 -- 03/10/2010 (0xC0000027): Initial Version
 -- 04/22/2010 (0xC0000029): Added seperate clock rate for idle.
+-- 04/22/2010 (0xC0000034): Precharge extension
+-- 04/22/2010 (0xC0000035): Precharge extension removal
 -------------------------------------------------------------------------------
 
