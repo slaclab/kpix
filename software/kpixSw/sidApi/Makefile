@@ -6,8 +6,9 @@ OBJ     := $(PWD)/.obj
 DEP     := $(PWD)/.dep
 TAR     := $(OUT)/libsidapi.so
 PRC     := $(shell uname -p)
-CFLAGS  := -Wall `root-config --cflags` -fPIC
-LFLAGS  := -lpthread -ldl -lftd2xx -L ftdi/$(PRC) -L$(OUT) `root-config --libs` -lMinuit -llockdev -lXMLParser -lrt
+CFLAGS  := -Wall `root-config --cflags` -fPIC -m32
+#LFLAGS  := -lpthread -ldl -lftd2xx -L ftdi/$(PRC) -L$(OUT) `root-config --libs` -lMinuit -llockdev -lXMLParser -lrt -m32
+LFLAGS  := -lpthread -ldl -lftd2xx -L ftdi/i386 -L$(OUT) `root-config --libs` -lMinuit -llockdev -lXMLParser -lrt -m32
 
 # Sources in the hw directory
 ON_DIR    := $(PWD)/online

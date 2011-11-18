@@ -488,6 +488,7 @@ void KpixCalDist::runDistribution ( short channel ) {
                         // Delete the histogram
                         delete value[idx]; value[idx] = NULL;
                         delete time[idx];  time[idx]  = NULL;
+                        usleep(1000);
                      }
                      else {
                         hist[bucket*2]   = NULL;
@@ -496,7 +497,7 @@ void KpixCalDist::runDistribution ( short channel ) {
                   }
 
                   // Update Live Plots
-                  if (kpixProgress != NULL && plotCount != 0) 
+                  if ( kpixProgress != NULL && plotCount != 0 && ( chan == channel || ( channel < 0 && chan == 0 ) ) ) 
                      kpixProgress->updateData(KpixProgress::KpixDataTH1F,8,(void **)hist); 
 
                   // Otherwise delete plots
@@ -818,6 +819,7 @@ void KpixCalDist::runCalibration ( short channel ) {
 
                         // Delete data
                         delete dataR0[idx]; dataR0[idx] = NULL;
+                        usleep(1000);
                      } else {
                         tg[bucket*4]   = NULL;
                         tg[bucket*4+2] = NULL;
@@ -841,6 +843,8 @@ void KpixCalDist::runCalibration ( short channel ) {
 
                         // Delete data
                         delete dataR1[idx]; dataR1[idx] = NULL;
+                        usleep(1000);
+
                      } else {
                         tg[bucket*4+1] = NULL;
                         tg[bucket*4+3] = NULL;
@@ -848,7 +852,7 @@ void KpixCalDist::runCalibration ( short channel ) {
                   }
 
                   // Check For Valid, Update Live Plots
-                  if ( kpixProgress != NULL && plotCount != 0 )
+                  if ( kpixProgress != NULL && plotCount != 0 && ( chan == channel || ( channel < 0 && chan == 0 ) ) ) 
                      kpixProgress->updateData(KpixProgress::KpixDataTGraph,16,(void **)tg);
 
                   // Otherwise delete plots

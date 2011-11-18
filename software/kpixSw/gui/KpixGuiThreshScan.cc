@@ -196,6 +196,7 @@ void KpixGuiThreshScan::run() {
    // Update status display
    event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusStart,"Starting");
    QApplication::postEvent(this,event);
+   usleep(10000);
 
    kpixThreshScan = NULL;
    try {
@@ -251,6 +252,7 @@ void KpixGuiThreshScan::run() {
                // Update status display
                event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusPrgMain,temp.str(),mainProgress,mainTotal);
                QApplication::postEvent(this,event);
+               usleep(10000);
 
                // Run Threshold Scan
                kpixThreshScan->runThreshold ( x );
@@ -271,12 +273,14 @@ void KpixGuiThreshScan::run() {
    if ( delError != "" ) {
       error = new KpixGuiEventError(delError);
       QApplication::postEvent(this,error);
+      usleep(10000);
    }
 
    // Update status display
    try { fpga->setRunEnable(false); } catch (string error) {}
    event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusDone,"Done");
    QApplication::postEvent(this,event);
+   usleep(10000);
 }
 
 
@@ -284,6 +288,7 @@ void KpixGuiThreshScan::run() {
 void KpixGuiThreshScan::updateProgress(unsigned int count, unsigned int total) {
    KpixGuiEventStatus *event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusPrgSub,count,total);
    QApplication::postEvent(this,event);
+   usleep(10000);
 }
 
 

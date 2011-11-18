@@ -569,7 +569,7 @@ int SidLink::linkRawWrite (unsigned short *data, short int size, unsigned char t
       }
 
       // Check size
-      if ( wtotal != newSize ) throw string("SidLink::linkRawWrite -> Write Size Error");
+      //if ( wtotal != newSize ) throw string("SidLink::linkRawWrite -> Write Size Error");
    }
    free(byteData);
 

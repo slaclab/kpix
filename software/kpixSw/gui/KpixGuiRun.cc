@@ -304,6 +304,7 @@ void KpixGuiRun::run() {
    // Update Display
    event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusStart,"Starting");
    QApplication::postEvent(this,event);
+   usleep(10000);
 
    // Store Plots?
    enPlot = enablePlots->isChecked();
@@ -391,9 +392,11 @@ void KpixGuiRun::run() {
 
       // Create Run Write Class To Store Data & Settings
       kpixRunWrite = new KpixRunWrite (outDataFile,"run",desc,calString);
+      usleep(10000);
       gErrorIgnoreLevel = 5000; 
       for (x=0; x<asicCnt; x++) kpixRunWrite->addAsic ( asic[x] );
       kpixRunWrite->addFpga ( fpga );
+      usleep(10000);
       delError = "";
 
       try {
@@ -404,6 +407,7 @@ void KpixGuiRun::run() {
             // Update status display
             event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusMsg,"Copying Calibration Data");
             QApplication::postEvent(this,event);
+            usleep(10000);
 
             // Copy xml string data to the new file
             if ( calData->xmlDataExists )
@@ -414,6 +418,7 @@ void KpixGuiRun::run() {
             // Update status display
             event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusMsg,"Loading Calibration Constants");
             QApplication::postEvent(this,event);
+            usleep(10000);
 
             // Only load cal constants if plots are enabled
             if ( enPlot ) {
@@ -501,6 +506,7 @@ void KpixGuiRun::run() {
          // Update status display
          event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusMsg,"Running");
          QApplication::postEvent(this,event);
+         usleep(10000);
 
          // Do run stuff here
          paused=false;
@@ -512,6 +518,7 @@ void KpixGuiRun::run() {
             if ( pRun ) {
                event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusPause,"Paused",iters,0,triggers);
                QApplication::postEvent(this,event);
+               usleep(10000);
                paused=true;
             }
 
@@ -522,6 +529,7 @@ void KpixGuiRun::run() {
             if ( paused ) {
                event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusResume,"Running",iters,0,triggers);
                QApplication::postEvent(this,event);
+               usleep(10000);
                paused=false;
 
                // Update event variables
@@ -547,6 +555,7 @@ void KpixGuiRun::run() {
                   status = network->getStatus();
                   event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusRun,status,iters,0,triggers);
                   QApplication::postEvent(this,event);
+                  usleep(10000);
 
                   // Get command and variables from socket
                   while ( (netCount = network->getCommand(eventCmd,eventCnt)) == 0 && enRun ) {
@@ -554,6 +563,7 @@ void KpixGuiRun::run() {
                         status = network->getStatus();
                         event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusRun,status,iters,0,triggers);
                         QApplication::postEvent(this,event);
+                        usleep(10000);
                      }
                      usleep(1); 
                   }
@@ -566,6 +576,7 @@ void KpixGuiRun::run() {
                      }
                      data = new KpixGuiEventData(KpixProgress::KpixDataDouble,eventCnt,(void **)eventVars);
                      QApplication::postEvent(this,data);
+                     usleep(10000);
                   }
                   netCount--;
                }
@@ -666,6 +677,7 @@ void KpixGuiRun::run() {
                // Status Update
                event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusRun,temp.str(),iters,rate,triggers);
                QApplication::postEvent(this,event);
+               usleep(10000);
                rate = 0;
 
                // Look through plots list
@@ -749,6 +761,7 @@ void KpixGuiRun::run() {
                   // Pass Plots
                   data = new KpixGuiEventData(KpixProgress::KpixDataTH1F,32,(void **)plot);
                   QApplication::postEvent(this,data);
+                  usleep(10000);
                }
 
             } else rate++;
@@ -758,8 +771,8 @@ void KpixGuiRun::run() {
 
       // Status Update
       event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusRun,"Storing Histograms",iters,0,triggers);
-
       QApplication::postEvent(this,event);
+      usleep(10000);
 
       // Store histograms
       if ( enPlot ) {
@@ -796,6 +809,7 @@ void KpixGuiRun::run() {
                      for (z=0; z < histR0[idx]->binCount(); z++) 
                         cHist->SetBinContent(z+1,histR0[idx]->count(z));
                      cHist->Write();
+                     usleep(1000);
                      delete cHist;
 
                      // Create Charge histogram
@@ -830,6 +844,7 @@ void KpixGuiRun::run() {
                         cHist->SetBinContent(z+1,histR0[idx]->count(z));
                      }
                      cHist->Write();
+                     usleep(1000);
                      delete cHist;
                      delete histR0[idx];
                   }
@@ -857,6 +872,7 @@ void KpixGuiRun::run() {
                      for (z=0; z < histR1[idx]->binCount(); z++) 
                         cHist->SetBinContent(z+1,histR1[idx]->count(z));
                      cHist->Write();
+                     usleep(1000);
                      delete cHist;
 
                      // Create Charge histogram
@@ -891,6 +907,7 @@ void KpixGuiRun::run() {
                         cHist->SetBinContent(z+1,histR1[idx]->count(z));
                      }
                      cHist->Write();
+                     usleep(1000);
                      delete cHist;
                      delete histR1[idx];
                   }
@@ -923,6 +940,7 @@ void KpixGuiRun::run() {
    if ( delError != "" ) {
       error = new KpixGuiEventError(delError);
       QApplication::postEvent(this,error);
+      usleep(10000);
    }
 
    // Close network
@@ -932,6 +950,7 @@ void KpixGuiRun::run() {
    try { fpga->setRunEnable(false); } catch (string error) {}
    event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusDone,"Done");
    QApplication::postEvent(this,event);
+   usleep(10000);
 }
 
 

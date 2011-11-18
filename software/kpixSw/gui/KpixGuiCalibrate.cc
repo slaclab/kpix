@@ -235,6 +235,7 @@ void KpixGuiCalibrate::run() {
    // Update status display
    event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusStart,"Starting");
    QApplication::postEvent(this,event);
+   usleep(10000);
 
    // Total progress 
    mainProgress = 0;
@@ -314,6 +315,7 @@ void KpixGuiCalibrate::run() {
                                            "Running Forced Trigger Distribution",
                                            mainProgress,mainTotal);
             QApplication::postEvent(this,event);
+            usleep(10000);
 
             // Start Run
             kpixCalDist->setPlotDir("Force_Trig");
@@ -338,6 +340,7 @@ void KpixGuiCalibrate::run() {
                                            "Running Self Trigger Distribution",
                                            mainProgress,mainTotal);
             QApplication::postEvent(this,event);
+            usleep(10000);
 
             // Start Run
             kpixCalDist->setPlotDir("Self_Trig");
@@ -362,6 +365,7 @@ void KpixGuiCalibrate::run() {
                                               "Running Calibration, Force Trigger, All Channels",
                                               mainProgress,mainTotal);
                QApplication::postEvent(this,event);
+               usleep(10000);
 
                // First calibrate with forced trigger
                if ( verbose->isChecked() ) cout << "Forced Trigger Calibration" << endl;
@@ -384,6 +388,7 @@ void KpixGuiCalibrate::run() {
                                               "Running Calibration, Self Trigger, All Channels",
                                               mainProgress,mainTotal);
                QApplication::postEvent(this,event);
+               usleep(10000);
 
                // Next calibrate with self trigger
                if ( verbose->isChecked() ) cout << "Self Trigger Calibration" << endl;
@@ -420,6 +425,7 @@ void KpixGuiCalibrate::run() {
                      event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusPrgMain,
                                                     temp.str(), mainProgress,mainTotal);
                      QApplication::postEvent(this,event);
+                     usleep(10000);
 
                      // First calibrate with forced trigger
                      if ( verbose->isChecked() ) cout << "Forced Trigger Calibration" << endl;
@@ -446,6 +452,7 @@ void KpixGuiCalibrate::run() {
                      event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusPrgMain,
                                                     temp.str(), mainProgress,mainTotal);
                      QApplication::postEvent(this,event);
+                     usleep(10000);
 
                      // Next calibrate with self trigger
                      if ( verbose->isChecked() ) cout << "Self Trigger Calibration" << endl;
@@ -475,12 +482,14 @@ void KpixGuiCalibrate::run() {
    if ( delError != "" ) {
       error = new KpixGuiEventError(delError);
       QApplication::postEvent(this,error);
+      usleep(10000);
    }
 
    // Update status display
    try { fpga->setRunEnable(false); } catch (string error) {}
    event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusDone,"Done");
    QApplication::postEvent(this,event);
+   usleep(10000);
 }
 
 
@@ -488,6 +497,7 @@ void KpixGuiCalibrate::run() {
 void KpixGuiCalibrate::updateProgress(unsigned int count, unsigned int total) {
    KpixGuiEventStatus *event = new KpixGuiEventStatus(KpixGuiEventStatus::StatusPrgSub,count,total);
    QApplication::postEvent(this,event);
+   usleep(10000);
 }
 
 
@@ -651,6 +661,7 @@ void KpixGuiCalibrate::customEvent ( QCustomEvent *event ) {
 void KpixGuiCalibrate::updateData(unsigned int id, unsigned int count, void **data) {
    KpixGuiEventData *event = new KpixGuiEventData(id,count,data);
    QApplication::postEvent(this,event);
+   usleep(10000);
 }
 
 

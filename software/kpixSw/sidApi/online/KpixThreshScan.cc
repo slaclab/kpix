@@ -419,6 +419,7 @@ void KpixThreshScan::runThreshold ( short channel ) {
                hist[idx]->GetXaxis()->SetRangeUser(minX[idx],maxX[idx]);
                hist[idx]->GetYaxis()->SetRangeUser(minY[idx],maxY[idx]);
                hist[idx]->Write();
+               usleep(1000);
                if ( kpixProgress != NULL ) kpixProgress->updateData(KpixProgress::KpixDataTH2F,1,(void**)(&(hist[idx])));
                else delete hist[idx];
             }
