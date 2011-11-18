@@ -175,15 +175,19 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, uint versio
 
    addVariable(new Variable("DacThresholdA",Variable::Configuration));
    variables_["DacThresholdA"]->setDescription("Trigger Threshold A dac\nDAC 0/8");
+   variables_["DacThresholdA"]->setPerInstance(true);
 
    addVariable(new Variable("DacThresholdAVolt",Variable::Feedback));
    variables_["DacThresholdAVolt"]->setDescription("Trigger Threshold A dac voltage feedback\nDAC 0/8");
+   variables_["DacThresholdAVolt"]->setPerInstance(true);
 
    addVariable(new Variable("DacThresholdB",Variable::Configuration));
    variables_["DacThresholdB"]->setDescription("Trigger Threshold B dac\nDAC 1/9");
+   variables_["DacThresholdB"]->setPerInstance(true);
 
    addVariable(new Variable("DacThresholdBVolt",Variable::Feedback));
    variables_["DacThresholdBVolt"]->setDescription("Trigger Threshold B dac voltage feedback\nDAC 1/9");
+   variables_["DacThresholdBVolt"]->setPerInstance(true);
 
    addVariable(new Variable("DacRampThresh",Variable::Configuration));
    variables_["DacRampThresh"]->setDescription("Ramp threshold dac\nDAC 2");
