@@ -39,6 +39,12 @@ KpixChannel::KpixChannel ( uint index ) :
    modes[3] = "ThreshA";
    variables_["Mode"]->setEnums(modes);
 
+   addVariable(new Variable("NormalGain", Variable::Configuration));
+   variables_["NormalGain"]->setDescription("Normal range gain value");
+
+   addVariable(new Variable("NormalMean", Variable::Configuration));
+   variables_["NormalMean"]->setDescription("Normal range mean value");
+
    addVariable(new Variable("LowGain", Variable::Configuration));
    variables_["LowGain"]->setDescription("Low range gain value");
 
