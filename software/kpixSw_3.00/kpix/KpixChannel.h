@@ -27,8 +27,9 @@ class KpixChannel : public Device {
       //! Constructor
       /*! 
        * \param index       Device index
+       * \param parent      Parent device
       */
-      KpixChannel ( uint index );
+      KpixChannel ( uint index, Device *parent );
 
       //! Deconstructor
       ~KpixChannel ( );

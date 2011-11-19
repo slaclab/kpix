@@ -28,6 +28,18 @@ class KpixAsic : public Device {
       // Kpix version
       uint version_;
 
+      // Time value to use for timing calculations
+      static const uint KpixAcqPeriod = 50;
+
+      // Function to convert dac value into a voltage
+      static double dacToVolt(uint dac);
+
+      // Function to convert dac value into a voltage
+      static string dacToVoltString(uint dac);
+
+      // Channel count
+      uint channels();
+
    public:
 
       //! Constructor
@@ -35,21 +47,14 @@ class KpixAsic : public Device {
        * \param destination Device destination
        * \param baseAddress Device base address
        * \param index       Device index
+       * \param version     KPIX version
        * \param dummy       Kpix is a dummy device
+       * \param parent      Parent device
       */
-      KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy );
+      KpixAsic ( uint destination, uint baseAddress, uint index, uint version, bool dummy, Device *parent );
 
       //! Deconstructor
       ~KpixAsic ( );
-
-      //! Method to process a command
-      /*!
-       * Returns status string if locally processed. Otherwise
-       * an empty string is returned.
-       * \param name     Command name
-       * \param arg      Optional arg
-      */
-      string command ( string name, string arg );
 
       //! Method to read status registers and update variables
       /*! 

@@ -22,8 +22,8 @@
 using namespace std;
 
 // Constructor
-KpixChannel::KpixChannel ( uint index ) : 
-                     Device(0,0,"kpixChannel",index) {
+KpixChannel::KpixChannel ( uint index, Device *parent ) : 
+                     Device(0,0,"kpixChannel",index,parent) {
 
    // Description
    desc_ = "Kpix Channel";
