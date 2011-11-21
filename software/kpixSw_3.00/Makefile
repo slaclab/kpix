@@ -24,7 +24,7 @@ UTL_SRC := $(wildcard $(UTL_DIR)/*.cpp)
 UTL_BIN := $(patsubst $(UTL_DIR)/%.cpp,$(BIN)/%,$(UTL_SRC))
 
 # Default
-all: dir $(GEN_OBJ) $(KPX_OBJ) $(UTL_BIN)
+all: dir $(GEN_OBJ) $(KPX_OBJ) $(UTL_BIN) gui
 
 # Object directory
 dir:
