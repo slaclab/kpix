@@ -205,9 +205,10 @@ CntrlFpga::CntrlFpga ( uint destination, uint index, uint kpixCnt, uint version,
    commands_["HardKpixReset"]->setDescription("Hard KPIX reset command");
 
    // Add sub-devices
-   for (uint i=0; i < kpixCnt; i++) 
+   for (uint i=0; i < kpixCnt; i++) {
+      cout << "adding index " << dec << i << endl;
       addDevice(new KpixAsic(destination,((i << 8)& 0xFF00),i,version,(i==(kpixCnt-1)),this));
-
+   }
 }
 
 // Deconstructor

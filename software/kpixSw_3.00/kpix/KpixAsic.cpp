@@ -45,6 +45,7 @@ string KpixAsic::dacToVoltString(uint dac) {
 
 // Channel count
 uint KpixAsic::channels() {
+   if ( dummy_ ) return(0);
    switch(version_) {
       case  9: return(512);  break;
       case 10: return(1024); break;
@@ -62,8 +63,6 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, uint versio
    desc_    = "Kpix ASIC Object.";
    dummy_   = dummy;
    version_ = version;
-
-   // Setup registers & variables
 
    // Serial number & variable
    addVariable(new Variable("SerialNumber", Variable::Configuration));
@@ -103,7 +102,7 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, uint versio
    variables_["CfgDisableTemp"]->setDescription("Disable temperature power on");
    variables_["CfgDisableTemp"]->setTrueFalse();
 
-   addVariable(new Variable("CfgAutoStatusRdEn",Variable::Configuration));
+   addVariable(new Variable("CfgAutoStatusReadEn",Variable::Configuration));
    variables_["CfgAutoStatusReadEn"]->setDescription("Enable auto status register read with data");
    variables_["CfgAutoStatusReadEn"]->setTrueFalse();
 
@@ -137,6 +136,7 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, uint versio
    variables_["TimeThreshOff"]->setDescription("Threshold signal turn off delay from run start");
    variables_["TimeThreshOff"]->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
 
+   // Timing registers & variables
    addVariable(new Variable("TrigInhibitOff",Variable::Configuration));
    variables_["TrigInhibitOff"]->setDescription("Trigger inhibit turn off bunch crossing");
    variables_["TrigInhibitOff"]->setComp(0,1,0,"");
@@ -158,7 +158,7 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, uint versio
    variables_["TimeDigitizeDelay"]->setComp(0,KpixAcqPeriod,0,"nS (@50nS)");
 
    addVariable(new Variable("BunchClockCount",Variable::Configuration));
-   variables_["BunchCLockCount"]->setDescription("Bunch cock count");
+   variables_["BunchClockCount"]->setDescription("Bunch cock count");
    variables_["BunchClockCount"]->setComp(0,1,0,"");
 
    // Calibration control registers & variables
@@ -466,108 +466,112 @@ void KpixAsic::readConfig ( bool subEnable ) {
    calCount += registers_["CalDelay1"]->get(31,0x1);
    variables_["CalCount"]->setInt(calCount);
 
-   // DAC registers and variables
-   readRegister(registers_["Dac0"]);
-   val = registers_["Dac0"]->get(0,0xFF);
-   variables_["DacThresholdA"]->setInt(val);
-   variables_["DacThresholdAVolt"]->set(dacToVoltString(val));
+   // Some registers don't exist in dummy
+   if ( !dummy_ ) {
 
-   readRegister(registers_["Dac1"]);
-   val = registers_["Dac1"]->get(0,0xFF);
-   variables_["DacThresholdB"]->setInt(val);
-   variables_["DacThresholdBVolt"]->set(dacToVoltString(val));
+      // DAC registers and variables
+      readRegister(registers_["Dac0"]);
+      val = registers_["Dac0"]->get(0,0xFF);
+      variables_["DacThresholdA"]->setInt(val);
+      variables_["DacThresholdAVolt"]->set(dacToVoltString(val));
 
-   readRegister(registers_["Dac2"]);
-   val = registers_["Dac2"]->get(0,0xFF);
-   variables_["DacRampThresh"]->setInt(val);
-   variables_["DacRampThreshVolt"]->set(dacToVoltString(val));
+      readRegister(registers_["Dac1"]);
+      val = registers_["Dac1"]->get(0,0xFF);
+      variables_["DacThresholdB"]->setInt(val);
+      variables_["DacThresholdBVolt"]->set(dacToVoltString(val));
 
-   readRegister(registers_["Dac3"]);
-   val = registers_["Dac3"]->get(0,0xFF);
-   variables_["DacRangeThreshold"]->setInt(val);
-   variables_["DacRangeThresholdVolt"]->set(dacToVoltString(val));
+      readRegister(registers_["Dac2"]);
+      val = registers_["Dac2"]->get(0,0xFF);
+      variables_["DacRampThresh"]->setInt(val);
+      variables_["DacRampThreshVolt"]->set(dacToVoltString(val));
 
-   readRegister(registers_["Dac4"]);
-   val = registers_["Dac4"]->get(0,0xFF);
-   variables_["DacCalibration"]->setInt(val);
-   variables_["DacCalibrationVolt"]->set(dacToVoltString(val));
+      readRegister(registers_["Dac3"]);
+      val = registers_["Dac3"]->get(0,0xFF);
+      variables_["DacRangeThreshold"]->setInt(val);
+      variables_["DacRangeThresholdVolt"]->set(dacToVoltString(val));
 
-   tmp.str("");
-   if ( variables_["CntrlPolarity"]->get() == "Positive" ) {
-      tmp << ((2.5 - dacToVolt(val)) * 200e-15);
-      tmp << " / ";
-      tmp << (((2.5 - dacToVolt(val)) * 200e-15) * 22.0);
-   }
-   else {
-      tmp << (dacToVolt(val) * 200e-15);
-      tmp << " / ";
-      tmp << ((dacToVolt(val) * 200e-15) * 22.0);
-   }
-   variables_["DacCalibrationCharge"]->set(tmp.str());
-   
-   readRegister(registers_["Dac5"]);
-   val = registers_["Dac5"]->get(0,0xFF);
-   variables_["DacEventThreshold"]->setInt(val);
-   variables_["DacEventThresholdVoltage"]->set(dacToVoltString(val));
+      readRegister(registers_["Dac4"]);
+      val = registers_["Dac4"]->get(0,0xFF);
+      variables_["DacCalibration"]->setInt(val);
+      variables_["DacCalibrationVolt"]->set(dacToVoltString(val));
 
-   readRegister(registers_["Dac6"]);
-   val = registers_["Dac6"]->get(0,0xFF);
-   variables_["DacShaperBias"]->setInt(val);
-   variables_["DacShaperBiasVolt"]->set(dacToVoltString(val));
+      tmp.str("");
+      if ( variables_["CntrlPolarity"]->get() == "Positive" ) {
+         tmp << ((2.5 - dacToVolt(val)) * 200e-15);
+         tmp << " / ";
+         tmp << (((2.5 - dacToVolt(val)) * 200e-15) * 22.0);
+      }
+      else {
+         tmp << (dacToVolt(val) * 200e-15);
+         tmp << " / ";
+         tmp << ((dacToVolt(val) * 200e-15) * 22.0);
+      }
+      variables_["DacCalibrationCharge"]->set(tmp.str());
+      
+      readRegister(registers_["Dac5"]);
+      val = registers_["Dac5"]->get(0,0xFF);
+      variables_["DacEventThreshold"]->setInt(val);
+      variables_["DacEventThresholdVoltage"]->set(dacToVoltString(val));
 
-   readRegister(registers_["Dac7"]);
-   val = registers_["Dac7"]->get(0,0xFF);
-   variables_["DacDefaultAnalog"]->setInt(val);
-   variables_["DacDefaultAnalogVolt"]->set(dacToVoltString(val));
+      readRegister(registers_["Dac6"]);
+      val = registers_["Dac6"]->get(0,0xFF);
+      variables_["DacShaperBias"]->setInt(val);
+      variables_["DacShaperBiasVolt"]->set(dacToVoltString(val));
 
-   // Control register and variables
-   readRegister(registers_["Control"]);
+      readRegister(registers_["Dac7"]);
+      val = registers_["Dac7"]->get(0,0xFF);
+      variables_["DacDefaultAnalog"]->setInt(val);
+      variables_["DacDefaultAnalogVolt"]->set(dacToVoltString(val));
 
-   variables_["CntrlCalibHigh"]->setInt(registers_["Control"]->get(11,0x1));
-   variables_["CntrlForceLowGain"]->setInt(registers_["Control"]->get(13,0x1));
-   variables_["CntrlLeakNullDisable"]->setInt(registers_["Control"]->get(14,0x1));
-   variables_["CntrlHighGain"]->setInt(registers_["Control"]->get(2,0x1));
-   variables_["CntrlNearNeighbor"]->setInt(registers_["Control"]->get(3,0x1));
-   variables_["CntrlPolarity"]->setInt(registers_["Control"]->get(15,0x1));
-   variables_["CntrlDisPerReset"]->setInt(registers_["Control"]->get(0,0x1));
-   variables_["CntrlEnDcReset"]->setInt(registers_["Control"]->get(1,0x1));
-   variables_["CntrlShortIntEn"]->setInt(registers_["Control"]->get(12,0x1));
-   variables_["CntrlDisPwrCycle"]->setInt(registers_["Control"]->get(24,0x1));
-   variables_["CntrlFeCurr"]->setInt(registers_["Control"]->get(25,0x1));
-   variables_["CntrlHoldTime"]->setInt(registers_["Control"]->get(8,0x1));
-   variables_["CntrlDiffTime"]->setInt(registers_["Control"]->get(28,0x1));
-   variables_["CntrlTrigDisable"]->setInt(registers_["Control"]->get(16,0x1));
+      // Control register and variables
+      readRegister(registers_["Control"]);
 
-   val = 0;
-   if ( registers_["Control"]->get(6,0x1) == 1 ) val = 1;
-   if ( registers_["Control"]->get(4,0x1) == 1 ) val = 2;
-   variables_["CntrlCalSource"]->setInt(val);
+      variables_["CntrlCalibHigh"]->setInt(registers_["Control"]->get(11,0x1));
+      variables_["CntrlForceLowGain"]->setInt(registers_["Control"]->get(13,0x1));
+      variables_["CntrlLeakNullDisable"]->setInt(registers_["Control"]->get(14,0x1));
+      variables_["CntrlHighGain"]->setInt(registers_["Control"]->get(2,0x1));
+      variables_["CntrlNearNeighbor"]->setInt(registers_["Control"]->get(3,0x1));
+      variables_["CntrlPolarity"]->setInt(registers_["Control"]->get(15,0x1));
+      variables_["CntrlDisPerReset"]->setInt(registers_["Control"]->get(0,0x1));
+      variables_["CntrlEnDcReset"]->setInt(registers_["Control"]->get(1,0x1));
+      variables_["CntrlShortIntEn"]->setInt(registers_["Control"]->get(12,0x1));
+      variables_["CntrlDisPwrCycle"]->setInt(registers_["Control"]->get(24,0x1));
+      variables_["CntrlFeCurr"]->setInt(registers_["Control"]->get(25,0x1));
+      variables_["CntrlHoldTime"]->setInt(registers_["Control"]->get(8,0x1));
+      variables_["CntrlDiffTime"]->setInt(registers_["Control"]->get(28,0x1));
+      variables_["CntrlTrigDisable"]->setInt(registers_["Control"]->get(16,0x1));
 
-   val = 0;
-   if ( registers_["Control"]->get(7,0x1) == 1 ) val = 1;
-   if ( registers_["Control"]->get(5,0x1) == 1 ) val = 2;
-   variables_["CntrlForceTrigSource"]->setInt(val);
+      val = 0;
+      if ( registers_["Control"]->get(6,0x1) == 1 ) val = 1;
+      if ( registers_["Control"]->get(4,0x1) == 1 ) val = 2;
+      variables_["CntrlCalSource"]->setInt(val);
 
-   val = 0;
-   if ( registers_["Control"]->get(30,0x1) == 1 ) val = 2;
-   if ( registers_["Control"]->get(31,0x1) == 1 ) val = 1;
-   variables_["CntrlMonSource"]->setInt(val);
+      val = 0;
+      if ( registers_["Control"]->get(7,0x1) == 1 ) val = 1;
+      if ( registers_["Control"]->get(5,0x1) == 1 ) val = 2;
+      variables_["CntrlForceTrigSource"]->setInt(val);
 
-   // Calibration Mask Registers
-   for (col=0; col < (channels()/32); col++) {
-      regA.str("");
-      regA << "ChanModeA_0x" << setw(2) << setfill('0') << hex << col;
-      regB.str("");
-      regB << "ChanModeB_0x" << setw(2) << setfill('0') << hex << col;
+      val = 0;
+      if ( registers_["Control"]->get(30,0x1) == 1 ) val = 2;
+      if ( registers_["Control"]->get(31,0x1) == 1 ) val = 1;
+      variables_["CntrlMonSource"]->setInt(val);
 
-      for (row=0; row < 32; row++) {
-         readRegister(registers_[regB.str()]);
-         readRegister(registers_[regA.str()]);
+      // Calibration Mask Registers
+      for (col=0; col < (channels()/32); col++) {
+         regA.str("");
+         regA << "ChanModeA_0x" << setw(2) << setfill('0') << hex << col;
+         regB.str("");
+         regB << "ChanModeB_0x" << setw(2) << setfill('0') << hex << col;
 
-         val  = (registers_[regB.str()]->get(row,0x1) << 1) & 0x2;
-         val += registers_[regA.str()]->get(row,0x1) & 0x1;
+         for (row=0; row < 32; row++) {
+            readRegister(registers_[regB.str()]);
+            readRegister(registers_[regA.str()]);
 
-         device("kpixChannel",col*32+row)->setInt("TrigMode",val);
+            val  = (registers_[regB.str()]->get(row,0x1) << 1) & 0x2;
+            val += registers_[regA.str()]->get(row,0x1) & 0x1;
+
+            device("kpixChannel",col*32+row)->setInt("TrigMode",val);
+         }
       }
    }
 
@@ -634,104 +638,108 @@ void KpixAsic::writeConfig ( bool force, bool subEnable ) {
    writeRegister(registers_["CalDelay0"],force);
    writeRegister(registers_["CalDelay1"],force);
 
-   // DAC registers and variables
-   val = variables_["DacThresholdA"]->getInt();
-   variables_["DacThresholdAVolt"]->set(dacToVoltString(val));
-   registers_["Dac0"]->set(val,0,0xFF);
-   writeRegister(registers_["Dac0"],force);
+   // Some registers don't exist in dummy
+   if ( !dummy_ ) {
 
-   val = variables_["DacThresholdB"]->getInt();
-   variables_["DacThresholdBVolt"]->set(dacToVoltString(val));
-   registers_["Dac1"]->set(val,0,0xFF);
-   writeRegister(registers_["Dac1"],force);
+      // DAC registers and variables
+      val = variables_["DacThresholdA"]->getInt();
+      variables_["DacThresholdAVolt"]->set(dacToVoltString(val));
+      registers_["Dac0"]->set(val,0,0xFF);
+      writeRegister(registers_["Dac0"],force);
 
-   val = variables_["DacRampThresh"]->getInt();
-   variables_["DacRampThreshVolt"]->set(dacToVoltString(val));
-   registers_["Dac2"]->set(val,0,0xFF);
-   writeRegister(registers_["Dac2"],force);
+      val = variables_["DacThresholdB"]->getInt();
+      variables_["DacThresholdBVolt"]->set(dacToVoltString(val));
+      registers_["Dac1"]->set(val,0,0xFF);
+      writeRegister(registers_["Dac1"],force);
 
-   val = variables_["DacRangeThreshold"]->getInt();
-   variables_["DacRangeThresholdVolt"]->set(dacToVoltString(val));
-   registers_["Dac3"]->set(val,0,0xFF);
-   writeRegister(registers_["Dac3"],force);
+      val = variables_["DacRampThresh"]->getInt();
+      variables_["DacRampThreshVolt"]->set(dacToVoltString(val));
+      registers_["Dac2"]->set(val,0,0xFF);
+      writeRegister(registers_["Dac2"],force);
 
-   val = variables_["DacCalibration"]->getInt();
-   variables_["DacCalibrationVolt"]->set(dacToVoltString(val));
-   registers_["Dac4"]->set(val,0,0xFF);
-   writeRegister(registers_["Dac4"],force);
+      val = variables_["DacRangeThreshold"]->getInt();
+      variables_["DacRangeThresholdVolt"]->set(dacToVoltString(val));
+      registers_["Dac3"]->set(val,0,0xFF);
+      writeRegister(registers_["Dac3"],force);
 
-   tmp.str("");
-   if ( variables_["CntrlPolarity"]->get() == "Positive" ) {
-      tmp << ((2.5 - dacToVolt(val)) * 200e-15);
-      tmp << " / ";
-      tmp << (((2.5 - dacToVolt(val)) * 200e-15) * 22.0);
-   }
-   else {
-      tmp << (dacToVolt(val) * 200e-15);
-      tmp << " / ";
-      tmp << ((dacToVolt(val) * 200e-15) * 22.0);
-   }
-   variables_["DacCalibrationCharge"]->set(tmp.str());
-   
-   val = variables_["DacEventThreshold"]->getInt();
-   variables_["DacEventThresholdVoltage"]->set(dacToVoltString(val));
-   registers_["Dac5"]->set(val,0,0xFF);
-   writeRegister(registers_["Dac5"],force);
+      val = variables_["DacCalibration"]->getInt();
+      variables_["DacCalibrationVolt"]->set(dacToVoltString(val));
+      registers_["Dac4"]->set(val,0,0xFF);
+      writeRegister(registers_["Dac4"],force);
 
-   val = variables_["DacShaperBias"]->getInt();
-   variables_["DacShaperBiasVolt"]->set(dacToVoltString(val));
-   registers_["Dac6"]->set(val,0,0xFF);
-   writeRegister(registers_["Dac6"],force);
+      tmp.str("");
+      if ( variables_["CntrlPolarity"]->get() == "Positive" ) {
+         tmp << ((2.5 - dacToVolt(val)) * 200e-15);
+         tmp << " / ";
+         tmp << (((2.5 - dacToVolt(val)) * 200e-15) * 22.0);
+      }
+      else {
+         tmp << (dacToVolt(val) * 200e-15);
+         tmp << " / ";
+         tmp << ((dacToVolt(val) * 200e-15) * 22.0);
+      }
+      variables_["DacCalibrationCharge"]->set(tmp.str());
+      
+      val = variables_["DacEventThreshold"]->getInt();
+      variables_["DacEventThresholdVoltage"]->set(dacToVoltString(val));
+      registers_["Dac5"]->set(val,0,0xFF);
+      writeRegister(registers_["Dac5"],force);
 
-   val = variables_["DacDefaultAnalog"]->getInt();
-   variables_["DacDefaultAnalogVolt"]->set(dacToVoltString(val));
-   registers_["Dac7"]->set(val,0,0xFF);
-   writeRegister(registers_["Dac7"],force);
+      val = variables_["DacShaperBias"]->getInt();
+      variables_["DacShaperBiasVolt"]->set(dacToVoltString(val));
+      registers_["Dac6"]->set(val,0,0xFF);
+      writeRegister(registers_["Dac6"],force);
 
-   // Control register and variables
-   registers_["Control"]->set(variables_["CntrlCalibHigh"]->getInt(),11,0x1);
-   registers_["Control"]->set(variables_["CntrlForceLowGain"]->getInt(),13,0x1);
-   registers_["Control"]->set(variables_["CntrlLeakNullDisable"]->getInt(),14,0x1);
-   registers_["Control"]->set(variables_["CntrlHighGain"]->getInt(),2,0x1);
-   registers_["Control"]->set(variables_["CntrlNearNeighbor"]->getInt(),3,0x1);
-   registers_["Control"]->set(variables_["CntrlPolarity"]->getInt(),15,0x1);
-   registers_["Control"]->set(variables_["CntrlDisPerReset"]->getInt(),0,0x1);
-   registers_["Control"]->set(variables_["CntrlEnDcReset"]->getInt(),1,0x1);
-   registers_["Control"]->set(variables_["CntrlShortIntEn"]->getInt(),12,0x1);
-   registers_["Control"]->set(variables_["CntrlDisPwrCycle"]->getInt(),24,0x1);
-   registers_["Control"]->set(variables_["CntrlFeCurr"]->getInt(),25,0x1);
-   registers_["Control"]->set(variables_["CntrlHoldTime"]->getInt(),8,0x1);
-   registers_["Control"]->set(variables_["CntrlDiffTime"]->getInt(),28,0x1);
-   registers_["Control"]->set(variables_["CntrlTrigDisable"]->getInt(),16,0x1);
+      val = variables_["DacDefaultAnalog"]->getInt();
+      variables_["DacDefaultAnalogVolt"]->set(dacToVoltString(val));
+      registers_["Dac7"]->set(val,0,0xFF);
+      writeRegister(registers_["Dac7"],force);
 
-   val = variables_["CntrlCalSource"]->getInt();
-   registers_["Control"]->set((val==1)?1:0,6,0x1);
-   registers_["Control"]->set((val==2)?1:0,4,0x1);
+      // Control register and variables
+      registers_["Control"]->set(variables_["CntrlCalibHigh"]->getInt(),11,0x1);
+      registers_["Control"]->set(variables_["CntrlForceLowGain"]->getInt(),13,0x1);
+      registers_["Control"]->set(variables_["CntrlLeakNullDisable"]->getInt(),14,0x1);
+      registers_["Control"]->set(variables_["CntrlHighGain"]->getInt(),2,0x1);
+      registers_["Control"]->set(variables_["CntrlNearNeighbor"]->getInt(),3,0x1);
+      registers_["Control"]->set(variables_["CntrlPolarity"]->getInt(),15,0x1);
+      registers_["Control"]->set(variables_["CntrlDisPerReset"]->getInt(),0,0x1);
+      registers_["Control"]->set(variables_["CntrlEnDcReset"]->getInt(),1,0x1);
+      registers_["Control"]->set(variables_["CntrlShortIntEn"]->getInt(),12,0x1);
+      registers_["Control"]->set(variables_["CntrlDisPwrCycle"]->getInt(),24,0x1);
+      registers_["Control"]->set(variables_["CntrlFeCurr"]->getInt(),25,0x1);
+      registers_["Control"]->set(variables_["CntrlHoldTime"]->getInt(),8,0x1);
+      registers_["Control"]->set(variables_["CntrlDiffTime"]->getInt(),28,0x1);
+      registers_["Control"]->set(variables_["CntrlTrigDisable"]->getInt(),16,0x1);
 
-   val = variables_["CntrlForceTrigSource"]->getInt();
-   registers_["Control"]->set((val==1)?1:0,7,0x1);
-   registers_["Control"]->set((val==2)?1:0,5,0x1);
+      val = variables_["CntrlCalSource"]->getInt();
+      registers_["Control"]->set((val==1)?1:0,6,0x1);
+      registers_["Control"]->set((val==2)?1:0,4,0x1);
 
-   val = variables_["CntrlMonSource"]->getInt();
-   registers_["Control"]->set((val==2)?1:0,30,0x1);
-   registers_["Control"]->set((val==1)?1:0,31,0x1);
+      val = variables_["CntrlForceTrigSource"]->getInt();
+      registers_["Control"]->set((val==1)?1:0,7,0x1);
+      registers_["Control"]->set((val==2)?1:0,5,0x1);
 
-   writeRegister(registers_["Control"],force);
+      val = variables_["CntrlMonSource"]->getInt();
+      registers_["Control"]->set((val==2)?1:0,30,0x1);
+      registers_["Control"]->set((val==1)?1:0,31,0x1);
 
-   // Calibration Mask Registers
-   for (col=0; col < (channels()/32); col++) {
-      regA.str("");
-      regA << "ChanModeA_0x" << setw(2) << setfill('0') << hex << col;
-      regB.str("");
-      regB << "ChanModeB_0x" << setw(2) << setfill('0') << hex << col;
+      writeRegister(registers_["Control"],force);
 
-      // Add channels
-      for (row=0; row < 32; row++) {
-         val = device("kpixChannel",col*32+row)->getInt("TrigMode");
-         registers_[regB.str()]->set(((val>>1)&0x1),row,0x1);
-         registers_[regA.str()]->set((val&0x1),row,0x1);
-         writeRegister(registers_[regB.str()],force);
-         writeRegister(registers_[regA.str()],force);
+      // Calibration Mask Registers
+      for (col=0; col < (channels()/32); col++) {
+         regA.str("");
+         regA << "ChanModeA_0x" << setw(2) << setfill('0') << hex << col;
+         regB.str("");
+         regB << "ChanModeB_0x" << setw(2) << setfill('0') << hex << col;
+
+         // Add channels
+         for (row=0; row < 32; row++) {
+            val = device("kpixChannel",col*32+row)->getInt("TrigMode");
+            registers_[regB.str()]->set(((val>>1)&0x1),row,0x1);
+            registers_[regA.str()]->set((val&0x1),row,0x1);
+            writeRegister(registers_[regB.str()],force);
+            writeRegister(registers_[regA.str()],force);
+         }
       }
    }
 
@@ -759,25 +767,28 @@ string KpixAsic::verifyConfig ( bool subEnable, string input ) {
    //ret << verifyRegister(registers_["TimerH"]);
    ret << verifyRegister(registers_["CalDelay0"]);
    ret << verifyRegister(registers_["CalDelay1"]);
-   ret << verifyRegister(registers_["Dac0"]);
-   ret << verifyRegister(registers_["Dac1"]);
-   ret << verifyRegister(registers_["Dac2"]);
-   ret << verifyRegister(registers_["Dac3"]);
-   ret << verifyRegister(registers_["Dac4"]);
-   ret << verifyRegister(registers_["Dac5"]);
-   ret << verifyRegister(registers_["Dac6"]);
-   ret << verifyRegister(registers_["Dac7"]);
-   ret << verifyRegister(registers_["Dac8"]);
-   ret << verifyRegister(registers_["Dac9"]);
-   ret << verifyRegister(registers_["Control"]);
 
-   for (x=0; x < (channels()/32); x++) {
-      tmp.str("");
-      tmp << "ChanModeA_0x" << setw(2) << setfill('0') << hex << x;
-      ret << verifyRegister(registers_[tmp.str()]);
-      tmp.str("");
-      tmp << "ChanModeB_0x" << setw(2) << setfill('0') << hex << x;
-      ret << verifyRegister(registers_[tmp.str()]);
+   if ( !dummy_ ) {
+      ret << verifyRegister(registers_["Dac0"]);
+      ret << verifyRegister(registers_["Dac1"]);
+      ret << verifyRegister(registers_["Dac2"]);
+      ret << verifyRegister(registers_["Dac3"]);
+      ret << verifyRegister(registers_["Dac4"]);
+      ret << verifyRegister(registers_["Dac5"]);
+      ret << verifyRegister(registers_["Dac6"]);
+      ret << verifyRegister(registers_["Dac7"]);
+      ret << verifyRegister(registers_["Dac8"]);
+      ret << verifyRegister(registers_["Dac9"]);
+      ret << verifyRegister(registers_["Control"]);
+
+      for (x=0; x < (channels()/32); x++) {
+         tmp.str("");
+         tmp << "ChanModeA_0x" << setw(2) << setfill('0') << hex << x;
+         ret << verifyRegister(registers_[tmp.str()]);
+         tmp.str("");
+         tmp << "ChanModeB_0x" << setw(2) << setfill('0') << hex << x;
+         ret << verifyRegister(registers_[tmp.str()]);
+      }
    }
 
    ret << input;

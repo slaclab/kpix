@@ -35,7 +35,6 @@ KpixControl::KpixControl ( ) : System("KpixControl") {
 
    // Add sub-devices
    addDevice(new CntrlFpga(0, 0, 4, 0xA, this));
-
 }
 
 // Deconstructor
@@ -48,15 +47,15 @@ string KpixControl::command ( string name, string arg ) {
 
 
 //! Method to return state string
-string KpixControl::getState ( string topState ) {
+string KpixControl::getState ( ) {
    string ret;
    string loc = "";
    //uint apv;
    //uint hyb;
 
-   loc = "System Ready To Take Data.\n";      
+   loc = "System Ready To Take Data.\n";
 
-   ret = topState;
+   ret = topStateMsg_;
    ret.append(loc);
    return(ret);
 }

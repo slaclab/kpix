@@ -45,7 +45,7 @@ $(OBJ)/%.o: $(KPX_DIR)/%.cpp $(KPX_DIR)/%.h
 	$(CC) -c $(CFLAGS) $(DEF) -o $@ $<
 
 # Comile utilities
-$(BIN)/%: $(UTL_DIR)/%.cpp $(GEN_OBJ) $(TRK_OBJ) $(OFF_OBJ)
+$(BIN)/%: $(UTL_DIR)/%.cpp $(GEN_OBJ) $(KPX_OBJ) $(OFF_OBJ)
 	$(CC) $(CFLAGS) $(LFLAGS) $(DEF) $(OBJ)/* -o $@ $<
 
 # Compile gui

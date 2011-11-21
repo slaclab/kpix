@@ -32,7 +32,7 @@ KpixChannel::KpixChannel ( uint index, Device *parent ) :
    addVariable(new Variable("TrigMode", Variable::Configuration));
    variables_["TrigMode"]->setDescription("Channel threshold & calibration mode");
    vector<string> modes;
-   modes.resize(2);
+   modes.resize(4);
    modes[0] = "ThreshB";
    modes[1] = "Disable";
    modes[2] = "CalibThreshA";

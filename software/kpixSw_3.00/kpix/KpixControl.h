@@ -41,7 +41,7 @@ class KpixControl : public System {
       virtual string command ( string name, string arg );
 
       //! Method to return state string
-      string getState ( string topState );
+      string getState ( );
 
       //! Method to perform soft reset
       void softReset ( );
