@@ -119,23 +119,23 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, uint versio
 
    addVariable(new Variable("TimeResetOn",Variable::Configuration));
    variables_["TimeResetOn"]->setDescription("Reset assertion delay from run start");
-   variables_["TimeResetOn"]->setComp(1,KpixAcqPeriod,0,"nS");
+   variables_["TimeResetOn"]->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
 
    addVariable(new Variable("TimeResetOff",Variable::Configuration));
    variables_["TimeResetOff"]->setDescription("Reset de-assertion delay from run start");
-   variables_["TimeResetOff"]->setComp(1,KpixAcqPeriod,0,"nS");
+   variables_["TimeResetOff"]->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
 
    addVariable(new Variable("TimeLeakageNullOff",Variable::Configuration));
    variables_["TimeLeakageNullOff"]->setDescription("LeakageNull signal turn off delay from run start");
-   variables_["TimeLeakageNullOff"]->setComp(1,KpixAcqPeriod,0,"nS");
+   variables_["TimeLeakageNullOff"]->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
 
    addVariable(new Variable("TimeOffsetNullOff",Variable::Configuration));
    variables_["TimeOffsetNullOff"]->setDescription("OffsetNull signal turn off delay from run start");
-   variables_["TimeOffsetNullOff"]->setComp(1,KpixAcqPeriod,0,"nS");
+   variables_["TimeOffsetNullOff"]->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
 
    addVariable(new Variable("TimeThreshOff",Variable::Configuration));
    variables_["TimeThreshOff"]->setDescription("Threshold signal turn off delay from run start");
-   variables_["TimeThreshOff"]->setComp(1,KpixAcqPeriod,0,"nS");
+   variables_["TimeThreshOff"]->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
 
    addVariable(new Variable("TrigInhibitOff",Variable::Configuration));
    variables_["TrigInhibitOff"]->setDescription("Trigger inhibit turn off bunch crossing");
@@ -143,19 +143,19 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, uint versio
 
    addVariable(new Variable("TimePowerUpOn",Variable::Configuration));
    variables_["TimePowerUpOn"]->setDescription("Power up delay from run start");
-   variables_["TimePowerUpOn"]->setComp(0,KpixAcqPeriod,0,"nS");
+   variables_["TimePowerUpOn"]->setComp(0,KpixAcqPeriod,0,"nS (@50nS)");
 
    addVariable(new Variable("TimeDeselDelay",Variable::Configuration));
    variables_["TimeDeselDelay"]->setDescription("Deselect sequence delay from run start");
-   variables_["TimeDeselDelay"]->setComp(0,KpixAcqPeriod,0,"nS");
+   variables_["TimeDeselDelay"]->setComp(0,KpixAcqPeriod,0,"nS (@50nS)");
 
    addVariable(new Variable("TimeBunchClkDelay",Variable::Configuration));
    variables_["TimeBunchClkDelay"]->setDescription("Bunch clock start delay from from run start");
-   variables_["TimeBunchClkDelay"]->setComp(0,KpixAcqPeriod,0,"nS");
+   variables_["TimeBunchClkDelay"]->setComp(0,KpixAcqPeriod,0,"nS (@50nS)");
 
    addVariable(new Variable("TimeDigitizeDelay",Variable::Configuration));
    variables_["TimeDigitizeDelay"]->setDescription("Digitization delay after power down");
-   variables_["TimeDigitizeDelay"]->setComp(0,KpixAcqPeriod,0,"nS");
+   variables_["TimeDigitizeDelay"]->setComp(0,KpixAcqPeriod,0,"nS (@50nS)");
 
    addVariable(new Variable("BunchClockCount",Variable::Configuration));
    variables_["BunchCLockCount"]->setDescription("Bunch cock count");

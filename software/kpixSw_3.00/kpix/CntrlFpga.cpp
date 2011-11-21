@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------------
 // File          : CntrlFpga.cpp
 // Author        : Ryan Herbst  <rherbst@slac.stanford.edu>
-// Created       : 04/12/2011
-// Project       : Heavy Photon Tracker
+// Created       : 11/20/2011
+// Project       : Kpix ASIC
 //-----------------------------------------------------------------------------
 // Description :
 // Control FPGA container
@@ -11,11 +11,10 @@
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
-// 04/12/2011: created
+// 11/20/2011: created
 //-----------------------------------------------------------------------------
 #include <CntrlFpga.h>
-#include <Hybrid.h>
-#include <Ad9252.h>
+#include <KpixAsic.h>
 #include <Register.h>
 #include <Variable.h>
 #include <Command.h>
@@ -26,162 +25,189 @@
 using namespace std;
 
 // Constructor
-CntrlFpga::CntrlFpga ( uint destination, uint index ) : 
-                     Device(destination,0,"cntrlFpga",index) {
+CntrlFpga::CntrlFpga ( uint destination, uint index, uint kpixCnt, uint version, Device *parent ) : 
+                     Device(destination,0,"cntrlFpga",index,parent) {
 
    // Description
    desc_ = "Control FPGA Object.";
 
-   // Create Registers: name, address
-   addRegister(new Register("Version",         0x01000000));
-   addRegister(new Register("MasterReset",     0x01000001));
-   addRegister(new Register("ScratchPad",      0x01000002));
-   addRegister(new Register("AdcChanEn",       0x01000003));
-   addRegister(new Register("Apv25Reset",      0x01000004));
-   addRegister(new Register("ApvSyncReset",    0x01000007));
-   addRegister(new Register("ApvSyncStatus",   0x01000008));
-   addRegister(new Register("ApvHardReset",    0x01000009));
-   addRegister(new Register("ApvTrigGenCnt",   0x0100000A));
-   addRegister(new Register("ApvTrigGenPause", 0x0100000B));
-   addRegister(new Register("ApvTrigSrcType",  0x0100000C));
-   addRegister(new Register("ApvSampleThresh", 0x0100000D));
-   addRegister(new Register("ClockSelect",     0x0100000E));
-   addRegister(new Register("ApvMux",          0x0100000F));
-   addRegister(new Register("GetTemp",         0x01000016));
-   addRegister(new Register("CalDelay",        0x01000017));
+   // Setup registers & variables
+   addRegister(new Register("VersionMastReset", 0x00000000));
+   addVariable(new Variable("Version", Variable::Status));
+   variables_["Version"]->setDescription("FPGA version field");
 
-   // Setup variables
-   addVariable(new Variable("FpgaVersion", Variable::Status));
-   variables_["FpgaVersion"]->setDescription("FPGA version field");
+   addRegister(new Register("JumperKpixReset", 0x00000001));
+   addVariable(new Variable("Jumpers", Variable::Status));
+   variables_["Jumpers"]->setDescription("FPGA jumpers field");
 
-   addVariable(new Variable("ScratchPad", Variable::Configuration));
-   variables_["ScratchPad"]->setDescription("Scratchpad for testing");
+   addRegister(new Register("Scratchpad", 0x00000002));
+   addVariable(new Variable("Scratchpad", Variable::Configuration));
+   variables_["Scratchpad"]->setDescription("FPGA scratchpad register");
 
-   addVariable(new Variable("Adc0Enable", Variable::Configuration));
-   variables_["Adc0Enable"]->setDescription("Enable ADC channel 0");
-   variables_["Adc0Enable"]->setTrueFalse();
+   // Clock select register
+   addRegister(new Register("ClockSelect", 0x00000003));
 
-   addVariable(new Variable("Adc1Enable", Variable::Configuration));
-   variables_["Adc1Enable"]->setDescription("Enable ADC channel 1");
-   variables_["Adc1Enable"]->setTrueFalse();
+   addVariable(new Variable("ClkPeriodAcq", Variable::Configuration));
+   variables_["ClkPeriodAcq"]->setDescription("Acquisition clock period");
 
-   addVariable(new Variable("Adc2Enable", Variable::Configuration));
-   variables_["Adc2Enable"]->setDescription("Enable ADC channel 2");
-   variables_["Adc2Enable"]->setTrueFalse();
+   addVariable(new Variable("ClkPeriodIdle", Variable::Configuration));
+   variables_["ClkPeriodIdle"]->setDescription("Idle clock period");
 
-   addVariable(new Variable("Adc3Enable", Variable::Configuration));
-   variables_["Adc3Enable"]->setDescription("Enable ADC channel 3");
-   variables_["Adc3Enable"]->setTrueFalse();
+   addVariable(new Variable("ClkPeriodDig", Variable::Configuration));
+   variables_["ClkPeriodDig"]->setDescription("Digitization clock period");
 
-   addVariable(new Variable("Adc4Enable", Variable::Configuration));
-   variables_["Adc4Enable"]->setDescription("Enable ADC channel 4");
-   variables_["Adc4Enable"]->setTrueFalse();
+   addVariable(new Variable("ClkPeriodRead", Variable::Configuration));
+   variables_["ClkPeriodRead"]->setDescription("Readout clock period");
 
-   addVariable(new Variable("Adc5Enable", Variable::Configuration));
-   variables_["Adc5Enable"]->setDescription("Enable ADC channel 5");
-   variables_["Adc5Enable"]->setTrueFalse();
+   // Checksum error register
+   addRegister(new Register("ChecksumError", 0x00000004));
 
-   addVariable(new Variable("Adc6Enable", Variable::Configuration));
-   variables_["Adc6Enable"]->setDescription("Enable ADC channel 6");
-   variables_["Adc6Enable"]->setTrueFalse();
+   addVariable(new Variable("ChecksumError", Variable::Status));
+   variables_["ChecksumError"]->setDescription("Readout clock period");
 
-   addVariable(new Variable("Adc7Enable", Variable::Configuration));
-   variables_["Adc7Enable"]->setDescription("Enable ADC channel 7");
-   variables_["Adc7Enable"]->setTrueFalse();
+   // Readback control
+   addRegister(new Register("ReadControl", 0x00000005));
+   addVariable(new Variable("KpixReadDelay", Variable::Configuration));
+   variables_["KpixReadDelay"]->setDescription("Kpix return data sample delay");
 
-   addVariable(new Variable("ApvSyncError", Variable::Status));
-   variables_["ApvSyncError"]->setDescription("APV sync error status. 8-bit mask.\n"
-                                              "One bit per channe. 0=APV0, 1=APV1...");
+   addVariable(new Variable("KpixReadEdge", Variable::Configuration));
+   variables_["KpixReadEdge"]->setDescription("Kpix return data sample edge");
 
-   addVariable(new Variable("ApvSyncDetect", Variable::Status));
-   variables_["ApvSyncDetect"]->setDescription("APV sync detect status. 8-bit mask.\n"
-                                               "One bit per channe. 0=APV0, 1=APV1...");
+   // KPIX control register
+   addRegister(new Register("KPIXControl", 0x00000008));
 
-   addVariable(new Variable("ApvTrigType", Variable::Configuration));
-   variables_["ApvTrigType"]->setDescription("Set APV trigger type. Double or single.");
-   vector<string> trigTypes;
-   trigTypes.resize(5);
-   trigTypes[0] = "Test";
-   trigTypes[1] = "SingleTrig";
-   trigTypes[2] = "DoubleTrig";
-   trigTypes[3] = "SingleCalib";
-   trigTypes[4] = "DoubleCalib";
-   variables_["ApvTrigType"]->setEnums(trigTypes);
+   addVariable(new Variable("BncSourceA", Variable::Configuration));
+   variables_["BncSourceA"]->setDescription("BNC output A source select");
+   vector<string> bncSource;
+   bncSource.resize(28);
+   bncSource[0]  = "RegClock";
+   bncSource[1]  = "RegSel1";
+   bncSource[2]  = "RegSel0";
+   bncSource[3]  = "PwrUpAcq";
+   bncSource[4]  = "ResetLoad";
+   bncSource[5]  = "LeakageNull";
+   bncSource[6]  = "OffsetNull";
+   bncSource[7]  = "ThreashOff";
+   bncSource[8]  = "TrigInh";
+   bncSource[9]  = "CalStrobe";
+   bncSource[10] = "PwrUpAcqDig";
+   bncSource[11] = "SelCell";
+   bncSource[12] = "DeselAllCells";
+   bncSource[13] = "RampPeriod";
+   bncSource[14] = "PrechargeBus";
+   bncSource[15] = "RegData";
+   bncSource[16] = "RegWrEn";
+   bncSource[17] = "KpixClk";
+   bncSource[18] = "ForceTrig";
+   bncSource[19] = "TrigEnable";
+   bncSource[20] = "CalStrobeDelay";
+   bncSource[21] = "NimA";
+   bncSource[22] = "NimB";
+   bncSource[23] = "BncA";
+   bncSource[24] = "BncB";
+   bncSource[25] = "BcPhase";
+   bncSource[26] = "TrainNumRst";
+   bncSource[27] = "TrainNumClk";
+   variables_["BncSourceA"]->setEnums(bncSource);
 
-   addVariable(new Variable("ApvTrigSource", Variable::Configuration));
-   variables_["ApvTrigSource"]->setDescription("Set trigger source.");
-   vector<string> trigSources;
-   trigSources.resize(4);
-   trigSources[0] = "None";
-   trigSources[1] = "Internal";
-   trigSources[2] = "Software";
-   trigSources[3] = "External";
-   variables_["ApvTrigSource"]->setEnums(trigSources);
+   addVariable(new Variable("BncSourceB", Variable::Configuration));
+   variables_["BncSourceB"]->setDescription("BNC output B source select");
+   variables_["BncSourceB"]->setEnums(bncSource);
 
-   addVariable(new Variable("ApvTrigGenCnt", Variable::Configuration));
-   variables_["ApvTrigGenCnt"]->setDescription("Set internal trigger generation count.");
+   addVariable(new Variable("DropData", Variable::Configuration));
+   variables_["DropData"]->setDescription("Drop all KPIX data");
 
-   addVariable(new Variable("ApvTrigGenPause", Variable::Configuration));
-   variables_["ApvTrigGenPause"]->setDescription("Set internal trigger generation period.");
-   variables_["ApvTrigGenPause"]->setComp(0,0.025,0,"uS");
+   addVariable(new Variable("RawData", Variable::Configuration));
+   variables_["RawData"]->setDescription("Send raw KPIX data");
 
-   addVariable(new Variable("ApvThreshold", Variable::Configuration));
-   variables_["ApvThreshold"]->setDescription("Set APV threshold in ADUs for event detection.");
+   // Parity error register
+   addRegister(new Register("ParityError", 0x00000009));
 
-   addVariable(new Variable("ApvSampleSize", Variable::Configuration));
-   variables_["ApvSampleSize"]->setDescription("Set sample size for APV25");
-   vector<string> sampSize;
-   sampSize.resize(4);
-   sampSize[0] = "Samp1";
-   sampSize[1] = "Samp2";
-   sampSize[2] = "Samp3";
-   sampSize[3] = "Samp6";
-   variables_["ApvSampleSize"]->setEnums(sampSize);
+   addVariable(new Variable("ParityError", Variable::Configuration));
+   variables_["ParityError"]->setDescription("Parity error");
 
-   addVariable(new Variable("ClockSelect", Variable::Configuration));
-   variables_["ClockSelect"]->setDescription("Selects between internally and externally generated APV and ADC Clk.");
-   vector<string> clkSel;
-   clkSel.resize(2);
-   clkSel[0] = "Internal";
-   clkSel[1] = "External";
-   variables_["ClockSelect"]->setEnums(clkSel);
+   // Trigger control register
+   addRegister(new Register("TriggerControl", 0x0000000B));
 
-   addVariable(new Variable("ApvMux", Variable::Configuration));
-   variables_["ApvMux"]->setDescription("Enables Apv data demuxing.");
-   variables_["ApvMux"]->setTrueFalse();
+   addVariable(new Variable("TrigEnable", Variable::Configuration));
+   variables_["TrigEnable"]->setDescription("External trigger enable");
 
-   addVariable(new Variable("GetTemp", Variable::Configuration));
-   variables_["GetTemp"]->setDescription("Enables getting temperature.");
-   variables_["GetTemp"]->setTrueFalse();
+   addVariable(new Variable("TrigExpand", Variable::Configuration));
+   variables_["TrigExpand"]->setDescription("Expand external trigger");
 
    addVariable(new Variable("CalDelay", Variable::Configuration));
-   variables_["CalDelay"]->setDescription("Cal to trig delay.");
-   variables_["CalDelay"]->setComp(0,25,0,"nS");
+   variables_["CalDelay"]->setDescription("Calibration delay for trigger source");
+
+   addVariable(new Variable("TrigSource", Variable::Configuration));
+   variables_["TrigSource"]->setDescription("External trigger source");
+   vector<string> trgSource;
+   trgSource.resize(28);
+   trgSource[0]  = "None";
+   trgSource[1]  = "CalStrobe";
+   trgSource[2]  = "NimA";
+   trgSource[3]  = "NimB";
+   trgSource[4]  = "BncA";
+   trgSource[5]  = "BncB";
+   trgSource[6]  = "MaskNimA";
+   trgSource[7]  = "MaskNimB";
+   trgSource[8]  = "MaskBncA";
+   trgSource[9]  = "MaskBncB";
+   trgSource[10] = "CalStrobeDelay";
+   variables_["TrigSource"]->setEnums(trgSource);
+
+   // Train number register
+   addRegister(new Register("TrainNumber", 0x0000000C));
+
+   addVariable(new Variable("TrainNumber", Variable::Status));
+   variables_["TrainNumber"]->setDescription("Train number register");
+
+   // Dead count register
+   addRegister(new Register("DeadCounter", 0x0000000D));
+
+   addVariable(new Variable("DeadCounter", Variable::Status));
+   variables_["DeadCounter"]->setDescription("Dead coutner register");
+
+   // External run register
+   addRegister(new Register("ExternalRun", 0x0000000E));
+
+   addVariable(new Variable("ExtRunSource", Variable::Configuration));
+   variables_["ExtRunSource"]->setDescription("External run source");
+
+   addVariable(new Variable("ExtRunDelay", Variable::Configuration));
+   variables_["ExtRunDelay"]->setDescription("External run delay");
+
+   addVariable(new Variable("ExtRunType", Variable::Configuration));
+   variables_["ExtRunType"]->setDescription("External run type");
+
+   addVariable(new Variable("ExtRecord", Variable::Configuration));
+   variables_["ExtRecord"]->setDescription("External record");
+
+   // Create Registers: name, address
+   addRegister(new Register("RunEnable", 0x0000000F));
+
+   addVariable(new Variable("RunEnable", Variable::Configuration));
+   variables_["RunEnable"]->setDescription("RunEnable");
 
    // Commands
-   addCommand(new Command("ApvSWTrig",0x1));
-   commands_["ApvSWTrig"]->setDescription("Generate APV software trigger + calibration.");
+   addCommand(new Command("RunAcquire",0x1));
+   commands_["RunAcquire"]->setDescription("Run acquire command");
 
-   addCommand(new Command("ApvINTrig",0x2));
-   commands_["ApvINTrig"]->setDescription("Start internal trigger + calibration sequence.");
+   addCommand(new Command("RunCalibrate",0x2));
+   commands_["RunCalibrate"]->setDescription("Run calibrate command");
+
+   addCommand(new Command("SoftKpixReset",0x3));
+   commands_["SoftKpixReset"]->setDescription("Soft KPIX reset command");
 
    addCommand(new Command("MasterReset"));
-   commands_["MasterReset"]->setDescription("Send master FPGA reset.\n"
-                                            "Wait a few moments following reset generation before\n"
-                                            "issuing addition commands or configuration read/writes");
+   commands_["MasterReset"]->setDescription("Master FPGA reset");
 
-   addCommand(new Command("Apv25Reset"));
-   commands_["Apv25Reset"]->setDescription("Send APV25 RESET101.");
-
-   addCommand(new Command("Apv25HardReset"));
-   commands_["Apv25HardReset"]->setDescription("Assert reset line to APV25s.");
+   addCommand(new Command("HardKpixReset"));
+   commands_["HardKpixReset"]->setDescription("Hard KPIX reset command");
 
    // Add sub-devices
-   addDevice(new Hybrid(destination,0x01100000, 0));
-   //addDevice(new Hybrid(destination,0x01101000, 1));
-   //addDevice(new Hybrid(destination,0x01102000, 2));
-   addDevice(new Ad9252(destination,0x01104000, 0));
-   //addDevice(new Ad9252(destination,0x01105000, 1));
+   for (uint i=0; i < kpixCnt; i++) 
+      addDevice(new KpixAsic(destination,((i << 8)& 0xFF00),i,version,(i==(kpixCnt-1)),this));
+
 }
 
 // Deconstructor
@@ -195,18 +221,13 @@ string CntrlFpga::command ( string name, string arg) {
 
    // Command is local
    if ( name == "MasterReset" ) {
-      registers_["MasterReset"]->set(0x1);
-      writeRegister(registers_["MasterReset"],true,false);
+      registers_["VersionMastReset"]->set(0x1);
+      writeRegister(registers_["VersionMastReset"],true,false);
       return(tmp.str());
    }
-   else if ( name == "Apv25Reset" ) {
-      registers_["Apv25Reset"]->set(0x1);
-      writeRegister(registers_["Apv25Reset"],true);
-      return(tmp.str());
-   }
-   else if ( name == "Apv25HardReset" ) {
-      registers_["ApvHardReset"]->set(0x1);
-      writeRegister(registers_["ApvHardReset"],true);
+   else if ( name == "HardKpixReset" ) {
+      registers_["JumperKpixReset"]->set(0x1);
+      writeRegister(registers_["JumperKpixReset"],true,true);
       return(tmp.str());
    }
    else return(Device::command(name, arg));
@@ -218,13 +239,20 @@ void CntrlFpga::readStatus ( bool subEnable ) {
    // Device is not enabled
    if ( getInt("enabled") == 0 ) return;
 
-   // Read status
-   readRegister(registers_["Version"]);
-   variables_["FpgaVersion"]->setInt(registers_["Version"]->get());
+   readRegister(registers_["VersionMastReset"]);
+   variables_["Version"]->setInt(registers_["VersionMastReset"]->get());
 
-   readRegister(registers_["ApvSyncStatus"]);
-   variables_["ApvSyncError"]->setInt(registers_["ApvSyncStatus"]->get(8,0xFF));
-   variables_["ApvSyncDetect"]->setInt(registers_["ApvSyncStatus"]->get(0,0xFF));
+   readRegister(registers_["JumperKpixReset"]);
+   variables_["Jumpers"]->setInt(registers_["JumperKpixReset"]->get());
+
+   readRegister(registers_["TrainNumber"]);
+   variables_["TrainNumber"]->setInt(registers_["TrainNumber"]->get());
+
+   readRegister(registers_["DeadCounter"]);
+   variables_["DeadCounter"]->setInt(registers_["DeadCounter"]->get());
+
+   readRegister(registers_["ChecksumError"]);
+   variables_["ChecksumError"]->setInt(registers_["ChecksumError"]->get());
 
    // Sub devices
    Device::readStatus(subEnable);
@@ -236,49 +264,58 @@ void CntrlFpga::readConfig ( bool subEnable ) {
    // Device is not enabled
    if ( getInt("enabled") == 0 ) return;
 
-   // Read config
+   // Scratchpad
    readRegister(registers_["ScratchPad"]);
    variables_["ScratchPad"]->setInt(registers_["ScratchPad"]->get());
 
-   readRegister(registers_["AdcChanEn"]);
-   variables_["Adc0Enable"]->setInt(registers_["AdcChanEn"]->get(0,0x1));
-   variables_["Adc1Enable"]->setInt(registers_["AdcChanEn"]->get(1,0x1));
-   variables_["Adc2Enable"]->setInt(registers_["AdcChanEn"]->get(2,0x1));
-   variables_["Adc3Enable"]->setInt(registers_["AdcChanEn"]->get(3,0x1));
-   variables_["Adc4Enable"]->setInt(registers_["AdcChanEn"]->get(4,0x1));
-   variables_["Adc5Enable"]->setInt(registers_["AdcChanEn"]->get(5,0x1));
-   variables_["Adc6Enable"]->setInt(registers_["AdcChanEn"]->get(6,0x1));
-   variables_["Adc7Enable"]->setInt(registers_["AdcChanEn"]->get(7,0x1));
-
-   readRegister(registers_["ApvTrigSrcType"]);
-   variables_["ApvTrigType"]->setInt(registers_["ApvTrigSrcType"]->get(8,0xFF));
-   variables_["ApvTrigSource"]->setInt(registers_["ApvTrigSrcType"]->get(0,0xFF));
-
-   readRegister(registers_["ApvTrigGenCnt"]);
-   variables_["ApvTrigGenCnt"]->setInt(registers_["ApvTrigGenCnt"]->get(0,0xFFFFFFFF));
-
-   readRegister(registers_["ApvTrigGenPause"]);
-   variables_["ApvTrigGenPause"]->setInt(registers_["ApvTrigGenPause"]->get(0,0xFFFFFFFF));
-
-   readRegister(registers_["ApvSampleThresh"]);
-   variables_["ApvThreshold"]->setInt(registers_["ApvSampleThresh"]->get(0,0xFFFF));
-
-   switch(registers_["ApvSampleThresh"]->get(16,0xFF)) {
-      case 1: variables_["ApvSampleSize"]->setInt(0); break;
-      case 2: variables_["ApvSampleSize"]->setInt(1); break;
-      case 3: variables_["ApvSampleSize"]->setInt(2); break;
-      case 6: variables_["ApvSampleSize"]->setInt(3); break;
-      default: variables_["ApvSampleSize"]->setInt(0); break;
-   }
-
+   // Clock set register
    readRegister(registers_["ClockSelect"]);
-   variables_["ClockSelect"]->setInt(registers_["ClockSelect"]->get(0,0x1));
+   variables_["ClkPeriodAcq"]->setInt(registers_["ClockSelect"]->get(0,0x1F));
+   variables_["ClkPeriodIdle"]->setInt(registers_["ClockSelect"]->get(24,0x1F));
+   variables_["ClkPeriodDig"]->setInt(registers_["ClockSelect"]->get(8,0x1F));
+   variables_["ClkPeriodRead"]->setInt(registers_["ClockSelect"]->get(16,0x1F));
 
-   readRegister(registers_["ApvMux"]);
-   variables_["ApvMux"]->setInt(registers_["ApvMux"]->get(0,0x1));
+   // Readback control
+   readRegister(registers_["ReadControl"]);
+   variables_["KpixReadDelay"]->setInt(registers_["ReadControl"]->get(0,0xFF));
+   variables_["KpixReadEdge"]->setInt(registers_["ReadControl"]->get(8,0xFF));
 
-   readRegister(registers_["CalDelay"]);
-   variables_["CalDelay"]->setInt(registers_["CalDelay"]->get(0,0xFFFF));
+   // KPIX control register
+   readRegister(registers_["KPIXControl"]);
+   variables_["BncSourceA"]->setInt(registers_["KPIXControl"]->get(16,0x1F));
+   variables_["BncSourceB"]->setInt(registers_["KPIXControl"]->get(21,0x1F));
+   variables_["DropData"]->setInt(registers_["KPIXControl"]->get(4,0x1));
+   variables_["RawData"]->setInt(registers_["KPIXControl"]->get(5,0x1));
+
+   // Parity error register
+   readRegister(registers_["ParityError"]);
+   variables_["ParityError"]->setInt(registers_["ParityError"]->get());
+
+   // Trigger control register
+   readRegister(registers_["TriggerControl"]);
+   variables_["TrigEnable"]->setInt(registers_["TriggerControl"]->get(0,0xFF));
+   variables_["TrigExpand"]->setInt(registers_["TriggerControl"]->get(8,0xFF));
+   variables_["CalDelay"]->setInt(registers_["TriggerControl"]->get(16,0xFF));
+   variables_["TrigSource"]->setInt(registers_["TriggerControl"]->get(24,0x1));
+
+   // Train number register
+   readRegister(registers_["TrainNumber"]);
+   variables_["TrainNumber"]->setInt(registers_["TrainNumber"]->get());
+
+   // Dead count register
+   readRegister(registers_["DeadCounter"]);
+   variables_["DeadCounter"]->setInt(registers_["DeadCounter"]->get());
+
+   // External run register
+   readRegister(registers_["ExternalRun"]);
+   variables_["ExtRunSource"]->setInt(registers_["ExternalRun"]->get(16,0x7));
+   variables_["ExtRunDelay"]->setInt(registers_["ExternalRun"]->get(0,0xFFFF));
+   variables_["ExtRunType"]->setInt(registers_["ExternalRun"]->get(19,0x1));
+   variables_["ExtRecord"]->setInt(registers_["ExternalRun"]->get(20,0x1));
+
+   // Create Registers: name, address
+   readRegister(registers_["RunEnable"]);
+   variables_["RunEnable"]->setInt(registers_["RuEnable"]->get());
 
    // Sub devices
    Device::readConfig(subEnable);
@@ -290,51 +327,58 @@ void CntrlFpga::writeConfig ( bool force, bool subEnable ) {
    // Device is not enabled
    if ( getInt("enabled") == 0 ) return;
 
-   // Write config
+   // Scratchpad
    registers_["ScratchPad"]->set(variables_["ScratchPad"]->getInt());
    writeRegister(registers_["ScratchPad"],force);
 
-   registers_["ClockSelect"]->set(variables_["ClockSelect"]->getInt(),0,0x1);
+   // Clock set register
+   registers_["ClockSelect"]->set(variables_["ClkPeriodAcq"]->getInt(),0,0x1F);
+   registers_["ClockSelect"]->set(variables_["ClkPeriodIdle"]->getInt(),24,0x1F);
+   registers_["ClockSelect"]->set(variables_["ClkPeriodDig"]->getInt(),8,0x1F);
+   registers_["ClockSelect"]->set(variables_["ClkPeriodRead"]->getInt(),16,0x1F);
    writeRegister(registers_["ClockSelect"],force);
 
-   registers_["ApvMux"]->set(variables_["ApvMux"]->getInt(),0,0x1);
-   writeRegister(registers_["ApvMux"],force);
+   // Readback control
+   registers_["ReadControl"]->set(variables_["KpixReadDelay"]->getInt(),0,0xFF);
+   registers_["ReadControl"]->set(variables_["KpixReadEdge"]->getInt(),8,0xFF);
+   writeRegister(registers_["ReadControl"],force);
 
-   registers_["AdcChanEn"]->set(variables_["Adc0Enable"]->getInt(),0,0x1);
-   registers_["AdcChanEn"]->set(variables_["Adc1Enable"]->getInt(),1,0x1);
-   registers_["AdcChanEn"]->set(variables_["Adc2Enable"]->getInt(),2,0x1);
-   registers_["AdcChanEn"]->set(variables_["Adc3Enable"]->getInt(),3,0x1);
-   registers_["AdcChanEn"]->set(variables_["Adc4Enable"]->getInt(),4,0x1);
-   registers_["AdcChanEn"]->set(variables_["Adc5Enable"]->getInt(),5,0x1);
-   registers_["AdcChanEn"]->set(variables_["Adc6Enable"]->getInt(),6,0x1);
-   registers_["AdcChanEn"]->set(variables_["Adc7Enable"]->getInt(),7,0x1);
-   writeRegister(registers_["AdcChanEn"],force);
+   // KPIX control register
+   registers_["KPIXControl"]->set(variables_["BncSourceA"]->getInt(),16,0x1F);
+   registers_["KPIXControl"]->set(variables_["BncSourceB"]->getInt(),21,0x1F);
+   registers_["KPIXControl"]->set(variables_["DropData"]->getInt(),4,0x1);
+   registers_["KPIXControl"]->set(variables_["RawData"]->getInt(),5,0x1);
+   writeRegister(registers_["KPIXControl"],force);
 
-   registers_["ApvTrigGenCnt"]->set(variables_["ApvTrigGenCnt"]->getInt(),0,0xFFFFFFFF);
-   writeRegister(registers_["ApvTrigGenCnt"],force);
+   // Parity error register
+   registers_["ParityError"]->set(variables_["ParityError"]->getInt());
+   writeRegister(registers_["ParityError"],force);
 
-   registers_["ApvTrigGenPause"]->set(variables_["ApvTrigGenPause"]->getInt(),0,0xFFFFFFFF);
-   writeRegister(registers_["ApvTrigGenPause"],force);
+   // Trigger control register
+   registers_["TriggerControl"]->set(variables_["TrigEnable"]->getInt(),0,0xFF);
+   registers_["TriggerControl"]->set(variables_["TrigExpand"]->getInt(),8,0xFF);
+   registers_["TriggerControl"]->set(variables_["CalDelay"]->getInt(),16,0xFF);
+   registers_["TriggerControl"]->set(variables_["TrigSource"]->getInt(),24,0x1);
+   writeRegister(registers_["TriggerControl"],force);
 
-   registers_["ApvTrigSrcType"]->set(variables_["ApvTrigType"]->getInt(),8,0xFF);
-   registers_["ApvTrigSrcType"]->set(variables_["ApvTrigSource"]->getInt(),0,0xFF);
-   writeRegister(registers_["ApvTrigSrcType"],force);
+   // Train number register
+   registers_["TrainNumber"]->set(variables_["TrainNumber"]->getInt());
+   writeRegister(registers_["TrainNumber"],force);
 
-   switch (variables_["ApvSampleSize"]->getInt() ) {
-      case 0: registers_["ApvSampleThresh"]->set(1,16,0xFF); break;
-      case 1: registers_["ApvSampleThresh"]->set(2,16,0xFF); break;
-      case 2: registers_["ApvSampleThresh"]->set(3,16,0xFF); break;
-      case 3: registers_["ApvSampleThresh"]->set(6,16,0xFF); break;
-      default: registers_["ApvSampleThresh"]->set(1,16,0xFF); break;
-   }
-   registers_["ApvSampleThresh"]->set(variables_["ApvThreshold"]->getInt(),0,0xFFFF);
-   writeRegister(registers_["ApvSampleThresh"],force);
+   // Dead count register
+   registers_["DeadCounter"]->set(variables_["DeadCounter"]->getInt());
+   writeRegister(registers_["DeadCounter"],force);
 
-   registers_["GetTemp"]->set(variables_["GetTemp"]->getInt(),0,0x1);
-   writeRegister(registers_["GetTemp"],force);
+   // External run register
+   registers_["ExternalRun"]->set(variables_["ExtRunSource"]->getInt(),16,0x7);
+   registers_["ExternalRun"]->set(variables_["ExtRunDelay"]->getInt(),0,0xFFFF);
+   registers_["ExternalRun"]->set(variables_["ExtRunType"]->getInt(),19,0x1);
+   registers_["ExternalRun"]->set(variables_["ExtRecord"]->getInt(),20,0x1);
+   writeRegister(registers_["ExternalRun"],force);
 
-   registers_["CalDelay"]->set(variables_["CalDelay"]->getInt(),0,0xFFFF);
-   writeRegister(registers_["CalDelay"],force);
+   // Create Registers: name, address
+   registers_["RunEnable"]->set(variables_["RunEnable"]->getInt());
+   writeRegister(registers_["RunEnable"],force);
 
    // Sub devices
    Device::writeConfig(force,subEnable);
@@ -349,14 +393,15 @@ string CntrlFpga::verifyConfig ( bool subEnable, string input ) {
    if ( getInt("enabled") == 0 ) return("");
 
    ret << verifyRegister(registers_["ScratchPad"]);
-   ret << verifyRegister(registers_["AdcChanEn"]);
-   ret << verifyRegister(registers_["ApvMux"]);
-   ret << verifyRegister(registers_["ApvMux"]);
-   ret << verifyRegister(registers_["ApvTrigSrcType"]);
-   ret << verifyRegister(registers_["ApvTrigGenCnt"]);
-   ret << verifyRegister(registers_["ApvTrigGenPause"]);
-   ret << verifyRegister(registers_["ApvSampleThresh"]);
-   ret << verifyRegister(registers_["CalDelay"]);
+   ret << verifyRegister(registers_["ClockSelect"]);
+   ret << verifyRegister(registers_["ReadControl"]);
+   ret << verifyRegister(registers_["KPIXControl"]);
+   ret << verifyRegister(registers_["ParityError"]);
+   ret << verifyRegister(registers_["TriggerControl"]);
+   ret << verifyRegister(registers_["TrainNumber"]);
+   ret << verifyRegister(registers_["DeadCounter"]);
+   ret << verifyRegister(registers_["ExternalRun"]);
+   ret << verifyRegister(registers_["RunEnable"]);
 
    ret << input;
    return(Device::verifyConfig(subEnable,ret.str()));

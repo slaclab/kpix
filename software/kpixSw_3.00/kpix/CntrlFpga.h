@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------------
 // File          : CntrlFpga.h
 // Author        : Ryan Herbst  <rherbst@slac.stanford.edu>
-// Created       : 04/12/2011
-// Project       : Heavy Photon Tracker
+// Created       : 11/20/2011
+// Project       : Kpix ASIC
 //-----------------------------------------------------------------------------
 // Description :
 // Control FPGA container
@@ -11,7 +11,7 @@
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
-// 04/12/2011: created
+// 11/20/2011: created
 //-----------------------------------------------------------------------------
 #ifndef __CNTRL_FPGA_H__
 #define __CNTRL_FPGA_H__
@@ -28,8 +28,11 @@ class CntrlFpga : public Device {
       /*! 
        * \param destination Device destination
        * \param index       Device index
+       * \param kpixCount   Number of KPIXs supported in setup
+       * \param version     Kpix Version
+       * \param parent      Parent Device
       */
-      CntrlFpga ( uint destination, uint index );
+      CntrlFpga ( uint destination, uint index, uint kpixCnt, uint version, Device *parent );
 
       //! Deconstructor
       ~CntrlFpga ( );

@@ -1,34 +1,34 @@
 //-----------------------------------------------------------------------------
-// File          : Tracker.h
+// File          : KpixControl.h
 // Author        : Ryan Herbst  <rherbst@slac.stanford.edu>
-// Created       : 04/12/2011
-// Project       : Heavy Photon Tracker
+// Created       : 11/20/2011
+// Project       : KPIX Asic
 //-----------------------------------------------------------------------------
 // Description :
-// Tracker Top Device
+// KpixControl Top Device
 //-----------------------------------------------------------------------------
 // Copyright (c) 2011 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
-// 04/12/2011: created
+// 11/20/2011: created
 //-----------------------------------------------------------------------------
-#ifndef __TRACKER_H__
-#define __TRACKER_H__
+#ifndef __KPIX_CONTROL_H__
+#define __KPIX_CONTROL_H__
 
 #include <System.h>
 using namespace std;
 
 //! Class to contain APV25 
-class Tracker : public System {
+class KpixControl : public System {
 
    public:
 
       //! Constructor
-      Tracker ( );
+      KpixControl ( );
 
       //! Deconstructor
-      ~Tracker ( );
+      ~KpixControl ( );
 
       //! Method to process a command
       /*!
