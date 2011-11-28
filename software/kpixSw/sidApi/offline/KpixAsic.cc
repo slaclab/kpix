@@ -556,6 +556,7 @@ void KpixAsic::setTimingV8 ( unsigned int clkPeriod,  unsigned int resetOn,
    // Trigger inhibit mode
    if ( ! trigInhRaw ) trigInhOff = bunchClkDly + (clkPeriod * 8 * trigInhOff) + clkPeriod;
 
+/*
    // Timing ordering checks
    if ( enChecking && ! (
 
@@ -574,6 +575,8 @@ void KpixAsic::setTimingV8 ( unsigned int clkPeriod,  unsigned int resetOn,
       // Declare error
       throw string("KpixAsic::setTiming -> Timing sequence error detected!");
    }
+
+*/
 
    // Check clock period divide
    if ( ((resetOn     % clkPeriod) != 0 ) || ((resetOn     / clkPeriod) > 0xFFFF ) ||
