@@ -1,7 +1,9 @@
 # Variables
 DEF     := -DONLINE_EN
-CFLAGS  := -Wall `root-config --cflags` -I ../sidApi/online -I ../sidApi/offline -m32
-LFLAGS  := -L../bin -lsidapi `root-config --libs` -lMinuit -llockdev -lXMLParser -m32
+#CFLAGS  := -Wall `root-config --cflags` -I ../sidApi/online -I ../sidApi/offline -m32
+CFLAGS  := -Wall `root-config --cflags` -I ../sidApi/online -I ../sidApi/offline
+#LFLAGS  := -L../bin -lsidapi `root-config --libs` -lMinuit -llockdev -lXMLParser -m32
+LFLAGS  := -L../bin -lsidapi `root-config --libs` -lMinuit -llockdev -lXMLParser
 CC      := g++
 OUT     := $(PWD)/../bin
 DEP     := $(PWD)/.dep

@@ -113,9 +113,9 @@ IMAGES	= images/editcopy \
 TARGET  = kpixGui
 DESTDIR = ../bin
 
-QMAKE_CFLAGS   += -m32
-QMAKE_CXXFLAGS += -m32
-QMAKE_LFLAGS   += -m32
+#QMAKE_CFLAGS   += -m32
+#QMAKE_CXXFLAGS += -m32
+#QMAKE_LFLAGS   += -m32
 
 include("$(ROOTSYS)/include/rootcint.pri")
 unix {
