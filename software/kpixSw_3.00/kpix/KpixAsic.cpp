@@ -14,7 +14,6 @@
 // 11/17/2011: created
 //-----------------------------------------------------------------------------
 #include <KpixAsic.h>
-#include <KpixChannel.h>
 #include <Register.h>
 #include <Variable.h>
 #include <Command.h>
@@ -46,7 +45,7 @@ string KpixAsic::dacToVoltString(uint dac) {
 // Channel count
 uint KpixAsic::channels() {
    if ( dummy_ ) return(0);
-   switch(version_) {
+   switch(variables_["Version"]->getInt()) {
       case  9: return(512);  break;
       case 10: return(1024); break;
       default: return(0);    break;
@@ -54,7 +53,7 @@ uint KpixAsic::channels() {
 }
 
 // Constructor
-KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, uint version, bool dummy, Device *parent ) : 
+KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy, Device *parent ) : 
                      Device(destination,baseAddress,"kpixAsic",index,parent) {
    stringstream tmp;
    uint         x;
@@ -62,11 +61,15 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, uint versio
    // Description
    desc_    = "Kpix ASIC Object.";
    dummy_   = dummy;
-   version_ = version;
+
+   // Version value
+   addVariable(new Variable("Version", Variable::Configuration));
+   variables_["Version"]->setDescription("KPIX Version");
 
    // Serial number & variable
    addVariable(new Variable("SerialNumber", Variable::Configuration));
    variables_["SerialNumber"]->setDescription("ASIC serial number");
+   variables_["SerialNumber"]->setPerInstance(true);
 
    // Status register & variables
    addRegister(new Register("Status", baseAddress_ + 0x00000000));
@@ -369,8 +372,21 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, uint versio
    addVariable(new Variable("CntrlTrigDisable", Variable::Configuration));
    variables_["CntrlTrigDisable"]->setDescription("Disable self trigger");
 
-   // Calibration Mask Registers
-   for (x=0; x < (channels()/32); x++) {
+   // Mode registers
+   for (x=0; x < 32; x++) {
+      tmp.str("");
+      tmp << "ColMode_" << setw(2) << setfill('0') << dec << x;
+      addVariable(new Variable(tmp.str(),Variable::Configuration));
+      variables_[tmp.str()]->setDescription("Channel configuration for column.\n"
+                                            "Each charactor represents a row in the column with row 31 being the leftmost value\n"
+                                            "The following charactors are allowed:\n"
+                                            "D = Channel trigger disabled\n"
+                                            "A = Channel trigger threshold A\n"
+                                            "B = Channel trigger threshold B\n"
+                                            "C = Channel trigger threshold A, with calibration enabled");
+      variables_[tmp.str()]->set("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+      variables_[tmp.str()]->setPerInstance(true);
+
       tmp.str("");
       tmp << "ChanModeA_0x" << setw(2) << setfill('0') << hex << x;
       addRegister(new Register(tmp.str(), baseAddress_ + 0x00000040 + x));
@@ -378,16 +394,13 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, uint versio
       tmp << "ChanModeB_0x" << setw(2) << setfill('0') << hex << x;
       addRegister(new Register(tmp.str(), baseAddress_ + 0x00000060 + x));
    }
-
-   // Add channels
-   for (x=0; x < channels(); x++) addDevice(new KpixChannel(x,this));
 }
 
 // Deconstructor
 KpixAsic::~KpixAsic ( ) { }
 
 // Method to read status registers and update variables
-void KpixAsic::readStatus ( bool subEnable ) {
+void KpixAsic::readStatus ( ) {
 
    // Device is not enabled
    if ( getInt("enabled") == 0 ) return;
@@ -400,15 +413,15 @@ void KpixAsic::readStatus ( bool subEnable ) {
    variables_["StatTempEn"]->setInt(registers_["Status"]->get(2,0x1));
    variables_["StatTempIdValue"]->setInt(registers_["Status"]->get(24,0xFF));
 
-   // Sub devices
-   //Device::readStatus(subEnable);
 }
 
 // Method to read configuration registers and update variables
-void KpixAsic::readConfig ( bool subEnable ) {
+void KpixAsic::readConfig ( ) {
    stringstream tmp;
    stringstream regA;
    stringstream regB;
+   stringstream varName;
+   string       varTemp;
    uint val;
    uint col;
    uint row;
@@ -563,27 +576,35 @@ void KpixAsic::readConfig ( bool subEnable ) {
          regB.str("");
          regB << "ChanModeB_0x" << setw(2) << setfill('0') << hex << col;
 
+         varName.str("");
+         varName << "ColMode_" << setw(2) << setfill('0') << dec << col;
+         varTemp = "";
+
+         readRegister(registers_[regB.str()]);
+         readRegister(registers_[regA.str()]);
+
          for (row=0; row < 32; row++) {
-            readRegister(registers_[regB.str()]);
-            readRegister(registers_[regA.str()]);
-
-            val  = (registers_[regB.str()]->get(row,0x1) << 1) & 0x2;
-            val += registers_[regA.str()]->get(row,0x1) & 0x1;
-
-            device("kpixChannel",col*32+row)->setInt("TrigMode",val);
+            switch(registers_[regB.str()]->get(row,0x1),registers_[regA.str()]->get(row,0x1)) {
+               case  0: varTemp.append("B"); break;
+               case  1: varTemp.append("D"); break;
+               case  2: varTemp.append("C"); break;
+               case  3: varTemp.append("A"); break;
+               default: varTemp.append("D"); break;
+            }
          }
+         variables_[varName.str()]->set(varTemp);
       }
    }
-
-   // Sub devices
-   //Device::readConfig(subEnable);
 }
 
 // Method to write configuration registers
-void KpixAsic::writeConfig ( bool force, bool subEnable ) {
+void KpixAsic::writeConfig ( bool force ) {
    stringstream tmp;
    stringstream regA;
    stringstream regB;
+   stringstream varName;
+   string       varOld;
+   string       varNew;
    uint val;
    uint col;
    uint row;
@@ -732,67 +753,88 @@ void KpixAsic::writeConfig ( bool force, bool subEnable ) {
          regB.str("");
          regB << "ChanModeB_0x" << setw(2) << setfill('0') << hex << col;
 
-         // Add channels
+         varName.str("");
+         varName << "ColMode_" << setw(2) << setfill('0') << dec << col;
+         varOld = variables_[varName.str()]->get();
+         varNew = "";
+
          for (row=0; row < 32; row++) {
-            val = device("kpixChannel",col*32+row)->getInt("TrigMode");
-            registers_[regB.str()]->set(((val>>1)&0x1),row,0x1);
-            registers_[regA.str()]->set((val&0x1),row,0x1);
-            writeRegister(registers_[regB.str()],force);
-            writeRegister(registers_[regA.str()],force);
+            if ( varOld.length() < (row+1) ) varOld.append("D");
+            switch(varOld[row]) {
+               case 'B':
+                  registers_[regB.str()]->set(0,row,0x1);
+                  registers_[regA.str()]->set(0,row,0x1);
+                  varNew.append("B");
+                  break;
+               case 'D':
+                  registers_[regB.str()]->set(0,row,0x1);
+                  registers_[regA.str()]->set(1,row,0x1);
+                  varNew.append("D");
+                  break;
+               case 'C':
+                  registers_[regB.str()]->set(1,row,0x1);
+                  registers_[regA.str()]->set(0,row,0x1);
+                  varNew.append("C");
+                  break;
+               case 'A':
+                  registers_[regB.str()]->set(1,row,0x1);
+                  registers_[regA.str()]->set(1,row,0x1);
+                  varNew.append("A");
+                  break;
+               default : 
+                  registers_[regB.str()]->set(0,row,0x1);
+                  registers_[regA.str()]->set(1,row,0x1);
+                  varNew.append("D");
+                  break;
+            }
          }
+         writeRegister(registers_[regB.str()],force);
+         writeRegister(registers_[regA.str()],force);
+         variables_[varName.str()]->set(varNew);
       }
    }
-
-   // Sub devices
-   //Device::writeConfig(force,subEnable);
 }
 
 // Verify hardware state of configuration
-string KpixAsic::verifyConfig ( bool subEnable, string input ) {
+void KpixAsic::verifyConfig ( ) {
    stringstream tmp;
-   stringstream ret;
    uint         x;
-   ret.str("");
 
-   if ( getInt("enabled") == 0 ) return("");
+   if ( getInt("enabled") == 0 ) return;
 
-   ret << verifyRegister(registers_["Config"]);
-   ret << verifyRegister(registers_["TimerA"]);
-   ret << verifyRegister(registers_["TimerB"]);
-   ret << verifyRegister(registers_["TimerC"]);
-   ret << verifyRegister(registers_["TimerD"]);
-   ret << verifyRegister(registers_["TimerE"]);
-   ret << verifyRegister(registers_["TimerF"]);
-   //ret << verifyRegister(registers_["TimerG"]);
-   //ret << verifyRegister(registers_["TimerH"]);
-   ret << verifyRegister(registers_["CalDelay0"]);
-   ret << verifyRegister(registers_["CalDelay1"]);
+   verifyRegister(registers_["Config"]);
+   verifyRegister(registers_["TimerA"]);
+   verifyRegister(registers_["TimerB"]);
+   verifyRegister(registers_["TimerC"]);
+   verifyRegister(registers_["TimerD"]);
+   verifyRegister(registers_["TimerE"]);
+   verifyRegister(registers_["TimerF"]);
+   //verifyRegister(registers_["TimerG"]);
+   //verifyRegister(registers_["TimerH"]);
+   verifyRegister(registers_["CalDelay0"]);
+   verifyRegister(registers_["CalDelay1"]);
 
    if ( !dummy_ ) {
-      ret << verifyRegister(registers_["Dac0"]);
-      ret << verifyRegister(registers_["Dac1"]);
-      ret << verifyRegister(registers_["Dac2"]);
-      ret << verifyRegister(registers_["Dac3"]);
-      ret << verifyRegister(registers_["Dac4"]);
-      ret << verifyRegister(registers_["Dac5"]);
-      ret << verifyRegister(registers_["Dac6"]);
-      ret << verifyRegister(registers_["Dac7"]);
-      ret << verifyRegister(registers_["Dac8"]);
-      ret << verifyRegister(registers_["Dac9"]);
-      ret << verifyRegister(registers_["Control"]);
+      verifyRegister(registers_["Dac0"]);
+      verifyRegister(registers_["Dac1"]);
+      verifyRegister(registers_["Dac2"]);
+      verifyRegister(registers_["Dac3"]);
+      verifyRegister(registers_["Dac4"]);
+      verifyRegister(registers_["Dac5"]);
+      verifyRegister(registers_["Dac6"]);
+      verifyRegister(registers_["Dac7"]);
+      verifyRegister(registers_["Dac8"]);
+      verifyRegister(registers_["Dac9"]);
+      verifyRegister(registers_["Control"]);
 
       for (x=0; x < (channels()/32); x++) {
          tmp.str("");
          tmp << "ChanModeA_0x" << setw(2) << setfill('0') << hex << x;
-         ret << verifyRegister(registers_[tmp.str()]);
+         verifyRegister(registers_[tmp.str()]);
          tmp.str("");
          tmp << "ChanModeB_0x" << setw(2) << setfill('0') << hex << x;
-         ret << verifyRegister(registers_[tmp.str()]);
+         verifyRegister(registers_[tmp.str()]);
       }
    }
-
-   ret << input;
-   //return(Device::verifyConfig(subEnable,ret.str()));
-   return(ret.str());
 }
 

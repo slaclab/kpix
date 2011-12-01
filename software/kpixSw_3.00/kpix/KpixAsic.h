@@ -47,11 +47,10 @@ class KpixAsic : public Device {
        * \param destination Device destination
        * \param baseAddress Device base address
        * \param index       Device index
-       * \param version     KPIX version
        * \param dummy       Kpix is a dummy device
        * \param parent      Parent device
       */
-      KpixAsic ( uint destination, uint baseAddress, uint index, uint version, bool dummy, Device *parent );
+      KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy, Device *parent );
 
       //! Deconstructor
       ~KpixAsic ( );
@@ -59,32 +58,24 @@ class KpixAsic : public Device {
       //! Method to read status registers and update variables
       /*! 
        * Throws string on error.
-       * \param subEnable Read registers in sub devices if true
       */
-      void readStatus ( bool subEnable );
+      void readStatus ( );
 
       //! Method to read configuration registers and update variables
       /*! 
        * Throws string on error.
-       * \param subEnable Read registers in sub devices if true
       */
-      void readConfig ( bool subEnable );
+      void readConfig ( );
 
       //! Method to write configuration registers
       /*! 
        * Throws string on error.
        * \param force Write all registers if true, only stale if false
-       * \param subEnable Write registers in sub devices if true
       */
-      void writeConfig ( bool force, bool subEnable );
+      void writeConfig ( bool force );
 
       //! Verify hardware state of configuration
-      /*!
-       * Returns list of failed registers if any
-       * \param subEnable Write registers in sub devices if true
-       * \param input     Input fail list from child-object
-       */
-      string verifyConfig ( bool subEnable, string input );
+      void verifyConfig ( );
 
 };
 #endif

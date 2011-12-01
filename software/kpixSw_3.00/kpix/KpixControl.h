@@ -38,7 +38,7 @@ class KpixControl : public System {
        * \param name     Command name
        * \param arg      Optional arg
       */
-      virtual string command ( string name, string arg );
+      virtual void command ( string name, string arg );
 
       //! Method to return state string
       string getState ( );

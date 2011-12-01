@@ -25,7 +25,7 @@
 using namespace std;
 
 // Constructor
-CntrlFpga::CntrlFpga ( uint destination, uint index, uint kpixCnt, uint version, Device *parent ) : 
+CntrlFpga::CntrlFpga ( uint destination, uint index, uint kpixCnt, Device *parent ) : 
                      Device(destination,0,"cntrlFpga",index,parent) {
 
    // Description
@@ -40,9 +40,9 @@ CntrlFpga::CntrlFpga ( uint destination, uint index, uint kpixCnt, uint version,
    addVariable(new Variable("Jumpers", Variable::Status));
    variables_["Jumpers"]->setDescription("FPGA jumpers field");
 
-   addRegister(new Register("Scratchpad", 0x00000002));
-   addVariable(new Variable("Scratchpad", Variable::Configuration));
-   variables_["Scratchpad"]->setDescription("FPGA scratchpad register");
+   addRegister(new Register("ScratchPad", 0x00000002));
+   addVariable(new Variable("ScratchPad", Variable::Configuration));
+   variables_["ScratchPad"]->setDescription("FPGA scratchpad register");
 
    // Clock select register
    addRegister(new Register("ClockSelect", 0x00000003));
@@ -207,7 +207,7 @@ CntrlFpga::CntrlFpga ( uint destination, uint index, uint kpixCnt, uint version,
    // Add sub-devices
    for (uint i=0; i < kpixCnt; i++) {
       cout << "adding index " << dec << i << endl;
-      addDevice(new KpixAsic(destination,((i << 8)& 0xFF00),i,version,(i==(kpixCnt-1)),this));
+      addDevice(new KpixAsic(destination,((i << 8)& 0xFF00),i,(i==(kpixCnt-1)),this));
    }
 }
 
@@ -215,27 +215,22 @@ CntrlFpga::CntrlFpga ( uint destination, uint index, uint kpixCnt, uint version,
 CntrlFpga::~CntrlFpga ( ) { }
 
 // Method to process a command
-string CntrlFpga::command ( string name, string arg) {
-   stringstream tmp;
-   tmp.str("");
-   tmp << "<" << name << ">Success</" << name << ">" << endl;
+void CntrlFpga::command ( string name, string arg) {
 
    // Command is local
    if ( name == "MasterReset" ) {
       registers_["VersionMastReset"]->set(0x1);
       writeRegister(registers_["VersionMastReset"],true,false);
-      return(tmp.str());
    }
    else if ( name == "HardKpixReset" ) {
       registers_["JumperKpixReset"]->set(0x1);
       writeRegister(registers_["JumperKpixReset"],true,true);
-      return(tmp.str());
    }
-   else return(Device::command(name, arg));
+   else Device::command(name, arg);
 }
 
 // Method to read status registers and update variables
-void CntrlFpga::readStatus ( bool subEnable ) {
+void CntrlFpga::readStatus ( ) {
 
    // Device is not enabled
    if ( getInt("enabled") == 0 ) return;
@@ -256,11 +251,11 @@ void CntrlFpga::readStatus ( bool subEnable ) {
    variables_["ChecksumError"]->setInt(registers_["ChecksumError"]->get());
 
    // Sub devices
-   Device::readStatus(subEnable);
+   Device::readStatus();
 }
 
 // Method to read configuration registers and update variables
-void CntrlFpga::readConfig ( bool subEnable ) {
+void CntrlFpga::readConfig ( ) {
 
    // Device is not enabled
    if ( getInt("enabled") == 0 ) return;
@@ -316,14 +311,14 @@ void CntrlFpga::readConfig ( bool subEnable ) {
 
    // Create Registers: name, address
    readRegister(registers_["RunEnable"]);
-   variables_["RunEnable"]->setInt(registers_["RuEnable"]->get());
+   variables_["RunEnable"]->setInt(registers_["RunEnable"]->get());
 
    // Sub devices
-   Device::readConfig(subEnable);
+   Device::readConfig();
 }
 
 // Method to write configuration registers
-void CntrlFpga::writeConfig ( bool force, bool subEnable ) {
+void CntrlFpga::writeConfig ( bool force ) {
 
    // Device is not enabled
    if ( getInt("enabled") == 0 ) return;
@@ -382,29 +377,25 @@ void CntrlFpga::writeConfig ( bool force, bool subEnable ) {
    writeRegister(registers_["RunEnable"],force);
 
    // Sub devices
-   Device::writeConfig(force,subEnable);
+   Device::writeConfig(force);
 }
 
 // Verify hardware state of configuration
-string CntrlFpga::verifyConfig ( bool subEnable, string input ) {
+void CntrlFpga::verifyConfig ( ) {
 
-   stringstream ret;
-   ret.str("");
+   if ( getInt("enabled") == 0 ) return;
 
-   if ( getInt("enabled") == 0 ) return("");
+   verifyRegister(registers_["ScratchPad"]);
+   verifyRegister(registers_["ClockSelect"]);
+   verifyRegister(registers_["ReadControl"]);
+   verifyRegister(registers_["KPIXControl"]);
+   verifyRegister(registers_["ParityError"]);
+   verifyRegister(registers_["TriggerControl"]);
+   verifyRegister(registers_["TrainNumber"]);
+   verifyRegister(registers_["DeadCounter"]);
+   verifyRegister(registers_["ExternalRun"]);
+   verifyRegister(registers_["RunEnable"]);
 
-   ret << verifyRegister(registers_["ScratchPad"]);
-   ret << verifyRegister(registers_["ClockSelect"]);
-   ret << verifyRegister(registers_["ReadControl"]);
-   ret << verifyRegister(registers_["KPIXControl"]);
-   ret << verifyRegister(registers_["ParityError"]);
-   ret << verifyRegister(registers_["TriggerControl"]);
-   ret << verifyRegister(registers_["TrainNumber"]);
-   ret << verifyRegister(registers_["DeadCounter"]);
-   ret << verifyRegister(registers_["ExternalRun"]);
-   ret << verifyRegister(registers_["RunEnable"]);
-
-   ret << input;
-   return(Device::verifyConfig(subEnable,ret.str()));
+   Device::verifyConfig();
 }
 

@@ -34,41 +34,37 @@ KpixControl::KpixControl ( ) : System("KpixControl") {
    dataMask_ = 0x11;
 
    // Add sub-devices
-   addDevice(new CntrlFpga(0, 0, 4, 0xA, this));
+   addDevice(new CntrlFpga(0, 0, 32, this));
 }
 
 // Deconstructor
 KpixControl::~KpixControl ( ) { }
 
 // Method to process a command
-string KpixControl::command ( string name, string arg ) {
-   return(System::command(name,arg));
+void KpixControl::command ( string name, string arg ) {
+   System::command(name,arg);
 }
 
 
 //! Method to return state string
 string KpixControl::getState ( ) {
-   string ret;
    string loc = "";
-   //uint apv;
-   //uint hyb;
 
    loc = "System Ready To Take Data.\n";
 
-   ret = topStateMsg_;
-   ret.append(loc);
-   return(ret);
+   return(loc);
 }
 
 //! Method to perform soft reset
 void KpixControl::softReset ( ) {
+   System::softReset();
    //device("cntrlFpga",0)->command("Apv25Reset","");
    //sleep(5);
-   readStatus(true);
 }
 
 //! Method to perform hard reset
 void KpixControl::hardReset ( ) {
+   System::hardReset();
    //bool gotVer = false;
    //uint count = 0;
 
