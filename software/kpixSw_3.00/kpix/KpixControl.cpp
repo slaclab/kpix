@@ -30,8 +30,8 @@ KpixControl::KpixControl ( uint type ) : System("KpixControl") {
    // Description
    desc_ = "Kpix Control";
    
-   // Data mask, lane 0, vc 0
-   dataMask_ = 0x11;
+   // Data mask, lane 0, vc/type 1
+   dataMask_ = 0x12;
 
    // Add sub-devices
    switch(type) {

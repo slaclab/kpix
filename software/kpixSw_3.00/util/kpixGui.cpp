@@ -13,7 +13,7 @@
 // Modification history :
 // 04/12/2011: created
 //----------------------------------------------------------------------------
-#include <PgpLink.h>
+#include <OptoFpgaLink.h>
 #include <KpixControl.h>
 #include <ControlServer.h>
 #include <Device.h>
@@ -33,8 +33,7 @@ void sigTerm (int) {
 }
 
 int main (int argc, char **argv) {
-   PgpLink       pgpLink; 
-   CommLink      commLink; 
+   OptoFpgaLink  optoLink; 
    KpixControl   kpix(KpixControl::Opto);
    ControlServer cntrlServer;
    string        xmlTest;
@@ -49,25 +48,12 @@ int main (int argc, char **argv) {
       // Setup top level device
       //cspad.setDebug(true,true);
 
-      if ( argc > 1 ) {
-
-         // Create and setup PGP link
-         //commLink.setDebug(true);
-         commLink.setMaxRxTx(500000);
-         commLink.open();
-         kpix.setCommLink(&commLink);
-         cout << "Using debug interface" << endl;
-
-      } else {
-
-         // Create and setup PGP link
-         pgpLink.setMaxRxTx(500000);
-         pgpLink.setDebug(true);
-         pgpLink.open("/dev/pgpcard0");
-         usleep(100);
-         kpix.setCommLink(&pgpLink);
-         cout << "Using PGP interface" << endl;
-      }
+      // Create and setup PGP link
+      optoLink.setMaxRxTx(500000);
+      optoLink.setDebug(true);
+      optoLink.open("/dev/ttyUSB0");
+      usleep(100);
+      kpix.setCommLink(&optoLink);
 
       // Setup control server
       //cntrlServer.setDebug(true);

@@ -180,7 +180,7 @@ OptoFpga::OptoFpga ( uint destination, uint index, Device *parent ) :
 
    addVariable(new Variable("TrigEnable", Variable::Configuration));
    variables_["TrigEnable"]->setDescription("External trigger enable");
-   variables_["TrigEnable"]->setTrueFalse();
+   //variables_["TrigEnable"]->setTrueFalse();
 
    addVariable(new Variable("TrigExpand", Variable::Configuration));
    variables_["TrigExpand"]->setDescription("Expand external trigger");
@@ -287,6 +287,8 @@ OptoFpga::OptoFpga ( uint destination, uint index, Device *parent ) :
 
    // Add sub-devices
    for (uint i=0; i < 4; i++) addDevice(new KpixAsic(destination,((i << 8)& 0xFF00),i,(i==3),this));
+
+   variables_["enabled"]->setHidden(true);
 }
 
 // Deconstructor
@@ -333,6 +335,9 @@ void OptoFpga::readStatus ( ) {
 
    readRegister(registers_["ChecksumError"]);
    variables_["ChecksumError"]->setInt(registers_["ChecksumError"]->get());
+
+   readRegister(registers_["ParityError"]);
+   variables_["ParityError"]->setInt(registers_["ParityError"]->get());
 
    // Sub devices
    Device::readStatus();

@@ -417,6 +417,8 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
       tmp << "ChanModeB_0x" << setw(2) << setfill('0') << hex << x;
       addRegister(new Register(tmp.str(), baseAddress_ + 0x00000060 + x));
    }
+
+   variables_["enabled"]->set("False");
 }
 
 // Deconstructor
