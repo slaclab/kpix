@@ -22,10 +22,17 @@ using namespace std;
 //! Class to contain APV25 
 class KpixControl : public System {
 
+      // FPGA type
+      string fpga_;
+
    public:
 
+      // FPGA types
+      static const uint Opto = 0;
+      static const uint Con  = 1;
+
       //! Constructor
-      KpixControl ( );
+      KpixControl ( uint type );
 
       //! Deconstructor
       ~KpixControl ( );

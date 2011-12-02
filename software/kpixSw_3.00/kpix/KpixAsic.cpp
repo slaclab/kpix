@@ -65,26 +65,32 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
    // Version value
    addVariable(new Variable("Version", Variable::Configuration));
    variables_["Version"]->setDescription("KPIX Version");
+   variables_["Version"]->setComp(0,1,0,"");
 
    // Serial number & variable
    addVariable(new Variable("SerialNumber", Variable::Configuration));
    variables_["SerialNumber"]->setDescription("ASIC serial number");
    variables_["SerialNumber"]->setPerInstance(true);
+   variables_["SerialNumber"]->setComp(0,1,0,"");
 
    // Status register & variables
    addRegister(new Register("Status", baseAddress_ + 0x00000000));
 
    addVariable(new Variable("StatCmdPerr", Variable::Status));
    variables_["StatCmdPerr"]->setDescription("Command header parity error");
+   variables_["StatCmdPerr"]->setComp(0,1,0,"");
 
    addVariable(new Variable("StatDataPerr", Variable::Status));
    variables_["StatDataPerr"]->setDescription("Command data parity error");
+   variables_["StatDataPerr"]->setComp(0,1,0,"");
 
    addVariable(new Variable("StatTempEn", Variable::Status));
    variables_["StatTempEn"]->setDescription("Temperature read enable");
 
    addVariable(new Variable("StatTempIdValue", Variable::Status));
    variables_["StatTempIdValue"]->setDescription("Temperature or ID value");
+
+// HERE
 
    // Config register & variables
    addRegister(new Register("Config", baseAddress_ + 0x00000001));
@@ -122,47 +128,58 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
    addVariable(new Variable("TimeResetOn",Variable::Configuration));
    variables_["TimeResetOn"]->setDescription("Reset assertion delay from run start");
    variables_["TimeResetOn"]->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
+   variables_["TimeResetOn"]->setRange(0,65535);
 
    addVariable(new Variable("TimeResetOff",Variable::Configuration));
    variables_["TimeResetOff"]->setDescription("Reset de-assertion delay from run start");
    variables_["TimeResetOff"]->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
+   variables_["TimeResetOff"]->setRange(0,65535);
 
    addVariable(new Variable("TimeLeakageNullOff",Variable::Configuration));
    variables_["TimeLeakageNullOff"]->setDescription("LeakageNull signal turn off delay from run start");
    variables_["TimeLeakageNullOff"]->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
+   variables_["TimeLeakageNullOff"]->setRange(0,65535);
 
    addVariable(new Variable("TimeOffsetNullOff",Variable::Configuration));
    variables_["TimeOffsetNullOff"]->setDescription("OffsetNull signal turn off delay from run start");
    variables_["TimeOffsetNullOff"]->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
+   variables_["TimeOffsetNullOff"]->setRange(0,65535);
 
    addVariable(new Variable("TimeThreshOff",Variable::Configuration));
    variables_["TimeThreshOff"]->setDescription("Threshold signal turn off delay from run start");
    variables_["TimeThreshOff"]->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
+   variables_["TimeThreshOff"]->setRange(0,65535);
 
    // Timing registers & variables
    addVariable(new Variable("TrigInhibitOff",Variable::Configuration));
    variables_["TrigInhibitOff"]->setDescription("Trigger inhibit turn off bunch crossing");
    variables_["TrigInhibitOff"]->setComp(0,1,0,"");
+   variables_["TrigInhibitOff"]->setRange(0,8191);
 
    addVariable(new Variable("TimePowerUpOn",Variable::Configuration));
    variables_["TimePowerUpOn"]->setDescription("Power up delay from run start");
    variables_["TimePowerUpOn"]->setComp(0,KpixAcqPeriod,0,"nS (@50nS)");
+   variables_["TimePowerUpOn"]->setRange(0,65535);
 
    addVariable(new Variable("TimeDeselDelay",Variable::Configuration));
    variables_["TimeDeselDelay"]->setDescription("Deselect sequence delay from run start");
    variables_["TimeDeselDelay"]->setComp(0,KpixAcqPeriod,0,"nS (@50nS)");
+   variables_["TimeDeselDelay"]->setRange(0,255);
 
    addVariable(new Variable("TimeBunchClkDelay",Variable::Configuration));
    variables_["TimeBunchClkDelay"]->setDescription("Bunch clock start delay from from run start");
    variables_["TimeBunchClkDelay"]->setComp(0,KpixAcqPeriod,0,"nS (@50nS)");
+   variables_["TimeBunchClkDelay"]->setRange(0,65535);
 
    addVariable(new Variable("TimeDigitizeDelay",Variable::Configuration));
    variables_["TimeDigitizeDelay"]->setDescription("Digitization delay after power down");
    variables_["TimeDigitizeDelay"]->setComp(0,KpixAcqPeriod,0,"nS (@50nS)");
+   variables_["TimeDigitizeDelay"]->setRange(0,255);
 
    addVariable(new Variable("BunchClockCount",Variable::Configuration));
    variables_["BunchClockCount"]->setDescription("Bunch cock count");
-   variables_["BunchClockCount"]->setComp(0,1,0,"");
+   variables_["BunchClockCount"]->setComp(0,1,1,"");
+   variables_["BunchClockCount"]->setRange(0,8191);
 
    // Calibration control registers & variables
    addRegister(new Register("CalDelay0", baseAddress_ + 0x00000010));
@@ -170,30 +187,27 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
 
    addVariable(new Variable("CalCount",Variable::Configuration));
    variables_["CalCount"]->setDescription("Calibration injection count");
-   vector<string> calCounts;
-   calCounts.resize(5);
-   calCounts[0] = "0";
-   calCounts[1] = "1";
-   calCounts[2] = "2";
-   calCounts[3] = "3";
-   calCounts[4] = "4";
-   variables_["CalCount"]->setEnums(calCounts);
+   variables_["CalCount"]->setRange(0,4);
 
    addVariable(new Variable("Cal0Delay",Variable::Configuration));
    variables_["Cal0Delay"]->setDescription("Calibration injection 0 delay in bunch crossings");
    variables_["Cal0Delay"]->setComp(1,400,0,"nS");
+   variables_["Cal0Delay"]->setRange(0,4095);
 
    addVariable(new Variable("Cal1Delay",Variable::Configuration));
    variables_["Cal1Delay"]->setDescription("Calibration injection 1 delay in bunch crossings");
    variables_["Cal1Delay"]->setComp(1,400,0,"nS");
+   variables_["Cal1Delay"]->setRange(0,4095);
 
    addVariable(new Variable("Cal2Delay",Variable::Configuration));
    variables_["Cal2Delay"]->setDescription("Calibration injection 2 delay in bunch crossings");
    variables_["Cal2Delay"]->setComp(1,400,0,"nS");
+   variables_["Cal2Delay"]->setRange(0,4095);
 
    addVariable(new Variable("Cal3Delay",Variable::Configuration));
    variables_["Cal3Delay"]->setDescription("Calibration injection 3 delay in bunch crossings");
    variables_["Cal3Delay"]->setComp(0,400,0,"nS");
+   variables_["Cal3Delay"]->setRange(0,4095);
 
    // DAC registers and variables
    addRegister(new Register("Dac0", baseAddress_ + 0x00000020));
@@ -210,6 +224,7 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
    addVariable(new Variable("DacThresholdA",Variable::Configuration));
    variables_["DacThresholdA"]->setDescription("Trigger Threshold A dac\nDAC 0/8");
    variables_["DacThresholdA"]->setPerInstance(true);
+   variables_["DacThresholdA"]->setRange(0,255);
 
    addVariable(new Variable("DacThresholdAVolt",Variable::Feedback));
    variables_["DacThresholdAVolt"]->setDescription("Trigger Threshold A dac voltage feedback\nDAC 0/8");
@@ -218,6 +233,7 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
    addVariable(new Variable("DacThresholdB",Variable::Configuration));
    variables_["DacThresholdB"]->setDescription("Trigger Threshold B dac\nDAC 1/9");
    variables_["DacThresholdB"]->setPerInstance(true);
+   variables_["DacThresholdB"]->setRange(0,255);
 
    addVariable(new Variable("DacThresholdBVolt",Variable::Feedback));
    variables_["DacThresholdBVolt"]->setDescription("Trigger Threshold B dac voltage feedback\nDAC 1/9");
@@ -225,18 +241,21 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
 
    addVariable(new Variable("DacRampThresh",Variable::Configuration));
    variables_["DacRampThresh"]->setDescription("Ramp threshold dac\nDAC 2");
+   variables_["DacRampThresh"]->setRange(0,255);
 
    addVariable(new Variable("DacRampThreshVolt",Variable::Feedback));
    variables_["DacRampThreshVolt"]->setDescription("Ramp threshold dac voltage feedback\nDAC 2");
 
    addVariable(new Variable("DacRangeThreshold",Variable::Configuration));
    variables_["DacRangeThreshold"]->setDescription("Range threshold dac\nDAC 3");
+   variables_["DacRangeThreshold"]->setRange(0,255);
 
    addVariable(new Variable("DacRangeThresholdVolt",Variable::Feedback));
    variables_["DacRangeThresholdVolt"]->setDescription("Range threshold dac voltage feedback\nDAC 3");
 
    addVariable(new Variable("DacCalibration",Variable::Configuration));
    variables_["DacCalibration"]->setDescription("Calibration dac\nDAC 4");
+   variables_["DacCalibration"]->setRange(0,255);
 
    addVariable(new Variable("DacCalibrationVolt",Variable::Feedback));
    variables_["DacCalibrationVolt"]->setDescription("Calibration dac voltage feedback\nDAC 4");
@@ -246,20 +265,23 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
 
    addVariable(new Variable("DacEventThreshold",Variable::Configuration));
    variables_["DacEventThreshold"]->setDescription("Event threshold dac\nDAC 5");
+   variables_["DacEventThreshold"]->setRange(0,255);
 
    addVariable(new Variable("DacEventThresholdVoltage",Variable::Feedback));
    variables_["DacEventThresholdVoltage"]->setDescription("Event threshold dac voltage feedback\nDAC 5");
 
    addVariable(new Variable("DacShaperBias",Variable::Configuration));
    variables_["DacShaperBias"]->setDescription("Shaper bias dac\nDAC 6");
+   variables_["DacShaperBias"]->setRange(0,255);
 
-   addVariable(new Variable("DacShaperBiasVolt",Variable::Configuration));
+   addVariable(new Variable("DacShaperBiasVolt",Variable::Feedback));
    variables_["DacShaperBiasVolt"]->setDescription("Shaper bias dac voltage feedback\nDAC 6");
 
    addVariable(new Variable("DacDefaultAnalog",Variable::Configuration));
    variables_["DacDefaultAnalog"]->setDescription("Default analog bus dac\nDAC 7");
+   variables_["DacDefaultAnalog"]->setRange(0,255);
 
-   addVariable(new Variable("DacDefaultAnalogVolt",Variable::Configuration));
+   addVariable(new Variable("DacDefaultAnalogVolt",Variable::Feedback));
    variables_["DacDefaultAnalogVolt"]->setDescription("Default analog bus dac voltage feedback\nDAC 7");
 
    // Control register and variables
@@ -288,7 +310,7 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
    addVariable(new Variable("CntrlPolarity",Variable::Configuration));
    variables_["CntrlPolarity"]->setDescription("Set input polarity");
    vector<string> pol;
-   pol.resize(5);
+   pol.resize(2);
    pol[0] = "Negative";
    pol[1] = "Positive";
    variables_["CntrlPolarity"]->setEnums(pol);
@@ -371,6 +393,7 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
 
    addVariable(new Variable("CntrlTrigDisable", Variable::Configuration));
    variables_["CntrlTrigDisable"]->setDescription("Disable self trigger");
+   variables_["CntrlTrigDisable"]->setTrueFalse();
 
    // Mode registers
    for (x=0; x < 32; x++) {

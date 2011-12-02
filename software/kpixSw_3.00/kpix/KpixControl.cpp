@@ -14,7 +14,7 @@
 // 04/12/2011: created
 //-----------------------------------------------------------------------------
 #include <KpixControl.h>
-#include <CntrlFpga.h>
+#include <OptoFpga.h>
 #include <Register.h>
 #include <Variable.h>
 #include <Command.h>
@@ -25,7 +25,7 @@
 using namespace std;
 
 // Constructor
-KpixControl::KpixControl ( ) : System("KpixControl") {
+KpixControl::KpixControl ( uint type ) : System("KpixControl") {
 
    // Description
    desc_ = "Kpix Control";
@@ -34,7 +34,19 @@ KpixControl::KpixControl ( ) : System("KpixControl") {
    dataMask_ = 0x11;
 
    // Add sub-devices
-   addDevice(new CntrlFpga(0, 0, 32, this));
+   switch(type) {
+      case Opto: 
+         cout << "KpixControl::KpixControl -> Using Opto FPGA" << endl;
+         addDevice(new OptoFpga(0, 0, this));
+         fpga_ = "optoFpga";
+         break;
+      case Con: 
+         cout << "KpixControl::KpixControl -> Using Con FPGA" << endl;
+         //addDevice(new FpgaCon(0, 0, this));
+         fpga_ = "conFpga";
+         break;
+      default: cout << "KpixControl::KpixControl -> Invalid FPGA Type" << endl; break;
+   }
 }
 
 // Deconstructor
@@ -58,28 +70,27 @@ string KpixControl::getState ( ) {
 //! Method to perform soft reset
 void KpixControl::softReset ( ) {
    System::softReset();
-   //device("cntrlFpga",0)->command("Apv25Reset","");
-   //sleep(5);
+
+   device(fpga_,0)->command("CountReset","");
 }
 
 //! Method to perform hard reset
 void KpixControl::hardReset ( ) {
+   bool gotVer = false;
+   uint count = 0;
+
    System::hardReset();
-   //bool gotVer = false;
-   //uint count = 0;
 
-/*
-   device("cntrlFpga",0)->command("MasterReset","");
-
+   device(fpga_,0)->command("MasterReset","");
    do {
       sleep(1);
       try { 
          gotVer = true;
-         device("cntrlFpga",0)->readSingle("Version");
+         device(fpga_,0)->readSingle("Version");
       } catch ( string err ) { 
          if ( count > 5 ) {
             gotVer = true;
-            throw(string("KpixControl::hardReset -> Error contacting concentrator"));
+            throw(string("KpixControl::hardReset -> Error contacting fpga"));
          }
          else {
             count++;
@@ -87,8 +98,6 @@ void KpixControl::hardReset ( ) {
          }
       }
    } while ( !gotVer );
-   device("cntrlFpga",0)->command("Apv25HardReset","");
-*/
-
+   device(fpga_,0)->command("KpixCmdReset","");
 }
 

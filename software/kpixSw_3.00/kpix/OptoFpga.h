@@ -1,11 +1,11 @@
 //-----------------------------------------------------------------------------
-// File          : CntrlFpga.h
+// File          : OptoFpga.h
 // Author        : Ryan Herbst  <rherbst@slac.stanford.edu>
 // Created       : 11/20/2011
 // Project       : Kpix ASIC
 //-----------------------------------------------------------------------------
 // Description :
-// Control FPGA container
+// Opto FPGA container
 //-----------------------------------------------------------------------------
 // Copyright (c) 2011 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
@@ -20,7 +20,7 @@
 using namespace std;
 
 //! Class to contain APV25 
-class CntrlFpga : public Device {
+class OptoFpga : public Device {
 
    public:
 
@@ -28,13 +28,12 @@ class CntrlFpga : public Device {
       /*! 
        * \param destination Device destination
        * \param index       Device index
-       * \param kpixCount   Number of KPIXs supported in setup
        * \param parent      Parent Device
       */
-      CntrlFpga ( uint destination, uint index, uint kpixCnt, Device *parent );
+      OptoFpga ( uint destination, uint index, Device *parent );
 
       //! Deconstructor
-      ~CntrlFpga ( );
+      ~OptoFpga ( );
 
       //! Method to process a command
       /*!

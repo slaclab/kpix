@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// File          : CntrlFpga.cpp
+// File          : OptoFpga.cpp
 // Author        : Ryan Herbst  <rherbst@slac.stanford.edu>
 // Created       : 11/20/2011
 // Project       : Kpix ASIC
@@ -13,7 +13,7 @@
 // Modification history :
 // 11/20/2011: created
 //-----------------------------------------------------------------------------
-#include <CntrlFpga.h>
+#include <OptoFpga.h>
 #include <KpixAsic.h>
 #include <Register.h>
 #include <Variable.h>
@@ -25,56 +25,102 @@
 using namespace std;
 
 // Constructor
-CntrlFpga::CntrlFpga ( uint destination, uint index, uint kpixCnt, Device *parent ) : 
-                     Device(destination,0,"cntrlFpga",index,parent) {
+OptoFpga::OptoFpga ( uint destination, uint index, Device *parent ) : 
+                     Device(destination,0,"optoFpga",index,parent) {
 
    // Description
-   desc_ = "Control FPGA Object.";
+   desc_ = "Opto FPGA Object.";
 
    // Setup registers & variables
-   addRegister(new Register("VersionMastReset", 0x00000000));
+   addRegister(new Register("VersionMastReset", 0x02000000));
    addVariable(new Variable("Version", Variable::Status));
    variables_["Version"]->setDescription("FPGA version field");
 
-   addRegister(new Register("JumperKpixReset", 0x00000001));
+   addRegister(new Register("JumperKpixReset", 0x02000001));
    addVariable(new Variable("Jumpers", Variable::Status));
    variables_["Jumpers"]->setDescription("FPGA jumpers field");
 
-   addRegister(new Register("ScratchPad", 0x00000002));
+   addRegister(new Register("ScratchPad", 0x02000002));
    addVariable(new Variable("ScratchPad", Variable::Configuration));
    variables_["ScratchPad"]->setDescription("FPGA scratchpad register");
+   variables_["ScratchPad"]->setComp(0,1,0,"");
 
    // Clock select register
-   addRegister(new Register("ClockSelect", 0x00000003));
+   addRegister(new Register("ClockSelect", 0x02000003));
+   vector<string> clkPeriod;
+   clkPeriod.resize(32);
+   clkPeriod[0]   = "10nS";
+   clkPeriod[1]   = "20nS";
+   clkPeriod[2]   = "30nS";
+   clkPeriod[3]   = "40nS";
+   clkPeriod[4]   = "50nS";
+   clkPeriod[5]   = "60nS";
+   clkPeriod[6]   = "70nS";
+   clkPeriod[7]   = "80nS";
+   clkPeriod[8]   = "90nS";
+   clkPeriod[9]   = "100nS";
+   clkPeriod[10]  = "110nS";
+   clkPeriod[11]  = "120nS";
+   clkPeriod[12]  = "130nS";
+   clkPeriod[13]  = "140nS";
+   clkPeriod[14]  = "150nS";
+   clkPeriod[15]  = "160nS";
+   clkPeriod[16]  = "170nS";
+   clkPeriod[17]  = "180nS";
+   clkPeriod[18]  = "190nS";
+   clkPeriod[19]  = "200nS";
+   clkPeriod[20]  = "210nS";
+   clkPeriod[21]  = "220nS";
+   clkPeriod[22]  = "230nS";
+   clkPeriod[23]  = "240nS";
+   clkPeriod[24]  = "250nS";
+   clkPeriod[25]  = "260nS";
+   clkPeriod[26]  = "270nS";
+   clkPeriod[27]  = "280nS";
+   clkPeriod[28]  = "290nS";
+   clkPeriod[29]  = "300nS";
+   clkPeriod[30]  = "310nS";
+   clkPeriod[31]  = "320nS";
 
    addVariable(new Variable("ClkPeriodAcq", Variable::Configuration));
    variables_["ClkPeriodAcq"]->setDescription("Acquisition clock period");
+   variables_["ClkPeriodAcq"]->setEnums(clkPeriod);
 
    addVariable(new Variable("ClkPeriodIdle", Variable::Configuration));
    variables_["ClkPeriodIdle"]->setDescription("Idle clock period");
+   variables_["ClkPeriodIdle"]->setEnums(clkPeriod);
 
    addVariable(new Variable("ClkPeriodDig", Variable::Configuration));
    variables_["ClkPeriodDig"]->setDescription("Digitization clock period");
+   variables_["ClkPeriodDig"]->setEnums(clkPeriod);
 
    addVariable(new Variable("ClkPeriodRead", Variable::Configuration));
    variables_["ClkPeriodRead"]->setDescription("Readout clock period");
+   variables_["ClkPeriodRead"]->setEnums(clkPeriod);
 
    // Checksum error register
-   addRegister(new Register("ChecksumError", 0x00000004));
+   addRegister(new Register("ChecksumError", 0x02000004));
 
    addVariable(new Variable("ChecksumError", Variable::Status));
-   variables_["ChecksumError"]->setDescription("Readout clock period");
+   variables_["ChecksumError"]->setDescription("Checksum error count");
+   variables_["ChecksumError"]->setComp(0,1,0,"");
 
    // Readback control
-   addRegister(new Register("ReadControl", 0x00000005));
+   addRegister(new Register("ReadControl", 0x02000005));
    addVariable(new Variable("KpixReadDelay", Variable::Configuration));
    variables_["KpixReadDelay"]->setDescription("Kpix return data sample delay");
+   variables_["KpixReadDelay"]->setRange(0,8);
 
    addVariable(new Variable("KpixReadEdge", Variable::Configuration));
    variables_["KpixReadEdge"]->setDescription("Kpix return data sample edge");
+   vector<string> readEdge;
+   readEdge.resize(2);
+   readEdge[0]  = "Neg";
+   readEdge[1]  = "Pos";
+   variables_["KpixReadEdge"]->setEnums(readEdge);
 
    // KPIX control register
-   addRegister(new Register("KPIXControl", 0x00000008));
+   addRegister(new Register("KPIXControl", 0x02000008));
 
    addVariable(new Variable("BncSourceA", Variable::Configuration));
    variables_["BncSourceA"]->setDescription("BNC output A source select");
@@ -116,27 +162,33 @@ CntrlFpga::CntrlFpga ( uint destination, uint index, uint kpixCnt, Device *paren
 
    addVariable(new Variable("DropData", Variable::Configuration));
    variables_["DropData"]->setDescription("Drop all KPIX data");
+   variables_["DropData"]->setTrueFalse();
 
    addVariable(new Variable("RawData", Variable::Configuration));
    variables_["RawData"]->setDescription("Send raw KPIX data");
+   variables_["RawData"]->setTrueFalse();
 
    // Parity error register
-   addRegister(new Register("ParityError", 0x00000009));
+   addRegister(new Register("ParityError", 0x02000009));
 
-   addVariable(new Variable("ParityError", Variable::Configuration));
+   addVariable(new Variable("ParityError", Variable::Status));
    variables_["ParityError"]->setDescription("Parity error");
+   variables_["ParityError"]->setComp(0,1,0,"");
 
    // Trigger control register
-   addRegister(new Register("TriggerControl", 0x0000000B));
+   addRegister(new Register("TriggerControl", 0x0200000B));
 
    addVariable(new Variable("TrigEnable", Variable::Configuration));
    variables_["TrigEnable"]->setDescription("External trigger enable");
+   variables_["TrigEnable"]->setTrueFalse();
 
    addVariable(new Variable("TrigExpand", Variable::Configuration));
    variables_["TrigExpand"]->setDescription("Expand external trigger");
+   variables_["TrigExpand"]->setRange(0,255);
 
    addVariable(new Variable("CalDelay", Variable::Configuration));
    variables_["CalDelay"]->setDescription("Calibration delay for trigger source");
+   variables_["CalDelay"]->setRange(0,255);
 
    addVariable(new Variable("TrigSource", Variable::Configuration));
    variables_["TrigSource"]->setDescription("External trigger source");
@@ -156,81 +208,113 @@ CntrlFpga::CntrlFpga ( uint destination, uint index, uint kpixCnt, Device *paren
    variables_["TrigSource"]->setEnums(trgSource);
 
    // Train number register
-   addRegister(new Register("TrainNumber", 0x0000000C));
+   addRegister(new Register("TrainNumber", 0x0200000C));
 
    addVariable(new Variable("TrainNumber", Variable::Status));
    variables_["TrainNumber"]->setDescription("Train number register");
+   variables_["TrainNumber"]->setComp(0,1,0,"");
 
    // Dead count register
-   addRegister(new Register("DeadCounter", 0x0000000D));
+   addRegister(new Register("DeadCounter", 0x0200000D));
 
    addVariable(new Variable("DeadCounter", Variable::Status));
    variables_["DeadCounter"]->setDescription("Dead coutner register");
+   variables_["DeadCounter"]->setComp(0,1,0,"");
 
    // External run register
-   addRegister(new Register("ExternalRun", 0x0000000E));
+   addRegister(new Register("ExternalRun", 0x0200000E));
 
    addVariable(new Variable("ExtRunSource", Variable::Configuration));
    variables_["ExtRunSource"]->setDescription("External run source");
+   vector<string> extRun;
+   extRun.resize(5);
+   extRun[0]  = "Disable";
+   extRun[1]  = "NimA";
+   extRun[2]  = "NimB";
+   extRun[3]  = "BncA";
+   extRun[4]  = "BncB";
+   variables_["ExtRunSource"]->setEnums(extRun);
 
    addVariable(new Variable("ExtRunDelay", Variable::Configuration));
    variables_["ExtRunDelay"]->setDescription("External run delay");
+   variables_["ExtRunDelay"]->setRange(0,65535);
 
    addVariable(new Variable("ExtRunType", Variable::Configuration));
    variables_["ExtRunType"]->setDescription("External run type");
+   vector<string> extType;
+   extType.resize(2);
+   extType[0]  = "Acquire";
+   extType[1]  = "Calibrate";
+   variables_["ExtRunType"]->setEnums(extType);
 
    addVariable(new Variable("ExtRecord", Variable::Configuration));
    variables_["ExtRecord"]->setDescription("External record");
+   vector<string> extRec;
+   extRec.resize(6);
+   extRec[0]  = "Disable";
+   extRec[1]  = "NimA";
+   extRec[2]  = "NimB";
+   extRec[3]  = "BncA";
+   extRec[4]  = "BncB";
+   extRec[5]  = "CalStrobe";
+   variables_["ExtRecord"]->setEnums(extRec);
 
    // Create Registers: name, address
-   addRegister(new Register("RunEnable", 0x0000000F));
+   addRegister(new Register("RunEnable", 0x0200000F));
 
    addVariable(new Variable("RunEnable", Variable::Configuration));
    variables_["RunEnable"]->setDescription("RunEnable");
+   variables_["RunEnable"]->setTrueFalse();
 
    // Commands
-   addCommand(new Command("RunAcquire",0x1));
+   addCommand(new Command("RunAcquire",0x2));
    commands_["RunAcquire"]->setDescription("Run acquire command");
 
-   addCommand(new Command("RunCalibrate",0x2));
+   addCommand(new Command("RunCalibrate",0x3));
    commands_["RunCalibrate"]->setDescription("Run calibrate command");
 
-   addCommand(new Command("SoftKpixReset",0x3));
-   commands_["SoftKpixReset"]->setDescription("Soft KPIX reset command");
+   addCommand(new Command("KpixCmdReset",0x1));
+   commands_["KpixCmdReset"]->setDescription("Soft KPIX reset command");
 
    addCommand(new Command("MasterReset"));
    commands_["MasterReset"]->setDescription("Master FPGA reset");
 
-   addCommand(new Command("HardKpixReset"));
-   commands_["HardKpixReset"]->setDescription("Hard KPIX reset command");
+   addCommand(new Command("KpixHardReset"));
+   commands_["KpixHardReset"]->setDescription("Hard KPIX reset command");
+
+   addCommand(new Command("CountReset"));
+   commands_["CountReset"]->setDescription("Reset counters");
 
    // Add sub-devices
-   for (uint i=0; i < kpixCnt; i++) {
-      cout << "adding index " << dec << i << endl;
-      addDevice(new KpixAsic(destination,((i << 8)& 0xFF00),i,(i==(kpixCnt-1)),this));
-   }
+   for (uint i=0; i < 4; i++) addDevice(new KpixAsic(destination,((i << 8)& 0xFF00),i,(i==3),this));
 }
 
 // Deconstructor
-CntrlFpga::~CntrlFpga ( ) { }
+OptoFpga::~OptoFpga ( ) { }
 
 // Method to process a command
-void CntrlFpga::command ( string name, string arg) {
+void OptoFpga::command ( string name, string arg) {
 
    // Command is local
    if ( name == "MasterReset" ) {
       registers_["VersionMastReset"]->set(0x1);
       writeRegister(registers_["VersionMastReset"],true,false);
    }
-   else if ( name == "HardKpixReset" ) {
+   else if ( name == "KpixHardReset" ) {
       registers_["JumperKpixReset"]->set(0x1);
       writeRegister(registers_["JumperKpixReset"],true,true);
+   }
+   else if ( name == "CountReset" ) {
+      writeRegister(registers_["ChecksumError"],true,true);
+      writeRegister(registers_["ParityError"],true,true);
+      writeRegister(registers_["TrainNumber"],true,true);
+      writeRegister(registers_["DeadCounter"],true,true);
    }
    else Device::command(name, arg);
 }
 
 // Method to read status registers and update variables
-void CntrlFpga::readStatus ( ) {
+void OptoFpga::readStatus ( ) {
 
    // Device is not enabled
    if ( getInt("enabled") == 0 ) return;
@@ -255,7 +339,7 @@ void CntrlFpga::readStatus ( ) {
 }
 
 // Method to read configuration registers and update variables
-void CntrlFpga::readConfig ( ) {
+void OptoFpga::readConfig ( ) {
 
    // Device is not enabled
    if ( getInt("enabled") == 0 ) return;
@@ -318,7 +402,7 @@ void CntrlFpga::readConfig ( ) {
 }
 
 // Method to write configuration registers
-void CntrlFpga::writeConfig ( bool force ) {
+void OptoFpga::writeConfig ( bool force ) {
 
    // Device is not enabled
    if ( getInt("enabled") == 0 ) return;
@@ -344,6 +428,7 @@ void CntrlFpga::writeConfig ( bool force ) {
    registers_["KPIXControl"]->set(variables_["BncSourceB"]->getInt(),21,0x1F);
    registers_["KPIXControl"]->set(variables_["DropData"]->getInt(),4,0x1);
    registers_["KPIXControl"]->set(variables_["RawData"]->getInt(),5,0x1);
+   registers_["KPIXControl"]->set(device("kpixAsic",0)->getInt("RawData"),28,0x1);
    writeRegister(registers_["KPIXControl"],force);
 
    // Parity error register
@@ -381,7 +466,7 @@ void CntrlFpga::writeConfig ( bool force ) {
 }
 
 // Verify hardware state of configuration
-void CntrlFpga::verifyConfig ( ) {
+void OptoFpga::verifyConfig ( ) {
 
    if ( getInt("enabled") == 0 ) return;
 

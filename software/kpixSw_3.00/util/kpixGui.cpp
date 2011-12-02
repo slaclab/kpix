@@ -35,7 +35,7 @@ void sigTerm (int) {
 int main (int argc, char **argv) {
    PgpLink       pgpLink; 
    CommLink      commLink; 
-   KpixControl   kpix;
+   KpixControl   kpix(KpixControl::Opto);
    ControlServer cntrlServer;
    string        xmlTest;
    int           pid;
