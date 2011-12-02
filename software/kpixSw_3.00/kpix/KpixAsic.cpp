@@ -150,7 +150,6 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
    variables_["TimeThreshOff"]->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
    variables_["TimeThreshOff"]->setRange(0,65535);
 
-   // Timing registers & variables
    addVariable(new Variable("TrigInhibitOff",Variable::Configuration));
    variables_["TrigInhibitOff"]->setDescription("Trigger inhibit turn off bunch crossing");
    variables_["TrigInhibitOff"]->setComp(0,1,0,"");
@@ -158,22 +157,22 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
 
    addVariable(new Variable("TimePowerUpOn",Variable::Configuration));
    variables_["TimePowerUpOn"]->setDescription("Power up delay from run start");
-   variables_["TimePowerUpOn"]->setComp(0,KpixAcqPeriod,0,"nS (@50nS)");
+   variables_["TimePowerUpOn"]->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
    variables_["TimePowerUpOn"]->setRange(0,65535);
 
    addVariable(new Variable("TimeDeselDelay",Variable::Configuration));
    variables_["TimeDeselDelay"]->setDescription("Deselect sequence delay from run start");
-   variables_["TimeDeselDelay"]->setComp(0,KpixAcqPeriod,0,"nS (@50nS)");
+   variables_["TimeDeselDelay"]->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
    variables_["TimeDeselDelay"]->setRange(0,255);
 
    addVariable(new Variable("TimeBunchClkDelay",Variable::Configuration));
    variables_["TimeBunchClkDelay"]->setDescription("Bunch clock start delay from from run start");
-   variables_["TimeBunchClkDelay"]->setComp(0,KpixAcqPeriod,0,"nS (@50nS)");
+   variables_["TimeBunchClkDelay"]->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
    variables_["TimeBunchClkDelay"]->setRange(0,65535);
 
    addVariable(new Variable("TimeDigitizeDelay",Variable::Configuration));
    variables_["TimeDigitizeDelay"]->setDescription("Digitization delay after power down");
-   variables_["TimeDigitizeDelay"]->setComp(0,KpixAcqPeriod,0,"nS (@50nS)");
+   variables_["TimeDigitizeDelay"]->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
    variables_["TimeDigitizeDelay"]->setRange(0,255);
 
    addVariable(new Variable("BunchClockCount",Variable::Configuration));
@@ -311,8 +310,8 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
    variables_["CntrlPolarity"]->setDescription("Set input polarity");
    vector<string> pol;
    pol.resize(2);
-   pol[0] = "Negative";
-   pol[1] = "Positive";
+   pol[0] = "Positive";
+   pol[1] = "Negative";
    variables_["CntrlPolarity"]->setEnums(pol);
 
    addVariable(new Variable("CntrlDisPerReset",Variable::Configuration));
@@ -427,9 +426,6 @@ KpixAsic::~KpixAsic ( ) { }
 // Method to read status registers and update variables
 void KpixAsic::readStatus ( ) {
 
-   // Device is not enabled
-   if ( getInt("enabled") == 0 ) return;
-
    // Read status register
    readRegister(registers_["Status"]);
 
@@ -452,9 +448,6 @@ void KpixAsic::readConfig ( ) {
    uint row;
    uint calCount;
 
-   // Device is not enabled
-   if ( getInt("enabled") == 0 ) return;
-
    // Config register & variables
    readRegister(registers_["Config"]);
 
@@ -470,23 +463,27 @@ void KpixAsic::readConfig ( ) {
    variables_["TimeResetOff"]->setInt(registers_["TimerA"]->get(16,0xFFFF));
 
    readRegister(registers_["TimerB"]);
-   variables_["TimeOffsetNullOff"]->setInt(registers_["TimerA"]->get(0,0xFFFF));
-   variables_["TimeLeakageNullOff"]->setInt(registers_["TimerA"]->get(16,0xFFFF));
+   variables_["TimeOffsetNullOff"]->setInt(registers_["TimerB"]->get(0,0xFFFF));
+   variables_["TimeLeakageNullOff"]->setInt(registers_["TimerB"]->get(16,0xFFFF));
 
    readRegister(registers_["TimerC"]);
-   variables_["TimePowerUpOn"]->setInt(registers_["TimerA"]->get(0,0xFFFF));
-   variables_["TimeThreshOff"]->setInt(registers_["TimerA"]->get(16,0xFFFF));
-
-   readRegister(registers_["TimerD"]);
-   variables_["TrigInhibitOff"]->setInt(registers_["TimerA"]->get());
+   variables_["TimePowerUpOn"]->setInt(registers_["TimerC"]->get(0,0xFFFF));
+   variables_["TimeThreshOff"]->setInt(registers_["TimerC"]->get(16,0xFFFF));
 
    readRegister(registers_["TimerE"]);
-   variables_["BunchClockCount"]->setInt(registers_["TimerA"]->get(0,0xFFFF));
+   variables_["BunchClockCount"]->setInt(registers_["TimerE"]->get(0,0xFFFF));
 
    readRegister(registers_["TimerF"]);
-   variables_["TimeDeselDelay"]->setInt(registers_["TimerA"]->get(0,0xFF));
-   variables_["TimeBunchClkDelay"]->setInt(registers_["TimerA"]->get(8,0xFFFF));
-   variables_["TimeDigitizeDelay"]->setInt(registers_["TimerA"]->get(24,0xFF));
+   variables_["TimeDeselDelay"]->setInt(registers_["TimerF"]->get(0,0xFF));
+   variables_["TimeBunchClkDelay"]->setInt(registers_["TimerF"]->get(8,0xFFFF));
+   variables_["TimeDigitizeDelay"]->setInt(registers_["TimerF"]->get(24,0xFF));
+
+   readRegister(registers_["TimerD"]);
+   val = registers_["TimerD"]->get();
+   val = val - variables_["TimeBunchClkDelay"]->getInt();
+   val = val - 1;
+   val = val / 8;
+   variables_["TrigInhibitOff"]->setInt(val);
 
    // Calibration control registers & variables
    readRegister(registers_["CalDelay0"]);
@@ -564,20 +561,10 @@ void KpixAsic::readConfig ( ) {
       // Control register and variables
       readRegister(registers_["Control"]);
 
-      variables_["CntrlCalibHigh"]->setInt(registers_["Control"]->get(11,0x1));
-      variables_["CntrlForceLowGain"]->setInt(registers_["Control"]->get(13,0x1));
-      variables_["CntrlLeakNullDisable"]->setInt(registers_["Control"]->get(14,0x1));
-      variables_["CntrlHighGain"]->setInt(registers_["Control"]->get(2,0x1));
-      variables_["CntrlNearNeighbor"]->setInt(registers_["Control"]->get(3,0x1));
-      variables_["CntrlPolarity"]->setInt(registers_["Control"]->get(15,0x1));
       variables_["CntrlDisPerReset"]->setInt(registers_["Control"]->get(0,0x1));
       variables_["CntrlEnDcReset"]->setInt(registers_["Control"]->get(1,0x1));
-      variables_["CntrlShortIntEn"]->setInt(registers_["Control"]->get(12,0x1));
-      variables_["CntrlDisPwrCycle"]->setInt(registers_["Control"]->get(24,0x1));
-      variables_["CntrlFeCurr"]->setInt(registers_["Control"]->get(25,0x1));
-      variables_["CntrlHoldTime"]->setInt(registers_["Control"]->get(8,0x1));
-      variables_["CntrlDiffTime"]->setInt(registers_["Control"]->get(28,0x1));
-      variables_["CntrlTrigDisable"]->setInt(registers_["Control"]->get(16,0x1));
+      variables_["CntrlHighGain"]->setInt(registers_["Control"]->get(2,0x1));
+      variables_["CntrlNearNeighbor"]->setInt(registers_["Control"]->get(3,0x1));
 
       val = 0;
       if ( registers_["Control"]->get(6,0x1) == 1 ) val = 1;
@@ -588,6 +575,23 @@ void KpixAsic::readConfig ( ) {
       if ( registers_["Control"]->get(7,0x1) == 1 ) val = 1;
       if ( registers_["Control"]->get(5,0x1) == 1 ) val = 2;
       variables_["CntrlForceTrigSource"]->setInt(val);
+
+      variables_["CntrlHoldTime"]->setInt(registers_["Control"]->get(8,0x7));
+      variables_["CntrlCalibHigh"]->setInt(registers_["Control"]->get(11,0x1));
+      variables_["CntrlShortIntEn"]->setInt(registers_["Control"]->get(12,0x1));
+      variables_["CntrlForceLowGain"]->setInt(registers_["Control"]->get(13,0x1));
+      variables_["CntrlLeakNullDisable"]->setInt(registers_["Control"]->get(14,0x1));
+      variables_["CntrlPolarity"]->setInt(registers_["Control"]->get(15,0x1));
+      variables_["CntrlTrigDisable"]->setInt(registers_["Control"]->get(16,0x1));
+      variables_["CntrlDisPwrCycle"]->setInt(registers_["Control"]->get(24,0x1));
+
+      // bit order of FeCurr is reversed
+      val  = (registers_["Control"]->get(25,0x1) << 2) & 0x4;
+      val |= (registers_["Control"]->get(26,0x1) << 1) & 0x2;
+      val |= (registers_["Control"]->get(27,0x1)     ) & 0x1;
+      variables_["CntrlFeCurr"]->setInt(val);
+
+      variables_["CntrlDiffTime"]->setInt(registers_["Control"]->get(28,0x3));
 
       val = 0;
       if ( registers_["Control"]->get(30,0x1) == 1 ) val = 2;
@@ -635,9 +639,6 @@ void KpixAsic::writeConfig ( bool force ) {
    uint row;
    uint calCount;
 
-   // Device is not enabled
-   if ( getInt("enabled") == 0 ) return;
-
    // Config register & variables
    registers_["Config"]->set(variables_["CfgTestDataEn"]->getInt(),0,0x1);
    registers_["Config"]->set(variables_["CfgAutoReadDisable"]->getInt(),2,0x1);
@@ -659,10 +660,12 @@ void KpixAsic::writeConfig ( bool force ) {
    registers_["TimerC"]->set(variables_["TimeThreshOff"]->getInt(),16,0xFFFF);
    writeRegister(registers_["TimerC"],force);
 
-   registers_["TimerD"]->set(variables_["TrigInhibitOff"]->getInt());
+   val = (variables_["TrigInhibitOff"]->getInt() * 8) + variables_["TimeBunchClkDelay"]->getInt() + 1;
+   registers_["TimerD"]->set(val);
    writeRegister(registers_["TimerD"],force);
 
    registers_["TimerE"]->set(variables_["BunchClockCount"]->getInt(),0,0xFFFF);
+   registers_["TimerE"]->set(variables_["TimePowerUpOn"]->getInt(),16,0xFFFF);
    writeRegister(registers_["TimerE"],force);
 
    registers_["TimerF"]->set(variables_["TimeDeselDelay"]->getInt(),0,0xFF);
@@ -691,26 +694,51 @@ void KpixAsic::writeConfig ( bool force ) {
       val = variables_["DacThresholdA"]->getInt();
       variables_["DacThresholdAVolt"]->set(dacToVoltString(val));
       registers_["Dac0"]->set(val,0,0xFF);
+      registers_["Dac0"]->set(val,8,0xFF);
+      registers_["Dac0"]->set(val,16,0xFF);
+      registers_["Dac0"]->set(val,24,0xFF);
       writeRegister(registers_["Dac0"],force);
+      registers_["Dac8"]->set(val,0,0xFF);
+      registers_["Dac8"]->set(val,8,0xFF);
+      registers_["Dac8"]->set(val,16,0xFF);
+      registers_["Dac8"]->set(val,24,0xFF);
+      writeRegister(registers_["Dac8"],force);
 
       val = variables_["DacThresholdB"]->getInt();
       variables_["DacThresholdBVolt"]->set(dacToVoltString(val));
       registers_["Dac1"]->set(val,0,0xFF);
+      registers_["Dac1"]->set(val,8,0xFF);
+      registers_["Dac1"]->set(val,16,0xFF);
+      registers_["Dac1"]->set(val,24,0xFF);
       writeRegister(registers_["Dac1"],force);
+      registers_["Dac9"]->set(val,0,0xFF);
+      registers_["Dac9"]->set(val,8,0xFF);
+      registers_["Dac9"]->set(val,16,0xFF);
+      registers_["Dac9"]->set(val,24,0xFF);
+      writeRegister(registers_["Dac9"],force);
 
       val = variables_["DacRampThresh"]->getInt();
       variables_["DacRampThreshVolt"]->set(dacToVoltString(val));
       registers_["Dac2"]->set(val,0,0xFF);
+      registers_["Dac2"]->set(val,8,0xFF);
+      registers_["Dac2"]->set(val,16,0xFF);
+      registers_["Dac2"]->set(val,24,0xFF);
       writeRegister(registers_["Dac2"],force);
 
       val = variables_["DacRangeThreshold"]->getInt();
       variables_["DacRangeThresholdVolt"]->set(dacToVoltString(val));
       registers_["Dac3"]->set(val,0,0xFF);
+      registers_["Dac3"]->set(val,8,0xFF);
+      registers_["Dac3"]->set(val,16,0xFF);
+      registers_["Dac3"]->set(val,24,0xFF);
       writeRegister(registers_["Dac3"],force);
 
       val = variables_["DacCalibration"]->getInt();
       variables_["DacCalibrationVolt"]->set(dacToVoltString(val));
       registers_["Dac4"]->set(val,0,0xFF);
+      registers_["Dac4"]->set(val,8,0xFF);
+      registers_["Dac4"]->set(val,16,0xFF);
+      registers_["Dac4"]->set(val,24,0xFF);
       writeRegister(registers_["Dac4"],force);
 
       tmp.str("");
@@ -729,33 +757,32 @@ void KpixAsic::writeConfig ( bool force ) {
       val = variables_["DacEventThreshold"]->getInt();
       variables_["DacEventThresholdVoltage"]->set(dacToVoltString(val));
       registers_["Dac5"]->set(val,0,0xFF);
+      registers_["Dac5"]->set(val,8,0xFF);
+      registers_["Dac5"]->set(val,16,0xFF);
+      registers_["Dac5"]->set(val,24,0xFF);
       writeRegister(registers_["Dac5"],force);
 
       val = variables_["DacShaperBias"]->getInt();
       variables_["DacShaperBiasVolt"]->set(dacToVoltString(val));
       registers_["Dac6"]->set(val,0,0xFF);
+      registers_["Dac6"]->set(val,8,0xFF);
+      registers_["Dac6"]->set(val,16,0xFF);
+      registers_["Dac6"]->set(val,24,0xFF);
       writeRegister(registers_["Dac6"],force);
 
       val = variables_["DacDefaultAnalog"]->getInt();
       variables_["DacDefaultAnalogVolt"]->set(dacToVoltString(val));
       registers_["Dac7"]->set(val,0,0xFF);
+      registers_["Dac7"]->set(val,8,0xFF);
+      registers_["Dac7"]->set(val,16,0xFF);
+      registers_["Dac7"]->set(val,24,0xFF);
       writeRegister(registers_["Dac7"],force);
 
       // Control register and variables
-      registers_["Control"]->set(variables_["CntrlCalibHigh"]->getInt(),11,0x1);
-      registers_["Control"]->set(variables_["CntrlForceLowGain"]->getInt(),13,0x1);
-      registers_["Control"]->set(variables_["CntrlLeakNullDisable"]->getInt(),14,0x1);
-      registers_["Control"]->set(variables_["CntrlHighGain"]->getInt(),2,0x1);
-      registers_["Control"]->set(variables_["CntrlNearNeighbor"]->getInt(),3,0x1);
-      registers_["Control"]->set(variables_["CntrlPolarity"]->getInt(),15,0x1);
       registers_["Control"]->set(variables_["CntrlDisPerReset"]->getInt(),0,0x1);
       registers_["Control"]->set(variables_["CntrlEnDcReset"]->getInt(),1,0x1);
-      registers_["Control"]->set(variables_["CntrlShortIntEn"]->getInt(),12,0x1);
-      registers_["Control"]->set(variables_["CntrlDisPwrCycle"]->getInt(),24,0x1);
-      registers_["Control"]->set(variables_["CntrlFeCurr"]->getInt(),25,0x1);
-      registers_["Control"]->set(variables_["CntrlHoldTime"]->getInt(),8,0x1);
-      registers_["Control"]->set(variables_["CntrlDiffTime"]->getInt(),28,0x1);
-      registers_["Control"]->set(variables_["CntrlTrigDisable"]->getInt(),16,0x1);
+      registers_["Control"]->set(variables_["CntrlHighGain"]->getInt(),2,0x1);
+      registers_["Control"]->set(variables_["CntrlNearNeighbor"]->getInt(),3,0x1);
 
       val = variables_["CntrlCalSource"]->getInt();
       registers_["Control"]->set((val==1)?1:0,6,0x1);
@@ -764,6 +791,23 @@ void KpixAsic::writeConfig ( bool force ) {
       val = variables_["CntrlForceTrigSource"]->getInt();
       registers_["Control"]->set((val==1)?1:0,7,0x1);
       registers_["Control"]->set((val==2)?1:0,5,0x1);
+
+      registers_["Control"]->set(variables_["CntrlHoldTime"]->getInt(),8,0x7);
+      registers_["Control"]->set(variables_["CntrlCalibHigh"]->getInt(),11,0x1);
+      registers_["Control"]->set(variables_["CntrlShortIntEn"]->getInt(),12,0x1);
+      registers_["Control"]->set(variables_["CntrlForceLowGain"]->getInt(),13,0x1);
+      registers_["Control"]->set(variables_["CntrlLeakNullDisable"]->getInt(),14,0x1);
+      registers_["Control"]->set(variables_["CntrlPolarity"]->getInt(),15,0x1);
+      registers_["Control"]->set(variables_["CntrlTrigDisable"]->getInt(),16,0x1);
+      registers_["Control"]->set(variables_["CntrlDisPwrCycle"]->getInt(),24,0x1);
+
+      // bit order of FeCurr is reversed
+      val = variables_["CntrlFeCurr"]->getInt();
+      registers_["Control"]->set(((val   )&0x1),27,0x1);
+      registers_["Control"]->set(((val>>1)&0x1),26,0x1);
+      registers_["Control"]->set(((val>>2)&0x1),25,0x1);
+
+      registers_["Control"]->set(variables_["CntrlDiffTime"]->getInt(),28,0x3);
 
       val = variables_["CntrlMonSource"]->getInt();
       registers_["Control"]->set((val==2)?1:0,30,0x1);
@@ -824,8 +868,6 @@ void KpixAsic::writeConfig ( bool force ) {
 void KpixAsic::verifyConfig ( ) {
    stringstream tmp;
    uint         x;
-
-   if ( getInt("enabled") == 0 ) return;
 
    verifyRegister(registers_["Config"]);
    verifyRegister(registers_["TimerA"]);

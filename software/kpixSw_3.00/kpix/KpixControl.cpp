@@ -33,6 +33,30 @@ KpixControl::KpixControl ( uint type ) : System("KpixControl") {
    // Data mask, lane 0, vc/type 1
    dataMask_ = 0x12;
 
+   // Set run states
+   vector<string> states;
+   states.resize(3);
+   states[0] = "Stopped";
+   states[1] = "Running Without Internal Trig/Cal";
+   states[2] = "Running With Internal Trig/Cal";
+   variables_["RunState"]->setEnums(states);
+
+   // Set run rates
+   vector<string> rates;
+   rates.resize(4);
+   rates[0] = "1Hz";
+   rates[1] = "10Hz";
+   rates[2] = "20Hz";
+   rates[3] = "30Hz";
+   variables_["RunRate"]->setEnums(rates);
+
+   addVariable(new Variable("DataBase",Variable::Configuration));
+   variables_["DataBase"]->setDescription("Base directory for auto data data files");
+
+   addVariable(new Variable("DataAuto",Variable::Configuration));
+   variables_["DataAuto"]->setDescription("Enable automatic data name generation");
+   variables_["DataAuto"]->setTrueFalse();
+
    // Add sub-devices
    switch(type) {
       case Opto: 
@@ -54,12 +78,69 @@ KpixControl::~KpixControl ( ) { }
 
 // Method to process a command
 void KpixControl::command ( string name, string arg ) {
+   stringstream tmp;
+   stringstream dateString;
+   long         tme;
+   struct tm    *tm_data;
+
+   // Intercept file open command, overwrite data file variable
+   if ( name == "OpenDataFile" && variables_["DataAuto"]->get() == "True" ) {
+      time(&tme);
+      tm_data = localtime(&tme);
+      tmp.str("");
+      tmp << variables_["DataBase"]->get() << "/";
+      tmp << dec << (tm_data->tm_year + 1900) << "_";
+      tmp << dec << setw(2) << setfill('0') << (tm_data->tm_mon+1) << "_";
+      tmp << dec << setw(2) << setfill('0') << tm_data->tm_mday    << "_";
+      tmp << dec << setw(2) << setfill('0') << tm_data->tm_hour    << "_";
+      tmp << dec << setw(2) << setfill('0') << tm_data->tm_min     << "_";
+      tmp << dec << setw(2) << setfill('0') << tm_data->tm_sec;
+      tmp << ".bin";
+      variables_["DataFile"]->set(tmp.str());
+   }
    System::command(name,arg);
 }
 
+// Method to set run state
+void KpixControl::setRunState ( string state ) {
+   stringstream err;
+
+   // Stopped state is requested
+   if ( state == "Stopped" ) swRunEnable_ = false;
+
+   // Running state is requested
+   else if ( !swRunning_ && ( state == "Running Without Internal Trig/Cal" ||
+                              state == "Running With Internal Trig/Cal" ) ) {
+      swRunRetState_ = "Stopped";
+      swRunEnable_   = true;
+      variables_["RunState"]->set(state);
+
+      // Determine run command 
+      if ( state == "Running Without Internal Trig/Cal" )
+         device(fpga_,0)->setRunCommand("RunAcquire");
+      if ( state == "Running With Internal Trig/Cal" ) 
+         device(fpga_,0)->setRunCommand("RunCalibrate");
+
+      // Setup run parameters
+      swRunCount_ = getInt("RunCount");
+      if      ( get("RunRate") == "30Hz") swRunPeriod_ =   33333;
+      else if ( get("RunRate") == "20Hz") swRunPeriod_ =   50000;
+      else if ( get("RunRate") == "10Hz") swRunPeriod_ =  100000;
+      else if ( get("RunRate") ==  "1Hz") swRunPeriod_ = 1000000;
+      else swRunPeriod_ = 1000000;
+
+      // Start thread
+      if ( swRunCount_ > 0 && pthread_create(&swRunThread_,NULL,swRunStatic,this) ) {
+         err << "KpixControl::startRun -> Failed to create ioThread" << endl;
+         if ( debug_ ) cout << err.str();
+         variables_["RunState"]->set(swRunRetState_);
+         throw(err.str());
+      }
+   }
+}
 
 //! Method to return state string
-string KpixControl::getState ( ) {
+string KpixControl::localState ( ) {
    string loc = "";
 
    loc = "System Ready To Take Data.\n";

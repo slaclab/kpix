@@ -1,19 +1,21 @@
 <system>
    <config>
-      <DataFile>test.bin</DataFile>
+      <DataFile>will_be_auto_generated.bin</DataFile>
+      <DataBase>/u1/w_si/newsamples/</DataBase>
+      <DataAuto>True</DataAuto>
       <DebugCmdTime>True</DebugCmdTime>
       <DebugEnable>False</DebugEnable>
       <RunCount>100</RunCount>
       <RunRate>10Hz</RunRate>
       <enabled>True</enabled>
       <optoFpga>
-         <BncSourceA>KpixClk</BncSourceA>
-         <BncSourceB>KpixClk</BncSourceB>
+         <BncSourceA>PwrUpAcq</BncSourceA>
+         <BncSourceB>PwrUpAcq</BncSourceB>
          <CalDelay>0x0</CalDelay>
          <ClkPeriodAcq>50nS</ClkPeriodAcq>
          <ClkPeriodDig>50nS</ClkPeriodDig>
-         <ClkPeriodIdle>50nS</ClkPeriodIdle>
-         <ClkPeriodRead>50nS</ClkPeriodRead>
+         <ClkPeriodIdle>100nS</ClkPeriodIdle>
+         <ClkPeriodRead>100nS</ClkPeriodRead>
          <DropData>False</DropData>
          <ExtRecord>Disable</ExtRecord>
          <ExtRunDelay>0x0</ExtRunDelay>
@@ -24,7 +26,7 @@
          <RawData>False</RawData>
          <RunEnable>False</RunEnable>
          <ScratchPad>0x0</ScratchPad>
-         <TrigEnable>0x0</TrigEnable>
+         <TrigEnable>0xff</TrigEnable>
          <TrigExpand>0x0</TrigExpand>
          <TrigSource>None</TrigSource>
          <enabled>True</enabled>
@@ -40,15 +42,15 @@
             <CfgDisableTemp>False</CfgDisableTemp>
             <CfgForceTemp>False</CfgForceTemp>
             <CfgTestDataEn>False</CfgTestDataEn>
-            <CntrlCalSource>External</CntrlCalSource>
+            <CntrlCalSource>Disable</CntrlCalSource>
             <CntrlCalibHigh>False</CntrlCalibHigh>
-            <CntrlDiffTime>Normal</CntrlDiffTime>
+            <CntrlDiffTime>Quarter</CntrlDiffTime>
             <CntrlDisPerReset>True</CntrlDisPerReset>
             <CntrlDisPwrCycle>False</CntrlDisPwrCycle>
             <CntrlEnDcReset>True</CntrlEnDcReset>
-            <CntrlFeCurr>61uA</CntrlFeCurr>
+            <CntrlFeCurr>31uA</CntrlFeCurr>
             <CntrlForceLowGain>False</CntrlForceLowGain>
-            <CntrlForceTrigSource>External</CntrlForceTrigSource>
+            <CntrlForceTrigSource>Disable</CntrlForceTrigSource>
             <CntrlHighGain>False</CntrlHighGain>
             <CntrlHoldTime>64x</CntrlHoldTime>
             <CntrlLeakNullDisable>True</CntrlLeakNullDisable>
@@ -97,17 +99,16 @@
             <DacShaperBias>0x78</DacShaperBias>
             <DacThresholdA>0x0</DacThresholdA>
             <DacThresholdB>0x0</DacThresholdB>
-            <SerialNumber></SerialNumber>
-            <TimeBunchClkDelay>0x0</TimeBunchClkDelay>
-            <TimeDeselDelay>0x0</TimeDeselDelay>
-            <TimeDigitizeDelay>0x0</TimeDigitizeDelay>
-            <TimeLeakageNullOff>0x0</TimeLeakageNullOff>
-            <TimeOffsetNullOff>0x0</TimeOffsetNullOff>
-            <TimePowerUpOn>0x0</TimePowerUpOn>
-            <TimeResetOff>0x0</TimeResetOff>
-            <TimeResetOn>0x0</TimeResetOn>
-            <TimeThreshOff>0x0</TimeThreshOff>
-            <TrigInhibitOff>0x0</TrigInhibitOff>
+            <TimeBunchClkDelay>0x4e29</TimeBunchClkDelay>
+            <TimeDeselDelay>0x89</TimeDeselDelay>
+            <TimeDigitizeDelay>0xc7</TimeDigitizeDelay>
+            <TimeLeakageNullOff>0x3</TimeLeakageNullOff>
+            <TimeOffsetNullOff>0x3cef</TimeOffsetNullOff>
+            <TimePowerUpOn>0x11</TimePowerUpOn>
+            <TimeResetOff>0x3e7f</TimeResetOff>
+            <TimeResetOn>0xd</TimeResetOn>
+            <TimeThreshOff>0x3db7</TimeThreshOff>
+            <TrigInhibitOff>2000</TrigInhibitOff>
             <Version>0x9</Version>
             <enabled>False</enabled>
          </kpixAsic>
@@ -115,9 +116,11 @@
       <enabled>True</enabled>
       <optoFpga index="0">
          <kpixAsic index="0">
+            <SerialNumber>999</SerialNumber>
             <enabled>True</enabled>
          </kpixAsic>
          <kpixAsic index="3">
+            <SerialNumber>0</SerialNumber>
             <enabled>True</enabled>
          </kpixAsic>
       </optoFpga>

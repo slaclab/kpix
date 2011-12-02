@@ -179,8 +179,7 @@ OptoFpga::OptoFpga ( uint destination, uint index, Device *parent ) :
    addRegister(new Register("TriggerControl", 0x0200000B));
 
    addVariable(new Variable("TrigEnable", Variable::Configuration));
-   variables_["TrigEnable"]->setDescription("External trigger enable");
-   //variables_["TrigEnable"]->setTrueFalse();
+   variables_["TrigEnable"]->setDescription("External trigger enable, mask. One bit per clock period.");
 
    addVariable(new Variable("TrigExpand", Variable::Configuration));
    variables_["TrigExpand"]->setDescription("Expand external trigger");

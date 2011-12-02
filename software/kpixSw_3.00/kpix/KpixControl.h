@@ -37,6 +37,14 @@ class KpixControl : public System {
       //! Deconstructor
       ~KpixControl ( );
 
+      //! Method to set run state
+      /*!
+       * Set run state for the system. Default states are
+       * Stopped & Running. Stopped must always be supported.
+       * \param state    New run state
+      */
+      void setRunState ( string state );
+
       //! Method to process a command
       /*!
        * Returns status string if locally processed. Otherwise
@@ -47,8 +55,8 @@ class KpixControl : public System {
       */
       virtual void command ( string name, string arg );
 
-      //! Method to return state string
-      string getState ( );
+      //! Return local state, specific to each implementation
+      string localState();
 
       //! Method to perform soft reset
       void softReset ( );
