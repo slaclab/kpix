@@ -26,10 +26,10 @@ using namespace std;
 
 // Constructor
 OptoFpga::OptoFpga ( uint destination, uint index, Device *parent ) : 
-                     Device(destination,0,"optoFpga",index,parent) {
+                     Device(destination,0,"kpixFpga",index,parent) {
 
    // Description
-   desc_ = "Opto FPGA Object.";
+   desc_ = "KPIX FPGA Object.";
 
    // Setup registers & variables
    addRegister(new Register("VersionMastReset", 0x02000000));
@@ -298,27 +298,31 @@ void OptoFpga::command ( string name, string arg) {
 
    // Command is local
    if ( name == "MasterReset" ) {
+      registerLock();
       registers_["VersionMastReset"]->set(0x1);
       writeRegister(registers_["VersionMastReset"],true,false);
+      registerUnLock();
    }
    else if ( name == "KpixHardReset" ) {
+      registerLock();
       registers_["JumperKpixReset"]->set(0x1);
       writeRegister(registers_["JumperKpixReset"],true,true);
+      registerUnLock();
    }
    else if ( name == "CountReset" ) {
+      registerLock();
       writeRegister(registers_["ChecksumError"],true,true);
       writeRegister(registers_["ParityError"],true,true);
       writeRegister(registers_["TrainNumber"],true,true);
       writeRegister(registers_["DeadCounter"],true,true);
+      registerUnLock();
    }
    else Device::command(name, arg);
 }
 
 // Method to read status registers and update variables
 void OptoFpga::readStatus ( ) {
-
-   // Device is not enabled
-   if ( getInt("enabled") == 0 ) return;
+   registerLock();
 
    readRegister(registers_["VersionMastReset"]);
    variables_["Version"]->setInt(registers_["VersionMastReset"]->get());
@@ -340,13 +344,12 @@ void OptoFpga::readStatus ( ) {
 
    // Sub devices
    Device::readStatus();
+   registerUnLock();
 }
 
 // Method to read configuration registers and update variables
 void OptoFpga::readConfig ( ) {
-
-   // Device is not enabled
-   if ( getInt("enabled") == 0 ) return;
+   registerLock();
 
    // Scratchpad
    readRegister(registers_["ScratchPad"]);
@@ -403,13 +406,12 @@ void OptoFpga::readConfig ( ) {
 
    // Sub devices
    Device::readConfig();
+   registerUnLock();
 }
 
 // Method to write configuration registers
 void OptoFpga::writeConfig ( bool force ) {
-
-   // Device is not enabled
-   if ( getInt("enabled") == 0 ) return;
+   registerLock();
 
    // Scratchpad
    registers_["ScratchPad"]->set(variables_["ScratchPad"]->getInt());
@@ -467,24 +469,22 @@ void OptoFpga::writeConfig ( bool force ) {
 
    // Sub devices
    Device::writeConfig(force);
+   registerUnLock();
 }
 
 // Verify hardware state of configuration
 void OptoFpga::verifyConfig ( ) {
-
-   if ( getInt("enabled") == 0 ) return;
+   registerLock();
 
    verifyRegister(registers_["ScratchPad"]);
    verifyRegister(registers_["ClockSelect"]);
    verifyRegister(registers_["ReadControl"]);
    verifyRegister(registers_["KPIXControl"]);
-   verifyRegister(registers_["ParityError"]);
    verifyRegister(registers_["TriggerControl"]);
-   verifyRegister(registers_["TrainNumber"]);
-   verifyRegister(registers_["DeadCounter"]);
    verifyRegister(registers_["ExternalRun"]);
    verifyRegister(registers_["RunEnable"]);
 
    Device::verifyConfig();
+   registerUnLock();
 }
 

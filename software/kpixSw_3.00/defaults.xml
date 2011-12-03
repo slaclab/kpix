@@ -46,7 +46,7 @@
             <CntrlCalibHigh>False</CntrlCalibHigh>
             <CntrlDiffTime>Quarter</CntrlDiffTime>
             <CntrlDisPerReset>True</CntrlDisPerReset>
-            <CntrlDisPwrCycle>False</CntrlDisPwrCycle>
+            <CntrlDisPwrCycle>True</CntrlDisPwrCycle>
             <CntrlEnDcReset>True</CntrlEnDcReset>
             <CntrlFeCurr>31uA</CntrlFeCurr>
             <CntrlForceLowGain>False</CntrlForceLowGain>
