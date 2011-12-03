@@ -114,6 +114,7 @@ void KpixControl::setRunState ( string state ) {
       swRunRetState_ = "Stopped";
       swRunEnable_   = true;
       variables_["RunState"]->set(state);
+      device(fpga_,0)->setAndWrite("RunEnable","True");
 
       // Determine run command 
       if ( state == "Running Without Internal Trig/Cal" )
@@ -145,6 +146,10 @@ string KpixControl::localState ( ) {
 
    loc = "System Ready To Take Data.\n";
 
+   // Run has stopped
+   if ( variables_["RunState"]->get() == "Stopped" && device(fpga_,0)->get("RunEnable") == "True" )
+      device(fpga_,0)->setAndWrite("RunEnable","False");
+
    return(loc);
 }
 
@@ -167,7 +172,7 @@ void KpixControl::hardReset ( ) {
       sleep(1);
       try { 
          gotVer = true;
-         device(fpga_,0)->readSingle("Version");
+         device(fpga_,0)->readSingle("VersionMastReset");
       } catch ( string err ) { 
          if ( count > 5 ) {
             gotVer = true;

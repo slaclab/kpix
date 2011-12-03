@@ -3,7 +3,7 @@ CC     := g++
 DEF    :=
 BIN    := $(PWD)/bin
 OBJ    := $(PWD)/.obj
-CFLAGS := -Wall `xml2-config --cflags` -I$(PWD)/generic -I$(PWD)/kpix
+CFLAGS := -Wall `xml2-config --cflags` -I$(PWD)/generic -I$(PWD)/kpix -I$(PWD)/offline
 LFLAGS := `xml2-config --libs` -lpthread -lrt
 
 # Generic Sources
@@ -11,6 +11,12 @@ GEN_DIR := $(PWD)/generic
 GEN_SRC := $(wildcard $(GEN_DIR)/*.cpp)
 GEN_HDR := $(wildcard $(GEN_DIR)/*.h)
 GEN_OBJ := $(patsubst $(GEN_DIR)/%.cpp,$(OBJ)/%.o,$(GEN_SRC))
+
+# Offline Sources
+OFF_DIR := $(PWD)/offline
+OFF_SRC := $(wildcard $(OFF_DIR)/*.cpp)
+OFF_HDR := $(wildcard $(OFF_DIR)/*.h)
+OFF_OBJ := $(patsubst $(OFF_DIR)/%.cpp,$(OBJ)/%.o,$(OFF_SRC))
 
 # Kpix Sources
 KPX_DIR := $(PWD)/kpix
@@ -24,7 +30,7 @@ UTL_SRC := $(wildcard $(UTL_DIR)/*.cpp)
 UTL_BIN := $(patsubst $(UTL_DIR)/%.cpp,$(BIN)/%,$(UTL_SRC))
 
 # Default
-all: dir $(GEN_OBJ) $(KPX_OBJ) $(UTL_BIN) gui
+all: dir $(GEN_OBJ) $(KPX_OBJ) $(OFF_OBJ) $(UTL_BIN) gui
 
 # Object directory
 dir:
@@ -40,21 +46,19 @@ clean:
 $(OBJ)/%.o: $(GEN_DIR)/%.cpp $(GEN_DIR)/%.h
 	$(CC) -c $(CFLAGS) $(DEF) -o $@ $<
 
+# Compile offlineSources
+$(OBJ)/%.o: $(OFF_DIR)/%.cpp $(OFF_DIR)/%.h
+	$(CC) -c $(CFLAGS) $(DEF) -o $@ $<
+
 # Compile Tracker Sources
 $(OBJ)/%.o: $(KPX_DIR)/%.cpp $(KPX_DIR)/%.h
 	$(CC) -c $(CFLAGS) $(DEF) -o $@ $<
 
 # Comile utilities
-$(BIN)/%: $(UTL_DIR)/%.cpp $(GEN_OBJ) $(KPX_OBJ) $(OFF_OBJ)
+$(BIN)/%: $(UTL_DIR)/%.cpp $(GEN_OBJ) $(OFF_OBJ) $(KPX_OBJ) $(OFF_OBJ)
 	$(CC) $(CFLAGS) $(LFLAGS) $(DEF) $(OBJ)/* -o $@ $<
 
 # Compile gui
 gui:
 	cd cntrlGui; qmake
 	cd cntrlGui; make
-
-# Generate documentation
-docs: 
-	cd ./doc; doxygen doxygen.cfg
-	cd ./doc/latex; make
-	cp ./doc/latex/refman.pdf ./doc/tracker_software.pdf 

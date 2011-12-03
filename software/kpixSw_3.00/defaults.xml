@@ -50,7 +50,7 @@
             <CntrlEnDcReset>True</CntrlEnDcReset>
             <CntrlFeCurr>31uA</CntrlFeCurr>
             <CntrlForceLowGain>False</CntrlForceLowGain>
-            <CntrlForceTrigSource>Disable</CntrlForceTrigSource>
+            <CntrlForceTrigSource>Internal</CntrlForceTrigSource>
             <CntrlHighGain>False</CntrlHighGain>
             <CntrlHoldTime>64x</CntrlHoldTime>
             <CntrlLeakNullDisable>True</CntrlLeakNullDisable>
