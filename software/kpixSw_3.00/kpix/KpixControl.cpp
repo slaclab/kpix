@@ -62,12 +62,10 @@ KpixControl::KpixControl ( uint type ) : System("KpixControl") {
       case Opto: 
          cout << "KpixControl::KpixControl -> Using Opto FPGA" << endl;
          addDevice(new OptoFpga(0, 0, this));
-         fpga_ = "optoFpga";
          break;
       case Con: 
          cout << "KpixControl::KpixControl -> Using Con FPGA" << endl;
          //addDevice(new FpgaCon(0, 0, this));
-         fpga_ = "conFpga";
          break;
       default: cout << "KpixControl::KpixControl -> Invalid FPGA Type" << endl; break;
    }
@@ -114,14 +112,14 @@ void KpixControl::setRunState ( string state ) {
       swRunRetState_ = "Stopped";
       swRunEnable_   = true;
       variables_["RunState"]->set(state);
-      device(fpga_,0)->set("RunEnable","True");
+      device("kpixFpga",0)->set("RunEnable","True");
       top()->writeConfig(false);
 
       // Determine run command 
       if ( state == "Running Without Internal Trig/Cal" )
-         device(fpga_,0)->setRunCommand("RunAcquire");
+         device("kpixFpga",0)->setRunCommand("RunAcquire");
       if ( state == "Running With Internal Trig/Cal" ) 
-         device(fpga_,0)->setRunCommand("RunCalibrate");
+         device("kpixFpga",0)->setRunCommand("RunCalibrate");
 
       // Setup run parameters
       swRunCount_ = getInt("RunCount");
@@ -148,8 +146,8 @@ string KpixControl::localState ( ) {
    loc = "System Ready To Take Data.\n";
 
    // Run has stopped
-   if ( variables_["RunState"]->get() == "Stopped" && device(fpga_,0)->get("RunEnable") == "True" ) {
-      device(fpga_,0)->set("RunEnable","False");
+   if ( variables_["RunState"]->get() == "Stopped" && device("kpixFpga",0)->get("RunEnable") == "True" ) {
+      device("kpixFpga",0)->set("RunEnable","False");
       top()->writeConfig(false);
    }
 
@@ -160,7 +158,7 @@ string KpixControl::localState ( ) {
 void KpixControl::softReset ( ) {
    System::softReset();
 
-   device(fpga_,0)->command("CountReset","");
+   device("kpixFpga",0)->command("CountReset","");
 }
 
 //! Method to perform hard reset
@@ -170,12 +168,12 @@ void KpixControl::hardReset ( ) {
 
    System::hardReset();
 
-   device(fpga_,0)->command("MasterReset","");
+   device("kpixFpga",0)->command("MasterReset","");
    do {
       sleep(1);
       try { 
          gotVer = true;
-         device(fpga_,0)->readSingle("VersionMastReset");
+         device("kpixFpga",0)->readSingle("VersionMastReset");
       } catch ( string err ) { 
          if ( count > 5 ) {
             gotVer = true;
@@ -187,6 +185,6 @@ void KpixControl::hardReset ( ) {
          }
       }
    } while ( !gotVer );
-   device(fpga_,0)->command("KpixCmdReset","");
+   device("kpixFpga",0)->command("KpixCmdReset","");
 }
 

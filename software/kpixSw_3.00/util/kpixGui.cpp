@@ -33,17 +33,17 @@ void sigTerm (int) {
 }
 
 int main (int argc, char **argv) {
-   OptoFpgaLink  optoLink; 
-   KpixControl   kpix(KpixControl::Opto);
    ControlServer cntrlServer;
-   string        xmlTest;
-   int           pid;
 
    // Catch signals
    signal (SIGINT,&sigTerm);
    cout << "Starting gui server" << endl;
 
    try {
+      OptoFpgaLink  optoLink; 
+      KpixControl   kpix(KpixControl::Opto);
+      string        xmlTest;
+      int           pid;
 
       // Setup top level device
       //cspad.setDebug(true,true);
@@ -90,7 +90,7 @@ int main (int argc, char **argv) {
 
    } catch ( string error ) {
       cout << "Caught Error: " << endl;
-      cout << error;
+      cout << error << endl;
       cntrlServer.stopListen();
    }
 }

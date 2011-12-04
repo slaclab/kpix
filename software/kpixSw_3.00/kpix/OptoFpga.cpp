@@ -298,31 +298,31 @@ void OptoFpga::command ( string name, string arg) {
 
    // Command is local
    if ( name == "MasterReset" ) {
-      registerLock();
+      REGISTER_LOCK
       registers_["VersionMastReset"]->set(0x1);
       writeRegister(registers_["VersionMastReset"],true,false);
-      registerUnLock();
+      REGISTER_UNLOCK
    }
    else if ( name == "KpixHardReset" ) {
-      registerLock();
+      REGISTER_LOCK
       registers_["JumperKpixReset"]->set(0x1);
       writeRegister(registers_["JumperKpixReset"],true,true);
-      registerUnLock();
+      REGISTER_UNLOCK
    }
    else if ( name == "CountReset" ) {
-      registerLock();
+      REGISTER_LOCK
       writeRegister(registers_["ChecksumError"],true,true);
       writeRegister(registers_["ParityError"],true,true);
       writeRegister(registers_["TrainNumber"],true,true);
       writeRegister(registers_["DeadCounter"],true,true);
-      registerUnLock();
+      REGISTER_UNLOCK
    }
    else Device::command(name, arg);
 }
 
 // Method to read status registers and update variables
 void OptoFpga::readStatus ( ) {
-   registerLock();
+   REGISTER_LOCK
 
    readRegister(registers_["VersionMastReset"]);
    variables_["Version"]->setInt(registers_["VersionMastReset"]->get());
@@ -344,12 +344,12 @@ void OptoFpga::readStatus ( ) {
 
    // Sub devices
    Device::readStatus();
-   registerUnLock();
+   REGISTER_UNLOCK
 }
 
 // Method to read configuration registers and update variables
 void OptoFpga::readConfig ( ) {
-   registerLock();
+   REGISTER_LOCK
 
    // Scratchpad
    readRegister(registers_["ScratchPad"]);
@@ -406,12 +406,12 @@ void OptoFpga::readConfig ( ) {
 
    // Sub devices
    Device::readConfig();
-   registerUnLock();
+   REGISTER_UNLOCK
 }
 
 // Method to write configuration registers
 void OptoFpga::writeConfig ( bool force ) {
-   registerLock();
+   REGISTER_LOCK
 
    // Scratchpad
    registers_["ScratchPad"]->set(variables_["ScratchPad"]->getInt());
@@ -469,12 +469,12 @@ void OptoFpga::writeConfig ( bool force ) {
 
    // Sub devices
    Device::writeConfig(force);
-   registerUnLock();
+   REGISTER_UNLOCK
 }
 
 // Verify hardware state of configuration
 void OptoFpga::verifyConfig ( ) {
-   registerLock();
+   REGISTER_LOCK
 
    verifyRegister(registers_["ScratchPad"]);
    verifyRegister(registers_["ClockSelect"]);
@@ -485,6 +485,6 @@ void OptoFpga::verifyConfig ( ) {
    verifyRegister(registers_["RunEnable"]);
 
    Device::verifyConfig();
-   registerUnLock();
+   REGISTER_UNLOCK
 }
 

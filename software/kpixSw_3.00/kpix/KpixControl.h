@@ -22,9 +22,6 @@ using namespace std;
 //! Class to contain APV25 
 class KpixControl : public System {
 
-      // FPGA type
-      string fpga_;
-
    public:
 
       // FPGA types

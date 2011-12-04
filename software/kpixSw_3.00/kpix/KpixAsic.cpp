@@ -425,7 +425,7 @@ KpixAsic::~KpixAsic ( ) { }
 
 // Method to read status registers and update variables
 void KpixAsic::readStatus ( ) {
-   registerLock();
+   REGISTER_LOCK
 
    // Read status register
    readRegister(registers_["Status"]);
@@ -434,7 +434,7 @@ void KpixAsic::readStatus ( ) {
    variables_["StatDataPerr"]->setInt(registers_["Status"]->get(1,0x1));
    variables_["StatTempEn"]->setInt(registers_["Status"]->get(2,0x1));
    variables_["StatTempIdValue"]->setInt(registers_["Status"]->get(24,0xFF));
-   registerUnLock();
+   REGISTER_UNLOCK
 }
 
 // Method to read configuration registers and update variables
@@ -449,7 +449,7 @@ void KpixAsic::readConfig ( ) {
    uint row;
    uint calCount;
 
-   registerLock();
+   REGISTER_LOCK
 
    // Config register & variables
    readRegister(registers_["Config"]);
@@ -628,7 +628,7 @@ void KpixAsic::readConfig ( ) {
       }
    }
 
-   registerUnLock();
+   REGISTER_UNLOCK
 }
 
 // Method to write configuration registers
@@ -644,7 +644,7 @@ void KpixAsic::writeConfig ( bool force ) {
    uint row;
    uint calCount;
 
-   registerLock();
+   REGISTER_LOCK
 
    // Config register & variables
    registers_["Config"]->set(variables_["CfgTestDataEn"]->getInt(),0,0x1);
@@ -870,7 +870,7 @@ void KpixAsic::writeConfig ( bool force ) {
       }
    }
 
-   registerUnLock();
+   REGISTER_UNLOCK
 }
 
 // Verify hardware state of configuration
@@ -878,7 +878,7 @@ void KpixAsic::verifyConfig ( ) {
    stringstream tmp;
    uint         x;
 
-   registerLock();
+   REGISTER_LOCK
 
    verifyRegister(registers_["Config"]);
    verifyRegister(registers_["TimerA"]);
@@ -914,6 +914,6 @@ void KpixAsic::verifyConfig ( ) {
          verifyRegister(registers_[tmp.str()]);
       }
    }
-   registerUnLock();
+   REGISTER_UNLOCK
 }
 
