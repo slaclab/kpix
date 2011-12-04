@@ -8,7 +8,7 @@
       <RunCount>100</RunCount>
       <RunRate>10Hz</RunRate>
       <enabled>True</enabled>
-      <optoFpga>
+      <kpixFpga>
          <BncSourceA>PwrUpAcq</BncSourceA>
          <BncSourceB>PwrUpAcq</BncSourceB>
          <CalDelay>0x0</CalDelay>
@@ -112,9 +112,9 @@
             <Version>0x9</Version>
             <enabled>False</enabled>
          </kpixAsic>
-      </optoFpga>
+      </kpixFpga>
       <enabled>True</enabled>
-      <optoFpga index="0">
+      <kpixFpga index="0">
          <kpixAsic index="0">
             <SerialNumber>999</SerialNumber>
             <enabled>True</enabled>
@@ -123,6 +123,6 @@
             <SerialNumber>0</SerialNumber>
             <enabled>True</enabled>
          </kpixAsic>
-      </optoFpga>
+      </kpixFpga>
    </config>
 </system>

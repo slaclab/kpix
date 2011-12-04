@@ -22,6 +22,9 @@ using namespace std;
 //! Class to contain APV25 
 class KpixControl : public System {
 
+      // Software run thread
+      void swRunThread();
+
    public:
 
       // FPGA types
@@ -50,7 +53,7 @@ class KpixControl : public System {
        * \param name     Command name
        * \param arg      Optional arg
       */
-      virtual void command ( string name, string arg );
+      void command ( string name, string arg );
 
       //! Return local state, specific to each implementation
       string localState();

@@ -18,6 +18,7 @@
 #include <Register.h>
 #include <Variable.h>
 #include <Command.h>
+#include <CommLink.h>
 #include <sstream>
 #include <iostream>
 #include <string>
@@ -73,6 +74,57 @@ KpixControl::KpixControl ( uint type ) : System("KpixControl") {
 
 // Deconstructor
 KpixControl::~KpixControl ( ) { }
+
+void KpixControl::swRunThread() {
+   struct timespec tme;
+   ulong           ctime;
+   ulong           ltime;
+   uint            runTotal;
+
+   swRunning_ = true;
+   clock_gettime(CLOCK_REALTIME,&tme);
+   ltime = (tme.tv_sec * 1000000) + (tme.tv_nsec/1000);
+
+   // Get run attributes
+   runTotal  = 0;
+
+   if ( debug_ ) {
+      cout << "KpixControl::runThread -> Name: " << name_ 
+           << ", Run Started"
+           << ", RunCount=" << dec << swRunCount_
+           << ", RunPeriod=" << dec << swRunPeriod_ << endl;
+   }
+
+   // Run
+   while ( swRunEnable_ && runTotal < swRunCount_ ) {
+
+      // Delay
+      do {
+         usleep(1);
+         clock_gettime(CLOCK_REALTIME,&tme);
+         ctime = (tme.tv_sec * 1000000) + (tme.tv_nsec/1000);
+      } while ( (ctime-ltime) < swRunPeriod_);
+
+      // Execute command
+      ltime = ctime;
+      commLink_->queueRunCommand();
+      runTotal++;
+      variables_["RunProgress"]->setInt((uint)(((double)runTotal/(double)swRunCount_)*100.0));
+   }
+
+   if ( debug_ ) {
+      cout << "KpixControl::runThread -> Name: " << name_ 
+           << ", Run Stopped, RunTotal = " << dec << runTotal << endl;
+   }
+
+   // Set run
+   sleep(1);
+   variables_["RunProgress"]->setInt((uint)(((double)runTotal/(double)swRunCount_)*100.0));
+   variables_["RunState"]->set(swRunRetState_);
+   swRunning_    = false;
+   allStatusReq_ = true;
+   pthread_exit(NULL);
+}
 
 // Method to process a command
 void KpixControl::command ( string name, string arg ) {
