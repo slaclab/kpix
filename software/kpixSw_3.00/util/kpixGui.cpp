@@ -41,7 +41,7 @@ int main (int argc, char **argv) {
 
    try {
       OptoFpgaLink  optoLink; 
-      KpixControl   kpix(KpixControl::Opto);
+      KpixControl   kpix(KpixControl::Opto,&optoLink);
       string        xmlTest;
       int           pid;
 
@@ -53,7 +53,6 @@ int main (int argc, char **argv) {
       optoLink.setDebug(true);
       optoLink.open("/dev/ttyUSB0");
       usleep(100);
-      kpix.setCommLink(&optoLink);
 
       // Setup control server
       //cntrlServer.setDebug(true);

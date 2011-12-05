@@ -19,6 +19,8 @@
 #include <System.h>
 using namespace std;
 
+class CommLink;
+
 //! Class to contain APV25 
 class KpixControl : public System {
 
@@ -32,7 +34,7 @@ class KpixControl : public System {
       static const uint Con  = 1;
 
       //! Constructor
-      KpixControl ( uint type );
+      KpixControl ( uint type, CommLink *commLink_ );
 
       //! Deconstructor
       ~KpixControl ( );
