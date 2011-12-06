@@ -1723,6 +1723,7 @@ void KpixAsic::setCntrlDisPwrCycle ( bool disPwrCycle, bool writeEn ) {
       }
       // Bit depends on version
       regSetBit(0x30,24,disPwrCycle,writeEn);
+      usleep(100);
    }
 }
 
