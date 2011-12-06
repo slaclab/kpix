@@ -24,6 +24,9 @@ class CommLink;
 //! Class to contain APV25 
 class KpixControl : public System {
 
+      // setup calibration config
+      void calibConfig ( uint channel, uint dac );
+
       // Software run thread
       void swRunThread();
 

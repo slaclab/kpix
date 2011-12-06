@@ -36,19 +36,22 @@ KpixControl::KpixControl ( uint type, CommLink *commLink ) : System("KpixControl
 
    // Set run states
    vector<string> states;
-   states.resize(3);
+   states.resize(4);
    states[0] = "Stopped";
    states[1] = "Running Without Internal Trig/Cal";
    states[2] = "Running With Internal Trig/Cal";
+   states[3] = "Running Calibration";
    variables_["RunState"]->setEnums(states);
 
    // Set run rates
    vector<string> rates;
-   rates.resize(4);
+   rates.resize(6);
    rates[0] = "1Hz";
    rates[1] = "10Hz";
    rates[2] = "20Hz";
    rates[3] = "30Hz";
+   rates[4] = "40Hz";
+   rates[5] = "40Hz";
    variables_["RunRate"]->setEnums(rates);
 
    // Data file nameing controls
@@ -60,25 +63,9 @@ KpixControl::KpixControl ( uint type, CommLink *commLink ) : System("KpixControl
    variables_["DataAuto"]->setTrueFalse();
 
    // Calib/dist control variables
-   addVariable(new Variable("CalGainHigh",Variable::Configuration));
-   variables_["CalGainHigh"]->setDescription("Enable high gain for calibration");
-   variables_["CalGainHigh"]->setTrueFalse();
-
-   addVariable(new Variable("CalGainNorm",Variable::Configuration));
-   variables_["CalGainNorm"]->setDescription("Enable normal gain for calibration");
-   variables_["CalGainNorm"]->setTrueFalse();
-
-   addVariable(new Variable("CalGainLow",Variable::Configuration));
-   variables_["CalGainLow"]->setDescription("Enable low gain for calibration");
-   variables_["CalGainLow"]->setTrueFalse();
-
    addVariable(new Variable("CalMeanCount",Variable::Configuration));
    variables_["CalMeanCount"]->setDescription("Set number of iterations for mean fitting");
-   variables_["CalMeanCount"]->setRange(0,10000);
-
-   addVariable(new Variable("CalMeanEnable",Variable::Configuration));
-   variables_["CalMeanEnable"]->setDescription("Enable calibration mean generation");
-   variables_["CalMeanEnable"]->setTrueFalse();
+   variables_["CalMeanCount"]->setRange(1,10000);
 
    addVariable(new Variable("CalDacMin",Variable::Configuration));
    variables_["CalDacMin"]->setDescription("Min DAC value for calibration");
@@ -94,11 +81,24 @@ KpixControl::KpixControl ( uint type, CommLink *commLink ) : System("KpixControl
 
    addVariable(new Variable("CalChanMin",Variable::Configuration));
    variables_["CalChanMin"]->setDescription("Calibration channel min");
-   variables_["CalChanMin"]->setRange(0,255);
+   variables_["CalChanMin"]->setRange(0,1023);
 
    addVariable(new Variable("CalChanMax",Variable::Configuration));
    variables_["CalChanMax"]->setDescription("Calibration channel max");
-   variables_["CalChanMax"]->setRange(0,255);
+   variables_["CalChanMax"]->setRange(0,1023);
+
+   addVariable(new Variable("CalState",Variable::Status));
+   variables_["CalState"]->setDescription("Calibration state");
+   vector<string> calState;
+   calState.resize(3);
+   calState[0] = "Idle";
+   calState[1] = "Baseline";
+   calState[2] = "Inject";
+   variables_["CalState"]->setEnums(calState);
+
+   addVariable(new Variable("CalChannel",Variable::Status));
+   variables_["CalChannel"]->setDescription("Calibration channel");
+   variables_["CalChannel"]->setComp(0,1,0,"");
 
    // Add sub-devices
    switch(type) {
@@ -117,65 +117,212 @@ KpixControl::KpixControl ( uint type, CommLink *commLink ) : System("KpixControl
 // Deconstructor
 KpixControl::~KpixControl ( ) { }
 
+// Setup config for calibration
+void KpixControl::calibConfig ( uint channel, uint dac ) {
+   uint            x;
+   uint            col;
+   uint            row;
+   string          modeString;
+   stringstream    newConfig;
+   newConfig.str("");
+
+   // Row column index
+   col = (channel>1023)?32:(channel/32);
+   row = channel%32;
+
+   // Disable self trigger. Set forced trigger
+   newConfig << "<system><kpixFpga><kpixAsic>";
+   newConfig << "<CntrlCalSource>Internal</CntrlCalSource>";
+   newConfig << "<CntrlForceTrigSource>Internal</CntrlForceTrigSource>";
+   newConfig << "<CntrlTrigDisable>True</CntrlTrigDisable>";
+   newConfig << "<DacCalibration>"<< dec << dac << "</DacCalibration>";
+   for (x=0; x < 32; x++) {
+      newConfig << "<ColMode_" << setw(2) << setfill('0') << dec << x << ">";
+      modeString = "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD";
+      if ( col == x ) modeString[row] = 'C';
+      newConfig << modeString;
+      newConfig << "</ColMode_" << setw(2) << setfill('0') << dec << x << ">";
+   }
+   newConfig << "</kpixAsic></kpixFpga></system>\n";
+   parseXml(newConfig.str());
+   commLink_->addConfig(configString(true));
+   commLink_->addStatus(statusString(true));
+   topConfigReq_ = false;
+   allConfigReq_ = false;
+   usleep(100);
+}
+
 void KpixControl::swRunThread() {
    struct timespec tme;
    ulong           ctime;
    ulong           ltime;
    uint            runTotal;
-   //uint            lastData;
+   uint            lastData;
+   uint            calMeanCount;
+   uint            calDacMin;
+   uint            calDacMax;
+   uint            calDacStep;
+   uint            calChanMin;
+   uint            calChanMax;
+   uint            calTotal;
+   uint            calChan;
+   uint            calDac;
+   bool            gotEvent;
+   stringstream    oldConfig;
+   oldConfig.str("");
 
-   swRunning_ = true;
-   clock_gettime(CLOCK_REALTIME,&tme);
-   ltime = (tme.tv_sec * 1000000) + (tme.tv_nsec/1000);
+   try {
 
-   // Get run attributes
-   runTotal  = 0;
+      // Enable run counter register
+      device("kpixFpga",0)->set("RunEnable","True");
+      writeConfig(false);
 
-   if ( debug_ ) {
-      cout << "KpixControl::runThread -> Name: " << name_ 
-           << ", Run Started"
-           << ", RunCount=" << dec << swRunCount_
-           << ", RunPeriod=" << dec << swRunPeriod_ << endl;
-   }
+      // Calibration run enabled
+      if ( variables_["RunState"]->get() == "Running Calibration" ) {
+         calMeanCount = variables_["CalMeanCount"]->getInt();
+         calDacMin    = variables_["CalDacMin"]->getInt();
+         calDacMax    = variables_["CalDacMax"]->getInt();
+         calDacStep   = variables_["CalDacStep"]->getInt();
+         calChanMin   = variables_["CalChanMin"]->getInt();
+         calChanMax   = variables_["CalChanMax"]->getInt();
+         calTotal     = calMeanCount + ((calChanMax - calChanMin + 1) * ((calDacMax - calDacMin)/calDacStep));
+         calChan      = calChanMin;
+         calDac       = calDacMin;
 
-   // Save run count
-   //if ( 
-   //lastData = 
+         // Save old configuration
+         oldConfig << "<system>" << endl << configString(true) << "</system>" << endl;
 
-   // Run
-   while ( swRunEnable_ && runTotal < swRunCount_ ) {
+         // Update variables
+         variables_["CalState"]->set("Baseline");
+         variables_["CalChannel"]->setInt(0);
 
-      // Delay
-      do {
-         usleep(1);
-         clock_gettime(CLOCK_REALTIME,&tme);
-         ctime = (tme.tv_sec * 1000000) + (tme.tv_nsec/1000);
-      } while ( (ctime-ltime) < swRunPeriod_);
+         // Update config
+         calibConfig(9999,calDac);
+      }
+      else variables_["CalState"]->set("Idle");
 
-      // Check that we received a data frame
-      //while (                ) {
+      // Setup run status and init clock
+      lastData   = commLink_->dataRxCount();
+      runTotal   = 0;
+      swRunning_ = true;
+      clock_gettime(CLOCK_REALTIME,&tme);
+      ltime = (tme.tv_sec * 1000000) + (tme.tv_nsec/1000);
 
-          //if ( !swRunEnable_ ) break;
-      //}
+      // Show start
+      if ( debug_ ) {
+         cout << "KpixControl::runThread -> Name: " << name_ 
+              << ", Run Started"
+              << ", RunState=" << dec << variables_["RunState"]->get()
+              << ", RunCount=" << dec << swRunCount_
+              << ", RunPeriod=" << dec << swRunPeriod_ << endl;
+      }
 
-      // Execute command
-      ltime = ctime;
-      commLink_->queueRunCommand();
-      runTotal++;
-      variables_["RunProgress"]->setInt((uint)(((double)runTotal/(double)swRunCount_)*100.0));
-   }
+      // Run
+      while ( swRunEnable_ ) {
 
-   if ( debug_ ) {
-      cout << "KpixControl::runThread -> Name: " << name_ 
-           << ", Run Stopped, RunTotal = " << dec << runTotal << endl;
+         // Delay between attempts
+         do {
+            usleep(1);
+            clock_gettime(CLOCK_REALTIME,&tme);
+            ctime = (tme.tv_sec * 1000000) + (tme.tv_nsec/1000);
+         } while ( (ctime-ltime) < swRunPeriod_);
+
+         // Check that we received a data frame
+         gotEvent = true;
+         while ( commLink_->dataRxCount() == lastData ) {
+            usleep(1);
+            clock_gettime(CLOCK_REALTIME,&tme);
+            ctime = (tme.tv_sec * 1000000) + (tme.tv_nsec/1000);
+
+            // One second has passed. event was missed.
+            if ( (ctime-ltime) > 1000000) {
+               gotEvent = false;
+               if ( debug_ ) cout << "KpixControl::runThread -> Missed data event. Retrying" << endl;
+
+               // Verify and re-configure here
+
+               break;
+            }
+            if ( !swRunEnable_ ) break;
+         }
+         if ( !swRunEnable_ ) break;
+
+         // Setup next calibration data point
+         if ( variables_["RunState"]->get() == "Running Calibration" ) {
+            if ( gotEvent ) runTotal++;
+            variables_["RunProgress"]->setInt((uint)(((double)runTotal/(double)calTotal)*100.0));
+
+            // running baseline
+            if ( gotEvent && variables_["CalState"]->get() == "Baseline" ) {
+
+               // Mean run is done
+               if ( runTotal >= calMeanCount ) {
+                  variables_["CalState"]->set("Inject");
+                  calChan = calChanMin;
+                  calDac  = calDacMin;
+                  variables_["CalChannel"]->setInt(calChan);
+                  calibConfig(calChan,calDac);
+                  topConfigReq_ = true;
+                  topStatusReq_ = true;
+               }
+            }
+
+            // running calibration
+            else if ( gotEvent && variables_["CalState"]->get() == "Inject" ) {
+
+               // Increment cal dac
+               calDac += calDacStep;
+               if ( calDac > calDacMax ) {
+                  calDac = calDacMin;
+                  calChan++;
+               }
+
+               // Are we done?
+               if ( calChan > calChanMax ) break;
+
+               // Write config
+               variables_["CalChannel"]->setInt(calChan);
+               calibConfig(calChan,calDac);
+               if ( calDac == calDacMin ) {
+                  topConfigReq_ = true;
+                  topStatusReq_ = true;
+               }
+            }
+         }
+         else {
+            if ( gotEvent ) runTotal++;
+            variables_["RunProgress"]->setInt((uint)(((double)runTotal/(double)swRunCount_)*100.0));
+            if ( runTotal >= swRunCount_ ) break;
+         }
+
+         // Execute command
+         lastData = commLink_->dataRxCount();
+         ltime = ctime;
+         commLink_->queueRunCommand();
+      }
+
+      // Restore configuration here
+      variables_["CalState"]->set("Idle");
+      variables_["CalChannel"]->setInt(0);
+      parseXml(oldConfig.str());
+      usleep(100);
+
+   } catch (string error) {
+      errorBuffer_.append("<error>");
+      errorBuffer_.append(error); 
+      errorBuffer_.append("</error>\n");
+      configureMsg_ = "A System Error Has Occured!\n";
+      configureMsg_.append("Please HardReset and then configure!\n");
    }
 
    // Set run
    sleep(1);
-   variables_["RunProgress"]->setInt((uint)(((double)runTotal/(double)swRunCount_)*100.0));
    variables_["RunState"]->set(swRunRetState_);
    swRunning_    = false;
+   device("kpixFpga",0)->set("RunEnable","False");
+   writeConfig(false);
    allStatusReq_ = true;
+   topConfigReq_ = true;
    pthread_exit(NULL);
 }
 
@@ -213,22 +360,23 @@ void KpixControl::setRunState ( string state ) {
 
    // Running state is requested
    else if ( !swRunning_ && ( state == "Running Without Internal Trig/Cal" ||
-                              state == "Running With Internal Trig/Cal" ) ) {
+                              state == "Running With Internal Trig/Cal"    ||
+                              state == "Running Calibration" ) ) {
       swRunRetState_ = "Stopped";
       swRunEnable_   = true;
       variables_["RunState"]->set(state);
-      device("kpixFpga",0)->set("RunEnable","True");
-      writeConfig(false);
 
       // Determine run command 
       if ( state == "Running Without Internal Trig/Cal" )
          device("kpixFpga",0)->setRunCommand("RunAcquire");
-      if ( state == "Running With Internal Trig/Cal" ) 
+      else 
          device("kpixFpga",0)->setRunCommand("RunCalibrate");
 
       // Setup run parameters
       swRunCount_ = getInt("RunCount");
-      if      ( get("RunRate") == "30Hz") swRunPeriod_ =   33333;
+      if      ( get("RunRate") == "50Hz") swRunPeriod_ =   20000;
+      else if ( get("RunRate") == "40Hz") swRunPeriod_ =   25000;
+      else if ( get("RunRate") == "30Hz") swRunPeriod_ =   33333;
       else if ( get("RunRate") == "20Hz") swRunPeriod_ =   50000;
       else if ( get("RunRate") == "10Hz") swRunPeriod_ =  100000;
       else if ( get("RunRate") ==  "1Hz") swRunPeriod_ = 1000000;
@@ -250,10 +398,14 @@ string KpixControl::localState ( ) {
 
    loc = "System Ready To Take Data.\n";
 
-   // Run has stopped
-   if ( variables_["RunState"]->get() == "Stopped" && device("kpixFpga",0)->get("RunEnable") == "True" ) {
-      device("kpixFpga",0)->set("RunEnable","False");
-      writeConfig(false);
+   if ( variables_["RunState"]->get() == "Running Calibration" ) {
+      loc.append("Calibration running: ");
+      loc.append(variables_["CalState"]->get());
+      if ( variables_["CalState"]->get() == "Inject" ) {
+         loc.append(" Channel: ");
+         loc.append(variables_["CalChannel"]->get());
+      }
+      loc.append("\n");
    }
 
    return(loc);

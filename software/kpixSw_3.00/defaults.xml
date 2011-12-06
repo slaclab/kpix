@@ -1,5 +1,11 @@
 <system>
    <config>
+      <CalChanMax>1024</CalChanMax>
+      <CalChanMin>0</CalChanMin>
+      <CalDacMin>0</CalDacMin>
+      <CalDacMax>255</CalDacMax>
+      <CalDacStep>16</CalDacStep>
+      <CalMeanCount>4000</CalMeanCount>
       <DataFile>will_be_auto_generated.bin</DataFile>
       <DataBase>/u1/w_si/newsamples/</DataBase>
       <DataAuto>True</DataAuto>
@@ -109,7 +115,7 @@
             <TimeResetOn>0xd</TimeResetOn>
             <TimeThreshOff>0x3db7</TimeThreshOff>
             <TrigInhibitOff>2000</TrigInhibitOff>
-            <Version>0x9</Version>
+            <Version>0xa</Version>
             <enabled>False</enabled>
          </kpixAsic>
       </kpixFpga>
