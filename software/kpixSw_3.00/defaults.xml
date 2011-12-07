@@ -1,6 +1,6 @@
 <system>
    <config>
-      <CalChanMax>1024</CalChanMax>
+      <CalChanMax>1023</CalChanMax>
       <CalChanMin>0</CalChanMin>
       <CalDacMin>0</CalDacMin>
       <CalDacMax>255</CalDacMax>
