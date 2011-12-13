@@ -86,7 +86,7 @@ KpixControl::KpixControl ( uint type, CommLink *commLink ) : System("KpixControl
    addVariable(new Variable("CalChanMin",Variable::Configuration));
    variables_["CalChanMin"]->setDescription("Calibration channel min");
    variables_["CalChanMin"]->setRange(0,1023);
-   variables_["CalChanMin"]->set(0);
+   variables_["CalChanMin"]->setInt(0);
 
    addVariable(new Variable("CalChanMax",Variable::Configuration));
    variables_["CalChanMax"]->setDescription("Calibration channel max");
@@ -156,7 +156,7 @@ void KpixControl::calibConfig ( uint channel, uint dac ) {
       newConfig << "</ColMode_" << setw(2) << setfill('0') << dec << x << ">";
    }
    newConfig << "</kpixAsic></kpixFpga></config></system>\n";
-   parseXml(newConfig.str());
+   parseXml(newConfig.str(),false);
 
    // Update a few status variables in data file
    newConfig.str("");
@@ -322,7 +322,7 @@ void KpixControl::swRunThread() {
       if ( variables_["RunState"]->get() == "Running Calibration" ) {
          variables_["CalState"]->set("Idle");
          variables_["CalChannel"]->setInt(0);
-         parseXml(oldConfig.str());
+         parseXml(oldConfig.str(),false);
          usleep(100);
       }
 
