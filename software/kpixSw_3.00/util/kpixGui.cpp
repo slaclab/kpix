@@ -52,6 +52,7 @@ int main (int argc, char **argv) {
       optoLink.setMaxRxTx(500000);
       optoLink.setDebug(true);
       optoLink.open("/dev/ttyUSB0");
+      optoLink.openDataNet("localhost",8099);
       usleep(100);
 
       // Setup control server
