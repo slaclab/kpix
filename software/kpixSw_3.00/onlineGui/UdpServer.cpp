@@ -97,13 +97,13 @@ void UdpServer::sockReady() {
                // Config
                if ( (lastSize_ & 0xF0000000) == 0x10000000 ) {
                   cout << "Got Config. Data Count=" << dec << dataCount_ << endl;
-                  xmlStatus(node);
+                  xmlConfig(node);
                }
 
                // Status               
                else if ( (lastSize_ & 0xF0000000) == 0x20000000 ) {
                   cout << "Got Status. Data Count=" << dec << dataCount_ << endl;
-                  xmlConfig(node);
+                  xmlStatus(node);
                }
             }
          }

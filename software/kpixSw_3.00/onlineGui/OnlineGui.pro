@@ -1,8 +1,8 @@
 
 TEMPLATE = app
 FORMS    = 
-HEADERS  = ../generic/Data.h ../offline/KpixEvent.h ../offline/KpixSample.h UdpServer.h
-SOURCES  = ../generic/Data.cpp ../offline/KpixEvent.cpp ../offline/KpixSample.cpp OnlineGui.cpp UdpServer.cpp
+HEADERS  = ../generic/Data.h ../offline/KpixEvent.h ../offline/KpixSample.h UdpServer.h MainWindow.h
+SOURCES  = ../generic/Data.cpp ../offline/KpixEvent.cpp ../offline/KpixSample.cpp OnlineGui.cpp UdpServer.cpp MainWindow.cpp
 TARGET   = ../bin/onlineGui
 QT       += network xml
 INCLUDEPATH += ../generic/ ../offline/

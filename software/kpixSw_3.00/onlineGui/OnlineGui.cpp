@@ -23,6 +23,7 @@
 #include <QErrorMessage>
 #include <QObject>
 #include "UdpServer.h"
+#include "MainWindow.h"
 using namespace std;
 
 // Main Function
@@ -47,14 +48,13 @@ int main ( int argc, char **argv ) {
    UdpServer udpServer(8099);
    udpServer.setDebug(true);
 
-   //MainWindow mainWin;
+   MainWindow mainWin;
    //mainWin.show();
 
-   // System signals
-   //QObject::connect(mainWin.systemWindow,SIGNAL(sendCommand(QString)),&xmlClient,SLOT(sendCommand(QString)));
-
    // Udp signals
-   //QObject::connect(&xmlClient,SIGNAL(xmlMessage(QDomNode)),mainWin.systemWindow,SLOT(xmlMessage(QDomNode)));
+   QObject::connect(&udpServer,SIGNAL(xmlStatus(QDomNode)),&mainWin,SLOT(xmlStatus(QDomNode)));
+   QObject::connect(&udpServer,SIGNAL(xmlConfig(QDomNode)),&mainWin,SLOT(xmlConfig(QDomNode)));
+   QObject::connect(&udpServer,SIGNAL(rxData(uint,uint *)),&mainWin,SLOT(rxData(uint, uint*)));
 
    // Exit on window close
    QObject::connect(&a,SIGNAL(lastWindowClosed()), &a, SLOT(quit())); 
