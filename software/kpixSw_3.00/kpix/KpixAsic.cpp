@@ -400,7 +400,7 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
       tmp << "ColMode_" << setw(2) << setfill('0') << dec << x;
       addVariable(new Variable(tmp.str(),Variable::Configuration));
       variables_[tmp.str()]->setDescription("Channel configuration for column.\n"
-                                            "Each charactor represents a row in the column with row 31 being the leftmost value\n"
+                                            "Each charactor represents a row in the column with row 0 being the leftmost value\n"
                                             "The following charactors are allowed:\n"
                                             "D = Channel trigger disabled\n"
                                             "A = Channel trigger threshold A\n"
@@ -619,8 +619,8 @@ void KpixAsic::readConfig ( ) {
             switch(registers_[regB.str()]->get(row,0x1),registers_[regA.str()]->get(row,0x1)) {
                case  0: varTemp.append("B"); break;
                case  1: varTemp.append("D"); break;
-               case  2: varTemp.append("C"); break;
-               case  3: varTemp.append("A"); break;
+               case  2: varTemp.append("A"); break;
+               case  3: varTemp.append("C"); break;
                default: varTemp.append("D"); break;
             }
          }
@@ -849,12 +849,12 @@ void KpixAsic::writeConfig ( bool force ) {
                   break;
                case 'C':
                   registers_[regB.str()]->set(1,row,0x1);
-                  registers_[regA.str()]->set(0,row,0x1);
+                  registers_[regA.str()]->set(1,row,0x1);
                   varNew.append("C");
                   break;
                case 'A':
                   registers_[regB.str()]->set(1,row,0x1);
-                  registers_[regA.str()]->set(1,row,0x1);
+                  registers_[regA.str()]->set(0,row,0x1);
                   varNew.append("A");
                   break;
                default : 

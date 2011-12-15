@@ -35,9 +35,6 @@ class UdpServer : public QObject {
       // Last size value received
       uint lastSize_;
 
-      // Data counter
-      uint dataCount_;
-
    public:
 
       // Creation Class

@@ -49,7 +49,7 @@ int main ( int argc, char **argv ) {
    udpServer.setDebug(true);
 
    MainWindow mainWin;
-   //mainWin.show();
+   mainWin.show();
 
    // Udp signals
    QObject::connect(&udpServer,SIGNAL(xmlStatus(QDomNode)),&mainWin,SLOT(xmlStatus(QDomNode)));

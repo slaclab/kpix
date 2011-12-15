@@ -19,16 +19,37 @@
 #include <QWidget>
 #include <QMap>
 #include <QDomDocument>
+#include <QHBoxLayout>
+#include <QCheckBox>
 #include <KpixEvent.h>
+#include <HistWindow.h>
+#include <CalibWindow.h>
 using namespace std;
 
 class MainWindow : public QWidget {
   
+   Q_OBJECT
+
       QMap <QString, QString> config_;
       QMap <QString, QString> status_;
-      KpixEvent               event_;
- 
-   Q_OBJECT
+
+      KpixEvent   event_;
+      HistWindow  *hist_;
+      CalibWindow *calib_;
+
+      QSpinBox    *kpix_;
+      QSpinBox    *chan_;
+      QCheckBox   *follow_;
+
+      QLineEdit   *dText_;
+      uint        dCount_;
+      QTimer      timer_;
+
+      uint  calChannel_;
+      uint  calDac_;
+      bool  calInject_;
+      bool  kpixPol_;
+      bool  kpixCalHigh_;
 
       void xmlLevel (QDomNode node, QString level, bool config);
 
@@ -42,6 +63,8 @@ class MainWindow : public QWidget {
 
    public slots:
 
+      void selChanged();
+      void resetPressed();
       void xmlStatus (QDomNode node);
       void xmlConfig (QDomNode node);
       void rxData (uint size, uint *data);

@@ -115,13 +115,13 @@
             <TimeResetOn>0xd</TimeResetOn>
             <TimeThreshOff>0x3db7</TimeThreshOff>
             <TrigInhibitOff>2000</TrigInhibitOff>
-            <Version>0xa</Version>
+            <Version>0x9</Version>
             <enabled>False</enabled>
          </kpixAsic>
       </kpixFpga>
       <enabled>True</enabled>
       <kpixFpga index="0">
-         <kpixAsic index="0">
+         <kpixAsic index="2">
             <SerialNumber>999</SerialNumber>
             <enabled>True</enabled>
          </kpixAsic>

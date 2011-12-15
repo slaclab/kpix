@@ -30,7 +30,6 @@ UdpServer::UdpServer (int port) {
    connect(udpSocket_, SIGNAL(readyRead()), this, SLOT(sockReady()));
    debug_     = false;
    lastSize_  = 0;
-   dataCount_ = 0;
 }
 
 // Delete
@@ -66,10 +65,7 @@ void UdpServer::sockReady() {
                cout << "Size mismatch Got=" << dec << datagram.size() 
                     << " Exp=" << dec << (lastSize_*4) << endl;
             }
-            else {
-               rxData ((lastSize_&0x0FFFFFFF), (uint *)datagram.constData());
-               dataCount_++;
-            }
+            else rxData ((lastSize_&0x0FFFFFFF), (uint *)datagram.constData());
          }
 
          // Config or status
@@ -95,16 +91,10 @@ void UdpServer::sockReady() {
                node = elem.firstChild();
 
                // Config
-               if ( (lastSize_ & 0xF0000000) == 0x10000000 ) {
-                  cout << "Got Config. Data Count=" << dec << dataCount_ << endl;
-                  xmlConfig(node);
-               }
+               if ( (lastSize_ & 0xF0000000) == 0x10000000 ) xmlConfig(node);
 
                // Status               
-               else if ( (lastSize_ & 0xF0000000) == 0x20000000 ) {
-                  cout << "Got Status. Data Count=" << dec << dataCount_ << endl;
-                  xmlStatus(node);
-               }
+               else if ( (lastSize_ & 0xF0000000) == 0x20000000 ) xmlStatus(node);
             }
          }
          lastSize_ = 0;
