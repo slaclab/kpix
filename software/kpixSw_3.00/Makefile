@@ -24,7 +24,7 @@ UTL_SRC := $(wildcard $(UTL_DIR)/*.cpp)
 UTL_BIN := $(patsubst $(UTL_DIR)/%.cpp,$(BIN)/%,$(UTL_SRC))
 
 # Default
-all: dir $(GEN_OBJ) $(KPX_OBJ) $(UTL_BIN) gui
+all: dir $(GEN_OBJ) $(KPX_OBJ) $(UTL_BIN) gui ana online
 
 # Object directory
 dir:
@@ -34,7 +34,9 @@ dir:
 clean:
 	rm -rf $(OBJ)
 	rm -f $(BIN)/*
+	cd root; make clean
 	cd cntrlGui; qmake; make clean
+	cd onlineGui; qmake; make clean
 
 # Compile Common Sources
 $(OBJ)/%.o: $(GEN_DIR)/%.cpp $(GEN_DIR)/%.h
@@ -48,7 +50,17 @@ $(OBJ)/%.o: $(KPX_DIR)/%.cpp $(KPX_DIR)/%.h
 $(BIN)/%: $(UTL_DIR)/%.cpp $(GEN_OBJ) $(KPX_OBJ)
 	$(CC) $(CFLAGS) $(LFLAGS) $(DEF) $(OBJ)/* -o $@ $<
 
+# root
+ana:
+	cd root; make
+
 # Compile gui
 gui:
 	cd cntrlGui; qmake
 	cd cntrlGui; make
+
+# online gui
+online:
+	cd onlineGui; qmake
+	cd onlineGui; make
+

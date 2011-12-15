@@ -5,7 +5,8 @@
 setenv BASE ${PWD}
 
 # QT Base Directory
-setenv QTDIR   /afs/slac/g/reseng/qt/qt_4.6.3
+setenv QTDIR   /afs/slac/g/reseng/qt/qt_4.7.4_x64
+setenv QWTDIR  /afs/slac/g/reseng/qt/qwt_6.0_x64
 
 # Root base directory
 setenv ROOTSYS /afs/slac/g/reseng/root/root_5.20_x64
@@ -19,8 +20,8 @@ endif
 
 # Setup library path
 if ($?LD_LIBRARY_PATH) then
-   setenv LD_LIBRARY_PATH ${ROOTSYS}/lib:${QTDIR}/lib:${LD_LIBRARY_PATH}
+   setenv LD_LIBRARY_PATH ${ROOTSYS}/lib:${QTDIR}/lib:${QWTDIR}/lib:${LD_LIBRARY_PATH}
 else
-   setenv LD_LIBRARY_PATH ${ROOTSYS}/lib:${QTDIR}/lib
+   setenv LD_LIBRARY_PATH ${ROOTSYS}/lib:${QTDIR}/lib:${QWTDIR}/lib:
 endif
 
