@@ -368,6 +368,7 @@ void KpixControl::command ( string name, string arg ) {
 // Method to set run state
 void KpixControl::setRunState ( string state ) {
    stringstream err;
+   uint         toCount;
 
    // Stopped state is requested
    if ( state == "Stopped" ) swRunEnable_ = false;
@@ -403,7 +404,20 @@ void KpixControl::setRunState ( string state ) {
          variables_["RunState"]->set(swRunRetState_);
          throw(err.str());
       }
-      usleep(100);
+
+      // Wait for thread to start
+      toCount = 0;
+      while ( !swRunning_ ) {
+         usleep(100);
+         toCount++;
+         if ( toCount > 1000 ) {
+            swRunEnable_ = false;
+            err << "KpixControl::startRun -> Timeout waiting for runthread" << endl;
+            if ( debug_ ) cout << err.str();
+            variables_["RunState"]->set(swRunRetState_);
+            throw(err.str());
+         }
+      }
    }
 }
 
