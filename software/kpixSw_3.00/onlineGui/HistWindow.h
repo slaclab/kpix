@@ -23,6 +23,7 @@
 #include <QSpinBox>
 #include <QTimer>
 #include <qwt_plot.h>
+#include <qwt_plot_item.h>
 #include <qwt_plot_histogram.h>
 #include <KpixEvent.h>
 #include "KpixHistogram.h"
@@ -31,12 +32,12 @@ using namespace std;
 class HistWindow : public QWidget {
    Q_OBJECT
 
-      QwtPlotHistogram *hist_[4];
+      QwtPlotHistogram *hist_[4][2];
       QwtPlot          *plot_[4];
 
-      void setHistData(uint x, KpixHistogram *hist);
+      void setHistData(uint x, uint y, KpixHistogram *hist);
 
-      KpixHistogram data_[32][1024][4];
+      KpixHistogram data_[32][1024][4][2];
 
    public:
 
@@ -49,6 +50,11 @@ class HistWindow : public QWidget {
       void rxData (KpixEvent *event);
       void rePlot(uint kpix, uint chan);
       void resetPlot();
+
+   public slots:
+
+      void showItem( QwtPlotItem *item, bool on );
+
 };
 
 #endif

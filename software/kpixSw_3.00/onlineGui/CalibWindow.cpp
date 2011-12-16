@@ -22,6 +22,8 @@
 #include <QFormLayout>
 #include <QPushButton>
 #include <qwt_plot.h>
+#include <qwt_legend.h>
+#include <qwt_legend_item.h>
 #include <qwt_symbol.h>
 #include <qwt_plot_layout.h>
 #include <qwt_plot_histogram.h>
@@ -51,6 +53,8 @@ double CalibWindow::dacToCharge ( uint dac, bool pos, bool high ) {
 CalibWindow::CalibWindow ( QWidget *parent ) : QWidget (parent) {
    QString tmp;
    uint x;
+   QPen   p1, p2;
+   QBrush b1, b2;
 
    QGridLayout *top = new QGridLayout;
    this->setLayout(top);
@@ -66,14 +70,50 @@ CalibWindow::CalibWindow ( QWidget *parent ) : QWidget (parent) {
       plot_[x]->setAxisTitle(QwtPlot::xBottom,"Charge");
       plot_[x]->plotLayout()->setAlignCanvasToScales(true);
 
-      curve_[x] = new QwtPlotCurve;
-      curve_[x]->attach(plot_[x]);
+      curve_[x][0] = new QwtPlotCurve("R0");
+      curve_[x][0]->attach(plot_[x]);
+      p1 = curve_[x][0]->pen();
+      b1 = curve_[x][0]->brush();
+      p1.setColor(Qt::blue);
+      b1.setColor(Qt::blue);
+      curve_[x][0]->setPen(p1);
+      curve_[x][0]->setBrush(b1);
 
-      QwtSymbol *symbol = new QwtSymbol( QwtSymbol::XCross );
-      symbol->setPen( QPen( Qt::darkBlue, 2 ) );
-      symbol->setSize( 7 );
-      curve_[x]->setSymbol( symbol );
+      QwtSymbol *symbol1 = new QwtSymbol( QwtSymbol::XCross );
+      symbol1->setPen( QPen( Qt::blue, 2 ) );
+      symbol1->setSize( 7 );
+      curve_[x][0]->setSymbol( symbol1 );
+
+      curve_[x][1] = new QwtPlotCurve("R1");
+      curve_[x][1]->attach(plot_[x]);
+      p2 = curve_[x][1]->pen();
+      b2 = curve_[x][1]->brush();
+      p2.setColor(Qt::yellow);
+      b2.setColor(Qt::yellow);
+      curve_[x][1]->setPen(p2);
+      curve_[x][1]->setBrush(b2);
+
+      QwtSymbol *symbol2 = new QwtSymbol( QwtSymbol::XCross );
+      symbol2->setPen( QPen( Qt::yellow, 2 ) );
+      symbol2->setSize( 7 );
+      curve_[x][1]->setSymbol( symbol2 );
+
+      QwtLegend *legend = new QwtLegend;
+      legend->setItemMode( QwtLegend::CheckableItem );
+      plot_[x]->insertLegend( legend, QwtPlot::RightLegend );
+
+      connect( plot_[x], SIGNAL( legendChecked( QwtPlotItem *, bool ) ),
+                         SLOT( showItem( QwtPlotItem *, bool ) ) );
+
+      QwtPlotItemList items = plot_[x]->itemList( QwtPlotItem::Rtti_PlotCurve );
+      for ( int i = 0; i < items.size(); i++ ) {
+         QwtLegendItem *legendItem = qobject_cast<QwtLegendItem *>( legend->find( items[i] ) );
+         if ( legendItem ) legendItem->setChecked( true );
+         items[i]->setVisible( true );
+      }
+      plot_[x]->setAutoReplot( true );
    }
+   resetPlot();
 }
 
 // Delete
@@ -83,17 +123,20 @@ CalibWindow::~CalibWindow ( ) {
 
 void CalibWindow::setCalibData(uint kpix, uint chan, uint bucket) {
    uint   i;
+   uint   r;
+   uint   count;
 
-   plotCount[bucket] = 0;
-   for (i=0; i < 256; i++) {
-      if ( valid_[kpix][chan][bucket][i] ) {
-         plotX[bucket][plotCount[bucket]] = charge_[kpix][chan][bucket][i];
-         plotY[bucket][plotCount[bucket]] = value_[kpix][chan][bucket][i];
-         plotCount[bucket]++;
+   for (r=0; r < 2; r++) {
+      count = 0;
+      for (i=0; i < 256; i++) {
+         if ( valid_[kpix][chan][bucket][r][i] ) {
+            plotX[bucket][r][count] = charge_[kpix][chan][bucket][r][i];
+            plotY[bucket][r][count] = value_[kpix][chan][bucket][r][i];
+            count++;
+         }
       }
+      curve_[bucket][r]->setRawSamples(plotX[bucket][r],plotY[bucket][r],count);
    }
-   curve_[bucket]->setRawSamples(plotX[bucket],plotY[bucket],plotCount[bucket]);
-   plot_[bucket]->replot();
 }
 
 void CalibWindow::rxData (KpixEvent *event, uint calChan, uint calDac, bool calPos, bool calHigh) {
@@ -102,6 +145,7 @@ void CalibWindow::rxData (KpixEvent *event, uint calChan, uint calDac, bool calP
    uint       bucket;
    uint       value;
    uint       kpix;
+   uint       range;
    KpixSample *sample;
 
    for (x=0; x < event->count(); x++) {
@@ -110,11 +154,12 @@ void CalibWindow::rxData (KpixEvent *event, uint calChan, uint calDac, bool calP
       bucket  = sample->getKpixBucket();
       kpix    = sample->getKpixAddress();
       value   = sample->getSampleValue();
+      range   = sample->getSampleRange();
 
       if ( calChan == channel ) {
-         charge_[kpix][calChan][bucket][calDac] = dacToCharge ( calDac, calPos, (calHigh && bucket==0));
-         value_[kpix][calChan][bucket][calDac]  = value;
-         valid_[kpix][calChan][bucket][calDac]  = true;
+         charge_[kpix][calChan][bucket][range][calDac] = dacToCharge ( calDac, calPos, (calHigh && bucket==0));
+         value_[kpix][calChan][bucket][range][calDac]  = value;
+         valid_[kpix][calChan][bucket][range][calDac]  = true;
       }
    }
 }
@@ -138,10 +183,15 @@ void CalibWindow::resetPlot() {
       for (chan=0; chan < 1024; chan++) {
          for (buck=0; buck < 4; buck++) {
             for (x=0; x < 256; x++) {
-               valid_[kpix][chan][buck][x] = false;
+               valid_[kpix][chan][buck][0][x] = false;
+               valid_[kpix][chan][buck][1][x] = false;
             }
          }
       }
    }
+}
+
+void CalibWindow::showItem( QwtPlotItem *item, bool on ) {
+   item->setVisible(on);
 }
 

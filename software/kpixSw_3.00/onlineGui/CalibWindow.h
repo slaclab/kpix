@@ -32,15 +32,14 @@ class CalibWindow : public QWidget {
    Q_OBJECT
 
       QwtPlot      *plot_[4];
-      QwtPlotCurve *curve_[4];
+      QwtPlotCurve *curve_[4][2];
 
-      double   charge_[32][1024][4][256];
-      double   value_[32][1024][4][256];
-      bool     valid_[32][1024][4][256];
+      double   charge_[32][1024][4][2][256];
+      double   value_[32][1024][4][2][256];
+      bool     valid_[32][1024][4][2][256];
 
-      double plotX[4][256];
-      double plotY[4][256];
-      uint   plotCount[4];
+      double plotX[4][2][256];
+      double plotY[4][2][256];
 
       static double dacToCharge ( uint dac, bool pos, bool high );
       void setCalibData(uint kpix, uint chan, uint bucket);
@@ -56,6 +55,11 @@ class CalibWindow : public QWidget {
       void rxData (KpixEvent *event, uint calChan, uint calDac, bool calPos, bool calHigh);
       void rePlot(uint kpix, uint chan);
       void resetPlot();
+
+   public slots:
+
+      void showItem( QwtPlotItem *item, bool on );
+
 };
 
 #endif
