@@ -90,8 +90,6 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
    addVariable(new Variable("StatTempIdValue", Variable::Status));
    variables_["StatTempIdValue"]->setDescription("Temperature or ID value");
 
-// HERE
-
    // Config register & variables
    addRegister(new Register("Config", baseAddress_ + 0x00000001));
 
@@ -448,6 +446,7 @@ void KpixAsic::readConfig ( ) {
    uint col;
    uint row;
    uint calCount;
+   uint oldControl;
 
    REGISTER_LOCK
 
@@ -507,6 +506,14 @@ void KpixAsic::readConfig ( ) {
    // Some registers don't exist in dummy
    if ( !dummy_ ) {
 
+      // Turn front end power on in kpix 9 before reading dacs
+      if ( variables_["Version"]->getInt() == 9 && variables_["enabled"]->getInt() == 1 ) {
+         cout << "KpixAsic::readConfig -> Forcing power on for DAC read!" << endl;
+         oldControl = registers_["Control"]->get();
+         registers_["Control"]->set(1,24,0x1); // Disable power cycle
+         writeRegister(registers_["Control"],true);
+      }
+
       // DAC registers and variables
       readRegister(registers_["Dac0"]);
       val = registers_["Dac0"]->get(0,0xFF);
@@ -560,6 +567,13 @@ void KpixAsic::readConfig ( ) {
       val = registers_["Dac7"]->get(0,0xFF);
       variables_["DacDefaultAnalog"]->setInt(val);
       variables_["DacDefaultAnalogVolt"]->set(dacToVoltString(val));
+
+      // Restore control register settings
+      if ( variables_["Version"]->getInt() == 9 && variables_["enabled"]->getInt() == 1 ) {
+         cout << "KpixAsic::readConfig -> Restoring power setting!" << endl;
+         registers_["Control"]->set(oldControl);
+         writeRegister(registers_["Control"],true);
+      }
 
       // Control register and variables
       readRegister(registers_["Control"]);
@@ -643,6 +657,7 @@ void KpixAsic::writeConfig ( bool force ) {
    uint col;
    uint row;
    uint calCount;
+   bool dacStale;
 
    REGISTER_LOCK
 
@@ -704,12 +719,10 @@ void KpixAsic::writeConfig ( bool force ) {
       registers_["Dac0"]->set(val,8,0xFF);
       registers_["Dac0"]->set(val,16,0xFF);
       registers_["Dac0"]->set(val,24,0xFF);
-      writeRegister(registers_["Dac0"],force);
       registers_["Dac8"]->set(val,0,0xFF);
       registers_["Dac8"]->set(val,8,0xFF);
       registers_["Dac8"]->set(val,16,0xFF);
       registers_["Dac8"]->set(val,24,0xFF);
-      writeRegister(registers_["Dac8"],force);
 
       val = variables_["DacThresholdB"]->getInt();
       variables_["DacThresholdBVolt"]->set(dacToVoltString(val));
@@ -722,7 +735,6 @@ void KpixAsic::writeConfig ( bool force ) {
       registers_["Dac9"]->set(val,8,0xFF);
       registers_["Dac9"]->set(val,16,0xFF);
       registers_["Dac9"]->set(val,24,0xFF);
-      writeRegister(registers_["Dac9"],force);
 
       val = variables_["DacRampThresh"]->getInt();
       variables_["DacRampThreshVolt"]->set(dacToVoltString(val));
@@ -730,7 +742,6 @@ void KpixAsic::writeConfig ( bool force ) {
       registers_["Dac2"]->set(val,8,0xFF);
       registers_["Dac2"]->set(val,16,0xFF);
       registers_["Dac2"]->set(val,24,0xFF);
-      writeRegister(registers_["Dac2"],force);
 
       val = variables_["DacRangeThreshold"]->getInt();
       variables_["DacRangeThresholdVolt"]->set(dacToVoltString(val));
@@ -738,7 +749,6 @@ void KpixAsic::writeConfig ( bool force ) {
       registers_["Dac3"]->set(val,8,0xFF);
       registers_["Dac3"]->set(val,16,0xFF);
       registers_["Dac3"]->set(val,24,0xFF);
-      writeRegister(registers_["Dac3"],force);
 
       val = variables_["DacCalibration"]->getInt();
       variables_["DacCalibrationVolt"]->set(dacToVoltString(val));
@@ -746,7 +756,6 @@ void KpixAsic::writeConfig ( bool force ) {
       registers_["Dac4"]->set(val,8,0xFF);
       registers_["Dac4"]->set(val,16,0xFF);
       registers_["Dac4"]->set(val,24,0xFF);
-      writeRegister(registers_["Dac4"],force);
 
       tmp.str("");
       if ( variables_["CntrlPolarity"]->get() == "Positive" ) {
@@ -767,7 +776,6 @@ void KpixAsic::writeConfig ( bool force ) {
       registers_["Dac5"]->set(val,8,0xFF);
       registers_["Dac5"]->set(val,16,0xFF);
       registers_["Dac5"]->set(val,24,0xFF);
-      writeRegister(registers_["Dac5"],force);
 
       val = variables_["DacShaperBias"]->getInt();
       variables_["DacShaperBiasVolt"]->set(dacToVoltString(val));
@@ -775,7 +783,6 @@ void KpixAsic::writeConfig ( bool force ) {
       registers_["Dac6"]->set(val,8,0xFF);
       registers_["Dac6"]->set(val,16,0xFF);
       registers_["Dac6"]->set(val,24,0xFF);
-      writeRegister(registers_["Dac6"],force);
 
       val = variables_["DacDefaultAnalog"]->getInt();
       variables_["DacDefaultAnalogVolt"]->set(dacToVoltString(val));
@@ -783,7 +790,40 @@ void KpixAsic::writeConfig ( bool force ) {
       registers_["Dac7"]->set(val,8,0xFF);
       registers_["Dac7"]->set(val,16,0xFF);
       registers_["Dac7"]->set(val,24,0xFF);
+
+      // Determine if dac registers are stale
+      dacStale = force;
+      if ( registers_["Dac0"]->stale() ) dacStale = true;
+      if ( registers_["Dac1"]->stale() ) dacStale = true;
+      if ( registers_["Dac2"]->stale() ) dacStale = true;
+      if ( registers_["Dac3"]->stale() ) dacStale = true;
+      if ( registers_["Dac4"]->stale() ) dacStale = true;
+      if ( registers_["Dac5"]->stale() ) dacStale = true;
+      if ( registers_["Dac6"]->stale() ) dacStale = true;
+      if ( registers_["Dac7"]->stale() ) dacStale = true;
+      if ( registers_["Dac8"]->stale() ) dacStale = true;
+      if ( registers_["Dac9"]->stale() ) dacStale = true;
+
+      // Turn front end power on in kpix 9 before writing dacs
+      // Real front end power mode will be updated when control
+      // register is written later
+      if ( variables_["Version"]->getInt() == 9 && dacStale && variables_["enabled"]->getInt() == 1 ) {
+         cout << "KpixAsic::writeConfig -> Forcing power on for DAC update!" << endl;
+         registers_["Control"]->set(1,24,0x1); // Disable power cycle
+         writeRegister(registers_["Control"],true);
+      }
+  
+      // Now safe to write dac registers
+      writeRegister(registers_["Dac0"],force);
+      writeRegister(registers_["Dac1"],force);
+      writeRegister(registers_["Dac2"],force);
+      writeRegister(registers_["Dac3"],force);
+      writeRegister(registers_["Dac4"],force);
+      writeRegister(registers_["Dac5"],force);
+      writeRegister(registers_["Dac6"],force);
       writeRegister(registers_["Dac7"],force);
+      writeRegister(registers_["Dac8"],force);
+      writeRegister(registers_["Dac9"],force);
 
       // Control register and variables
       registers_["Control"]->set(variables_["CntrlDisPerReset"]->getInt(),0,0x1);
@@ -877,6 +917,7 @@ void KpixAsic::writeConfig ( bool force ) {
 void KpixAsic::verifyConfig ( ) {
    stringstream tmp;
    uint         x;
+   uint         oldControl;
 
    REGISTER_LOCK
 
@@ -893,6 +934,17 @@ void KpixAsic::verifyConfig ( ) {
    verifyRegister(registers_["CalDelay1"]);
 
    if ( !dummy_ ) {
+
+      verifyRegister(registers_["Control"]);
+
+      // Turn front end power on in kpix 9 before reading dacs
+      if ( variables_["Version"]->getInt() == 9 && variables_["enabled"]->getInt() == 1 ) {
+         cout << "KpixAsic::verifyConfig -> Forcing power on for DAC Verify!" << endl;
+         oldControl = registers_["Control"]->get();
+         registers_["Control"]->set(1,24,0x1); // Disable power cycle
+         writeRegister(registers_["Control"],true);
+      }
+
       verifyRegister(registers_["Dac0"]);
       verifyRegister(registers_["Dac1"]);
       verifyRegister(registers_["Dac2"]);
@@ -903,7 +955,13 @@ void KpixAsic::verifyConfig ( ) {
       verifyRegister(registers_["Dac7"]);
       verifyRegister(registers_["Dac8"]);
       verifyRegister(registers_["Dac9"]);
-      verifyRegister(registers_["Control"]);
+
+      // Restore control register settings
+      if ( variables_["Version"]->getInt() == 9 && variables_["enabled"]->getInt() == 1 ) {
+         cout << "KpixAsic::verifyConfig -> Restoring power state!" << endl;
+         registers_["Control"]->set(oldControl);
+         writeRegister(registers_["Control"],true);
+      }
 
       for (x=0; x < (channels()/32); x++) {
          tmp.str("");

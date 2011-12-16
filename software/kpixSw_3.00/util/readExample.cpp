@@ -39,7 +39,7 @@ int main (int argc, char **argv) {
 
    // Process each event
    while ( dataRead.next(&event) ) {
-
+/*
       // Dump header values
       cout << "Header:trainNumber = " << dec << event.trainNumber() << endl;
       cout << "Header:count       = " << dec << event.count() << endl;
@@ -60,7 +60,7 @@ int main (int argc, char **argv) {
          cout << "Sample:range       = " << dec << sample->getSampleRange() << endl;
          cout << "Sample:trigType    = " << dec << sample->getTrigType()    << endl;
       }
-
+*/
    }
 
    // Dump config
