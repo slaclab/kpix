@@ -313,7 +313,7 @@ class KpixFpga : public TObject {
       // Set readEn to false to disable real read from FPGA.
       bool getDropData ( bool readEn=true );
 
-      // Method to set Kpix Version Flag. false = 0-7, true = 8+
+      // Method to set Kpix Version Flag. True = 512 channels False = 1024 channels
       // Default value = False
       // Set writeEn to false to disable real write to KPIX
       void setKpixVer ( bool value, bool writeEn=true );

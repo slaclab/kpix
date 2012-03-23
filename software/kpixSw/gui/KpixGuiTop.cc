@@ -469,7 +469,8 @@ void KpixGuiTop::run() {
 
             // Set defaults
             xmlFile = getenv("KPIX_DEF_FILE");
-            fpga->setDefaults(defClkPeriod,(asicVersion<10));
+            if ( asicVersion == 10 ) fpga->setDefaults(defClkPeriod,false); // 1024 channels
+            else  fpga->setDefaults(defClkPeriod,true); // 512 channels
             sleep(1);
             cout << "Fpga Version=0x" << hex << setw(8) << setfill('0') << fpga->getVersion() << endl;
             

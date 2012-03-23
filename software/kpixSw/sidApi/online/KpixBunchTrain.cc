@@ -210,20 +210,22 @@ KpixBunchTrain::KpixBunchTrain ( SidLink *link, bool debug, unsigned int asicCnt
          error << "KpixBunchTrain::KpixBunchTrain -> Checksum Error. SubCount=" << dec << subCnt;
          error << ", Rec=0x" << setw(4) << setfill('0') << data[subCnt*3+2+2];
          error << ", Comp=0x" << setw(4) << setfill('0') << checkSum;
-         for ( x=0; x < totalCount; x++) delete samplesByTime[x];
-         totalCount = 0;
-         throw(error.str());
+         cout << error.str() << endl;
+         //for ( x=0; x < totalCount; x++) delete samplesByTime[x];
+         //totalCount = 0;
+         //throw(error.str());
       }
 
       // Check count either 1x events (old fpag) or 3x events (new fpga)
       if ( (subCnt*3) != (unsigned int)(data[subCnt*3+2+0] & 0x7FFF) ) {
-         for ( x=0; x < totalCount; x++) delete samplesByTime[x];
          error.str("");
          error << "KpixBunchTrain::KpixBunchTrain -> Sample Count Mismatch. ";
          error << "Got=" << dec << (unsigned int)(data[subCnt*3+2+0] & 0x7FFF);
          error << ", Exp=" << dec << (subCnt*3);
-         totalCount = 0;
-         throw(error.str());
+         cout << error.str() << endl;
+         //for ( x=0; x < totalCount; x++) delete samplesByTime[x];
+         //totalCount = 0;
+         //throw(error.str());
       }
 
       // Dead time counter

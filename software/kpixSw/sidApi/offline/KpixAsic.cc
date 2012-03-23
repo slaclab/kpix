@@ -826,7 +826,7 @@ void KpixAsic::setSidLink ( SidLink *sidLink ) {
 
 
 // Max Kpix Version
-unsigned short KpixAsic::maxVersion() { return(10); }
+unsigned short KpixAsic::maxVersion() { return(11); }
 
 
 // Send reset command to KPIX
@@ -3092,6 +3092,7 @@ unsigned int KpixAsic::getChCount() {
    if ( kpixVersion < 8 ) return(64);
    if ( kpixVersion < 9 ) return(256);
    if ( kpixVersion < 10 ) return(512);
+   if ( kpixVersion == 11 ) return(128);
    else return(1024);
 }
 
