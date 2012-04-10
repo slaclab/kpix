@@ -116,6 +116,7 @@ void KpixAsic::sendCommand ( unsigned char command, bool bcast ) {
 
    // Write data
    sidLink->linkKpixWrite(frameData,4);
+   usleep(100);
 #endif
 }
 
@@ -157,6 +158,7 @@ void KpixAsic::regWrite ( unsigned char address ) {
 
       // Write data
       sidLink->linkKpixWrite(frameData,4);
+      usleep(100);
    }
 #endif
 }

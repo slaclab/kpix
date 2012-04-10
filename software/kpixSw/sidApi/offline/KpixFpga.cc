@@ -92,6 +92,7 @@ void KpixFpga::regWrite ( unsigned char address ) {
 
    // Write data
    sidLink->linkFpgaWrite(frameData,4);
+   usleep(100);
 #endif
 }
 

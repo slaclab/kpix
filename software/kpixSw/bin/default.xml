@@ -2,8 +2,8 @@
    <fpga>
       <clkPrd>50</clkPrd>
       <clkPrdDig>50</clkPrdDig>
-      <clkPrdRd>100</clkPrdRd>
-      <clkPrdIdle>100</clkPrdIdle>
+      <clkPrdRd>50</clkPrdRd>
+      <clkPrdIdle>150</clkPrdIdle>
       <bncSrcA>3</bncSrcA>
       <bncSrcB>3</bncSrcB>
       <dropData>0</dropData>
@@ -17,8 +17,8 @@
       <runType>0</runType>
       <extRec>0</extRec>
       <trigEn>255</trigEn>
-      <trigExpand>0</trigExpand>
-      <trigSrc>0</trigSrc>
+      <trigExpand>10</trigExpand>
+      <trigSrc>1</trigSrc>
       <calDly>0</calDly>
    </fpga>
    <asic>
@@ -27,6 +27,7 @@
       <cfgForceTemp>0</cfgForceTemp>
       <cfgDisableTemp>0</cfgDisableTemp>
       <cfgAutoStatus>0</cfgAutoStatus>
+      <cntrlMonSrc>0</cntrlMonSrc>
       <cntrlCalibHigh>0</cntrlCalibHigh>
       <cntrlCalDacInt>1</cntrlCalDacInt>
       <cntrlForceLowGain>0</cntrlForceLowGain>
@@ -36,107 +37,106 @@
       <cntrlPosPixel>0</cntrlPosPixel>
       <cntrlDisPerRst>1</cntrlDisPerRst>
       <cntrlEnDcRst>1</cntrlEnDcRst>
-      <cntrlCalSrc>0</cntrlCalSrc>
+      <cntrlCalSrc>1</cntrlCalSrc>
       <cntrlTrigSrc>1</cntrlTrigSrc>
       <cntrlShortIntEn>0</cntrlShortIntEn>
       <cntrlDisPwrCycle>0</cntrlDisPwrCycle>
       <cntrlFeCurr>1</cntrlFeCurr>
-      <cntrlHoldTime>7</cntrlHoldTime>
+      <cntrlHldTime>7</cntrlHldTime>
       <cntrlDiffTime>3</cntrlDiffTime>
       <cntrlTrigDisable>0</cntrlTrigDisable>
-      <cntrlMonSrc>0</cntrlMonSrc>
       <rstOnTime>700</rstOnTime>
-      <rstOffTime>800000</rstOffTime>
+      <rstOffTime>220000</rstOffTime>
       <leakageNullOff>200</leakageNullOff>
-      <offsetNullOff>780000</offsetNullOff>
-      <threshOff>790000</threshOff>
+      <offsetNullOff>200000</offsetNullOff>
+      <threshOff>210000</threshOff>
       <trigInhibitOff>1000</trigInhibitOff>
       <pwrUpOn>900</pwrUpOn>
       <deselSequence>6900</deselSequence>
-      <bunchClkDly>1000500</bunchClkDly>
+      <bunchClkDly>467500</bunchClkDly>
       <digitizationDly>10000</digitizationDly>
       <bunchClockCount>8191</bunchClockCount>
-      <dacCalib>0</dacCalib>
+      <dacCalib>200</dacCalib>
       <dacRampThresh>224</dacRampThresh>
       <dacRangeThresh>0</dacRangeThresh>
       <dacDefaultAnalog>189</dacDefaultAnalog>
       <dacEventThreshRef>80</dacEventThreshRef>
       <dacShaperBias>120</dacShaperBias>
       <calCount>1</calCount>
-      <cal0Delay>0</cal0Delay>
+      <cal0Delay>1020</cal0Delay>
       <cal1Delay>20</cal1Delay>
       <cal2Delay>20</cal2Delay>
       <cal3Delay>20</cal3Delay>
       <rstThreshA>0</rstThreshA>
-      <trigThreshA>180</trigThreshA>
+      <trigThreshA>0</trigThreshA>
       <rstThreshB>0</rstThreshB>
-      <trigThreshB>150</trigThreshB>
+      <trigThreshB>0</trigThreshB>
       <kpixChanMode>1</kpixChanMode>
    </asic>
    <asic id="0">
-      <kpixChanMode id="0">2</kpixChanMode>
-      <kpixChanMode id="1">2</kpixChanMode>
-      <kpixChanMode id="30">2</kpixChanMode>
-      <kpixChanMode id="31">2</kpixChanMode>
-      <kpixChanMode id="32">2</kpixChanMode>
-      <kpixChanMode id="33">0</kpixChanMode>
-      <kpixChanMode id="62">2</kpixChanMode>
-      <kpixChanMode id="63">2</kpixChanMode>
-      <kpixChanMode id="64">2</kpixChanMode>
-      <kpixChanMode id="65">2</kpixChanMode>
-      <kpixChanMode id="94">2</kpixChanMode>
-      <kpixChanMode id="95">2</kpixChanMode>
-      <kpixChanMode id="96">2</kpixChanMode>
-      <kpixChanMode id="97">2</kpixChanMode>
-      <kpixChanMode id="126">0</kpixChanMode>
-      <kpixChanMode id="127">0</kpixChanMode>
-      <kpixChanMode id="128">2</kpixChanMode>
-      <kpixChanMode id="129">2</kpixChanMode>
-      <kpixChanMode id="158">2</kpixChanMode>
-      <kpixChanMode id="159">2</kpixChanMode>
-      <kpixChanMode id="160">2</kpixChanMode>
-      <kpixChanMode id="161">2</kpixChanMode>
-      <kpixChanMode id="190">2</kpixChanMode>
-      <kpixChanMode id="191">2</kpixChanMode>
-      <kpixChanMode id="192">2</kpixChanMode>
-      <kpixChanMode id="193">2</kpixChanMode>
-      <kpixChanMode id="222">2</kpixChanMode>
-      <kpixChanMode id="223">0</kpixChanMode>
-      <kpixChanMode id="224">2</kpixChanMode>
-      <kpixChanMode id="225">2</kpixChanMode>
-      <kpixChanMode id="254">2</kpixChanMode>
-      <kpixChanMode id="255">0</kpixChanMode>
-      <kpixChanMode id="256">2</kpixChanMode>
-      <kpixChanMode id="257">0</kpixChanMode>
-      <kpixChanMode id="286">2</kpixChanMode>
-      <kpixChanMode id="287">0</kpixChanMode>
-      <kpixChanMode id="288">2</kpixChanMode>
-      <kpixChanMode id="289">0</kpixChanMode>
-      <kpixChanMode id="318">2</kpixChanMode>
-      <kpixChanMode id="319">2</kpixChanMode>
-      <kpixChanMode id="320">2</kpixChanMode>
-      <kpixChanMode id="321">2</kpixChanMode>
-      <kpixChanMode id="350">2</kpixChanMode>
-      <kpixChanMode id="351">2</kpixChanMode>
-      <kpixChanMode id="352">2</kpixChanMode>
-      <kpixChanMode id="343">2</kpixChanMode>
-      <kpixChanMode id="382">2</kpixChanMode>
-      <kpixChanMode id="383">2</kpixChanMode>
-      <kpixChanMode id="384">2</kpixChanMode>
-      <kpixChanMode id="385">2</kpixChanMode>
-      <kpixChanMode id="414">2</kpixChanMode>
-      <kpixChanMode id="415">1</kpixChanMode>
-      <kpixChanMode id="416">0</kpixChanMode>
-      <kpixChanMode id="417">0</kpixChanMode>
-      <kpixChanMode id="446">1</kpixChanMode>
-      <kpixChanMode id="447">1</kpixChanMode>
-      <kpixChanMode id="448">2</kpixChanMode>
-      <kpixChanMode id="449">1</kpixChanMode>
-      <kpixChanMode id="478">2</kpixChanMode>
-      <kpixChanMode id="479">2</kpixChanMode>
-      <kpixChanMode id="480">2</kpixChanMode>
-      <kpixChanMode id="481">0</kpixChanMode>
-      <kpixChanMode id="510">2</kpixChanMode>
-      <kpixChanMode id="511">2</kpixChanMode>
+<kpixChanMode id="0">1</kpixChanMode>
+<kpixChanMode id="1">1</kpixChanMode>
+<kpixChanMode id="30">1</kpixChanMode>
+<kpixChanMode id="31">1</kpixChanMode>
+<kpixChanMode id="32">1</kpixChanMode>
+<kpixChanMode id="33">1</kpixChanMode>
+<kpixChanMode id="62">1</kpixChanMode>
+<kpixChanMode id="63">1</kpixChanMode>
+<kpixChanMode id="64">1</kpixChanMode>
+<kpixChanMode id="65">1</kpixChanMode>
+<kpixChanMode id="94">1</kpixChanMode>
+<kpixChanMode id="95">1</kpixChanMode>
+<kpixChanMode id="96">1</kpixChanMode>
+<kpixChanMode id="97">1</kpixChanMode>
+<kpixChanMode id="126">1</kpixChanMode>
+<kpixChanMode id="127">1</kpixChanMode>
+<kpixChanMode id="128">1</kpixChanMode>
+<kpixChanMode id="129">1</kpixChanMode>
+<kpixChanMode id="158">1</kpixChanMode>
+<kpixChanMode id="159">1</kpixChanMode>
+<kpixChanMode id="160">1</kpixChanMode>
+<kpixChanMode id="161">1</kpixChanMode>
+<kpixChanMode id="190">1</kpixChanMode>
+<kpixChanMode id="191">1</kpixChanMode>
+<kpixChanMode id="192">1</kpixChanMode>
+<kpixChanMode id="193">1</kpixChanMode>
+<kpixChanMode id="222">1</kpixChanMode>
+<kpixChanMode id="223">1</kpixChanMode>
+<kpixChanMode id="224">1</kpixChanMode>
+<kpixChanMode id="225">1</kpixChanMode>
+<kpixChanMode id="254">1</kpixChanMode>
+<kpixChanMode id="255">1</kpixChanMode>
+<kpixChanMode id="256">1</kpixChanMode>
+<kpixChanMode id="257">1</kpixChanMode>
+<kpixChanMode id="286">1</kpixChanMode>
+<kpixChanMode id="287">1</kpixChanMode>
+<kpixChanMode id="288">1</kpixChanMode>
+<kpixChanMode id="289">1</kpixChanMode>
+<kpixChanMode id="318">1</kpixChanMode>
+<kpixChanMode id="319">1</kpixChanMode>
+<kpixChanMode id="320">1</kpixChanMode>
+<kpixChanMode id="321">1</kpixChanMode>
+<kpixChanMode id="350">1</kpixChanMode>
+<kpixChanMode id="351">1</kpixChanMode>
+<kpixChanMode id="352">1</kpixChanMode>
+<kpixChanMode id="343">1</kpixChanMode>
+<kpixChanMode id="382">1</kpixChanMode>
+<kpixChanMode id="383">1</kpixChanMode>
+<kpixChanMode id="384">1</kpixChanMode>
+<kpixChanMode id="385">1</kpixChanMode>
+<kpixChanMode id="414">1</kpixChanMode>
+<kpixChanMode id="415">1</kpixChanMode>
+<kpixChanMode id="416">1</kpixChanMode>
+<kpixChanMode id="417">1</kpixChanMode>
+<kpixChanMode id="446">1</kpixChanMode>
+<kpixChanMode id="447">1</kpixChanMode>
+<kpixChanMode id="448">1</kpixChanMode>
+<kpixChanMode id="449">1</kpixChanMode>
+<kpixChanMode id="478">1</kpixChanMode>
+<kpixChanMode id="479">1</kpixChanMode>
+<kpixChanMode id="480">1</kpixChanMode>
+<kpixChanMode id="481">1</kpixChanMode>
+<kpixChanMode id="510">1</kpixChanMode>
+<kpixChanMode id="511">1</kpixChanMode>
    </asic>
 </default_config>

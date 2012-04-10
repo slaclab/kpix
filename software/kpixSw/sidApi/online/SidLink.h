@@ -39,7 +39,7 @@
 class SidLink {
 
       // Timeout Value
-      static const unsigned int Timeout = 125;
+      static const unsigned int Timeout = 500;
 
       // Buffer size
       static const unsigned int qsize = 20000;
