@@ -41,11 +41,6 @@ add_file $core_dir/rtl/command_control.vhd
 add_file $core_dir/rtl/memory_array_control.vhd
 add_file $core_dir/rtl/readout_control.vhd
 add_file $core_dir/rtl/reg_rw_32.vhd
-add_file $core_dir/rtl_v7/analog_control_v7.vhd
-add_file $core_dir/rtl_v7/command_control_v7.vhd
-add_file $core_dir/rtl_v7/memory_array_control_v7.vhd
-add_file $core_dir/rtl_v7/readout_control_v7.vhd
-add_file $core_dir/rtl_v7/reg_rw_32_v7.vhd
 
 ## RTL Source Files
 add_file $top_dir/eth_client/rtl/1g/EthClientPackage.vhd
@@ -54,27 +49,14 @@ add_file $top_dir/eth_client/rtl/1g/EthClientArp.vhd
 add_file $top_dir/eth_client/rtl/1g/EthClient.vhd
 add_file $top_dir/eth_client/rtl/1g/EthClientGtpTxRst.vhd
 add_file $top_dir/eth_client/rtl/1g/EthClientGtpRxRst.vhd
-add_file $top_dir/eth_client/rtl/1g/EthClientLoop.vhd
-add_file $top_dir/eth_client/rtl/1g/EthClientTest.vhd
 add_file $top_dir/eth_client/rtl/1g/EthClientGtp.vhd
-add_file $top_dir/eth_client/rtl/1g/EthInterface.vhd
-add_file $top_dir/rtl/KpixConPkg.vhd
-add_file $top_dir/rtl/KpixRspRx.vhd
-add_file $top_dir/rtl/KpixDataRx.vhd
-add_file $top_dir/rtl/KpixTrigRec.vhd
-add_file $top_dir/rtl/DownstreamData.vhd
-add_file $top_dir/rtl/KpixRespData.vhd
-add_file $top_dir/rtl/KpixTrainData.vhd
-add_file $top_dir/rtl/KpixDdrDataRx.vhd
-add_file $top_dir/rtl/KpixDdrData.vhd
+add_file $top_dir/eth_client/rtl/1g/EthRegSlave.vhd
+add_file $top_dir/eth_client/rtl/1g/EthArbiter.vhd
+add_file $top_dir/eth_client/rtl/1g/EthUdpFrame.vhd
+add_file $top_dir/rtl/UsBuff.vhd
+add_file $top_dir/rtl/EthFrontEnd.vhd
 add_file $top_dir/rtl/KpixLocal.vhd
-add_file $top_dir/rtl/UpstreamData.vhd
-add_file $top_dir/rtl/KpixCmdTx.vhd
-add_file $top_dir/rtl/CmdControl.vhd
-add_file $top_dir/rtl/KpixControl.vhd
-add_file $top_dir/rtl/EthTestCounter.vhd
-add_file $top_dir/rtl/KpixDataFrmtr.vhd
-add_file $top_dir/rtl/KpixConCore.vhd
+add_file $top_dir/rtl/KpixCore.vhd
 add_file $top_dir/rtl/KpixCon.vhd
 
 ## Additional map options

@@ -19,14 +19,12 @@ USE ieee.std_logic_1164.ALL;
 
 package Version is
 
-constant FpgaVersion : std_logic_vector(31 downto 0) := x"C000002D"; -- MAKE_VERSION
+constant FpgaVersion : std_logic_vector(31 downto 0) := x"C0000100"; -- MAKE_VERSION
 
 end Version;
 
 -------------------------------------------------------------------------------
 -- Revision History:
--- 03/10/2010 (0xC0000027): Initial Version
--- 04/22/2010 (0xC0000029): Added seperate clock rate for idle.
--- 07/21/2010 (0xC000002A): Added code to interface with new usb
+-- 05/03/2012 (0xC0000100): Initial Version
 -------------------------------------------------------------------------------
 
