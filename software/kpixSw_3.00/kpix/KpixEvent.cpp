@@ -90,7 +90,7 @@ void KpixEvent::update() {
    }
 
    // Check for parity error
-   if ( word_[x+1] & 0x2000 != 0 ) {
+   if ( (word_[x+1] & 0x2000) != 0 ) {
       error << "KpixEvent::update -> Parity error detected";
       cout << error.str() << endl;
       throw(error.str());

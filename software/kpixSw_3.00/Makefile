@@ -4,7 +4,7 @@ DEF    :=
 BIN    := $(PWD)/bin
 OBJ    := $(PWD)/.obj
 CFLAGS := -Wall `xml2-config --cflags` -I$(PWD)/generic -I$(PWD)/kpix -I$(PWD)/offline
-LFLAGS := `xml2-config --libs` -lpthread -lrt
+LFLAGS := `xml2-config --libs --static` -pthread -lrt
 
 # Generic Sources
 GEN_DIR := $(PWD)/generic
@@ -48,7 +48,7 @@ $(OBJ)/%.o: $(KPX_DIR)/%.cpp $(KPX_DIR)/%.h
 
 # Comile utilities
 $(BIN)/%: $(UTL_DIR)/%.cpp $(GEN_OBJ) $(KPX_OBJ)
-	$(CC) $(CFLAGS) $(LFLAGS) $(DEF) $(OBJ)/* -o $@ $<
+	$(CC) $(CFLAGS) $(DEF) $(OBJ)/* -o $@ $< $(LFLAGS) 
 
 # root
 ana:

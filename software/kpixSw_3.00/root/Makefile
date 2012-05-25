@@ -44,5 +44,5 @@ $(OBJ)/%.o: $(GEN_DIR)/%.cpp $(GEN_DIR)/%.h
 
 # Comile root
 $(BIN)/%: $(ROOT_DIR)/%.cpp $(KPX_OBJ) $(GEN_OBJ)
-	$(CC) $(CFLAGS) $(LFLAGS) $(DEF) $(OBJ)/* -o $@ $<
+	$(CC) $(CFLAGS) $(DEF) $(OBJ)/* -o $@ $< $(LFLAGS) 
 
