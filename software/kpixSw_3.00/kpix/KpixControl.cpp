@@ -15,6 +15,7 @@
 //-----------------------------------------------------------------------------
 #include <KpixControl.h>
 #include <OptoFpga.h>
+#include <ConFpga.h>
 #include <Register.h>
 #include <Variable.h>
 #include <Command.h>
@@ -26,13 +27,13 @@
 using namespace std;
 
 // Constructor
-KpixControl::KpixControl ( uint type, CommLink *commLink ) : System("KpixControl",commLink) {
+KpixControl::KpixControl ( CommLink *commLink ) : System("KpixControl",commLink) {
 
    // Description
    desc_ = "Kpix Control";
    
-   // Data mask, lane 0, vc/type 1
-   commLink->setDataMask(0x12);
+   // Data mask, lane 0, vc 0
+   commLink->setDataMask(0x11);
 
    // Set run states
    vector<string> states;
@@ -41,7 +42,7 @@ KpixControl::KpixControl ( uint type, CommLink *commLink ) : System("KpixControl
    states[1] = "Running Without Internal Trig/Cal";
    states[2] = "Running With Internal Trig/Cal";
    states[3] = "Running Calibration";
-   variables_["RunState"]->setEnums(states);
+   getVariable("RunState")->setEnums(states);
 
    // Set run rates
    vector<string> rates;
@@ -52,78 +53,68 @@ KpixControl::KpixControl ( uint type, CommLink *commLink ) : System("KpixControl
    rates[3] = "30Hz";
    rates[4] = "40Hz";
    rates[5] = "40Hz";
-   variables_["RunRate"]->setEnums(rates);
+   getVariable("RunRate")->setEnums(rates);
 
    // Data file nameing controls
    addVariable(new Variable("DataBase",Variable::Configuration));
-   variables_["DataBase"]->setDescription("Base directory for auto data data files");
+   getVariable("DataBase")->setDescription("Base directory for auto data data files");
 
    addVariable(new Variable("DataAuto",Variable::Configuration));
-   variables_["DataAuto"]->setDescription("Enable automatic data name generation");
-   variables_["DataAuto"]->setTrueFalse();
+   getVariable("DataAuto")->setDescription("Enable automatic data name generation");
+   getVariable("DataAuto")->setTrueFalse();
 
    // Calib/dist control variables
    addVariable(new Variable("CalMeanCount",Variable::Configuration));
-   variables_["CalMeanCount"]->setDescription("Set number of iterations for mean fitting");
-   variables_["CalMeanCount"]->setRange(1,10000);
-   variables_["CalMeanCount"]->setInt(4000);
+   getVariable("CalMeanCount")->setDescription("Set number of iterations for mean fitting");
+   getVariable("CalMeanCount")->setRange(1,10000);
+   getVariable("CalMeanCount")->setInt(4000);
 
    addVariable(new Variable("CalDacMin",Variable::Configuration));
-   variables_["CalDacMin"]->setDescription("Min DAC value for calibration");
-   variables_["CalDacMin"]->setRange(0,255);
-   variables_["CalDacMin"]->setInt(0);
+   getVariable("CalDacMin")->setDescription("Min DAC value for calibration");
+   getVariable("CalDacMin")->setRange(0,255);
+   getVariable("CalDacMin")->setInt(0);
 
    addVariable(new Variable("CalDacMax",Variable::Configuration));
-   variables_["CalDacMax"]->setDescription("Max DAC value for calibration");
-   variables_["CalDacMax"]->setRange(0,255);
-   variables_["CalDacMax"]->setInt(255);
+   getVariable("CalDacMax")->setDescription("Max DAC value for calibration");
+   getVariable("CalDacMax")->setRange(0,255);
+   getVariable("CalDacMax")->setInt(255);
 
    addVariable(new Variable("CalDacStep",Variable::Configuration));
-   variables_["CalDacStep"]->setDescription("DAC increment value for calibration");
-   variables_["CalDacStep"]->setRange(0,255);
-   variables_["CalDacStep"]->setInt(0);
+   getVariable("CalDacStep")->setDescription("DAC increment value for calibration");
+   getVariable("CalDacStep")->setRange(0,255);
+   getVariable("CalDacStep")->setInt(0);
 
    addVariable(new Variable("CalChanMin",Variable::Configuration));
-   variables_["CalChanMin"]->setDescription("Calibration channel min");
-   variables_["CalChanMin"]->setRange(0,1023);
-   variables_["CalChanMin"]->setInt(0);
+   getVariable("CalChanMin")->setDescription("Calibration channel min");
+   getVariable("CalChanMin")->setRange(0,1023);
+   getVariable("CalChanMin")->setInt(0);
 
    addVariable(new Variable("CalChanMax",Variable::Configuration));
-   variables_["CalChanMax"]->setDescription("Calibration channel max");
-   variables_["CalChanMax"]->setRange(0,1023);
-   variables_["CalChanMax"]->setInt(1023);
+   getVariable("CalChanMax")->setDescription("Calibration channel max");
+   getVariable("CalChanMax")->setRange(0,1023);
+   getVariable("CalChanMax")->setInt(1023);
 
    addVariable(new Variable("CalState",Variable::Status));
-   variables_["CalState"]->setDescription("Calibration state");
+   getVariable("CalState")->setDescription("Calibration state");
    vector<string> calState;
    calState.resize(3);
    calState[0] = "Idle";
    calState[1] = "Baseline";
    calState[2] = "Inject";
-   variables_["CalState"]->setEnums(calState);
+   getVariable("CalState")->setEnums(calState);
 
    addVariable(new Variable("CalChannel",Variable::Status));
-   variables_["CalChannel"]->setDescription("Calibration channel");
-   variables_["CalChannel"]->setComp(0,1,0,"");
-   variables_["CalChannel"]->setInt(0);
+   getVariable("CalChannel")->setDescription("Calibration channel");
+   getVariable("CalChannel")->setComp(0,1,0,"");
+   getVariable("CalChannel")->setInt(0);
 
    addVariable(new Variable("CalDac",Variable::Status));
-   variables_["CalDac"]->setDescription("Calibration DAC value");
-   variables_["CalDac"]->setComp(0,1,0,"");
-   variables_["CalDac"]->setInt(0);
+   getVariable("CalDac")->setDescription("Calibration DAC value");
+   getVariable("CalDac")->setComp(0,1,0,"");
+   getVariable("CalDac")->setInt(0);
 
    // Add sub-devices
-   switch(type) {
-      case Opto: 
-         cout << "KpixControl::KpixControl -> Using Opto FPGA" << endl;
-         addDevice(new OptoFpga(0, 0, this));
-         break;
-      case Con: 
-         cout << "KpixControl::KpixControl -> Using Con FPGA" << endl;
-         //addDevice(new FpgaCon(0, 0, this));
-         break;
-      default: cout << "KpixControl::KpixControl -> Invalid FPGA Type" << endl; break;
-   }
+   addDevice(new ConFpga(0, 0, this));
 }
 
 // Deconstructor
@@ -161,9 +152,9 @@ void KpixControl::calibConfig ( uint channel, uint dac ) {
    // Update a few status variables in data file
    newConfig.str("");
    newConfig << "<status>" << endl;
-   newConfig << "<CalState>"   << variables_["CalState"]->get()   << "</CalState>" << endl;
-   newConfig << "<CalChannel>" << variables_["CalChannel"]->get() << "</CalChannel>" << endl;
-   newConfig << "<CalDac>"     << variables_["CalDac"]->get()     << "</CalDac>" << endl;
+   newConfig << "<CalState>"   << getVariable("CalState")->get()   << "</CalState>" << endl;
+   newConfig << "<CalChannel>" << getVariable("CalChannel")->get() << "</CalChannel>" << endl;
+   newConfig << "<CalDac>"     << getVariable("CalDac")->get()     << "</CalDac>" << endl;
    newConfig << "</status>" << endl;
    commLink_->addStatus(newConfig.str());
    usleep(100);
@@ -200,7 +191,7 @@ void KpixControl::swRunThread() {
    if ( debug_ ) {
       cout << "KpixControl::runThread -> Name: " << name_ 
            << ", Run Started"
-           << ", RunState=" << dec << variables_["RunState"]->get()
+           << ", RunState=" << dec << getVariable("RunState")->get()
            << ", RunCount=" << dec << swRunCount_
            << ", RunPeriod=" << dec << swRunPeriod_ << endl;
    }
@@ -212,13 +203,13 @@ void KpixControl::swRunThread() {
       writeConfig(false);
 
       // Calibration run enabled
-      if ( variables_["RunState"]->get() == "Running Calibration" ) {
-         calMeanCount = variables_["CalMeanCount"]->getInt();
-         calDacMin    = variables_["CalDacMin"]->getInt();
-         calDacMax    = variables_["CalDacMax"]->getInt();
-         calDacStep   = variables_["CalDacStep"]->getInt();
-         calChanMin   = variables_["CalChanMin"]->getInt();
-         calChanMax   = variables_["CalChanMax"]->getInt();
+      if ( getVariable("RunState")->get() == "Running Calibration" ) {
+         calMeanCount = getVariable("CalMeanCount")->getInt();
+         calDacMin    = getVariable("CalDacMin")->getInt();
+         calDacMax    = getVariable("CalDacMax")->getInt();
+         calDacStep   = getVariable("CalDacStep")->getInt();
+         calChanMin   = getVariable("CalChanMin")->getInt();
+         calChanMax   = getVariable("CalChanMax")->getInt();
          calTotal     = calMeanCount + ((calChanMax - calChanMin + 1) * ((calDacMax - calDacMin + 1)/calDacStep));
          calChan      = calChanMin;
          calDac       = calDacMin;
@@ -227,14 +218,14 @@ void KpixControl::swRunThread() {
          oldConfig << "<system>" << endl << configString(true) << "</system>" << endl;
 
          // Update variables
-         variables_["CalState"]->set("Baseline");
-         variables_["CalChannel"]->setInt(0);
-         variables_["CalDac"]->setInt(0);
+         getVariable("CalState")->set("Baseline");
+         getVariable("CalChannel")->setInt(0);
+         getVariable("CalDac")->setInt(0);
 
          // Update config
          calibConfig(9999,calDac);
       }
-      else variables_["CalState"]->set("Idle");
+      else getVariable("CalState")->set("Idle");
 
       // Run
       while ( swRunEnable_ ) {
@@ -267,27 +258,27 @@ void KpixControl::swRunThread() {
          if ( !swRunEnable_ ) break;
 
          // Setup next calibration data point
-         if ( variables_["RunState"]->get() == "Running Calibration" ) {
+         if ( getVariable("RunState")->get() == "Running Calibration" ) {
             if ( gotEvent ) runTotal++;
-            variables_["RunProgress"]->setInt((uint)(((double)runTotal/(double)calTotal)*100.0));
+            getVariable("RunProgress")->setInt((uint)(((double)runTotal/(double)calTotal)*100.0));
 
             // running baseline
-            if ( gotEvent && variables_["CalState"]->get() == "Baseline" ) {
+            if ( gotEvent && getVariable("CalState")->get() == "Baseline" ) {
 
                // Mean run is done
                if ( runTotal >= calMeanCount ) {
                   usleep(100000);
-                  variables_["CalState"]->set("Inject");
+                  getVariable("CalState")->set("Inject");
                   calChan = calChanMin;
                   calDac  = calDacMin;
-                  variables_["CalChannel"]->setInt(calChan);
-                  variables_["CalDac"]->setInt(calDac);
+                  getVariable("CalChannel")->setInt(calChan);
+                  getVariable("CalDac")->setInt(calDac);
                   calibConfig(calChan,calDac);
                }
             }
 
             // running calibration
-            else if ( gotEvent && variables_["CalState"]->get() == "Inject" ) {
+            else if ( gotEvent && getVariable("CalState")->get() == "Inject" ) {
 
                // Increment cal dac
                calDac += calDacStep;
@@ -301,14 +292,14 @@ void KpixControl::swRunThread() {
                if ( calChan > calChanMax ) break;
 
                // Write config
-               variables_["CalChannel"]->setInt(calChan);
-               variables_["CalDac"]->setInt(calDac);
+               getVariable("CalChannel")->setInt(calChan);
+               getVariable("CalDac")->setInt(calDac);
                calibConfig(calChan,calDac);
             }
          }
          else {
             if ( gotEvent ) runTotal++;
-            variables_["RunProgress"]->setInt((uint)(((double)runTotal/(double)swRunCount_)*100.0));
+            getVariable("RunProgress")->setInt((uint)(((double)runTotal/(double)swRunCount_)*100.0));
             if ( runTotal >= swRunCount_ ) break;
          }
 
@@ -319,9 +310,9 @@ void KpixControl::swRunThread() {
       }
 
       // Restore configuration here
-      if ( variables_["RunState"]->get() == "Running Calibration" ) {
-         variables_["CalState"]->set("Idle");
-         variables_["CalChannel"]->setInt(0);
+      if ( getVariable("RunState")->get() == "Running Calibration" ) {
+         getVariable("CalState")->set("Idle");
+         getVariable("CalChannel")->setInt(0);
          parseXml(oldConfig.str(),false);
          usleep(100);
       }
@@ -335,7 +326,7 @@ void KpixControl::swRunThread() {
 
    // Cleanup
    sleep(1);
-   variables_["RunState"]->set(swRunRetState_);
+   getVariable("RunState")->set(swRunRetState_);
    swRunning_ = false;
    pthread_exit(NULL);
 }
@@ -348,11 +339,11 @@ void KpixControl::command ( string name, string arg ) {
    struct tm    *tm_data;
 
    // Intercept file open command, overwrite data file variable
-   if ( name == "OpenDataFile" && variables_["DataAuto"]->get() == "True" ) {
+   if ( name == "OpenDataFile" && getVariable("DataAuto")->get() == "True" ) {
       time(&tme);
       tm_data = localtime(&tme);
       tmp.str("");
-      tmp << variables_["DataBase"]->get() << "/";
+      tmp << getVariable("DataBase")->get() << "/";
       tmp << dec << (tm_data->tm_year + 1900) << "_";
       tmp << dec << setw(2) << setfill('0') << (tm_data->tm_mon+1) << "_";
       tmp << dec << setw(2) << setfill('0') << tm_data->tm_mday    << "_";
@@ -360,7 +351,7 @@ void KpixControl::command ( string name, string arg ) {
       tmp << dec << setw(2) << setfill('0') << tm_data->tm_min     << "_";
       tmp << dec << setw(2) << setfill('0') << tm_data->tm_sec;
       tmp << ".bin";
-      variables_["DataFile"]->set(tmp.str());
+      getVariable("DataFile")->set(tmp.str());
    }
    System::command(name,arg);
 }
@@ -379,7 +370,7 @@ void KpixControl::setRunState ( string state ) {
                               state == "Running Calibration" ) ) {
       swRunRetState_ = "Stopped";
       swRunEnable_   = true;
-      variables_["RunState"]->set(state);
+      getVariable("RunState")->set(state);
 
       // Determine run command 
       if ( state == "Running Without Internal Trig/Cal" )
@@ -401,7 +392,7 @@ void KpixControl::setRunState ( string state ) {
       if ( swRunCount_ > 0 && pthread_create(&swRunThread_,NULL,swRunStatic,this) ) {
          err << "KpixControl::startRun -> Failed to create ioThread" << endl;
          if ( debug_ ) cout << err.str();
-         variables_["RunState"]->set(swRunRetState_);
+         getVariable("RunState")->set(swRunRetState_);
          throw(err.str());
       }
 
@@ -414,7 +405,7 @@ void KpixControl::setRunState ( string state ) {
             swRunEnable_ = false;
             err << "KpixControl::startRun -> Timeout waiting for runthread" << endl;
             if ( debug_ ) cout << err.str();
-            variables_["RunState"]->set(swRunRetState_);
+            getVariable("RunState")->set(swRunRetState_);
             throw(err.str());
          }
       }
@@ -427,12 +418,12 @@ string KpixControl::localState ( ) {
 
    loc = "System Ready To Take Data.\n";
 
-   if ( variables_["RunState"]->get() == "Running Calibration" ) {
+   if ( getVariable("RunState")->get() == "Running Calibration" ) {
       loc.append("Calibration running: ");
-      loc.append(variables_["CalState"]->get());
-      if ( variables_["CalState"]->get() == "Inject" ) {
+      loc.append(getVariable("CalState")->get());
+      if ( getVariable("CalState")->get() == "Inject" ) {
          loc.append(" Channel: ");
-         loc.append(variables_["CalChannel"]->get());
+         loc.append(getVariable("CalChannel")->get());
       }
       loc.append("\n");
    }

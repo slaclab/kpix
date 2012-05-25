@@ -206,6 +206,16 @@ void OptoFpgaLink::ioHandler() {
    uint      dataSize;
    ushort    *lrxBuff;
    ushort    *ltxBuff;
+   uint      *rxBuff;
+   uint      *txBuff;
+
+   // Init buffer
+   rxBuff = (uint *) malloc(sizeof(uint)*maxRxTx_);
+   txBuff = (uint *) malloc(sizeof(uint)*maxRxTx_);
+
+   // Point to buffers as ushorts
+   lrxBuff = (ushort *)rxBuff;
+   ltxBuff = (ushort *)txBuff;
 
    // While enabled
    lastReqCnt = regReqCnt_;
@@ -213,10 +223,6 @@ void OptoFpgaLink::ioHandler() {
    lastRunCnt = runReqCnt_;
    txPend     = false;
    while ( runEnable_ ) {
-
-      // Point to buffers as ushorts
-      lrxBuff = (ushort *)rxBuff_;
-      ltxBuff = (ushort *)txBuff_;
 
       // Setup and attempt receive
       rxRet = rxFrame(lrxBuff, maxRxTx_, &type, &err);
@@ -242,7 +248,7 @@ void OptoFpgaLink::ioHandler() {
             if ( (maskRx & dataMask_) != 0 ) {
                if ( (rxRet % 2) != 0 ) dataSize = (rxRet + 1) / 2;
                else dataSize = rxRet / 2;
-               rxData = new Data(rxBuff_,dataSize);
+               rxData = new Data(rxBuff,dataSize);
                if ( ! dataQueue_.push(rxData) ) {
                   unexpCount_++;
                   delete rxData;
@@ -365,7 +371,9 @@ void OptoFpgaLink::ioHandler() {
       // Pause if nothing was done
       if ( rxRet <= 0 && txRet <= 0 && cmdRet <= 0 && runRet <= 0 ) usleep(1);
    }
-   pthread_exit(NULL);
+
+   free(rxBuff);
+   free(txBuff);
 }
 
 // Constructor

@@ -25,7 +25,7 @@ using namespace std;
 
 int main (int argc, char **argv) {
    OptoFpgaLink  optoLink; 
-   KpixControl   kpix(KpixControl::Opto,&optoLink);
+   KpixControl   kpix(&optoLink);
 
    try {
 

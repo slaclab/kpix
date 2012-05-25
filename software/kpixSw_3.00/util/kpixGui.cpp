@@ -13,7 +13,7 @@
 // Modification history :
 // 04/12/2011: created
 //----------------------------------------------------------------------------
-#include <OptoFpgaLink.h>
+#include <UdpLink.h>
 #include <KpixControl.h>
 #include <ControlServer.h>
 #include <Device.h>
@@ -40,8 +40,8 @@ int main (int argc, char **argv) {
    cout << "Starting gui server" << endl;
 
    try {
-      OptoFpgaLink  optoLink; 
-      KpixControl   kpix(KpixControl::Opto,&optoLink);
+      UdpLink       udpLink; 
+      KpixControl   kpix(&udpLink);
       string        xmlTest;
       int           pid;
 
@@ -49,10 +49,10 @@ int main (int argc, char **argv) {
       //cspad.setDebug(true,true);
 
       // Create and setup PGP link
-      optoLink.setMaxRxTx(500000);
-      optoLink.setDebug(true);
-      optoLink.open("/dev/ttyUSB0");
-      optoLink.openDataNet("127.0.0.1",8099);
+      udpLink.setMaxRxTx(500000);
+      udpLink.setDebug(true);
+      udpLink.open(8192,1,"192.168.1.16");
+      udpLink.openDataNet("127.0.0.1",8099);
       usleep(100);
 
       // Setup control server

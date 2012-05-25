@@ -32,12 +32,8 @@ class KpixControl : public System {
 
    public:
 
-      // FPGA types
-      static const uint Opto = 0;
-      static const uint Con  = 1;
-
       //! Constructor
-      KpixControl ( uint type, CommLink *commLink_ );
+      KpixControl ( CommLink *commLink_ );
 
       //! Deconstructor
       ~KpixControl ( );

@@ -1,26 +1,26 @@
 //-----------------------------------------------------------------------------
-// File          : OptoFpga.h
+// File          : ConFpga.h
 // Author        : Ryan Herbst  <rherbst@slac.stanford.edu>
-// Created       : 11/20/2011
+// Created       : 05/24/2012
 // Project       : Kpix ASIC
 //-----------------------------------------------------------------------------
 // Description :
-// Opto FPGA container
+// Con FPGA container
 //-----------------------------------------------------------------------------
 // Copyright (c) 2011 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
-// 11/20/2011: created
+// 05/24/2012: created
 //-----------------------------------------------------------------------------
-#ifndef __CNTRL_FPGA_H__
-#define __CNTRL_FPGA_H__
+#ifndef __CON_FPGA_H__
+#define __CON_FPGA_H__
 
 #include <Device.h>
 using namespace std;
 
 //! Class to contain APV25 
-class OptoFpga : public Device {
+class ConFpga : public Device {
 
    public:
 
@@ -30,10 +30,10 @@ class OptoFpga : public Device {
        * \param index       Device index
        * \param parent      Parent Device
       */
-      OptoFpga ( uint destination, uint index, Device *parent );
+      ConFpga ( uint destination, uint index, Device *parent );
 
       //! Deconstructor
-      ~OptoFpga ( );
+      ~ConFpga ( );
 
       //! Method to process a command
       /*!
