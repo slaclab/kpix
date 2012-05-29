@@ -1,12 +1,11 @@
-
 -------------------------------------------------------------------------------
 -- Title      : 
 -------------------------------------------------------------------------------
--- File       : TriggerPkg.vhd
+-- File       : 
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2012-05-14
--- Last update: 2012-05-23
+-- Created    : 2012-05-07
+-- Last update: 2012-05-24
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -19,26 +18,14 @@ library ieee;
 use ieee.std_logic_1164.all;
 use work.StdRtlPkg.all;
 
-package TriggerPkg is
+package KpixRegCntlPkg is
 
-  constant TRIGGER_OPCODE_C : slv(7 downto 0) := "00000000";
+  -- I know, it's kinda silly to define a whole package just for this.
+  -- But it follows the same convention as the other ethernet registers.
+  -- Also, it makes it easy to add more registers in the future.
+  type KpixRegCntlRegsInType is record
+    kpixReset : sl;
+  end record KpixRegCntlRegsInType;
+  
+end package KpixRegCntlPkg;
 
-  constant TRIGGER_ACQUIRE_C   : sl := '0';
-  constant TRIGGER_CALIBRATE_C : sl := '1';
-
-  type TriggerRegsInType is record
-    extTriggerEn : sl;
-    calibrate    : sl;
-  end record TriggerRegsInType;
-
-  type TriggerInType is record
-    extTrigger : sl;
-  end record TriggerInType;
-
-  type TriggerOutType is record
-    trigger        : sl;
-    startAcquire   : sl;
-    startCalibrate : sl;
-  end record TriggerOutType;
-
-end package TriggerPkg;

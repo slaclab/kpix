@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-05-21
+-- Last update: 2012-05-25
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -24,18 +24,17 @@ use work.KpixPkg.all;
 use work.KpixRegRxPkg.all;
 use work.EthFrontEndPkg.all;
 use work.TriggerPkg.all;
+use work.KpixRegCntlPkg.all;
 
 entity KpixRegCntl is
   
   generic (
-    DELAY_G            : time           := 1 ns;  -- Simulation register delay
-    NUM_KPIX_MODULES_G : KpixNumberType := 4);
+    DELAY_G            : time    := 1 ns;  -- Simulation register delay
+    NUM_KPIX_MODULES_G : natural := 4);
 
   port (
-    sysClk  : in sl;
-    sysRst  : in sl;
-    kpixClk : in sl;
-    kpixRst : in sl;
+    sysClk : in sl;
+    sysRst : in sl;
 
     -- Interface to Reg Control (sysClk domain)
     ethRegCntlOut : in  EthRegCntlOutType;
@@ -44,11 +43,20 @@ entity KpixRegCntl is
     -- Interface with start/trigger module
     triggerOut : in TriggerOutType;
 
+    -- Interface with internal registers
+    extRegsIn : in KpixRegCntlRegsInType;
+
+    ----------------------------------
+    kpixClk    : in sl;
+    kpixClkRst : in sl;
+
     -- Interface with kpix register rx modules
     kpixRegRxOut : in KpixRegRxOutArray(NUM_KPIX_MODULES_G-1 downto 0);
 
-    -- Interface with KpixTx module
-    kpixSerTxOut : out slv(NUM_KPIX_MODULES_G-1 downto 0)
+    -- Serial outout to KPIX modules
+    kpixSerTxOut   : out slv(NUM_KPIX_MODULES_G-1 downto 0);
+    kpixTriggerOut : out sl;
+    kpixResetOut   : out sl
     );
 
 end entity KpixRegCntl;
@@ -56,9 +64,9 @@ end entity KpixRegCntl;
 architecture rtl of KpixRegCntl is
 
   subtype REG_ADDR_RANGE_C is natural range 6 downto 0;
-  subtype KPIX_ADDR_RANGE_C is natural range 17 downto 7;
-  subtype VALID_KPIX_ADDR_RANGE_C is natural range 7+log2(NUM_KPIX_MODULES_G) downto 7;
-  subtype INVALID_KPIX_ADDR_RANGE_C is natural range 17 downto 11-log2(NUM_KPIX_MODULES_G);
+  subtype KPIX_ADDR_RANGE_C is natural range 15 downto 8;
+  subtype VALID_KPIX_ADDR_RANGE_C is natural range 8+log2(NUM_KPIX_MODULES_G) downto 8;
+  subtype INVALID_KPIX_ADDR_RANGE_C is natural range 15 downto 12-log2(NUM_KPIX_MODULES_G);
 
   constant WRITE_WAIT_CYCLES_C : natural := 20;
   constant READ_WAIT_CYCLES_C  : natural := 20;
@@ -75,6 +83,8 @@ architecture rtl of KpixRegCntl is
     regOpSync          : SynchronizerType;
     startAcquireSync   : SynchronizerType;
     startCalibrateSync : SynchronizerType;
+    triggerSync        : SynchronizerType;
+    kpixResetSync      : SynchronizerType;
 
     -- Internal registers
     state        : StateType;           -- State machine state
@@ -101,14 +111,16 @@ architecture rtl of KpixRegCntl is
 
 begin
 
-  seq : process (kpixClk, kpixRst) is
+  seq : process (kpixClk, kpixClkRst) is
   begin
-    if (kpixRst = '1') then
+    if (kpixClkRst = '1') then
       r.regInpSync             <= SYNCHRONIZER_INIT_0_C after DELAY_G;
       r.regReqSync             <= SYNCHRONIZER_INIT_0_C after DELAY_G;
       r.regOpSync              <= SYNCHRONIZER_INIT_0_C after DELAY_G;
       r.startAcquireSync       <= SYNCHRONIZER_INIT_0_C after DELAY_G;
       r.startCalibrateSync     <= SYNCHRONIZER_INIT_0_C after DELAY_G;
+      r.triggerSync            <= SYNCHRONIZER_INIT_0_C after DELAY_G;
+      r.kpixResetSync          <= SYNCHRONIZER_INIT_0_C after DELAY_G;
       r.state                  <= IDLE_S                after DELAY_G;
       r.txShiftReg             <= (others => '0')       after DELAY_G;
       r.txShiftCount           <= (others => '0')       after DELAY_G;
@@ -123,133 +135,138 @@ begin
   end process seq;
 
   comb : process (r, ethRegCntlOut, triggerOut, kpixRegRxOut) is
-    variable tmpVar           : RegType;
+    variable rVar             : RegType;
     variable addressedKpixVar : natural;
   begin
-    tmpVar := r;
+    rVar := r;
 
-    tmpVar.kpixSerTxOut         := (others => '0');
-    tmpVar.ethRegCntlIn.regAck  := '0';
-    tmpVar.ethRegCntlIn.regFail := '0';
+    rVar.kpixSerTxOut         := (others => '0');
+    rVar.ethRegCntlIn.regAck  := '0';
+    rVar.ethRegCntlIn.regFail := '0';
 
     -- Synchronize sysClk inputs to kpixClk
-    synchronize(ethRegCntlOut.regInp, r.regInpSync, tmpVar.regInpSync);
-    synchronize(ethRegCntlOut.regReq, r.regReqSync, tmpVar.regReqSync);
-    synchronize(ethRegCntlOut.regOp, r.regOpSync, tmpVar.regOpSync);
-    synchronize(triggerOut.startAcquire, r.startAcquireSync, tmpVar.startAcquireSync);
-    synchronize(triggerOut.startCalibrate, r.startCalibrateSync, tmpVar.startCalibrateSync);
+    synchronize(ethRegCntlOut.regInp, r.regInpSync, rVar.regInpSync);
+    synchronize(ethRegCntlOut.regReq, r.regReqSync, rVar.regReqSync);
+    synchronize(ethRegCntlOut.regOp, r.regOpSync, rVar.regOpSync);
+    synchronize(triggerOut.startAcquire, r.startAcquireSync, rVar.startAcquireSync);
+    synchronize(triggerOut.startCalibrate, r.startCalibrateSync, rVar.startCalibrateSync);
+    synchronize(triggerOut.trigger, r.triggerSync, rVar.triggerSync);
+    synchronize(extRegsIn.kpixReset, r.kpixResetSync, rVar.kpixResetSync);
 
     case (r.state) is
       when IDLE_S =>
-        tmpVar.txShiftCount := (others => '0');
+        rVar.txShiftCount := (others => '0');
         -- Does register access take precidence over commands?
         -- Maybe pipeline parity calc to simplify logic.
         if (r.regReqSync.sync = '1' and isZero(ethRegCntlOut.regAddr(INVALID_KPIX_ADDR_RANGE_C))) then
           -- Register access, format output word
-          tmpVar.txShiftReg                               := (others => '0');  -- Simplifies parity calc
-          tmpVar.txShiftReg(KPIX_MARKER_RANGE_C)          := KPIX_MARKER_C;
-          tmpVar.txShiftReg(KPIX_FRAME_TYPE_INDEX_C)      := KPIX_CMD_RSP_FRAME_C;
-          tmpVar.txShiftReg(KPIX_ACCESS_TYPE_INDEX_C)     := KPIX_REG_ACCESS_C;
-          tmpVar.txShiftReg(KPIX_WRITE_INDEX_C)           := r.regOpSync.sync;
-          tmpVar.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := bitReverse(ethRegCntlOut.regAddr(REG_ADDR_RANGE_C));
-          tmpVar.txShiftReg(KPIX_DATA_RANGE_C)            := bitReverse(ethRegCntlOut.regDataOut);
-          tmpVar.txShiftReg(KPIX_HEADER_PARITY_INDEX_C)   := '0';
-          tmpVar.txShiftReg(KPIX_DATA_PARITY_INDEX_C)     := '0';
-          tmpVar.txShiftCount                             := (others => '0');
-          addressedKpixVar                                := to_integer(unsigned(ethRegCntlOut.regAddr(VALID_KPIX_ADDR_RANGE_C)));
-          tmpVar.txEnable(addressedKpixVar)               := '1';
-          tmpVar.state                                    := PARITY_S;
+          rVar.txShiftReg                               := (others => '0');  -- Simplifies parity calc
+          rVar.txShiftReg(KPIX_MARKER_RANGE_C)          := KPIX_MARKER_C;
+          rVar.txShiftReg(KPIX_FRAME_TYPE_INDEX_C)      := KPIX_CMD_RSP_FRAME_C;
+          rVar.txShiftReg(KPIX_ACCESS_TYPE_INDEX_C)     := KPIX_REG_ACCESS_C;
+          rVar.txShiftReg(KPIX_WRITE_INDEX_C)           := r.regOpSync.sync;
+          rVar.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := bitReverse(ethRegCntlOut.regAddr(REG_ADDR_RANGE_C));
+          rVar.txShiftReg(KPIX_DATA_RANGE_C)            := bitReverse(ethRegCntlOut.regDataOut);
+          rVar.txShiftReg(KPIX_HEADER_PARITY_INDEX_C)   := '0';
+          rVar.txShiftReg(KPIX_DATA_PARITY_INDEX_C)     := '0';
+          rVar.txShiftCount                             := (others => '0');
+          addressedKpixVar                              := to_integer(unsigned(ethRegCntlOut.regAddr(VALID_KPIX_ADDR_RANGE_C)));
+          rVar.txEnable(addressedKpixVar)               := '1';
+          rVar.state                                    := PARITY_S;
 
         elsif (r.startAcquireSync.sync = '1') then
           -- Cmd access
-          tmpVar.txShiftReg                               := (others => '0');
-          tmpVar.txShiftReg(KPIX_MARKER_RANGE_C)          := KPIX_MARKER_C;
-          tmpVar.txShiftReg(KPIX_FRAME_TYPE_INDEX_C)      := KPIX_CMD_RSP_FRAME_C;
-          tmpVar.txShiftReg(KPIX_ACCESS_TYPE_INDEX_C)     := KPIX_CMD_RSP_ACCESS_C;
-          tmpVar.txShiftReg(KPIX_WRITE_INDEX_C)           := KPIX_WRITE_C;
-          tmpVar.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := KPIX_ACQUIRE_CMD_ID_REV_C;
-          tmpVar.txShiftReg(KPIX_DATA_RANGE_C)            := (others => '0');
-          tmpVar.txShiftReg(KPIX_HEADER_PARITY_INDEX_C)   := '0';
-          tmpVar.txShiftReg(KPIX_DATA_PARITY_INDEX_C)     := '0';
-          tmpVar.txShiftCount                             := (others => '0');
-          tmpVar.txEnable                                 := (others => '1');  -- Enable all
-          tmpVar.state                                    := PARITY_S;
+          rVar.txShiftReg                               := (others => '0');
+          rVar.txShiftReg(KPIX_MARKER_RANGE_C)          := KPIX_MARKER_C;
+          rVar.txShiftReg(KPIX_FRAME_TYPE_INDEX_C)      := KPIX_CMD_RSP_FRAME_C;
+          rVar.txShiftReg(KPIX_ACCESS_TYPE_INDEX_C)     := KPIX_CMD_RSP_ACCESS_C;
+          rVar.txShiftReg(KPIX_WRITE_INDEX_C)           := KPIX_WRITE_C;
+          rVar.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := KPIX_ACQUIRE_CMD_ID_REV_C;
+          rVar.txShiftReg(KPIX_DATA_RANGE_C)            := (others => '0');
+          rVar.txShiftReg(KPIX_HEADER_PARITY_INDEX_C)   := '0';
+          rVar.txShiftReg(KPIX_DATA_PARITY_INDEX_C)     := '0';
+          rVar.txShiftCount                             := (others => '0');
+          rVar.txEnable                                 := (others => '1');  -- Enable all
+          rVar.state                                    := PARITY_S;
           if (r.startCalibrateSync.sync = '1') then
-            tmpVar.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := KPIX_CALIBRATE_CMD_ID_REV_C;
+            rVar.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := KPIX_CALIBRATE_CMD_ID_REV_C;
           end if;
         end if;
         
       when PARITY_S =>
-        tmpVar.txShiftReg(KPIX_HEADER_PARITY_INDEX_C) := not evenParity(r.txShiftReg(KPIX_FULL_HEADER_RANGE_C));
-        tmpVar.txShiftReg(KPIX_DATA_PARITY_INDEX_C)   := not evenParity(r.txShiftReg(KPIX_FULL_DATA_RANGE_C));
-        tmpVar.txShiftCount                           := (others => '0');
-        tmpVar.kpixSerTxOut                           := r.txEnable;  -- Start bit
-        tmpVar.state                                  := TRANSMIT_S;
+        rVar.txShiftReg(KPIX_HEADER_PARITY_INDEX_C) := not evenParity(r.txShiftReg(KPIX_FULL_HEADER_RANGE_C));
+        rVar.txShiftReg(KPIX_DATA_PARITY_INDEX_C)   := not evenParity(r.txShiftReg(KPIX_FULL_DATA_RANGE_C));
+        rVar.txShiftCount                           := (others => '0');
+        rVar.kpixSerTxOut                           := r.txEnable;  -- Start bit
+        rVar.state                                  := TRANSMIT_S;
 
       when TRANSMIT_S =>
         -- Shift (select) out each bit, gated by rxEnable
-        tmpVar.txShiftCount := r.txShiftCount + 1;
+        rVar.txShiftCount := r.txShiftCount + 1;
+        rVar.txShiftReg   := r.txShiftReg(1 to KPIX_NUM_TX_BITS_C-1) & '0';
         for i in r.txEnable'range loop
-          tmpVar.kpixSerTxOut(i) := r.txShiftReg(to_integer(r.txShiftCount)) and r.txEnable(i);
+          rVar.kpixSerTxOut(i) := r.txShiftReg(0) and r.txEnable(i);
         end loop;
         if (r.txShiftCount = KPIX_NUM_TX_BITS_C) then  -- Check this
-          tmpVar.txShiftCount := (others => '0');
+          rVar.txShiftCount := (others => '0');
           if (r.txShiftReg(KPIX_WRITE_INDEX_C) = '1') then
             if (r.regReqSync.sync = '1') then
-              tmpVar.state := WRITE_WAIT_S;
+              rVar.state := WRITE_WAIT_S;
             else
               -- Don't need to wait for req to fall on CMD requests
-              tmpVar.state := IDLE_S;
+              rVar.state := IDLE_S;
             end if;
           else
-            tmpVar.state := READ_WAIT_S;
+            rVar.state := READ_WAIT_S;
           end if;
         end if;
 
       when WRITE_WAIT_S =>
         -- Wait a defined number of cycles before acking write
         -- Keeps KPIX from being overwhelmed
-        tmpVar.txShiftCount := r.txShiftCount + 1;
+        rVar.txShiftCount := r.txShiftCount + 1;
         if (r.txShiftCount = WRITE_WAIT_CYCLES_C) then
-          tmpVar.ethRegCntlIn.regAck := '1';  -- THIS NEEDS TO BE SYNC'd to sysclk
-                                              -- ALSO, DON'T ACK a command
-          tmpVar.state               := WAIT_RELEASE_S;
+          rVar.ethRegCntlIn.regAck := '1';  -- THIS NEEDS TO BE SYNC'd to sysclk
+                                            -- ALSO, DON'T ACK a command
+          rVar.state               := WAIT_RELEASE_S;
         end if;
 
       when READ_WAIT_S =>
         -- Wait for read response
         -- Timeout and fail after defined number of cycles
-        tmpVar.txShiftCount := r.txShiftCount + 1;
-        addressedKpixVar    := to_integer(unsigned(ethRegCntlOut.regAddr(VALID_KPIX_ADDR_RANGE_C)));  --VALID_KPIX_ADDR_RANGE_C
+        rVar.txShiftCount := r.txShiftCount + 1;
+        addressedKpixVar  := to_integer(unsigned(ethRegCntlOut.regAddr(VALID_KPIX_ADDR_RANGE_C)));  --VALID_KPIX_ADDR_RANGE_C
         if (kpixRegRxOut(addressedKpixVar).regValid = '1' and
             kpixRegRxOut(addressedKpixVar).regAddr = ethRegCntlOut.regAddr(REG_ADDR_RANGE_C)) then  -- REG_ADDR_RANGE_C
           -- Only ack when kpix id and reg addr is the same as tx'd
-          tmpVar.ethRegCntlIn.regDataIn := kpixRegRxOut(addressedKpixVar).regData;
-          tmpVar.ethRegCntlIn.regAck    := '1';
-          tmpVar.ethRegCntlIn.regFail   := kpixRegRxOut(addressedKpixVar).regParityErr;
-          tmpVar.state                  := WAIT_RELEASE_S;
+          rVar.ethRegCntlIn.regDataIn := kpixRegRxOut(addressedKpixVar).regData;
+          rVar.ethRegCntlIn.regAck    := '1';
+          rVar.ethRegCntlIn.regFail   := kpixRegRxOut(addressedKpixVar).regParityErr;
+          rVar.state                  := WAIT_RELEASE_S;
         elsif (r.txShiftCount = READ_WAIT_CYCLES_C) then
-          tmpVar.ethRegCntlIn.regAck  := '1';  
-          tmpVar.ethRegCntlIn.regFail := '1';  
-          tmpVar.state                := WAIT_RELEASE_S;
+          rVar.ethRegCntlIn.regAck  := '1';
+          rVar.ethRegCntlIn.regFail := '1';
+          rVar.state                := WAIT_RELEASE_S;
         end if;
 
       when WAIT_RELEASE_S =>
         if (r.regReqSync.sync = '0') then
           -- Can't deassert ack until regReq is dropped
-          tmpVar.ethRegCntlIn.regAck  := '0';
-          tmpVar.ethRegCntlIn.regFail := '0';
-          tmpVar.state                := IDLE_S;
+          rVar.ethRegCntlIn.regAck  := '0';
+          rVar.ethRegCntlIn.regFail := '0';
+          rVar.state                := IDLE_S;
         end if;
 
     end case;
 
     -- Registers
-    rin <= tmpVar;
+    rin <= rVar;
 
     -- Outputs
-    kpixSerTxOut <= r.kpixSerTxOut;
-
+    kpixSerTxOut   <= r.kpixSerTxOut;
+    kpixTriggerOut <= r.triggerSync.sync;
+    kpixResetOut   <= r.kpixResetSync.sync;
+    
   end process comb;
 
   -----------------------------------------------------------------------------

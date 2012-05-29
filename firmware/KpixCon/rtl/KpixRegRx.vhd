@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-05-21
+-- Last update: 2012-05-25
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -26,8 +26,8 @@ use work.KpixRegRxPkg.all;
 entity KpixRegRx is
   
   generic (
-    DELAY_G   : time           := 1 ns;  -- Simulation register delay
-    KPIX_ID_G : KpixNumberType := 0);
+    DELAY_G   : time    := 1 ns;        -- Simulation register delay
+    KPIX_ID_G : natural := 0);
   port (
     kpixClk : in sl;
     kpixRst : in sl;
@@ -44,7 +44,7 @@ architecture rtl of KpixRegRx is
   type StateType is (IDLE_S, OUTPUT_S);
 
   type RegType is record
-    shiftReg     : slv(0 to KPIX_NUM_TX_BITS_C); 
+    shiftReg     : slv(0 to KPIX_NUM_TX_BITS_C);
     shiftCount   : unsigned(log2(KPIX_NUM_TX_BITS_C)-1 downto 0);
     state        : StateType;
     kpixRegRxOut : KpixRegRxOutType;
@@ -77,9 +77,9 @@ begin
   begin
     tmpVar := r;
 
-    tmpVar.shiftReg                  := r.shiftReg(1 to KPIX_NUM_TX_BITS_C) & kpixSerRxIn;
-    tmpVar.shiftCount                := r.shiftCount + 1;
-    
+    tmpVar.shiftReg   := r.shiftReg(1 to KPIX_NUM_TX_BITS_C) & kpixSerRxIn;
+    tmpVar.shiftCount := r.shiftCount + 1;
+
     tmpVar.kpixRegRxOut.regValid     := '0';
     tmpVar.kpixRegRxOut.regData      := bitReverse(r.shiftReg(KPIX_DATA_RANGE_C));
     tmpVar.kpixRegRxOut.regAddr      := bitReverse(r.shiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C));
@@ -89,10 +89,10 @@ begin
 
     case (r.state) is
       when IDLE_S =>
-          tmpVar.shiftCount := (others => '0');
+        tmpVar.shiftCount := (others => '0');
         if (r.shiftReg(KPIX_NUM_TX_BITS_C) = '1') then
           -- Got start bit
-          tmpVar.state      := OUTPUT_S;
+          tmpVar.state := OUTPUT_S;
         end if;
       when OUTPUT_S =>
         if (r.shiftCount = KPIX_NUM_TX_BITS_C) then
@@ -118,8 +118,8 @@ begin
         
     end case;
 
-    rin                         <= tmpVar;
-    kpixRegRxOut                <= r.kpixRegRxOut;
+    rin          <= tmpVar;
+    kpixRegRxOut <= r.kpixRegRxOut;
   end process comb;
 
 end architecture rtl;

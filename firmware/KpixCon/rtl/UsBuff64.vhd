@@ -60,10 +60,10 @@ architecture UsBuff of UsBuff is
 
 
   -- Black Box Attributes
-  attribute syn_black_box                               : boolean;
-  attribute syn_noprune                                 : boolean;
-  attribute syn_black_box of fifo_72x512_18x2048_fwft_1 : component is true;
-  attribute syn_noprune of fifo_72x512_18x2048_fwft_1   : component is true;
+--  attribute syn_black_box                               : boolean;
+--  attribute syn_noprune                                 : boolean;
+--  attribute syn_black_box of fifo_72x512_18x2048_fwft_1 : component is true;
+--  attribute syn_noprune of fifo_72x512_18x2048_fwft_1   : component is true;
 
 begin
 
@@ -71,7 +71,7 @@ begin
   -- Variable width fifo reads out MS Word first
   -- We want LS Word first so swap words on input
   fifoDin(71)           <= frameTxSOF;
-  fifoDin(70 downto 64) <= "0" & frameTxData(15 downto 0);
+  fifoDin(70 downto 54) <= "0" & frameTxData(15 downto 0);
   fifoDin(53 downto 36) <= "00" & frameTxData(31 downto 16);
   fifoDin(35 downto 18) <= "00" & frameTxData(47 downto 32);
   fifoDin(17)           <= frameTxEOFE or fifoFull;
@@ -88,7 +88,7 @@ begin
       din         => fifoDin,
       wr_en       => frameTxValid,
       rd_en       => fifoRd,
-      dout        => vcFrameTxData,
+      dout        => fifoDout,
       full        => fifoFull,
       almost_full => frameTxAFull,
       empty       => fifoEmpty,

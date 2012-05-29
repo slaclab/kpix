@@ -1,274 +1,266 @@
 -------------------------------------------------------------------------------
--- Title         : KPIX Optical Interface FPGA Core Module
--- Project       : W_SI, KPIX Test Board
+-- Title      : 
 -------------------------------------------------------------------------------
--- File          : KpixCore.vhd
--- Author        : Ryan Herbst, rherbst@slac.stanford.edu
--- Created       : 05/03/2012
+-- File       : KpixCore2.vhd
+-- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
+-- Company    : SLAC National Accelerator Laboratory
+-- Created    : 2012-05-17
+-- Last update: 2012-05-29
+-- Platform   : 
+-- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
--- Description:
--- Core VHDL source file for the optical interface FPGA on the KPIX Test Board.
+-- Description: 
 -------------------------------------------------------------------------------
--- Copyright (c) 2012 by Ryan Herbst. All rights reserved.
--------------------------------------------------------------------------------
--- Modification history:
--- 05/03/2012: created.
+-- Copyright (c) 2012 SLAC National Accelerator Laboratory
 -------------------------------------------------------------------------------
 
-LIBRARY ieee;
-Library Unisim;
-USE ieee.std_logic_1164.ALL;
-use ieee.std_logic_arith.all;
-use ieee.std_logic_unsigned.all;
-USE work.ALL;
-use work.Version.all;
+library ieee;
+use ieee.std_logic_1164.all;
+use work.StdRtlPkg.all;
+use work.EthFrontEndPkg.all;
+use work.EventBuilderFifoPkg.all;
+use work.KpixPkg.all;
+use work.KpixRegCntlPkg.all;
+use work.KpixDataRxPkg.all;
+use work.KpixRegRxPkg.all;
+use work.TriggerPkg.all;
+use work.KpixLocalPkg.all;
+use work.KpixClockGenPkg.all;
 
-entity KpixCore is 
-   port ( 
+entity KpixCore is
+  
+  generic (
+    DELAY_G            : time    := 1 ns;
+    NUM_KPIX_MODULES_G : natural := 5);
+  port (
+    sysClk : in sl;                     -- 125 MHz
+    sysRst : in sl;
 
-      -- Clocks
-      sysClk           : in  std_logic;
-      sysClkRst        : in  std_logic;
-      kpixClk          : in  std_logic;
-      kpixClkRst       : in  std_logic;
+    clk200 : in sl;                     -- Used by KpixClockGen
+    rst200 : in sl;
 
-      -- Commands
-      cmdEn            : in  std_logic;
-      cmdOpCode        : in  std_logic_vector(7  downto 0);
+    -- Ethernet Interface (Should just make generic so PGP works as well)
+    ethRegCntlOut : in  EthRegCntlOutType;
+    ethRegCntlIn  : out EthRegCntlInType;
+    ethCmdCntlOut : in  EthCmdCntlOutType;
+    ethUsDataOut  : in  EthUsDataOutType;
+    ethUsDataIn   : out EthUsDataInType;
 
-      -- Registers
-      regReq           : in  std_logic;
-      regOp            : in  std_logic;
-      regInp           : in  std_logic;
-      regAck           : out std_logic;
-      regFail          : out std_logic;
-      regAddr          : in  std_logic_vector(23 downto 0);
-      regDataOut       : in  std_logic_vector(31 downto 0);
-      regDataIn        : out std_logic_vector(31 downto 0);
+    -- Trigger interface
+    triggerIn : in TriggerInType;
 
-      -- Data
-      frameTxEnable    : out std_logic;
-      frameTxSOF       : out std_logic;
-      frameTxEOF       : out std_logic;
-      frameTxAfull     : in  std_logic;
-      frameTxData      : out std_logic_vector(31 downto 0);
+    -- Interface to (possibly) external EventBuilder FIFO
+    ebFifoOut : in  EventBuilderFifoOutType;
+    ebFifoIn  : out EventBuilderFifoInType;
 
-      -- KPIX Interface
-      kpixReset        : out std_logic;
-      kpixCommand      : out std_logic_vector(15 downto 0);
-      kpixData         : in  std_logic_vector(15 downto 0);
-      kpixTrig         : out std_logic;
+    debugOutA : out sl;
+    debugOutB : out sl;
 
-      -- Inputs
-      nimInA           : in  std_logic;
-
-      -- Outputs
-      debugOutA        : out std_logic;
-      debugOutB        : out std_logic;
-
-      -- Kpix state
-      kpixState        : out std_logic_vector(3 downto 0);
-
-      -- Configuration
-      clkSelIdle       : out std_logic_vector(4 downto 0);
-      clkSelAcquire    : out std_logic_vector(4 downto 0);
-      clkSelDigitize   : out std_logic_vector(4 downto 0);
-      clkSelReadout    : out std_logic_vector(4 downto 0);
-      clkSelPrecharge  : out std_logic_vector(4 downto 0)
-   );
-end KpixCore;
+    -- Interface to KPiX modules
+    kpixClkOut     : out sl;
+    kpixTriggerOut : out sl;
+    kpixResetOut   : out sl;
+    kpixSerTxOut   : out slv(NUM_KPIX_MODULES_G-2 downto 0);
+    kpixSerRxIn    : in  slv(NUM_KPIX_MODULES_G-2 downto 0));
 
 
--- Define architecture for core module
-architecture KpixCore of KpixCore is 
+end entity KpixCore;
 
-   -- Local KPIX
-   component KpixLocal 
-      port ( 
-         kpixClk       : in    std_logic;                       -- 20Mhz system clock
-         kpixClkRst    : in    std_logic;                       -- System reset
-         debugOutA     : out   std_logic;                       -- BNC Interface A output
-         debugOutB     : out   std_logic;                       -- BNC Interface B output
-         debugASel     : in    std_logic_vector(4 downto 0);    -- BNC Output A Select
-         debugBSel     : in    std_logic_vector(4 downto 0);    -- BNC Output B Select
-         kpixReset     : in    std_logic;                       -- Kpix reset
-         kpixCmd       : in    std_logic;                       -- Command data in
-         kpixData      : out   std_logic;                       -- Response Data out
-         coreState     : out   std_logic_vector(3 downto 0);    -- Core state value
-         kpixBunch     : out   std_logic_vector(12 downto 0);   -- Bunch count value
-         calStrobeOut  : out   std_logic
-      );
-   end component;
+architecture rtl of KpixCore is
 
-   -- Local signals
-   signal iclkSelIdle       : std_logic_vector(4 downto 0);
-   signal iclkSelAcquire    : std_logic_vector(4 downto 0);
-   signal iclkSelDigitize   : std_logic_vector(4 downto 0);
-   signal iclkSelReadout    : std_logic_vector(4 downto 0);
-   signal iclkSelPrecharge  : std_logic_vector(4 downto 0);
-   signal kpixRegReq        : std_logic;
-   signal kpixRegAck        : std_logic;
-   signal kpixRegFail       : std_logic;
-   signal kpixRegSel        : std_logic_vector(7 downto 0);
-   signal kpixRegDataIn     : std_logic_vector(31 downto 0);
-   signal debugASel         : std_logic_vector(4 downto 0);
-   signal debugBSel         : std_logic_vector(4 downto 0);
-   signal extTrigEnable     : std_logic;
-   signal kpixBunch         : std_logic_vector(12 downto 0);
-   signal calStrobeOut      : std_logic;
+  -- Clock and reset for kpix clocked modules
+  signal kpixClk    : sl;
+  signal kpixClkRst : sl;
 
-   -- Register delay for simulation
-   constant tpd:time := 0.5 ns;
+  signal kpixRegCntlIn  : EthRegCntlOutType;
+  signal kpixRegCntlOut : EthRegCntlInType;
 
+  -- Ethernet accessible registers
+  signal kpixClockGenRegsIn : KpixClockGenRegsInType;
+  signal triggerRegsIn      : TriggerRegsInType;
+  signal kpixRegCntlRegsIn  : KpixRegCntlRegsInType;
+  signal kpixDataRxRegsIn   : KpixDataRxRegsInArray(0 to NUM_KPIX_MODULES_G-1);
+  signal kpixDataRxRegsOut  : KpixDataRxRegsOutArray(0 to NUM_KPIX_MODULES_G-1);
+  signal kpixLocalRegsIn    : KpixLocalRegsInType;
+
+  -- Triggers
+  signal triggerOut : TriggerOutType;
+
+  -- KPIX Rx Data Interface (with Event Builder)
+  signal kpixDataRxOut : KpixDataRxOutArray(0 to NUM_KPIX_MODULES_G-1);
+  signal kpixDataRxIn  : KpixDataRxInArray(0 to NUM_KPIX_MODULES_G-1);
+
+  -- KPIX Rx Reg Interface
+  signal kpixRegRxOut : KpixRegRxOutArray(0 to NUM_KPIX_MODULES_G-1);
+
+  -- KPIX Local signals
+  signal kpixLocalOut : KpixLocalOutType;
+
+  -- Internal Kpix Signals
+  signal intKpixRstOut   : sl;
+  signal intKpixSerTxOut : slv(NUM_KPIX_MODULES_G-1 downto 0);
+  signal intKpixSerRxIn  : slv(NUM_KPIX_MODULES_G-1 downto 0);
+  
 begin
 
-   ----------------------------------------
-   -- Local Registers   
-   ----------------------------------------
-   clkSelIdle       <= iclkSelIdle;
-   clkSelAcquire    <= iclkSelAcquire;
-   clkSelDigitize   <= iclkSelDigitize;
-   clkSelReadout    <= iclkSelReadout;
-   clkSelPrecharge  <= iclkSelPrecharge;
-
-   process ( sysClk, sysClkRst ) begin
-      if sysClkRst = '1' then
-         regAck            <= '0'           after tpd;
-         regFail           <= '0'           after tpd;
-         regDataIn         <= (others=>'0') after tpd;
-         iclkSelReadout    <= (others=>'0') after tpd;
-         iclkSelDigitize   <= (others=>'0') after tpd;
-         iclkSelAcquire    <= (others=>'0') after tpd;
-         iclkSelIdle       <= (others=>'0') after tpd;
-         iclkSelPrecharge  <= (others=>'0') after tpd;
-         kpixRegReq        <= '0'           after tpd;
-         kpixRegSel        <= (others=>'0') after tpd;
-         debugASel         <= (others=>'0') after tpd;
-         debugBSel         <= (others=>'0') after tpd;
-         extTrigEnable     <= '0'           after tpd;
-      elsif rising_edge(sysClk) then
-
-         -- Local Registers
-         if regAddr(23 downto 20) = 0 then
-            kpixRegReq  <= '0'           after tpd;
-            kpixRegSel  <= (others=>'0') after tpd;
-
-            -- Version
-            if regAddr(19 downto 0) = 0 then
-               regAck    <= regReq      after tpd;
-               regFail   <= '0'         after tpd;
-               regDataIn <= FpgaVersion after tpd;
-
-            -- Clock Select Regsiter A
-            elsif regAddr(19 downto 0) = 1 then
-               regAck                  <= regReq          after tpd;
-               regFail                 <= '0'             after tpd;
-               regDataIn(31 downto 29) <= (others=>'0')   after tpd;
-               regDataIn(28 downto 24) <= iclkSelReadout  after tpd;
-               regDataIn(23 downto 21) <= (others=>'0')   after tpd;
-               regDataIn(20 downto 16) <= iclkSelDigitize after tpd;
-               regDataIn(15 downto 13) <= (others=>'0')   after tpd;
-               regDataIn(12 downto  8) <= iclkSelAcquire  after tpd;
-               regDataIn(7  downto  5) <= (others=>'0')   after tpd;
-               regDataIn(4  downto  0) <= iclkSelIdle     after tpd;
-
-               if regOp = '1' then
-                  iclkSelReadout   <= regDataOut(28 downto 24) after tpd;
-                  iclkSelDigitize  <= regDataOut(20 downto 16) after tpd;
-                  iclkSelAcquire   <= regDataOut(12 downto  8) after tpd;
-                  iclkSelIdle      <= regDataOut(4  downto  0) after tpd;
-               end if;
-
-            -- Clock Select Regsiter B
-            elsif regAddr(19 downto 0) = 2 then
-               regAck                  <= regReq           after tpd;
-               regFail                 <= '0'              after tpd;
-               regDataIn(31 downto  5) <= (others=>'0')    after tpd;
-               regDataIn(4  downto  0) <= iclkSelPrecharge after tpd;
-
-               if regOp = '1' then
-                  iclkSelPrecharge <= regDataOut(4  downto  0) after tpd;
-               end if;
-
-            -- Debug select register
-            elsif regAddr(19 downto 0) = 3 then
-               regAck                  <= regReq           after tpd;
-               regFail                 <= '0'              after tpd;
-               regDataIn(31 downto  5) <= (others=>'0')    after tpd;
-               regDataIn(12 downto  8) <= debugBSel        after tpd;
-               regDataIn(7  downto  5) <= (others=>'0')    after tpd;
-               regDataIn(4  downto  0) <= debugASel        after tpd;
-
-               if regOp = '1' then
-                  debugBSel <= regDataOut(12 downto  8) after tpd;
-                  debugASel <= regDataOut(4  downto  0) after tpd;
-               end if;
-
-            -- Trigger control register
-            elsif regAddr(19 downto 0) = 4 then
-               regAck                  <= regReq           after tpd;
-               regFail                 <= '0'              after tpd;
-               regDataIn(31 downto  1) <= (others=>'0')    after tpd;
-               regDataIn(0)            <= extTrigEnable    after tpd;
-
-               if regOp = '1' then
-                  extTrigEnable <= regDataOut(0) after tpd;
-               end if;
-            end if;
-
-         -- KPIX Address space
-         elsif regAddr(23 downto 20) = 1 then
-            kpixRegReq  <= regReq               after tpd;
-            kpixRegSel  <= regAddr(15 downto 8) after tpd;
-            regAck      <= kpixRegAck           after tpd;
-            regFail     <= kpixRegFail          after tpd;
-            regDataIn   <= kpixRegDataIn        after tpd;
-
-         else
-            kpixRegReq  <= '0'           after tpd;
-            kpixRegSel  <= (others=>'0') after tpd;
-         end if;
-      end if;
-   end process;
-
-   ----------------------------------------
-   -- Local KPIX Device
-   ----------------------------------------
-   U_KpixLocal : KpixLocal port map ( 
-      kpixClk       => kpixClk,
-      kpixClkRst    => kpixClkRst,
-      debugOutA     => debugOutA,
-      debugOutB     => debugOutB,
-      debugASel     => debugASel,
-      debugBSel     => debugBSel,
-      kpixReset     => '0',
-      kpixCmd       => '0',
-      kpixData      => open,
-      coreState     => kpixState,
-      kpixBunch     => kpixBunch,
-      calStrobeOut  => calStrobeOut
-   );
+  kpixClkOut <= kpixClk;
 
 
+  --------------------------------------------------------------------------------------------------
+  -- Decode local register accesses
+  -- Pass KPIX register accesses to KpixRegCntl
+  --------------------------------------------------------------------------------------------------
+  EthRegDecoder_1 : entity work.EthRegDecoder
+    generic map (
+      DELAY_G            => DELAY_G,
+      NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
+    port map (
+      sysClk             => sysClk,
+      sysRst             => sysRst,
+      ethRegCntlOut      => ethRegCntlOut,
+      ethRegCntlIn       => ethRegCntlIn,
+      kpixRegCntlOut     => kpixRegCntlOut,
+      kpixRegCntlIn      => kpixRegCntlIn,
+      triggerRegsIn      => triggerRegsIn,
+      kpixRegCntlRegsIn  => kpixRegCntlRegsIn,
+      kpixClockGenRegsIn => kpixClockGenRegsIn,
+      kpixLocalRegsIn    => kpixLocalRegsIn,
+      kpixDataRxRegsIn   => kpixDataRxRegsIn,
+      kpixDataRxRegsOut  => kpixDataRxRegsOut);
+
+  --------------------------------------------------------------------------------------------------
+  -- Generate the KPIX Clock
+  --------------------------------------------------------------------------------------------------
+  KpixClockGen_1 : entity work.KpixClockGen
+    generic map (
+      DELAY_G => DELAY_G)
+    port map (
+      sysClk       => sysClk,
+      sysRst       => sysRst,
+      clk200       => clk200,
+      rst200       => rst200,
+      extRegsIn    => kpixClockGenRegsIn,
+      kpixLocalOut => kpixLocalOut,
+      kpixClk      => kpixClk,
+      kpixRst      => kpixClkRst);
+
+  --------------------------------------------------------------------------------------------------
+  -- Trigger generator
+  --------------------------------------------------------------------------------------------------
+  Trigger_1 : entity work.Trigger
+    generic map (
+      DELAY_G => DELAY_G)
+    port map (
+      sysClk        => sysClk,
+      sysRst        => sysRst,
+      ethCmdCntlOut => ethCmdCntlOut,
+      kpixLocalOut  => kpixLocalOut,
+      extRegsIn     => triggerRegsIn,
+      triggerIn     => triggerIn,
+      triggerOut    => triggerOut);
+
+  --------------------------------------------------------------------------------------------------
+  -- Event Builder
+  --------------------------------------------------------------------------------------------------
+  EventBuilder_1 : entity work.EventBuilder
+    generic map (
+      DELAY_G            => DELAY_G,
+      NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
+    port map (
+      sysClk        => sysClk,
+      sysRst        => sysRst,
+      triggerOut    => triggerOut,
+      kpixDataRxOut => kpixDataRxOut,
+      kpixDataRxIn  => kpixDataRxIn,
+      ebFifoIn      => ebFifoIn,
+      ebFifoOut     => ebFifoOut,
+      ethUsDataOut  => ethUsDataOut,
+      ethUsDataIn   => ethUsDataIn);
 
 
+  kpixSerTxOut                                  <= intKpixSerTxOut(NUM_KPIX_MODULES_G-2 downto 0);
+  intKpixSerRxIn(NUM_KPIX_MODULES_G-2 downto 0) <= kpixSerRxIn;
 
+  --------------------------------------------------------------------------------------------------
+  -- KPIX Register Controller
+  -- Handles reads and writes to KPIX registers through the Eth interface
+  --------------------------------------------------------------------------------------------------
+  KpixRegCntl_1 : entity work.KpixRegCntl
+    generic map (
+      DELAY_G            => DELAY_G,
+      NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
+    port map (
+      sysClk         => sysClk,
+      sysRst         => sysRst,
+      ethRegCntlOut  => kpixRegCntlIn,
+      ethRegCntlIn   => kpixRegCntlOut,
+      triggerOut     => triggerOut,
+      extRegsIn      => kpixRegCntlRegsIn,
+      kpixClk        => kpixClk,
+      kpixClkRst     => kpixClkRst,
+      kpixRegRxOut   => kpixRegRxOut,
+      kpixSerTxOut   => intKpixSerTxOut,
+      kpixTriggerOut => kpixTriggerOut,
+      kpixResetOut   => kpixResetOut);
 
+  --------------------------------------------------------------------------------------------------
+  -- KPIX Register Rx
+  -- Deserializes data from a KPIX and presents it to KpixRegCntl
+  -- when a register response is detected
+  -- Must instantiate one for every connected KPIX including the local kpix
+  --------------------------------------------------------------------------------------------------
+  KpixRegRxGen : for i in 0 to NUM_KPIX_MODULES_G-1 generate
+    KpixRegRxInst : entity work.KpixRegRx
+      generic map (
+        DELAY_G   => DELAY_G,
+        KPIX_ID_G => i)
+      port map (
+        kpixClk      => kpixClk,
+        kpixRst      => kpixClkRst,
+        kpixSerRxIn  => intKpixSerRxIn(i),
+        kpixRegRxOut => kpixRegRxOut(i));
+  end generate KpixRegRxGen;
 
+  --------------------------------------------------------------------------------------------------
+  -- KPIX Data Parser
+  -- Parses incomming sample data into individual samples which are fed to the EventBuilder
+  -- Must instantiate one for every connected KPIX including the local kpix
+  --------------------------------------------------------------------------------------------------
+  KpixDataRxGen : for i in 0 to NUM_KPIX_MODULES_G-1 generate
+    KpixDataRxInst : entity work.KpixDataRx
+      generic map (
+        DELAY_G   => DELAY_G,
+        KPIX_ID_G => i)
+      port map (
+        kpixClk       => kpixClk,
+        kpixClkRst    => kpixClkRst,
+        kpixSerRxIn   => intKpixSerRxIn(i),
+        kpixRegRxOut  => kpixRegRxOut(i),
+        sysClk        => sysClk,
+        sysRst        => sysRst,
+        extRegsIn     => kpixDataRxRegsIn(i),
+        extRegsOut    => kpixDataRxRegsOut(i),
+        kpixDataRxOut => kpixDataRxOut(i),
+        kpixDataRxIn  => kpixDataRxIn(i));
+  end generate KpixDataRxGen;
 
+  ----------------------------------------
+  -- Local KPIX Device
+  ----------------------------------------
+  KpixLocalInst : entity work.KpixLocal
+    port map (
+      kpixClk      => kpixClk,
+      kpixClkRst   => kpixClkRst,
+      debugOutA    => debugOutA,
+      debugOutB    => debugOutB,
+      debugASel    => kpixLocalRegsIn.debugASel,
+      debugBSel    => kpixLocalRegsIn.debugBSel,
+      kpixReset    => '0',
+      kpixCmd      => intKpixSerTxOut(NUM_KPIX_MODULES_G-1),
+      kpixData     => intKpixSerRxIn(NUM_KPIX_MODULES_G-1),
+      coreState    => kpixLocalOut.kpixState,
+      kpixBunch    => open,
+      calStrobeOut => open
+      );
 
-   frameTxEnable    <= '0';
-   frameTxSOF       <= '0';
-   frameTxEOF       <= '0';
-   frameTxData      <= (others=>'0');
-   kpixReset        <= '0';
-   kpixCommand      <= (others=>'0');
-   kpixTrig         <= '0';
-   kpixState        <= (others=>'0');
-
-   kpixRegAck       <= '0';
-   kpixRegFail      <= '0';
-   kpixRegDataIn    <= (others=>'0');
-
-end KpixCore;
-
+end architecture rtl;

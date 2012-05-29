@@ -21,15 +21,28 @@ package StdRtlPkg is
   subtype sl is std_logic;
   subtype slv is std_logic_vector;
 
+  -- Declare arrays of built in types
+  type IntegerArray is array (integer range <>) of integer;
+  type NaturalArray is array (natural range <>) of natural;
+  type Slv64Array is array (natural range <>) of slv(63 downto 0);
+  type Slv32Array is array (natural range <>) of slv(31 downto 0);
+  type Slv16Array is array (natural range <>) of slv(15 downto 0);
+  type Slv8Array is array (natural range <>) of slv(7 downto 0);
+
   -- Very useful functions
-  function log2(constant number : integer) return integer;
-  function bitReverse (a         : slv) return slv;
+  function log2 (constant number : integer) return integer;
+  function bitReverse (a        : slv) return slv;
+
+  function list (constant start : integer;
+                 constant size  : integer;
+                 constant step  : integer := 1)
+    return IntegerArray;
 
   -- This should be unnecessary in VHDL 2008
   function toBoolean (logic : sl) return boolean;
   function toSl (bool       : boolean) return sl;
 
-  -- Unary reduction operators
+  -- Unary reduction operators, also unnecessary in VHDL 2008
   function uOr (vec      : slv) return sl;
   function uAnd (vec     : slv) return sl;
   function uXor (vec     : slv) return sl;
@@ -82,24 +95,40 @@ package body StdRtlPkg is
   -- Arg: number - integer to find log2 of
   -- Returns: Integer containing log base two of input.
   ---------------------------------------------------------------------------------------------------------------------
+--  function log2(
+--    constant number : integer)
+--    return integer
+--  is
+--    variable plus1Var : boolean := false;
+--    variable divVar : integer;
+--    variable retVar : integer := 0;
+--  begin
+--    divVar := number;
+
+--    while (divVar /= 1) loop
+--      if (divVar mod 2 > 0 and not plus1Var) then
+--        retVar := retVar + 1;
+--        plus1Var := true;
+--      end if;
+--      divVar := divVar/2;
+--      retVar := retVar + 1;
+--    end loop;
+--    return retVar;
+--  end function log2;
+
   function log2(
     constant number : integer)
     return integer
   is
-    variable divVar : integer;
+    variable divVar : real    := real(number);
     variable retVar : integer := 0;
   begin
-    divVar := number;
-
-    while (divVar /= 1) loop
-      if (divVar mod 2 > 0) then
-        retVar := retVar + 1;
-      end if;
-      divVar := divVar/2;
+    while (divVar > 1.0) loop
+      divVar := divVar/2.0;
       retVar := retVar + 1;
     end loop;
     return retVar;
-  end function log2;
+  end function;
 
   function bitReverse (a : slv)
     return slv
@@ -112,6 +141,19 @@ package body StdRtlPkg is
     end loop;
     return resultVar;
   end;
+
+  function list (
+    constant start : integer;
+    constant size  : integer;
+    constant step  : integer := 1)
+    return IntegerArray is
+    variable retVar : IntegerArray(0 to size-1);
+  begin
+    for i in retVar'range loop
+      retVar(i) := start + (i * step);
+    end loop;
+    return retVar;
+  end function list;
 
   function toBoolean (
     logic : sl)

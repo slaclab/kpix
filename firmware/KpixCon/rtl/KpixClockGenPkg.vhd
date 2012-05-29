@@ -1,11 +1,10 @@
-
 -------------------------------------------------------------------------------
 -- Title      : 
 -------------------------------------------------------------------------------
--- File       : TriggerPkg.vhd
+-- File       : KpixClockGenPkg.vhd
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2012-05-14
+-- Created    : 2012-05-22
 -- Last update: 2012-05-23
 -- Platform   : 
 -- Standard   : VHDL'93/02
@@ -18,27 +17,17 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use work.StdRtlPkg.all;
+use work.KpixLocalPkg.all;
 
-package TriggerPkg is
+package KpixClockGenPkg is
 
-  constant TRIGGER_OPCODE_C : slv(7 downto 0) := "00000000";
+  type KpixClockGenRegsInType is record
+    newValue        : sl;
+    clkSelReadout   : slv(4 downto 0);
+    clkSelDigitize  : slv(4 downto 0);
+    clkSelAcquire   : slv(4 downto 0);
+    clkSelIdle      : slv(4 downto 0);
+    clkSelPrecharge : slv(4 downto 0);
+  end record KpixClockGenRegsInType;
 
-  constant TRIGGER_ACQUIRE_C   : sl := '0';
-  constant TRIGGER_CALIBRATE_C : sl := '1';
-
-  type TriggerRegsInType is record
-    extTriggerEn : sl;
-    calibrate    : sl;
-  end record TriggerRegsInType;
-
-  type TriggerInType is record
-    extTrigger : sl;
-  end record TriggerInType;
-
-  type TriggerOutType is record
-    trigger        : sl;
-    startAcquire   : sl;
-    startCalibrate : sl;
-  end record TriggerOutType;
-
-end package TriggerPkg;
+end package KpixClockGenPkg;

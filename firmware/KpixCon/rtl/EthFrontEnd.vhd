@@ -52,7 +52,7 @@ entity EthFrontEnd is
       frameTxSOF       : in  std_logic;
       frameTxEOF       : in  std_logic;
       frameTxAfull     : out std_logic;
-      frameTxData      : in  std_logic_vector(31 downto 0);
+      frameTxData      : in  std_logic_vector(63 downto 0);
 
       -- GTP Signals
       gtpRxN           : in  std_logic;
@@ -75,7 +75,7 @@ architecture EthFrontEnd of EthFrontEnd is
          frameTxSOF       : in  std_logic;
          frameTxEOF       : in  std_logic;
          frameTxEOFE      : in  std_logic;
-         frameTxData      : in  std_logic_vector(31 downto 0);
+         frameTxData      : in  std_logic_vector(63 downto 0);
          frameTxAFull     : out std_logic;
          vcFrameTxValid   : out std_logic;
          vcFrameTxReady   : in  std_logic;

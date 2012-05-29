@@ -14,12 +14,12 @@
 -- Modification history:
 -- 07/07/2010: created.
 -------------------------------------------------------------------------------
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
 
 package Version is
 
-constant FpgaVersion : std_logic_vector(31 downto 0) := x"C0000100"; -- MAKE_VERSION
+  constant FPGA_VERSION_C : std_logic_vector(31 downto 0) := x"C0000100";  -- MAKE_VERSION
 
 end Version;
 

@@ -1,412 +1,218 @@
 -------------------------------------------------------------------------------
--- Title         : KPIX KpixCon FPGA Top Level Module
--- Project       : W_SI, KPIX KpixCon Board
+-- Title      : KpixCon
 -------------------------------------------------------------------------------
--- File          : KpixCon.vhd
--- Author        : Ryan Herbst, rherbst@slac.stanford.edu
--- Created       : 05/03/2012
+-- File       : KpixCon2.vhd
+-- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
+-- Company    : SLAC National Accelerator Laboratory
+-- Created    : 2012-05-21
+-- Last update: 2012-05-29
+-- Platform   : 
+-- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
--- Description:
--- Top level VHDL source file for the test FPGA on the KPIX KpixCon Board.
+-- Description: 
 -------------------------------------------------------------------------------
--- Copyright (c) 2012 by Ryan Herbst. All rights reserved.
--------------------------------------------------------------------------------
--- Modification history:
--- 05/04/2012: created.
+-- Copyright (c) 2012 SLAC National Accelerator Laboratory
 -------------------------------------------------------------------------------
 
-LIBRARY ieee;
-Library Unisim;
-USE ieee.std_logic_1164.ALL;
-use ieee.std_logic_arith.all;
-use ieee.std_logic_unsigned.all;
-USE work.ALL;
-use UNISIM.VCOMPONENTS.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use work.StdRtlPkg.all;
+use work.KpixPkg.all;
+use work.EthFrontEndPkg.all;
+use work.EventBuilderFifoPkg.all;
+use work.TriggerPkg.all;
+library unisim;
+use unisim.vcomponents.all;
 
-entity KpixCon is 
-   port ( 
+entity KpixCon is
+  
+  generic (
+    DELAY_G            : time    := 1 ns;
+    NUM_KPIX_MODULES_G : natural := 5);
 
-      -- System clock, reset
-      fpgaRstL      : in    std_logic;
-      gtpRefClkP    : in    std_logic;
-      gtpRefClkN    : in    std_logic;
+  port (
+    -- System clock, reset
+    fpgaRstL   : in std_logic;
+    gtpRefClkP : in std_logic;
+    gtpRefClkN : in std_logic;
 
-      -- KPIX Interface
-      kpixClkOut     : out   std_logic_vector(1 downto 0);
-      kpixTrigOut    : out   std_logic_vector(1 downto 0);
-      kpixReset      : out   std_logic;
-      kpixCommand    : out   std_logic_vector(15 downto 0);
-      kpixData       : in    std_logic_vector(15 downto 0);
-      
-      -- External signals
-      nimInA         : in    std_logic;
-      debugOutA      : out   std_logic;
-      debugOutB      : out   std_logic;
+    -- Ethernet Interface
+    udpTxP : out std_logic;
+    udpTxN : out std_logic;
+    udpRxP : in  std_logic;
+    udpRxN : in  std_logic;
 
-      -- Ethernet Interface
-      udpTxP         : out std_logic;
-      udpTxN         : out std_logic;
-      udpRxP         : in  std_logic;
-      udpRxN         : in  std_logic
-   );
-end KpixCon;
+    -- Internal Kpix debug
+    debugOutA : out sl;
+    debugOutB : out sl;
 
+    -- Interface to KPiX modules
+    kpixClkOut   : out slv(NUM_KPIX_MODULES_G-2 downto 0);
+    kpixRstOut   : out slv(NUM_KPIX_MODULES_G-2 downto 0);
+    kpixSerTxOut : out slv(NUM_KPIX_MODULES_G-2 downto 0);
+    kpixSerRxIn  : in  slv(NUM_KPIX_MODULES_G-2 downto 0));
 
--- Define architecture for top level module
-architecture KpixCon of KpixCon is 
+end entity KpixCon;
 
-   -- Synthesis control attributes
-   attribute syn_useioff    : boolean;
-   attribute syn_useioff    of KpixCon : architecture is true;
-   attribute xc_fast_auto   : boolean;
-   attribute xc_fast_auto   of KpixCon : architecture is false;
-   attribute syn_noclockbuf : boolean;
-   attribute syn_noclockbuf of KpixCon : architecture is true;
+architecture rtl of KpixCon is
 
-   -- KPIX Con Core Block
-   component KpixCore
-      port (
-         sysClk           : in  std_logic;
-         sysClkRst        : in  std_logic;
-         kpixClk          : in  std_logic;
-         kpixClkRst       : in  std_logic;
-         cmdEn            : in  std_logic;
-         cmdOpCode        : in  std_logic_vector(7  downto 0);
-         regReq           : in  std_logic;
-         regOp            : in  std_logic;
-         regInp           : in  std_logic;
-         regAck           : out std_logic;
-         regFail          : out std_logic;
-         regAddr          : in  std_logic_vector(23 downto 0);
-         regDataOut       : in  std_logic_vector(31 downto 0);
-         regDataIn        : out std_logic_vector(31 downto 0);
-         frameTxEnable    : out std_logic;
-         frameTxSOF       : out std_logic;
-         frameTxEOF       : out std_logic;
-         frameTxAfull     : in  std_logic;
-         frameTxData      : out std_logic_vector(31 downto 0);
-         kpixReset        : out std_logic;
-         kpixCommand      : out std_logic_vector(15 downto 0);
-         kpixData         : in  std_logic_vector(15 downto 0);
-         kpixTrig         : out std_logic;
-         nimInA           : in  std_logic;
-         debugOutA        : out std_logic;
-         debugOutB        : out std_logic;
-         kpixState        : out std_logic_vector(3 downto 0);
-         clkSelIdle       : out std_logic_vector(4 downto 0);
-         clkSelAcquire    : out std_logic_vector(4 downto 0);
-         clkSelDigitize   : out std_logic_vector(4 downto 0);
-         clkSelReadout    : out std_logic_vector(4 downto 0);
-         clkSelPrecharge  : out std_logic_vector(4 downto 0)
-      );
-   end component;
+  signal fpgaRst      : sl;
+  signal gtpRefClk    : sl;
+  signal gtpRefClkOut : sl;
+  signal sysClk125    : sl;
+  signal sysRst125    : sl;
+  signal clk200       : sl;
+  signal rst200       : sl;
+  signal dcmLocked    : sl;
 
-   -- Ethernet front end
-   component EthFrontEnd
-      port (
-         gtpClk           : in  std_logic;
-         gtpClkRst        : in  std_logic;
-         gtpRefClk        : in  std_logic;
-         gtpRefClkOut     : out std_logic;
-         cmdEn            : out std_logic;
-         cmdOpCode        : out std_logic_vector(7  downto 0);
-         regReq           : out std_logic;
-         regOp            : out std_logic;
-         regInp           : out std_logic;
-         regAck           : in  std_logic;
-         regFail          : in  std_logic;
-         regAddr          : out std_logic_vector(23 downto 0);
-         regDataOut       : out std_logic_vector(31 downto 0);
-         regDataIn        : in  std_logic_vector(31 downto 0);
-         frameTxEnable    : in  std_logic;
-         frameTxSOF       : in  std_logic;
-         frameTxEOF       : in  std_logic;
-         frameTxAfull     : out std_logic;
-         frameTxData      : in  std_logic_vector(31 downto 0);
-         gtpRxN           : in  std_logic;
-         gtpRxP           : in  std_logic;
-         gtpTxN           : out std_logic;
-         gtpTxP           : out std_logic
-      );
-   end component;
+  -- Eth Front End Signals
+  signal ethRegCntlIn  : EthRegCntlInType;
+  signal ethRegCntlOut : EthRegCntlOutType;
+  signal ethCmdCntlOut : EthCmdCntlOutType;
+  signal ethUsDataOut  : EthUsDataOutType;
+  signal ethUsDataIn   : EthUsDataInType;
 
-   -- Local Signals
-   signal sysRst           : std_logic;
-   signal gtpRefClk        : std_logic;
-   signal gtpRefClkOut     : std_logic;
-   signal dcmClk125        : std_logic;
-   signal dcmClk200        : std_logic;
-   signal dcmLock          : std_logic;
-   signal sync125RstIn     : std_logic_vector(2 downto 0);
-   signal rst125Cnt        : std_logic_vector(3 downto 0);
-   signal sysClk125        : std_logic;
-   signal sysClk125Rst     : std_logic;
-   signal sync200RstIn     : std_logic_vector(2 downto 0);
-   signal rst200Cnt        : std_logic_vector(3 downto 0);
-   signal cmdEn            : std_logic;
-   signal cmdOpCode        : std_logic_vector(7  downto 0);
-   signal regReq           : std_logic;
-   signal regOp            : std_logic;
-   signal regInp           : std_logic;
-   signal regAck           : std_logic;
-   signal regFail          : std_logic;
-   signal regAddr          : std_logic_vector(23 downto 0);
-   signal regDataOut       : std_logic_vector(31 downto 0);
-   signal regDataIn        : std_logic_vector(31 downto 0);
-   signal frameTxEnable    : std_logic;
-   signal frameTxSOF       : std_logic;
-   signal frameTxEOF       : std_logic;
-   signal frameTxAfull     : std_logic;
-   signal frameTxData      : std_logic_vector(31 downto 0);
-   signal sysClk200        : std_logic;
-   signal sysClk200Rst     : std_logic;
-   signal clkSelIdle       : std_logic_vector(4 downto 0);
-   signal clkSelAcquire    : std_logic_vector(4 downto 0);
-   signal clkSelDigitize   : std_logic_vector(4 downto 0);
-   signal clkSelReadout    : std_logic_vector(4 downto 0);
-   signal clkSelPrecharge  : std_logic_vector(4 downto 0);
-   signal kpixClk          : std_logic;
-   signal kpixClkRst       : std_logic;
-   signal kpixState        : std_logic_vector(3 downto 0);
-   signal divCount         : std_logic_vector(9 downto 0);
-   signal divClk           : std_logic;
-   signal divClkRst        : std_logic;
-   signal clkSel           : std_logic_vector(9 downto 0);
-   signal kpixTrig         : std_logic;
+  -- Event Builder FIFO signals
+  -- Optionaly pass this through as IO to external FIFO
+  signal ebFifoOut : EventBuilderFifoOutType;
+  signal ebFifoIn  : EventBuilderFifoInType;
 
-   -- Register delay for simulation
-   constant tpd:time := 0.5 ns;
+  signal triggerIn : TriggerInType;
+
+  -- Internal Kpix signals
+  signal kpixClk         : sl;
+  signal kpixRst         : sl;
+  signal intKpixSerTxOut : slv(NUM_KPIX_MODULES_G-2 downto 0);
+  signal intKpixSerRxIn  : slv(NUM_KPIX_MODULES_G-2 downto 0);
 
 begin
 
-   -- Reset
-   sysRst <= (not fpgaRstL);
+  fpgaRst <= not fpgaRstL;
 
-   -- Input Buffer
-   U_ClkRefClk    : IBUFDS  port map ( I => gtpRefClkP,    IB => gtpRefClkN,  O => gtpRefClk );
+  -- Input clock buffer
+  GtpRefClkIbufds : IBUFDS
+    port map (
+      I  => gtpRefClkP,
+      IB => gtpRefClkN,
+      O  => gtpRefClk);
 
-   -- DCM
-   U_RefDcm: DCM_ADV
-      generic map (
-         DFS_FREQUENCY_MODE    => "LOW",
-         DLL_FREQUENCY_MODE    => "HIGH",
-         CLKIN_DIVIDE_BY_2     => FALSE,
-         CLK_FEEDBACK          => "1X",
-         CLKOUT_PHASE_SHIFT    => "NONE",
-         STARTUP_WAIT          => false,
-         PHASE_SHIFT           => 0,
-         CLKFX_MULTIPLY        => 8,
-         CLKFX_DIVIDE          => 5,
-         CLKDV_DIVIDE          => 2.0,
-         CLKIN_PERIOD          => 8.0,
-         DCM_PERFORMANCE_MODE  => "MAX_SPEED",
-         FACTORY_JF            => X"F0F0",
-         DESKEW_ADJUST         => "SYSTEM_SYNCHRONOUS"
-      )
+  -- Generate clocks
+  main_dcm_1 : entity work.main_dcm
+    port map (
+      CLKIN_IN   => gtpRefClkOut,
+      RST_IN     => fpgaRst,
+      CLKFX_OUT  => clk200,
+      CLK0_OUT   => sysClk125,
+      LOCKED_OUT => dcmLocked);
+
+  -- Synchronize sysRst125
+  SysRstSyncInst : entity work.RstSync
+    generic map (
+      DELAY_G    => DELAY_G,
+      POLARITY_G => '1')
+    port map (
+      clk      => sysClk125,
+      asyncRst => fpgaRst,
+      syncRst  => sysRst125);
+
+  -- Synchronize rst200
+  Clk200RstSyncInst : entity work.RstSync
+    generic map (
+      DELAY_G    => DELAY_G,
+      POLARITY_G => '1')
+    port map (
+      clk      => clk200,
+      asyncRst => fpgaRst,
+      syncRst  => rst200);  
+
+  -- Ethernet module
+  EthFrontEnd_1 : entity work.EthFrontEnd
+    port map (
+      gtpClk        => sysClk125,
+      gtpClkRst     => sysRst125,
+      gtpRefClk     => gtpRefClk,
+      gtpRefClkOut  => gtpRefClkOut,
+      cmdEn         => ethCmdCntlOut.cmdEn,
+      cmdOpCode     => ethCmdCntlOut.cmdOpCode,
+      regReq        => ethRegCntlOut.regReq,
+      regOp         => ethRegCntlOut.regOp,
+      regInp        => ethRegCntlOut.regInp,
+      regAck        => ethRegCntlIn.regAck,
+      regFail       => ethRegCntlIn.regFail,
+      regAddr       => ethRegCntlOut.regAddr,
+      regDataOut    => ethRegCntlOut.regDataOut,
+      regDataIn     => ethRegCntlIn.regDataIn,
+      frameTxEnable => ethUsDataIn.frameTxEnable,
+      frameTxSOF    => ethUsDataIn.frameTxSOF,
+      frameTxEOF    => ethUsDataIn.frameTxEOF,
+      frameTxAfull  => ethUsDataOut.frameTxAfull,
+      frameTxData   => ethUsDataIn.frameTxData,
+      gtpRxN        => udpRxN,
+      gtpRxP        => udpRxP,
+      gtpTxN        => udpTxN,
+      gtpTxP        => udpTxP);
+
+  --------------------------------------------------------------------------------------------------
+  -- KPIX Core
+  --------------------------------------------------------------------------------------------------
+  KpixCore_1 : entity work.KpixCore
+    generic map (
+      DELAY_G            => DELAY_G,
+      NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
+    port map (
+      sysClk        => sysClk125,
+      sysRst        => sysRst125,
+      clk200        => clk200,
+      rst200        => rst200,
+      ethRegCntlOut => ethRegCntlOut,
+      ethRegCntlIn  => ethRegCntlIn,
+      ethCmdCntlOut => ethCmdCntlOut,
+      ethUsDataOut  => ethUsDataOut,
+      ethUsDataIn   => ethUsDataIn,
+      triggerIn     => triggerIn,
+      ebFifoOut     => ebFifoOut,
+      ebFifoIn      => ebFifoIn,
+      debugOutA     => debugOutA,
+      debugOutB     => debugOutB,
+      kpixClkOut    => kpixClk,
+      kpixResetOut    => kpixRst,
+      kpixSerTxOut  => kpixSerTxOut,
+      kpixSerRxIn   => kpixSerRxIn);
+
+  --------------------------------------------------------------------------------------------------
+  -- Event Builder FIFO
+  --------------------------------------------------------------------------------------------------
+  fifo_72x32k_fwft_1 : entity work.fifo_72x32k_fwft
+    port map (
+      clk   => sysClk125,
+      rst   => sysRst125,
+      din   => ebFifoIn.wrData,
+      wr_en => ebFifoIn.wrEn,
+      rd_en => ebFifoIn.rdEn,
+      dout  => ebFifoOut.rdData,
+      full  => ebFifoOut.full,
+      empty => ebFifoOut.empty,
+      valid => ebFifoOut.valid); 
+
+  -- Output KPIX clocks
+  GenClk : for i in NUM_KPIX_MODULES_G-2 downto 0 generate
+    U_KpixClkDDR : ODDR
       port map (
-         CLKIN    => gtpRefClkOut,  CLKFB    => sysClk125,
-         CLK0     => dcmClk125,     CLK90    => open,
-         CLK180   => open,          CLK270   => open, 
-         CLK2X    => open,          CLK2X180 => open,
-         CLKDV    => open,          CLKFX    => dcmClk200,
-         CLKFX180 => open,          LOCKED   => dcmLock,
-         PSDONE   => open,          PSCLK    => '0',
-         PSINCDEC => '0',           PSEN     => '0',
-         DCLK     => '0',           DADDR    => (others=>'0'),
-         DI       => (others=>'0'), DO       => open,
-         DRDY     => open,          DWE      => '0',
-         DEN      => '0',           RST      => sysRst
+      Q  => kpixClkOut(i),
+      CE => '1',
+      C  => kpixClk,
+      D1 => '1',
+      D2 => '0',
+      R  => '0',
+      S  => '0'
       );
+  end generate;
 
-   U_SysClk125Buff : BUFG port map ( I => dcmClk125,   O => sysClk125 );
-   U_SysClk200Buff : BUFG port map ( I => dcmClk200,   O => sysClk200 );
-
-   -- sysClk125 Reset generation
-   process ( sysClk125, sysRst ) begin
-      if sysRst = '1' then
-         sync125RstIn <= (others=>'0') after tpd;
-         rst125Cnt    <= (others=>'0') after tpd;
-         sysClk125Rst <= '1'           after tpd;
-      elsif rising_edge(sysClk125) then
-
-         sync125RstIn(0) <= dcmLock         after tpd;
-         sync125RstIn(1) <= sync125RstIn(0) after tpd;
-         sync125RstIn(2) <= sync125RstIn(1) after tpd;
-
-         if sync125RstIn(2) = '0' then
-            rst125Cnt    <= (others=>'0') after tpd;
-            sysClk125Rst <= '1'           after tpd;
-
-         elsif rst125Cnt = "1111" then
-            sysClk125Rst <= '0' after tpd;
-
-         else
-            sysClk125Rst <= '1'           after tpd;
-            rst125Cnt    <= rst125Cnt + 1 after tpd;
-         end if;
-      end if;
-   end process;
-
-   -- sysClk200 Reset generation
-   process ( sysClk200, sysRst ) begin
-      if sysRst = '1' then
-         sync200RstIn <= (others=>'0') after tpd;
-         rst200Cnt    <= (others=>'0') after tpd;
-         sysClk200Rst <= '1'           after tpd;
-      elsif rising_edge(sysClk200) then
-
-         sync200RstIn(0) <= dcmLock         after tpd;
-         sync200RstIn(1) <= sync200RstIn(0) after tpd;
-         sync200RstIn(2) <= sync200RstIn(1) after tpd;
-
-         if sync200RstIn(2) = '0' then
-            rst200Cnt    <= (others=>'0') after tpd;
-            sysClk200Rst <= '1'           after tpd;
-
-         elsif rst200Cnt = "1111" then
-            sysClk200Rst <= '0' after tpd;
-
-         else
-            sysClk200Rst <= '1'           after tpd;
-            rst200Cnt    <= rst200Cnt + 1 after tpd;
-         end if;
-      end if;
-   end process;
-
-   -- KPIX Clock Generation
-   process ( sysClk200, sysClk200Rst ) begin
-      if sysClk200Rst = '1' then
-         divCount  <= (others=>'0');
-         divClk    <= '0';
-         clkSel    <= "0000000100";
-      elsif rising_edge(sysClk200) then
-
-         -- Invert clock each time count reaches div value
-         -- Choose new clock setting at this boundary
-         if divCount = clkSel then
-            divCount <= (others=>'0');
-            divClk   <= not divClk;
-
-            -- Precharge extension
-            if kpixState = "1010" then
-               clkSel <= "00000" & clkSelPrecharge;
-
-            -- Clock rate select
-            else case kpixState(2 downto 0) is
-
-               -- Idle
-               when "000" => clkSel <= "00000" & clkSelIdle;
-
-               -- Acquisition
-               when "001" => clkSel <= "00000" & clkSelAcquire;
-
-               -- Digitization
-               when "010" => clkSel <= "00000" & clkSelDigitize;
-
-               -- Readout
-               when "100" => clkSel <= "00000" & clkSelReadout;
-
-               -- Default
-               when others => clkSel <= "00000" & clkSelIdle;
-            end case;
-            end if;
-         else
-            divCount <= divCount + 1;
-         end if;
-      end if;
-   end process;
-
-   U_KpixClkBuff : BUFG port map ( I => divClk,   O => kpixClk );
-
-   -- Reset generation
-   process ( kpixClk, sysClk200Rst ) begin
-      if sysClk200Rst = '1' then
-         divClkRst  <= '1' after tpd;
-         kpixClkRst <= '1' after tpd;
-      elsif rising_edge(kpixClk) then
-         divClkRst  <= '0'       after tpd;
-         kpixClkRst <= divClkRst after tpd;
-      end if;
-   end process;
-
-   -- Ethernet front end
-   U_EthFrontEnd : EthFrontEnd port map (
-      gtpClk           => sysClk125,
-      gtpClkRst        => sysClk125Rst,
-      gtpRefClk        => gtpRefClk,
-      gtpRefClkOut     => gtpRefClkOut,
-      cmdEn            => cmdEn,
-      cmdOpCode        => cmdOpCode,
-      regReq           => regReq,
-      regOp            => regOp,
-      regInp           => regInp,
-      regAck           => regAck,
-      regFail          => regFail,
-      regAddr          => regAddr,
-      regDataOut       => regDataOut,
-      regDataIn        => regDataIn,
-      frameTxEnable    => frameTxEnable,
-      frameTxSOF       => frameTxSOF,
-      frameTxEOF       => frameTxEOF,
-      frameTxAfull     => frameTxAfull,
-      frameTxData      => frameTxData,
-      gtpRxN           => udpRxN,
-      gtpRxP           => udpRxP,
-      gtpTxN           => udpTxN,
-      gtpTxP           => udpTxP
-   );
-
-   -- KPIX Con Core Block
-   U_KpixCore : KpixCore port map (
-      sysClk           => sysClk125,
-      sysClkRst        => sysClk125Rst,
-      kpixClk          => kpixClk,
-      kpixClkRst       => kpixClkRst,
-      cmdEn            => cmdEn,
-      cmdOpCode        => cmdOpCode,
-      regReq           => regReq,
-      regOp            => regOp,
-      regInp           => regInp,
-      regAck           => regAck,
-      regFail          => regFail,
-      regAddr          => regAddr,
-      regDataOut       => regDataOut,
-      regDataIn        => regDataIn,
-      frameTxEnable    => frameTxEnable,
-      frameTxSOF       => frameTxSOF,
-      frameTxEOF       => frameTxEOF,
-      frameTxAfull     => frameTxAfull,
-      frameTxData      => frameTxData,
-      kpixReset        => kpixReset,
-      kpixCommand      => kpixCommand,
-      kpixData         => kpixData,
-      kpixTrig         => kpixTrig,
-      nimInA           => nimInA,
-      debugOutA        => debugOutA,
-      debugOutB        => debugOutB,  
-      kpixState        => kpixState,
-      clkSelIdle       => clkSelIdle,
-      clkSelAcquire    => clkSelAcquire,
-      clkSelDigitize   => clkSelDigitize,
-      clkSelReadout    => clkSelReadout,
-      clkSelPrecharge  => clkSelPrecharge
-   );
+  RstGen: for i in NUM_KPIX_MODULES_G-2 downto 0 generate
+    OBUF_RST : OBUF
+      port map (
+        I => kpixRst,
+        O => kpixRstOut(i));
+  end generate RstGen;
   
-   -- Output KPIX clocks
-   GenClk : for i in 1 downto 0 generate 
-      U_KpixClkDDR : ODDR port map ( 
-         Q  => kpixClkOut(i),
-         CE => '1',
-         C  => kpixClk,
-         D1 => '1',      
-         D2 => '0',      
-         R  => '0',      
-         S  => '0'
-      );
-   end generate;
-
-   kpixTrigOut(0) <= kpixTrig;
-   kpixTrigOut(1) <= kpixTrig;
- 
-end KpixCon;
-
+end architecture rtl;

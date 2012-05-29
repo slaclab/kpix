@@ -1,12 +1,11 @@
-
 -------------------------------------------------------------------------------
 -- Title      : 
 -------------------------------------------------------------------------------
--- File       : TriggerPkg.vhd
+-- File       : KpixLocalPkg.vhd
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2012-05-14
--- Last update: 2012-05-23
+-- Created    : 2012-05-22
+-- Last update: 2012-05-22
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -19,26 +18,21 @@ library ieee;
 use ieee.std_logic_1164.all;
 use work.StdRtlPkg.all;
 
-package TriggerPkg is
+package KpixLocalPkg is
 
-  constant TRIGGER_OPCODE_C : slv(7 downto 0) := "00000000";
+  constant KPIX_IDLE_STATE_C         : slv(2 downto 0) := "000";
+  constant KPIX_ACQUISITION_STATE_C  : slv(2 downto 0) := "001";
+  constant KPIX_DIGITIZATION_STATE_C : slv(2 downto 0) := "010";
+  constant KPIX_READOUT_STATE_C      : slv(2 downto 0) := "100";
+  constant KPIX_PRECHARGE_STATE_C    : slv(3 downto 0) := "1010";
 
-  constant TRIGGER_ACQUIRE_C   : sl := '0';
-  constant TRIGGER_CALIBRATE_C : sl := '1';
+  type KpixLocalRegsInType is record
+    debugASel : slv(4 downto 0);
+    debugBsel : slv(4 downto 0);
+  end record KpixLocalRegsInType;
 
-  type TriggerRegsInType is record
-    extTriggerEn : sl;
-    calibrate    : sl;
-  end record TriggerRegsInType;
+  type KpixLocalOutType is record
+    kpixState : slv(3 downto 0);
+  end record KpixLocalOutType;
 
-  type TriggerInType is record
-    extTrigger : sl;
-  end record TriggerInType;
-
-  type TriggerOutType is record
-    trigger        : sl;
-    startAcquire   : sl;
-    startCalibrate : sl;
-  end record TriggerOutType;
-
-end package TriggerPkg;
+end package KpixLocalPkg;

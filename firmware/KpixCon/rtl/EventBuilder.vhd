@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-05-17
+-- Last update: 2012-05-25
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -27,8 +27,8 @@ use work.TriggerPkg.all;
 entity EventBuilder is
   
   generic (
-    DELAY_G            : time           := 1 ns;
-    NUM_KPIX_MODULES_G : KpixNumberType := 4);
+    DELAY_G            : time    := 1 ns;
+    NUM_KPIX_MODULES_G : natural := 4);
 
   port (
     sysClk : in sl;
@@ -71,7 +71,7 @@ architecture rtl of EventBuilder is
     first          : unsigned(log2(NUM_KPIX_MODULES_G)-1 downto 0);
     kpixDataRxIn   : KpixDataRxInArray(0 to NUM_KPIX_MODULES_G-1);
     ebFifoIn       : EventBuilderFifoInType;
-    ethUsDataIn    : EthUsDataInType;
+--    ethUsDataIn    : EthUsDataInType;
   end record;
 
   signal r, rin : RegType;
@@ -209,7 +209,6 @@ begin
     -- Assign outputs to FIFO
     ebFifoIn     <= r.ebFifoIn;
     kpixDataRxIn <= r.kpixDataRxIn;
-
 
 
     rin <= rVar;
