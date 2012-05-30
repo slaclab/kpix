@@ -23,7 +23,7 @@ ROOT_SRC := $(wildcard $(ROOT_DIR)/*.cpp)
 ROOT_BIN := $(patsubst $(ROOT_DIR)/%.cpp,$(BIN)/%,$(ROOT_SRC))
 
 # Default
-all: dir $(GEN_OBJ) $(KPX_OBJ) $(ROOT_BIN)
+all: dir $(GEN_OBJ) $(KPX_OBJ) $(ROOT_BIN) $(BIN)/root_kpix
 
 # Object directory
 dir:
@@ -34,6 +34,10 @@ clean:
 	rm -rf $(OBJ)
 	rm -f  $(UTL_BIN)
 
+# Pre-process the headers for root
+$(OBJ)/kpix_headers.C: $(GEN_HDR) $(KPX_HDR)
+	rootcint -f $(OBJ)/kpix_headers.C -c $(DEF) $(CFLAGS) $(GEN_HDR) $(KPX_HDR) $(ROOT_DEF)
+
 # Compile Offline Sources
 $(OBJ)/%.o: $(KPX_DIR)/%.cpp $(KPX_DIR)/%.h
 	$(CC) -c $(CFLAGS) $(DEF) -o $@ $<
@@ -42,7 +46,10 @@ $(OBJ)/%.o: $(KPX_DIR)/%.cpp $(KPX_DIR)/%.h
 $(OBJ)/%.o: $(GEN_DIR)/%.cpp $(GEN_DIR)/%.h
 	$(CC) -c $(CFLAGS) $(DEF) -o $@ $<
 
-# Comile root
+# Comile applications
 $(BIN)/%: $(ROOT_DIR)/%.cpp $(KPX_OBJ) $(GEN_OBJ)
-	$(CC) $(CFLAGS) $(DEF) $(OBJ)/* -o $@ $< $(LFLAGS) 
+	$(CC) $(CFLAGS) $(LFLAGS) $(DEF) $(OBJ)/*.o -o $@ $<
 
+# Comile root
+$(BIN)/root_kpix: root_kpix.cc $(KPX_OBJ) $(GEN_OBJ) $(OBJ)/kpix_headers.C
+	$(CC) $(CFLAGS) $(LFLAGS) $(DEF) $(OBJ)/*.o -o $(BIN)/root_kpix root_kpix.cc $(OBJ)/kpix_headers.C

@@ -1,46 +1,55 @@
 //-----------------------------------------------------------------------------
 // File          : KpixSample.h
 // Author        : Ryan Herbst  <rherbst@slac.stanford.edu>
-// Created       : 12/02/2011
+// Created       : 05/29/2012
 // Project       : Kpix DAQ
 //-----------------------------------------------------------------------------
 // Description :
 // Sample Container
-//    Samples = N * 3 * 16-bits
-//       Sample[0] = 0,1,Bucket[1:0],Kpix[1:0],Chan[9:0]
-//       Sample[1] = S,Time[12],R,E,Time[11:0]
-//       Sample[1] = F,T,C,AdcValue[12:0]
-//       0 = Always '0'
-//       1 = Always '1'
-//       S = Sample is special
-//       R = Range bit, '1' = low gain
-//       E = Empty sample bit
-//       F = Future use bit
+//    Samples = 2 * 32-bits
+//       Sample[0] = Type[3:0],KpixId[11:0],E[0],C[0],R[0],T[0],Bucket[1:0],Chan[9:0]
+//       Sample[1] = Zeros[2:0],Time[12:0],Zeros[2:0],AdcValue[12:0]
 //       T = Trigger bit, 1 = external trigger
+//       R = Range bit, '1' = low gain
 //       C = Bad count flag
+//       E = Empty sample bit
 //-----------------------------------------------------------------------------
-// Copyright (c) 2011 by SLAC. All rights reserved.
+// Copyright (c) 2012 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
-// 12/02/2011: created
+// 05/29/2012: created
 //-----------------------------------------------------------------------------
 #ifndef __KPIX_SAMPLE_H__
 #define __KPIX_SAMPLE_H__
 #include <sys/types.h>
 using namespace std;
 
+#ifdef __CINT__
+#define uint unsigned int
+#endif
+
 //! Tracker Event Container Class
 class KpixSample {
 
+   public:
+
+      // Sample types
+      enum SampleType {
+         Data        = 0,
+         Temperature = 1
+      };
+
+   private:
+
       // Local data
-      ushort ldata_[3];
+      uint ldata_[2];
 
       // Data pointer
-      ushort *data_;
+      uint *data_;
 
-      // Train number
-      uint trainNumber_;
+      // Event number
+      uint eventNumber_;
 
    public:
 
@@ -48,7 +57,7 @@ class KpixSample {
       KpixSample ();
 
       //! Constructor with copy
-      KpixSample ( ushort *data, uint trainNumber );
+      KpixSample ( uint *data, uint eventNumber );
 
       //! DeConstructor
       ~KpixSample ( );
@@ -57,16 +66,16 @@ class KpixSample {
       /*!
        * \param data Data pointer.
       */
-      void setData ( ushort *data, uint trainNumber );
+      void setData ( uint *data, uint eventNumber );
 
-      //! Get sample train number.
+      //! Get sample event number.
       /*!
-         Method to return sample train number. This serial number associates this sample 
+         Method to return sample event number. This serial number associates this sample 
          with an acquisition cycle, also refered to as a bunch train in the ILC.
-         \return Sample Train Number.
+         \return Sample Event Number.
          \see trainNum
       */
-      uint getTrainNum();
+      uint getEventNum();
 
       //! Get KPIX address from sample.
       /*!
@@ -169,21 +178,11 @@ class KpixSample {
       */
       uint getTrigType();
 
-      //! Get special flag.
+      //! Get sample type
       /*!
-         The special flag is used to distinguish between normal KPIX sample data and special 
-         sample data. Special sample records contain either an external trigger timestamp or KPIX 
-         temperature data. Trigger timestamps have a channel number of 1, and contain the trigger 
-         timestamp in the sampleTime field. The KPIX address associated with trigger timestamps
-         is the same as the KPIX core contained in the concentrator FPGA. Temperature records 
-         have a channel number of 0 and contain the temperatue value in the sampleValue field.
-         \see sampleRange
-         \return Special Flag.
-            - 0 = Normal
-            - 1 = Special Record
-            .
+         \return Sample type
       */
-      uint getSpecial();
+      SampleType getSampleType();
 
 };
 

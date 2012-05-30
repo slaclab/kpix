@@ -1,18 +1,32 @@
 //-----------------------------------------------------------------------------
-// File          : KpixEvent.cpp
+// File          : KpixEvent.h
 // Author        : Ryan Herbst  <rherbst@slac.stanford.edu>
-// Created       : 12/02/2011
-// Project       : KPIX Data acquisition
+// Created       : 05/29/2012
+// Project       : KPIX DAQ Software
 //-----------------------------------------------------------------------------
 // Description :
-// Event Container
+// Event Data consists of the following: Z[xx:xx] = Zeros
+//    Header = 8 x 32-bits
+//       Header[0] = EventNumber[31:0]
+//       Header[1] = Timestamp[31:00]
+//       Header[2] = Zeros[31:0]
+//       Header[3] = Zeros[31:0]
+//       Header[4] = Zeros[31:0]
+//       Header[5] = Zeros[31:0]
+//       Header[6] = Zeros[31:0]
+//       Header[7] = Zeros[31:0]
+//
+//    Samples = 2 x 32-bits
+//
+//    Tail = 1 x 16-bits
+//       Tail[0] = Zeros
 //-----------------------------------------------------------------------------
-// Copyright (c) 2011 by SLAC. All rights reserved.
+// Copyright (c) 2012 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
-// 12/02/2011: created
-//-----------------------------------------------------------------------------
+// 05/29/2012: created
+//----------------------------------------------------------------------------
 #include <iostream>
 #include <string>
 #include <string.h>
@@ -25,101 +39,38 @@
 using namespace std;
 
 // Constructor
-KpixEvent::KpixEvent () : Data() {
-   word_        = NULL;
-   trainNumber_ = 0;
-   count_       = 0;
-   deadCount_   = 0;
-}
+KpixEvent::KpixEvent () : Data() { }
 
 // Deconstructor
 KpixEvent::~KpixEvent () { }
 
-// Update pointers
-void KpixEvent::update() {
-   uint         x;
-   ushort       csum;
-   stringstream error;
-   error.str("");
-
-   // Set pointer
-   word_ = (ushort *)data_;
-
-   // Get train number
-   trainNumber_  = word_[0];
-   trainNumber_ |= (word_[0] << 16) & 0xFFFF0000;
-
-   // Init markers
-   x      = 2;
-   count_ = 0;
-   csum   = word_[0] + word_[1];
-
-   // process each sample looking for tail
-   while ( (word_[x] & 0x8000) == 0 ) {
-
-      // Check for overrun
-      if ( (x+3) > (size_*2) ) {
-         error << "KpixEvent::update -> Bad data alignment";
-         cout << error.str() << endl;
-         throw(error.str());
-      }
-
-      // Update checksum and count
-      csum += word_[x] + word_[x+1] + word_[x+2];
-      count_++;
-      x += 3;
-   }
-
-   // last two values added to checksum
-   csum += word_[x] + word_[x+1];
-
-   // Check checksum
-   if ( csum != word_[x+2] ) {
-      error << "KpixEvent::update -> Checksum Error.";
-      cout << error.str() << endl;
-      throw(error.str());
-   }
-
-   // Check count = 3x events (new fpga)
-   if ( (count_*3) != (word_[x] & 0x7FFF) ) {
-      error << "KpixEvent::update -> Sample Count Mismatch. ";
-      error << "Got=" << dec << (word_[x] & 0x7FFF);
-      error << ", Exp=" << dec << (count_*3);
-      cout << error.str() << endl;
-      throw(error.str());
-   }
-
-   // Check for parity error
-   if ( (word_[x+1] & 0x2000) != 0 ) {
-      error << "KpixEvent::update -> Parity error detected";
-      cout << error.str() << endl;
-      throw(error.str());
-   }
-    
-   // Update tail values
-   deadCount_ = word_[x+1] & 0x1FFF;
+// Get event number
+uint KpixEvent::eventNumber ( ) {
+   return(data_[0]);
 }
 
-// Get train number
-uint KpixEvent::trainNumber ( ) {
-   return(trainNumber_);
+// Get timestamp
+uint KpixEvent::timestamp ( ) {
+   return(data_[1]);
 }
 
 // Get sample count
 uint KpixEvent::count ( ) {
-   return(count_);
-}
+   uint rem = 0;
+   if ( size_ <= (headSize_ + tailSize_)) return(0);
 
-// Get dead count
-uint KpixEvent::deadCount ( ) {
-   return(deadCount_);
+   rem = (size_-(headSize_ + tailSize_));
+
+   if ( (rem % sampleSize_) != 0 ) return(0);
+
+   return(rem/sampleSize_);
 }
 
 // Get sample at index
 KpixSample *KpixEvent::sample (uint index) {
-   if ( index >= count_ ) return(NULL);
+   if ( index >= count() ) return(NULL);
    else {
-      sample_.setData(&(word_[headSize_+(index*sampleSize_)]),trainNumber_);
+      sample_.setData(&(data_[headSize_+(index*sampleSize_)]),eventNumber());
       return(&sample_);
    }
 }
@@ -128,9 +79,9 @@ KpixSample *KpixEvent::sample (uint index) {
 KpixSample *KpixEvent::sampleCopy (uint index) {
    KpixSample *tmp;
 
-   if ( index >= count_ ) return(NULL);
+   if ( index >= count() ) return(NULL);
    else {
-      tmp = new KpixSample (&(word_[headSize_+(index*sampleSize_)]),trainNumber_);
+      tmp = new KpixSample (&(data_[headSize_+(index*sampleSize_)]),eventNumber());
       return(tmp);
    }
 }
