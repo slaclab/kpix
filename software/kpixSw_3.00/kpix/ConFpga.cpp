@@ -26,7 +26,7 @@ using namespace std;
 
 // Constructor
 ConFpga::ConFpga ( uint destination, uint index, Device *parent ) : 
-                   Device(destination,0,"conFpga",index,parent) {
+                   Device(destination,0,"cntrlFpga",index,parent) {
    stringstream tmp;
 
    // Description

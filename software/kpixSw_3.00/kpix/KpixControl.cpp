@@ -37,11 +37,10 @@ KpixControl::KpixControl ( CommLink *commLink ) : System("KpixControl",commLink)
 
    // Set run states
    vector<string> states;
-   states.resize(4);
+   states.resize(3);
    states[0] = "Stopped";
-   states[1] = "Running Without Internal Trig/Cal";
-   states[2] = "Running With Internal Trig/Cal";
-   states[3] = "Running Calibration";
+   states[1] = "Running";
+   states[2] = "Running Calibration";
    getVariable("RunState")->setEnums(states);
 
    // Set run rates
@@ -83,6 +82,11 @@ KpixControl::KpixControl ( CommLink *commLink ) : System("KpixControl",commLink)
    getVariable("CalDacStep")->setDescription("DAC increment value for calibration");
    getVariable("CalDacStep")->setRange(0,255);
    getVariable("CalDacStep")->setInt(0);
+
+   addVariable(new Variable("CalDacCount",Variable::Configuration));
+   getVariable("CalDacCount")->setDescription("Number of iterations to take at each dac value");
+   getVariable("CalDacCount")->setRange(1,255);
+   getVariable("CalDacCount")->setInt(1);
 
    addVariable(new Variable("CalChanMin",Variable::Configuration));
    getVariable("CalChanMin")->setDescription("Calibration channel min");
@@ -134,7 +138,9 @@ void KpixControl::calibConfig ( uint channel, uint dac ) {
    row = channel%32;
 
    // Disable self trigger. Set forced trigger
-   newConfig << "<system><config><kpixFpga><kpixAsic>";
+   newConfig << "<system><config><cntrlFpga>";
+   newConfig << "<RunMode>Calibrate</RunMode>";
+   newConfig << "<kpixAsic>";
    newConfig << "<CntrlCalSource>Internal</CntrlCalSource>";
    newConfig << "<CntrlForceTrigSource>Internal</CntrlForceTrigSource>";
    newConfig << "<CntrlTrigDisable>True</CntrlTrigDisable>";
@@ -146,7 +152,7 @@ void KpixControl::calibConfig ( uint channel, uint dac ) {
       newConfig << modeString;
       newConfig << "</ColMode_" << setw(2) << setfill('0') << dec << x << ">";
    }
-   newConfig << "</kpixAsic></kpixFpga></config></system>\n";
+   newConfig << "</kpixAsic></cntrlFpga></config></system>\n";
    parseXml(newConfig.str(),false);
 
    // Update a few status variables in data file
@@ -165,8 +171,10 @@ void KpixControl::swRunThread() {
    ulong           ctime;
    ulong           ltime;
    uint            runTotal;
+   uint            stepTotal;
    uint            lastData;
    uint            calMeanCount;
+   uint            calDacCount;
    uint            calDacMin;
    uint            calDacMax;
    uint            calDacStep;
@@ -182,6 +190,7 @@ void KpixControl::swRunThread() {
    // Setup run status and init clock
    lastData    = commLink_->dataRxCount();
    runTotal    = 0;
+   stepTotal   = 0;
    swRunning_  = true;
    swRunError_ = "";
    clock_gettime(CLOCK_REALTIME,&tme);
@@ -199,12 +208,13 @@ void KpixControl::swRunThread() {
    try {
 
       // Enable run counter register
-      device("kpixFpga",0)->set("RunEnable","True");
+      device("cntrlFpga",0)->set("RunEnable","True");
       writeConfig(false);
 
       // Calibration run enabled
       if ( getVariable("RunState")->get() == "Running Calibration" ) {
          calMeanCount = getVariable("CalMeanCount")->getInt();
+         calDacCount  = getVariable("CalDacCount")->getInt();
          calDacMin    = getVariable("CalDacMin")->getInt();
          calDacMax    = getVariable("CalDacMax")->getInt();
          calDacStep   = getVariable("CalDacStep")->getInt();
@@ -280,21 +290,27 @@ void KpixControl::swRunThread() {
             // running calibration
             else if ( gotEvent && getVariable("CalState")->get() == "Inject" ) {
 
-               // Increment cal dac
-               calDac += calDacStep;
-               if ( calDac > calDacMax ) {
-                  usleep(100000);
-                  calDac = calDacMin;
-                  calChan++;
+               // Have we taken enough points at this value?
+               if ( stepTotal >= calDacCount ) {
+
+                  // Increment cal dac
+                  calDac += calDacStep;
+                  if ( calDac > calDacMax ) {
+                     usleep(100000);
+                     calDac = calDacMin;
+                     calChan++;
+                  }
+
+                  // Are we done?
+                  if ( calChan > calChanMax ) break;
+
+                  // Write config
+                  getVariable("CalChannel")->setInt(calChan);
+                  getVariable("CalDac")->setInt(calDac);
+                  calibConfig(calChan,calDac);
+                  stepTotal = 0;
                }
-
-               // Are we done?
-               if ( calChan > calChanMax ) break;
-
-               // Write config
-               getVariable("CalChannel")->setInt(calChan);
-               getVariable("CalDac")->setInt(calDac);
-               calibConfig(calChan,calDac);
+               else stepTotal++;
             }
          }
          else {
@@ -319,7 +335,7 @@ void KpixControl::swRunThread() {
 
       // Set run
       usleep(100);
-      device("kpixFpga",0)->set("RunEnable","False");
+      device("cntrlFpga",0)->set("RunEnable","False");
       writeConfig(false);
 
    } catch (string error) { swRunError_ = error; }
@@ -365,18 +381,14 @@ void KpixControl::setRunState ( string state ) {
    if ( state == "Stopped" ) swRunEnable_ = false;
 
    // Running state is requested
-   else if ( !swRunning_ && ( state == "Running Without Internal Trig/Cal" ||
-                              state == "Running With Internal Trig/Cal"    ||
+   else if ( !swRunning_ && ( state == "Running"    ||
                               state == "Running Calibration" ) ) {
       swRunRetState_ = "Stopped";
       swRunEnable_   = true;
       getVariable("RunState")->set(state);
 
-      // Determine run command 
-      if ( state == "Running Without Internal Trig/Cal" )
-         device("kpixFpga",0)->setRunCommand("RunAcquire");
-      else 
-         device("kpixFpga",0)->setRunCommand("RunCalibrate");
+      // Set run command 
+      device("cntrlFpga",0)->setRunCommand("kpixRun");
 
       // Setup run parameters
       swRunCount_ = getInt("RunCount");
@@ -435,7 +447,7 @@ string KpixControl::localState ( ) {
 void KpixControl::softReset ( ) {
    System::softReset();
 
-   device("kpixFpga",0)->command("CountReset","");
+   device("cntrlFpga",0)->command("CountReset","");
 }
 
 //! Method to perform hard reset
@@ -445,12 +457,12 @@ void KpixControl::hardReset ( ) {
 
    System::hardReset();
 
-   device("kpixFpga",0)->command("MasterReset","");
+   device("cntrlFpga",0)->command("MasterReset","");
    do {
       sleep(1);
       try { 
          gotVer = true;
-         device("kpixFpga",0)->readSingle("VersionMastReset");
+         device("cntrlFpga",0)->readSingle("VersionMastReset");
       } catch ( string err ) { 
          if ( count > 5 ) {
             gotVer = true;
@@ -462,6 +474,6 @@ void KpixControl::hardReset ( ) {
          }
       }
    } while ( !gotVer );
-   device("kpixFpga",0)->command("KpixCmdReset","");
+   device("cntrlFpga",0)->command("KpixCmdReset","");
 }
 

@@ -36,9 +36,9 @@ int main (int argc, char **argv) {
       usleep(100);
 
       // Test
-      cout << "Fgga Version: 0x" << hex << setw(8) << setfill('0') << kpix.device("conFpga",0)->readSingle("Version") << endl;
-      cout << "Kpix Version: 0x" << hex << setw(8) << setfill('0') << kpix.device("conFpga",0)->device("kpixAsic",3)->readSingle("Status") << endl;
-      cout << "Kpix Version: 0x" << hex << setw(8) << setfill('0') << kpix.device("conFpga",0)->device("kpixAsic",0)->readSingle("Status") << endl;
+      cout << "Fgga Version: 0x" << hex << setw(8) << setfill('0') << kpix.device("cntrlFpga",0)->readSingle("Version") << endl;
+      cout << "Kpix Version: 0x" << hex << setw(8) << setfill('0') << kpix.device("cntrlFpga",0)->device("kpixAsic",3)->readSingle("Status") << endl;
+      cout << "Kpix Version: 0x" << hex << setw(8) << setfill('0') << kpix.device("cntrlFpga",0)->device("kpixAsic",0)->readSingle("Status") << endl;
 
    } catch ( string error ) {
       cout << "Caught Error: " << endl;

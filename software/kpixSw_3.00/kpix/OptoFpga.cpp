@@ -26,7 +26,7 @@ using namespace std;
 
 // Constructor
 OptoFpga::OptoFpga ( uint destination, uint index, Device *parent ) : 
-                     Device(destination,0,"kpixFpga",index,parent) {
+                     Device(destination,0,"cntrlFpga",index,parent) {
 
    // Description
    desc_ = "KPIX FPGA Object.";
