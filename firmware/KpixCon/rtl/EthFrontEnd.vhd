@@ -36,6 +36,7 @@ entity EthFrontEnd is
       -- Local command signal
       cmdEn            : out std_logic;
       cmdOpCode        : out std_logic_vector(7  downto 0);
+      cmdCtxOut        : out std_logic_vector(23 downto 0);
 
       -- Local register control signals
       regReq           : out std_logic;
@@ -248,7 +249,7 @@ begin
          vcFrameRxEOF   => vcFrameRxEOF,     vcFrameRxEOFE  => vcFrameRxEOFE,
          vcFrameRxData  => vcFrameRxData,    vcLocBuffAFull => open,
          vcLocBuffFull  => open,             cmdEn          => cmdEn,
-         cmdOpCode      => cmdOpCode,        cmdCtxOut      => open
+         cmdOpCode      => cmdOpCode,        cmdCtxOut      => cmdCtxOut
       );
 
    -- Return data, Lane 0, VC0

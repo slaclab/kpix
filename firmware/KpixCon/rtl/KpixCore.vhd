@@ -135,8 +135,6 @@ begin
     generic map (
       DELAY_G => DELAY_G)
     port map (
-      sysClk       => sysClk,
-      sysRst       => sysRst,
       clk200       => clk200,
       rst200       => rst200,
       extRegsIn    => kpixClockGenRegsIn,

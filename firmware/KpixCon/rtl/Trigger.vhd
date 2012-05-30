@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-05-23
+-- Last update: 2012-05-29
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -67,7 +67,7 @@ begin
     end if;
     if (sysRst = '1') then
       r.kpixStateSync             <= (others => SYNCHRONIZER_INIT_0_C) after DELAY_G;
-      -- Don't init kpixStateStable so that a shift primative will be created
+      r.kpixStateStable           <= (others => '0')                   after DELAY_G;
       r.extTriggerSync            <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
       r.triggerCounter            <= (others => '0')                   after DELAY_G;
       r.triggerCountEnable        <= '0'                               after DELAY_G;

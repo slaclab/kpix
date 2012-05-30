@@ -60,10 +60,10 @@ architecture UsBuff of UsBuff is
 
 
   -- Black Box Attributes
---  attribute syn_black_box                               : boolean;
---  attribute syn_noprune                                 : boolean;
+--  attribute syn_black_box                             : boolean;
+--  attribute syn_noprune                               : boolean;
 --  attribute syn_black_box of fifo_72x512_18x2048_fwft_1 : component is true;
---  attribute syn_noprune of fifo_72x512_18x2048_fwft_1   : component is true;
+--  attribute syn_noprune of   fifo_72x512_18x2048_fwft_1   : component is true;
 
 begin
 
@@ -96,7 +96,7 @@ begin
 
   -- Control reads
   fifoRd <= fifoValid and vcFrameTxReady;
-  
+
   -- MUX Data
   vcFrameTxValid <= fifoValid;
   vcFrameTxSOF   <= fifoDout(17) and not fifoDout(16);

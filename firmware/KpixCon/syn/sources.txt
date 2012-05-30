@@ -1,0 +1,56 @@
+vhdl work "_PROJ_DIR_/rtl/StdRtlPkg.vhd
+vhdl work "_PROJ_DIR_/rtl/SynchronizePkg.vhd
+vhdl work "_PROJ_DIR_/rtl/EthFrontEndPkg.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixPkg.vhd
+vhdl work "_PROJ_DIR_/rtl/EthRegDecoderPkg.vhd
+vhdl work "_PROJ_DIR_/rtl/EventBuilderFifoPkg.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixLocalPkg.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixClockGenPkg.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixConVersion.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixDataRxPkg.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixRegCntlPkg.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixRegRxPkg.vhd
+vhdl work "_PROJ_DIR_/rtl/TriggerPkg.vhd
+
+vhdl work "_PROJ_DIR_/eth_client/rtl/1g/EthClientPackage.vhd
+
+vhdl work "_PROJ_DIR_/xil_cores/main_dcm.vhd
+vhdl work "_PROJ_DIR_/xil_cores/fifo_72x32k_fwft.vhd
+vhdl work "_PROJ_DIR_/xil_cores/fifo_72x512_18x2048_fwft.vhd
+
+vhdl work "_PROJ_DIR_/rtl/RstSync.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixCon.vhd
+vhdl work "_PROJ_DIR_/rtl/EthFrontEnd.vhd
+vhdl work "_PROJ_DIR_/rtl/EthRegDecoder.vhd
+vhdl work "_PROJ_DIR_/rtl/EventBuilder.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixClockGen.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixCore.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixDataRx.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixLocal.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixRegCntl.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixRegRx.vhd
+vhdl work "_PROJ_DIR_/rtl/Trigger.vhd
+vhdl work "_PROJ_DIR_/rtl/UsBuff64.vhd
+
+vhdl work "_PROJ_DIR_/rtl/KpixCore/analog_control.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixCore/command_control.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixCore/memory_array_control.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixCore/readout_control.vhd
+vhdl work "_PROJ_DIR_/rtl/KpixCore/reg_rw_32.vhd
+
+vhdl work "_PROJ_DIR_/eth_client/xil_cores/eth_v5_afifo_18x1023.vhd
+vhdl work "_PROJ_DIR_/eth_client/xil_cores/eth_fifo_8x16k.vhd
+vhdl work "_PROJ_DIR_/eth_client/xil_cores/eth_fifo_19x8k.vhd
+vhdl work "_PROJ_DIR_/eth_client/xil_cores/eth_fifo_18x1k.vhd
+vhdl work "_PROJ_DIR_/eth_client/xil_cores/eth_fifo_13x1k.vhd
+vhdl work "_PROJ_DIR_/eth_client/rtl/1g/EthArbiter.vhd
+vhdl work "_PROJ_DIR_/eth_client/rtl/1g/EthClient.vhd
+vhdl work "_PROJ_DIR_/eth_client/rtl/1g/EthClientArp.vhd
+vhdl work "_PROJ_DIR_/eth_client/rtl/1g/EthClientGtp.vhd
+vhdl work "_PROJ_DIR_/eth_client/rtl/1g/EthClientGtpRxRst.vhd
+vhdl work "_PROJ_DIR_/eth_client/rtl/1g/EthClientGtpTxRst.vhd
+vhdl work "_PROJ_DIR_/eth_client/rtl/1g/EthClientUdp.vhd
+vhdl work "_PROJ_DIR_/eth_client/rtl/1g/EthCmdSlave.vhd
+vhdl work "_PROJ_DIR_/eth_client/rtl/1g/EthRegSlave.vhd
+vhdl work "_PROJ_DIR_/eth_client/rtl/1g/EthUdpFrame.vhd
+

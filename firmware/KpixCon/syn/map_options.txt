@@ -133,8 +133,17 @@
 #                       continue to improve timing even if timing constraints
 #                       cannot be met.  'n' means try additional algorithms to 
 #                       meet timing.
--c 100
--cm speed
-#-global_opt speed
--intstyle ise
+
+-logic_opt on
+-ol high
+-global_opt speed
+-equivalent_register_removal on
+-mt 2
+-cm area
+-ir off
+-ignore_keep_hierarchy
 -pr b
+-lc off
+-power off
+-t 1
+-detail

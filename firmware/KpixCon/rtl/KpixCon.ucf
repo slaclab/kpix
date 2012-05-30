@@ -1,85 +1,79 @@
  #-----------------------------------------------------------------------------
-# Title         : Optical Interface FPGA Constraints File
-# Project       : W_SI KPIX Test FPGA
+# Title         : 
+# Project       : 
 #-----------------------------------------------------------------------------
 # File          : KpixCon.ucf
-# Author        : Ryan Herbst, rherbst@slac.stanford.edu
-# Created       : 07/07/2010
+# Author        : Ben Reese, bareese@slac.stanford.edu
+# Created       : 05/30/2012
 #-----------------------------------------------------------------------------
 # Description:
 # This file contains all of the user constraints required to implement the
-# Optical Interface FPGA.
+# KPIX FPGA
 #-----------------------------------------------------------------------------
-# Copyright (c) 2010 by Ryan Herbst. All rights reserved.
+# Copyright (c) 2012 by Ben Reese. All rights reserved.
 #-----------------------------------------------------------------------------
 # Modification history
-# 07/07/2010: created.
+# 05/30/2012: created.
 #-----------------------------------------------------------------------------
 CONFIG PART = XC5VLX50T-FF1136-1;
 
-inst U_EthFrontEnd/U_EthClientGtp/U_GTP LOC=GTP_DUAL_X0Y4;
+inst EthFrontEnd_1/U_EthClientGtp/U_GTP LOC=GTP_DUAL_X0Y4;
 
-# Define system clocks
+# Define clocks
 NET sysClk125 TNM_NET = FFS sysClk125;
-NET sysClk200 TNM_NET = FFS sysClk200;
+NET clk200    TNM_NET = FFS clk200;
 NET kpixClk   TNM_NET = FFS kpixClk;
 
-# 60 Mhz System Clock
+# Define clock frequncies
 TIMESPEC TS_sysClk125 = PERIOD sysClk125 125 Mhz HIGH 50%;
-TIMESPEC TS_sysClk200 = PERIOD sysClk200 200 Mhz HIGH 50%;
-TIMESPEC TS_kpixClk   = PERIOD kpixClk   60  Mhz HIGH 50%;
+TIMESPEC TS_clk200 = PERIOD clk200 200 Mhz HIGH 50%;
+TIMESPEC TS_kpixClk = PERIOD kpixClk 60 Mhz HIGH 50%;
+
+# Group clocks
+TIMEGRP TG_sysClk125_r = RISING sysClk125;
+TIMEGRP TG_kpixClk_r = RISING kpixClk;
+TIMEGRP TG_clk200_r = RISING clk200;
+
+# Constrain timing between clocks
+TIMESPEC TS_sysClk125_kpixClk = FROM TG_sysClk125_r TO TG_kpixClk_r 8ns;
+TIMESPEC TS_kpixClk_sysClk125 = FROM TG_kpixClk_r TO TG_sysClk125_r 8ns;
+TIMESPEC TS_sysClk125_clk200 = FROM TG_sysClk125_r TO TG_clk200_r 8 ns;
+TIMESPEC TS_kpixClk_clk200 = FROM TG_kpixClk_r TO TG_clk200_r 8 ns;
 
 # Nets to ignore for timing
 NET "fpgaRstL"      TIG;
 
-# Define time groups for inter-clock constraints
-TIMEGRP TG_sysClk125_r = RISING  sysClk125;
-TIMEGRP TG_kpixClk_r   = RISING  kpixClk;
 
-# Inter Domain Constraints
-TIMESPEC TS_sysClk125_kpixClk   = FROM TG_sysClk125_r TO TG_kpixClk_r       8ns;
-TIMESPEC TS_kpixClk_sysClk125   = FROM TG_kpixClk_r   TO TG_sysClk125_r     8ns;
+# Pin Assignments
 
+# Main clock and reset
 NET "fpgaRstL"           LOC = "J14" | IOSTANDARD = "LVCMOS33";
 NET "gtpRefClkP"         LOC = "H4";
 NET "gtpRefClkN"         LOC = "H3";
-NET "kpixClkOut(0)"      LOC = "N7"  | IOSTANDARD = "LVCMOS33";
-NET "kpixClkOut(1)"      LOC = "N8"  | IOSTANDARD = "LVCMOS33";
-NET "kpixTrigOut(0)"     LOC = "M5"  | IOSTANDARD = "LVCMOS33";
-NET "kpixTrigOut(1)"     LOC = "M6"  | IOSTANDARD = "LVCMOS33";
-NET "kpixReset"          LOC = "P5"  | IOSTANDARD = "LVCMOS33";
-NET "kpixCommand(0)"     LOC = "L4"  | IOSTANDARD = "LVCMOS33";
-NET "kpixCommand(1)"     LOC = "L5"  | IOSTANDARD = "LVCMOS33";
-NET "kpixCommand(2)"     LOC = "P7"  | IOSTANDARD = "LVCMOS33";
-NET "kpixCommand(3)"     LOC = "P6"  | IOSTANDARD = "LVCMOS33";
-NET "kpixCommand(4)"     LOC = "K7"  | IOSTANDARD = "LVCMOS33";
-NET "kpixCommand(5)"     LOC = "K6"  | IOSTANDARD = "LVCMOS33";
-NET "kpixCommand(6)"     LOC = "R6"  | IOSTANDARD = "LVCMOS33";
-NET "kpixCommand(7)"     LOC = "T6"  | IOSTANDARD = "LVCMOS33";
-NET "kpixCommand(8)"     LOC = "J6"  | IOSTANDARD = "LVCMOS33";
-NET "kpixCommand(9)"     LOC = "J5"  | IOSTANDARD = "LVCMOS33";
-NET "kpixCommand(10)"    LOC = "R7"  | IOSTANDARD = "LVCMOS33";
-NET "kpixCommand(11)"    LOC = "R8"  | IOSTANDARD = "LVCMOS33";
-NET "kpixCommand(12)"    LOC = "T8"  | IOSTANDARD = "LVCMOS33";
-NET "kpixCommand(13)"    LOC = "U7"  | IOSTANDARD = "LVCMOS33";
-NET "kpixCommand(14)"    LOC = "H7"  | IOSTANDARD = "LVCMOS33";
-NET "kpixCommand(15)"    LOC = "J7"  | IOSTANDARD = "LVCMOS33";
-NET "kpixData(0)"        LOC = "D11" | IOSTANDARD = "LVCMOS33";
-NET "kpixData(1)"        LOC = "D10" | IOSTANDARD = "LVCMOS33";
-NET "kpixData(2)"        LOC = "K11" | IOSTANDARD = "LVCMOS33";
-NET "kpixData(3)"        LOC = "J11" | IOSTANDARD = "LVCMOS33";
-NET "kpixData(4)"        LOC = "D12" | IOSTANDARD = "LVCMOS33";
-NET "kpixData(5)"        LOC = "C12" | IOSTANDARD = "LVCMOS33";
-NET "kpixData(6)"        LOC = "H10" | IOSTANDARD = "LVCMOS33";
-NET "kpixData(7)"        LOC = "H9"  | IOSTANDARD = "LVCMOS33";
-NET "kpixData(8)"        LOC = "A13" | IOSTANDARD = "LVCMOS33";
-NET "kpixData(9)"        LOC = "B12" | IOSTANDARD = "LVCMOS33";
-NET "kpixData(10)"       LOC = "J10" | IOSTANDARD = "LVCMOS33";
-NET "kpixData(11)"       LOC = "J9"  | IOSTANDARD = "LVCMOS33";
-NET "kpixData(12)"       LOC = "K8"  | IOSTANDARD = "LVCMOS33";
-NET "kpixData(13)"       LOC = "K9"  | IOSTANDARD = "LVCMOS33";
-NET "kpixData(14)"       LOC = "B13" | IOSTANDARD = "LVCMOS33";
-NET "kpixData(15)"       LOC = "C13" | IOSTANDARD = "LVCMOS33";
-NET "nimInA"             LOC = "K14" | IOSTANDARD = "LVCMOS33";
-NET "debugOutA"          LOC = "K12" | IOSTANDARD = "LVCMOS33";
-NET "debugOutB"          LOC = "K13" | IOSTANDARD = "LVCMOS33";
+
+# Ethernet Interface
+NET "udpTxP"             LOC = "F2";
+NET "udpTxN"             LOC = "G2";
+NET "udpRxP"             LOC = "G1";
+NET "udpRxN"             LOC = "H1";
+
+# Where to send debugOutA and B?
+NET "debugOutA" LOC = "K12" | IOSTANDARD = "LVCMOS33"; # DBG_OUT0
+NET "debugOutB" LOC = "K13" | IOSTANDARD = "LVCMOS33"; # DBG_OUT1
+
+#External Trigger - NimA
+NET "triggerIn_extTrigger" LOC = "K14" | IOSTANDARD = "LVCMOS33"; #NUM_IN0
+
+NET "kpixClkOut" LOC = "N7" | IOSTANDARD = "LVCMOS33"; #KPIX_CLK_OUTA
+NET "kpixRstOut" LOC = "P5" | IOSTANDARD = "LVCMOS33";
+NET "kpixTriggerOut" LOC = "M5" | IOSTANDARD = "LVCMOS33";
+NET "kpixSerTxOut<0>" LOC = "L4" | IOSTANDARD = "LVCMOS33";
+NET "kpixSerTxOut<1>" LOC = "L5" | IOSTANDARD = "LVCMOS33";
+NET "kpixSerTxOut<2>" LOC = "P7" | IOSTANDARD = "LVCMOS33";
+NET "kpixSerTxOut<3>" LOC = "P6" | IOSTANDARD = "LVCMOS33";
+NET "kpixSerRxIn<0>" LOC = "D11" | IOSTANDARD = "LVCMOS33";
+NET "kpixSerRxIn<1>" LOC = "D10" | IOSTANDARD = "LVCMOS33";
+NET "kpixSerRxIn<2>" LOC = "K11" | IOSTANDARD = "LVCMOS33";
+NET "kpixSerRxIn<3>" LOC = "J11" | IOSTANDARD = "LVCMOS33";
+
+

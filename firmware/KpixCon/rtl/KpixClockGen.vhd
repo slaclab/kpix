@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-05-23
+-- Last update: 2012-05-29
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -30,8 +30,6 @@ entity KpixClockGen is
     DELAY_G : time := 1 ns);
 
   port (
-    sysClk       : in  sl;
-    sysRst       : in  sl;
     clk200       : in  sl;
     rst200       : in  sl;
     extRegsIn    : in  KpixClockGenRegsInType;
@@ -119,8 +117,9 @@ begin
   -- Synchronize rst200 to KpixClk to create kpixRst
   RstSync_1 : entity work.RstSync
     generic map (
-      DELAY_G    => DELAY_G,
-      POLARITY_G => '1')                -- Active high reset
+      DELAY_G        => DELAY_G,
+      IN_POLARITY_G  => '1',
+      OUT_POLARITY_G => '1')            -- Active high reset
     port map (
       clk      => r.clkDiv,
       asyncRst => rst200,

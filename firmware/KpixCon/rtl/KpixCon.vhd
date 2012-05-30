@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2012-05-29
+-- Last update: 2012-05-30
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -46,24 +46,29 @@ entity KpixCon is
     debugOutA : out sl;
     debugOutB : out sl;
 
+    -- External Trigger
+    triggerIn : in TriggerInType;
+
     -- Interface to KPiX modules
-    kpixClkOut   : out slv(NUM_KPIX_MODULES_G-2 downto 0);
-    kpixRstOut   : out slv(NUM_KPIX_MODULES_G-2 downto 0);
-    kpixSerTxOut : out slv(NUM_KPIX_MODULES_G-2 downto 0);
-    kpixSerRxIn  : in  slv(NUM_KPIX_MODULES_G-2 downto 0));
+    kpixClkOut     : out sl;
+    kpixRstOut     : out sl;
+    kpixTriggerOut : out sl;
+    kpixSerTxOut   : out slv(NUM_KPIX_MODULES_G-2 downto 0);
+    kpixSerRxIn    : in  slv(NUM_KPIX_MODULES_G-2 downto 0));
 
 end entity KpixCon;
 
 architecture rtl of KpixCon is
 
-  signal fpgaRst      : sl;
-  signal gtpRefClk    : sl;
-  signal gtpRefClkOut : sl;
-  signal sysClk125    : sl;
-  signal sysRst125    : sl;
-  signal clk200       : sl;
-  signal rst200       : sl;
-  signal dcmLocked    : sl;
+  signal fpgaRst       : sl;
+  signal gtpRefClk     : sl;
+  signal gtpRefClkOut  : sl;
+  signal gtpRefClkBufg : sl;
+  signal sysClk125     : sl;
+  signal sysRst125     : sl;
+  signal clk200        : sl;
+  signal rst200        : sl;
+  signal dcmLocked     : sl;
 
   -- Eth Front End Signals
   signal ethRegCntlIn  : EthRegCntlInType;
@@ -77,13 +82,12 @@ architecture rtl of KpixCon is
   signal ebFifoOut : EventBuilderFifoOutType;
   signal ebFifoIn  : EventBuilderFifoInType;
 
-  signal triggerIn : TriggerInType;
+  signal kpixTrigger : sl;
 
   -- Internal Kpix signals
-  signal kpixClk         : sl;
-  signal kpixRst         : sl;
-  signal intKpixSerTxOut : slv(NUM_KPIX_MODULES_G-2 downto 0);
-  signal intKpixSerRxIn  : slv(NUM_KPIX_MODULES_G-2 downto 0);
+  signal kpixClk : sl;
+  signal kpixRst : sl;
+
 
 begin
 
@@ -96,10 +100,15 @@ begin
       IB => gtpRefClkN,
       O  => gtpRefClk);
 
+  GtpRefClkBufgInst : BUFG
+    port map (
+      I => gtpRefClkOut,
+      O => gtpRefClkBufg);
+
   -- Generate clocks
   main_dcm_1 : entity work.main_dcm
     port map (
-      CLKIN_IN   => gtpRefClkOut,
+      CLKIN_IN   => gtpRefClkBufg,
       RST_IN     => fpgaRst,
       CLKFX_OUT  => clk200,
       CLK0_OUT   => sysClk125,
@@ -108,21 +117,23 @@ begin
   -- Synchronize sysRst125
   SysRstSyncInst : entity work.RstSync
     generic map (
-      DELAY_G    => DELAY_G,
-      POLARITY_G => '1')
+      DELAY_G        => DELAY_G,
+      IN_POLARITY_G  => '0',
+      OUT_POLARITY_G => '1')
     port map (
       clk      => sysClk125,
-      asyncRst => fpgaRst,
+      asyncRst => dcmLocked,
       syncRst  => sysRst125);
 
   -- Synchronize rst200
   Clk200RstSyncInst : entity work.RstSync
     generic map (
-      DELAY_G    => DELAY_G,
-      POLARITY_G => '1')
+      DELAY_G        => DELAY_G,
+      IN_POLARITY_G  => '0',
+      OUT_POLARITY_G => '1')
     port map (
       clk      => clk200,
-      asyncRst => fpgaRst,
+      asyncRst => dcmLocked,
       syncRst  => rst200);  
 
   -- Ethernet module
@@ -134,6 +145,7 @@ begin
       gtpRefClkOut  => gtpRefClkOut,
       cmdEn         => ethCmdCntlOut.cmdEn,
       cmdOpCode     => ethCmdCntlOut.cmdOpCode,
+      cmdCtxOut     => ethCmdCntlOut.cmdCtxOut,
       regReq        => ethRegCntlOut.regReq,
       regOp         => ethRegCntlOut.regOp,
       regInp        => ethRegCntlOut.regInp,
@@ -160,24 +172,25 @@ begin
       DELAY_G            => DELAY_G,
       NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
     port map (
-      sysClk        => sysClk125,
-      sysRst        => sysRst125,
-      clk200        => clk200,
-      rst200        => rst200,
-      ethRegCntlOut => ethRegCntlOut,
-      ethRegCntlIn  => ethRegCntlIn,
-      ethCmdCntlOut => ethCmdCntlOut,
-      ethUsDataOut  => ethUsDataOut,
-      ethUsDataIn   => ethUsDataIn,
-      triggerIn     => triggerIn,
-      ebFifoOut     => ebFifoOut,
-      ebFifoIn      => ebFifoIn,
-      debugOutA     => debugOutA,
-      debugOutB     => debugOutB,
-      kpixClkOut    => kpixClk,
-      kpixResetOut    => kpixRst,
-      kpixSerTxOut  => kpixSerTxOut,
-      kpixSerRxIn   => kpixSerRxIn);
+      sysClk         => sysClk125,
+      sysRst         => sysRst125,
+      clk200         => clk200,
+      rst200         => rst200,
+      ethRegCntlOut  => ethRegCntlOut,
+      ethRegCntlIn   => ethRegCntlIn,
+      ethCmdCntlOut  => ethCmdCntlOut,
+      ethUsDataOut   => ethUsDataOut,
+      ethUsDataIn    => ethUsDataIn,
+      triggerIn      => triggerIn,
+      ebFifoOut      => ebFifoOut,
+      ebFifoIn       => ebFifoIn,
+      debugOutA      => debugOutA,
+      debugOutB      => debugOutB,
+      kpixClkOut     => kpixClk,
+      kpixTriggerOut => kpixTrigger,
+      kpixResetOut   => kpixRst,
+      kpixSerTxOut   => kpixSerTxOut,
+      kpixSerRxIn    => kpixSerRxIn);
 
   --------------------------------------------------------------------------------------------------
   -- Event Builder FIFO
@@ -195,10 +208,9 @@ begin
       valid => ebFifoOut.valid); 
 
   -- Output KPIX clocks
-  GenClk : for i in NUM_KPIX_MODULES_G-2 downto 0 generate
-    U_KpixClkDDR : ODDR
-      port map (
-      Q  => kpixClkOut(i),
+  U_KpixClkDDR : ODDR
+    port map (
+      Q  => kpixClkOut,
       CE => '1',
       C  => kpixClk,
       D1 => '1',
@@ -206,13 +218,19 @@ begin
       R  => '0',
       S  => '0'
       );
-  end generate;
 
-  RstGen: for i in NUM_KPIX_MODULES_G-2 downto 0 generate
-    OBUF_RST : OBUF
-      port map (
-        I => kpixRst,
-        O => kpixRstOut(i));
-  end generate RstGen;
-  
+
+
+  OBUF_RST : OBUF
+    port map (
+      I => kpixRst,
+      O => kpixRstOut);
+
+
+  OBUF_TRIG : OBUF
+    port map (
+      I => kpixTrigger,
+      O => kpixTriggerOut);
+
+
 end architecture rtl;
