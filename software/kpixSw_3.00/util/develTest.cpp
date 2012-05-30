@@ -13,7 +13,7 @@
 // Modification history :
 // 04/12/2011: created
 //----------------------------------------------------------------------------
-#include <OptoFpgaLink.h>
+#include <UdpLink.h>
 #include <KpixControl.h>
 #include <ControlServer.h>
 #include <Device.h>
@@ -24,21 +24,21 @@
 using namespace std;
 
 int main (int argc, char **argv) {
-   OptoFpgaLink  optoLink; 
-   KpixControl   kpix(&optoLink);
+   UdpLink     udpLink; 
+   KpixControl kpix(&udpLink);
 
    try {
 
       // Create and setup PGP link
-      optoLink.setMaxRxTx(500000);
-      optoLink.setDebug(true);
-      optoLink.open("/dev/ttyUSB0");
+      udpLink.setMaxRxTx(500000);
+      udpLink.setDebug(true);
+      udpLink.open(8192,1,"192.168.1.16");
       usleep(100);
 
       // Test
-      cout << "Fgga Version: 0x" << hex << setw(8) << setfill('0') << kpix.device("kpixFpga",0)->readSingle("VersionMastReset") << endl;
-      cout << "Kpix Version: 0x" << hex << setw(8) << setfill('0') << kpix.device("kpixFpga",0)->device("kpixAsic",3)->readSingle("Status") << endl;
-      cout << "Kpix Version: 0x" << hex << setw(8) << setfill('0') << kpix.device("kpixFpga",0)->device("kpixAsic",0)->readSingle("Status") << endl;
+      cout << "Fgga Version: 0x" << hex << setw(8) << setfill('0') << kpix.device("conFpga",0)->readSingle("Version") << endl;
+      cout << "Kpix Version: 0x" << hex << setw(8) << setfill('0') << kpix.device("conFpga",0)->device("kpixAsic",3)->readSingle("Status") << endl;
+      cout << "Kpix Version: 0x" << hex << setw(8) << setfill('0') << kpix.device("conFpga",0)->device("kpixAsic",0)->readSingle("Status") << endl;
 
    } catch ( string error ) {
       cout << "Caught Error: " << endl;
