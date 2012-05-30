@@ -39,10 +39,10 @@ int main (int argc, char **argv) {
 
    // Process each event
    while ( dataRead.next(&event) ) {
-/*
+
       // Dump header values
-      cout << "Header:trainNumber = " << dec << event.trainNumber() << endl;
-      cout << "Header:count       = " << dec << event.count() << endl;
+      cout << "Header:eventNumber = " << dec << event.eventNumber() << endl;
+      cout << "Header:timeStamp   = " << dec << event.timestamp() << endl;
 
       // Iterate through samples
       for (x=0; x < event.count(); x++) {
@@ -52,6 +52,7 @@ int main (int argc, char **argv) {
 
          // Show sample data
          cout << "Sample:index       = " << dec << x << endl;
+         cout << "Sample:eventNumber = " << dec << sample->getEventNum()    << endl;
          cout << "Sample:address     = " << dec << sample->getKpixAddress() << endl;
          cout << "Sample:channel     = " << dec << sample->getKpixChannel() << endl;
          cout << "Sample:bucket      = " << dec << sample->getKpixBucket()  << endl;
@@ -59,8 +60,18 @@ int main (int argc, char **argv) {
          cout << "Sample:value       = " << dec << sample->getSampleValue() << endl;
          cout << "Sample:range       = " << dec << sample->getSampleRange() << endl;
          cout << "Sample:trigType    = " << dec << sample->getTrigType()    << endl;
+         cout << "Sample:empty       = " << dec << sample->getEmpty()       << endl;
+         cout << "Sample:badCount    = " << dec << sample->getBadCount()    << endl;
+         cout << "Sample:sampleType  = " << dec << sample->getSampleType()  << endl;
+
+         // Do something if this is a data sample
+         if ( sample->getSampleType() == KpixSample::Data ) {
+
+
+            // Get a config variable associated with event
+            cout << "Cal = " << dataRead.getConfigInt("conFpga:kpixAsic:DacCalibration");
+         }
       }
-*/
    }
 
    // Dump config
