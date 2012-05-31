@@ -13,8 +13,8 @@ GEN_OBJ := $(patsubst $(GEN_DIR)/%.cpp,$(OBJ)/%.o,$(GEN_SRC))
 
 # Offline Sources
 KPX_DIR := $(PWD)/../kpix
-KPX_SRC := $(KPX_DIR)/KpixSample.cpp $(KPX_DIR)/KpixEvent.cpp
-KPX_HDR := $(KPX_DIR)/KpixSample.h   $(KPX_DIR)/KpixEvent.h
+KPX_SRC := $(KPX_DIR)/KpixSample.cpp $(KPX_DIR)/KpixEvent.cpp $(KPX_DIR)/KpixCalibRead.cpp
+KPX_HDR := $(KPX_DIR)/KpixSample.h   $(KPX_DIR)/KpixEvent.h   $(KPX_DIR)/KpixCalibRead.h
 KPX_OBJ := $(patsubst $(KPX_DIR)/%.cpp,$(OBJ)/%.o,$(KPX_SRC))
 
 # Root Sources
