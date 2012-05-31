@@ -21,6 +21,7 @@
 #include <TCanvas.h>
 #include <TMultiGraph.h>
 #include <TApplication.h>
+#include <TGraphErrors.h>
 #include <TGraph.h>
 #include <TStyle.h>
 #include <stdarg.h>
@@ -42,14 +43,14 @@ class ChannelData {
       double       baseCount[4];
       double       baseMean[4];
       double       baseSum[4];
-      double       baseStdDev[4];
+      double       baseRms[4];
 
       // Calib Data
       double       calibCount[4][256];
       double       calibMean[4][256];
       double       calibSum[4][256];
-      double       calibStdDev[4][256];
-   
+      double       calibRms[4][256];
+
       ChannelData() {
          uint x;
          uint y;
@@ -61,13 +62,13 @@ class ChannelData {
             baseCount[x]  = 0;
             baseMean[x]   = 0;
             baseSum[x]    = 0;
-            baseStdDev[x] = 0;
+            baseRms[x]    = 0;
 
             for (y=0; y < 256; y++) {
                calibCount[x][y]  = 0;
                calibMean[x][y]   = 0;
                calibSum[x][y]    = 0;
-               calibStdDev[x][y] = 0;
+               calibRms[x][y]    = 0;
             }
          }
       }
@@ -100,10 +101,10 @@ class ChannelData {
          uint y;
 
          for (x=0; x < 4; x++) {
-            if ( baseCount[x] > 0 ) baseStdDev[x] = sqrt(baseSum[x] / baseCount[x]);
+            if ( baseCount[x] > 0 ) baseRms[x] = sqrt(baseSum[x] / baseCount[x]);
             for (y=0; y < 256; y++) {
                if ( calibCount[x][y] > 0 ) 
-                  calibStdDev[x][y] = sqrt(calibSum[x][y] / calibCount[x][y]);
+                  calibRms[x][y] = sqrt(calibSum[x][y] / calibCount[x][y]);
             }
          }
       }
@@ -124,15 +125,24 @@ int main ( int argc, char **argv ) {
    ChannelData            *chanData[32][1024];
    uint                   x;
    uint                   y;
+   uint                   i;
    uint                   value;
    uint                   kpix;
    uint                   channel;
    uint                   bucket;
-   KpixSample::SampleType type;
    string                 serial;
+   KpixSample::SampleType type;
    TCanvas                *c1;
    TH1F                   *hist;
    stringstream           tmp;
+   stringstream           xml;
+   bool                   xmlStart;
+   double                 grX[256];
+   double                 grY[256];
+   double                 grYErr[256];
+   double                 grXErr[256];
+   uint                   grCount;
+   TGraphErrors           *grCalib;
 
    // Init
    for (x=0; x < 32; x++) {
@@ -188,7 +198,7 @@ int main ( int argc, char **argv ) {
             if ( chanData[kpix][channel] == NULL ) chanData[kpix][channel] = new ChannelData;
 
             // Filter for time
-            .....
+            { 
 
                // Baseline
                if ( calState == "Baseline" ) 
@@ -211,38 +221,90 @@ int main ( int argc, char **argv ) {
    }
    cout << "  Done!" << endl;
 
-   // Process each kpix device
-   for (x=0; x<32; x++) {
+   xml.str("");
+   xml << "<calibrationData>" << endl;
 
-      // Serial number
-      tmp.str("");
-      tmp << "cntrlFpga(0):kpixAsic(" << dec << x << "):SerialNumber";
-      serial = dataRead.getConfig(tmp.str());
+   // Process each kpix device
+   for (kpix=0; kpix<32; kpix++) {
+      xmlStart = false;
 
       // Process each channel
-      for (y=0; y < 1024; y++) {
+      for (channel=0; channel < 1024; channel++) {
 
+         // Channel is valid
          if ( chanData[kpix][channel] != NULL ) {
+
+            // Asic marker
+            if ( !xmlStart ) {
+               xml << "   <kpixAsic>" << endl;
+               xml << "      <SerialNumber>";
+               tmp.str("");
+               tmp << "cntrlFpga(0):kpixAsic(" << dec << kpix << "):SerialNumber";
+               serial = dataRead.getConfig(tmp.str());
+               xml << serial;
+               xml << "</SerialNumber>" << endl;
+               xmlStart = true;
+            }
+
+            // Start channel marker
+            xml << "      <Channel index=\"" << channel << "\">" << endl;
             chanData[kpix][channel]->compute();
 
-            tmp.str("");
-            tmp << "hist_" << serial << "_" << dec << setw(4) << setfill('0') << channel;
-            tmp << "_" << dec << bucket;
+            // Each bucket
+            for (bucket = 0; bucket < 4; bucket++) {
 
-            hist = new TH1F(tmp.str(),tmp.str(),8192,0,8192);
+               // Create histogram
+               tmp.str("");
+               tmp << "hist_" << serial << "_" << dec << setw(4) << setfill('0') << channel;
+               tmp << "_" << dec << bucket;
+               hist = new TH1F(tmp.str().c_str(),tmp.str().c_str(),8192,0,8192);
+
+               // Fill histogram
+               for (x=0; x < 8192; x++) {
+                  hist->SetBinContent(i+1,chanData[kpix][channel]->baseData[bucket][x]);
+                  hist->GetXaxis()->SetRangeUser(chanData[kpix][channel]->baseMin[bucket],
+                                                 chanData[kpix][channel]->baseMax[bucket]);
+                  hist->Fit("gaus");
+                  //hist->Write();
+
+                  // Add to xml
+                  xml << "         <BaseMean>" << chanData[kpix][channel]->baseMean[bucket] << "</BaseMean>" << endl;
+                  xml << "         <BaseRms>" << chanData[kpix][channel]->baseRms[bucket] << "</BaseRms>" << endl;
+               }
+
+               // Create calibration graph
+               grCount = 0;
+               for (x=0; x < 256; x++) {
+                  
+                  // Calibration point is valid
+                  if ( chanData[kpix][channel]->calibCount[bucket][x] > 0 ) {
+                     grX[x]     = x;
+                     grY[x]     = chanData[kpix][channel]->calibMean[bucket][x];
+                     grYErr[x]  = chanData[kpix][channel]->calibRms[bucket][x];
+                     grXErr[x]  = 0;
+                     grCount++;
+                  }
+
+                  // Create graph
+                  grCalib = new TGraphErrors(grCount,grX,grY,grXErr,grYErr);
+                  grCalib->Fit("pol1");
+                  //grCalib->Write();
+               }
 
 
+            }
 
-
-
-
-
-
+            // End channel
+            xml << "      </Channel>" << endl;
          }
+
       }
+
+      // End Asic marker
+      if ( xmlStart ) xml << "   </kpixAsic>" << endl;
    }
 
-
+   xml << "</calibrationData>" << endl;
 
 /*
 
