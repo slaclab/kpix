@@ -225,7 +225,7 @@ void KpixControl::swRunThread() {
          calDac       = calDacMin;
 
          // Save old configuration
-         oldConfig << "<system>" << endl << configString(true) << "</system>" << endl;
+         oldConfig << "<system>" << endl << configString(true,false) << "</system>" << endl;
 
          // Update variables
          getVariable("CalState")->set("Baseline");

@@ -28,6 +28,7 @@
 #include <KpixSample.h>
 #include <Data.h>
 #include <DataRead.h>
+#include <math.h>
 using namespace std;
 
 // Channel data
@@ -99,10 +100,10 @@ class ChannelData {
          uint y;
 
          for (x=0; x < 4; x++) {
-            if ( baseCount[x] > 0 ) baseStdDev[x] = sqrt(baseStdSum[x] / baseCount[x]);
+            if ( baseCount[x] > 0 ) baseStdDev[x] = sqrt(baseSum[x] / baseCount[x]);
             for (y=0; y < 256; y++) {
                if ( calibCount[x][y] > 0 ) 
-                  calibStdDev[x][y] = sqrt(calibStdSum[x][y] / calibCount[x][y]);
+                  calibStdDev[x][y] = sqrt(calibSum[x][y] / calibCount[x][y]);
             }
          }
       }
@@ -110,10 +111,6 @@ class ChannelData {
 
 // Process the data
 int main ( int argc, char **argv ) {
-   //TCanvas         *c1;
-   //TH1F            *histSng;
-   //double          histMin;
-   //double          histMax;
    DataRead               dataRead;
    double                 fileSize;
    double                 filePos;
@@ -125,7 +122,6 @@ int main ( int argc, char **argv ) {
    uint                   lastPct;
    uint                   currPct;
    ChannelData            *chanData[32][1024];
-   //uint            grCnt; 
    uint                   x;
    uint                   y;
    uint                   value;
@@ -133,20 +129,17 @@ int main ( int argc, char **argv ) {
    uint                   channel;
    uint                   bucket;
    KpixSample::SampleType type;
-   //uint            tar;
-   //uint            eventCount;
-   //double          avg;
-   //char            name[100];
-   //uint            vlow;
-   //uint            vhigh;
+   string                 serial;
+   TCanvas                *c1;
+   TH1F                   *hist;
+   stringstream           tmp;
 
+   // Init
    for (x=0; x < 32; x++) {
       for (y=0; y < 1024; y++) {
          chanData[x][y] = NULL;
       }
    }
-
-   gStyle->SetOptStat(kFALSE);
 
    // Start X11 view
    TApplication theApp("App",NULL,NULL);
@@ -194,12 +187,17 @@ int main ( int argc, char **argv ) {
             // Create entry if it does not exist
             if ( chanData[kpix][channel] == NULL ) chanData[kpix][channel] = new ChannelData;
 
-            // Baseline
-            if ( calState == "Baseline" ) chanData[kpix][channel]->addBasePoint(bucket,value);
+            // Filter for time
+            .....
 
-            // Injection
-            else if ( calState == "Inject" && channel == calChannel ) 
-               chanData[kpix][channel]->addCalibPoint(bucket, calDac, value);
+               // Baseline
+               if ( calState == "Baseline" ) 
+                  chanData[kpix][channel]->addBasePoint(bucket,value);
+
+               // Injection
+               else if ( calState == "Inject" && channel == calChannel ) 
+                  chanData[kpix][channel]->addCalibPoint(bucket, calDac, value);
+            }
          }
       }
 
@@ -212,6 +210,38 @@ int main ( int argc, char **argv ) {
       }
    }
    cout << "  Done!" << endl;
+
+   // Process each kpix device
+   for (x=0; x<32; x++) {
+
+      // Serial number
+      tmp.str("");
+      tmp << "cntrlFpga(0):kpixAsic(" << dec << x << "):SerialNumber";
+      serial = dataRead.getConfig(tmp.str());
+
+      // Process each channel
+      for (y=0; y < 1024; y++) {
+
+         if ( chanData[kpix][channel] != NULL ) {
+            chanData[kpix][channel]->compute();
+
+            tmp.str("");
+            tmp << "hist_" << serial << "_" << dec << setw(4) << setfill('0') << channel;
+            tmp << "_" << dec << bucket;
+
+            hist = new TH1F(tmp.str(),tmp.str(),8192,0,8192);
+
+
+
+
+
+
+
+
+         }
+      }
+   }
+
 
 
 /*

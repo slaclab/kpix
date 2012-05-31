@@ -415,7 +415,7 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
       addRegister(new Register(tmp.str(), baseAddress_ + 0x00000060 + x));
    }
 
-   if ( ! dummy ) getVariable("enabled")->set("False");
+   if ( ! dummy ) getVariable("Enabled")->set("False");
 }
 
 // Deconstructor
@@ -507,7 +507,7 @@ void KpixAsic::readConfig ( ) {
    if ( !dummy_ ) {
 
       // Turn front end power on in kpix 9 before reading dacs
-      if ( getVariable("Version")->getInt() == 9 && getVariable("enabled")->getInt() == 1 ) {
+      if ( getVariable("Version")->getInt() == 9 && getVariable("Enabled")->getInt() == 1 ) {
          cout << "KpixAsic::readConfig -> Forcing power on for DAC read!" << endl;
          oldControl = getRegister("Control")->get();
          getRegister("Control")->set(1,24,0x1); // Disable power cycle
@@ -569,7 +569,7 @@ void KpixAsic::readConfig ( ) {
       getVariable("DacDefaultAnalogVolt")->set(dacToVoltString(val));
 
       // Restore control register settings
-      if ( getVariable("Version")->getInt() == 9 && getVariable("enabled")->getInt() == 1 ) {
+      if ( getVariable("Version")->getInt() == 9 && getVariable("Enabled")->getInt() == 1 ) {
          cout << "KpixAsic::readConfig -> Restoring power setting!" << endl;
          getRegister("Control")->set(oldControl);
          writeRegister(getRegister("Control"),true);
@@ -807,7 +807,7 @@ void KpixAsic::writeConfig ( bool force ) {
       // Turn front end power on in kpix 9 before writing dacs
       // Real front end power mode will be updated when control
       // register is written later
-      if ( getVariable("Version")->getInt() == 9 && dacStale && getVariable("enabled")->getInt() == 1 ) {
+      if ( getVariable("Version")->getInt() == 9 && dacStale && getVariable("Enabled")->getInt() == 1 ) {
          cout << "KpixAsic::writeConfig -> Forcing power on for DAC update!" << endl;
          getRegister("Control")->set(1,24,0x1); // Disable power cycle
          writeRegister(getRegister("Control"),true);
@@ -938,7 +938,7 @@ void KpixAsic::verifyConfig ( ) {
       verifyRegister(getRegister("Control"));
 
       // Turn front end power on in kpix 9 before reading dacs
-      if ( getVariable("Version")->getInt() == 9 && getVariable("enabled")->getInt() == 1 ) {
+      if ( getVariable("Version")->getInt() == 9 && getVariable("Enabled")->getInt() == 1 ) {
          cout << "KpixAsic::verifyConfig -> Forcing power on for DAC Verify!" << endl;
          oldControl = getRegister("Control")->get();
          getRegister("Control")->set(1,24,0x1); // Disable power cycle
@@ -957,7 +957,7 @@ void KpixAsic::verifyConfig ( ) {
       verifyRegister(getRegister("Dac9"));
 
       // Restore control register settings
-      if ( getVariable("Version")->getInt() == 9 && getVariable("enabled")->getInt() == 1 ) {
+      if ( getVariable("Version")->getInt() == 9 && getVariable("Enabled")->getInt() == 1 ) {
          cout << "KpixAsic::verifyConfig -> Restoring power state!" << endl;
          getRegister("Control")->set(oldControl);
          writeRegister(getRegister("Control"),true);

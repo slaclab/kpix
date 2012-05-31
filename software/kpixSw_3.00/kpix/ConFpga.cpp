@@ -215,7 +215,7 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
    // Add sub-devices
    for (uint i=0; i < 5; i++) addDevice(new KpixAsic(destination,(0x01010000 | ((i<<8) & 0xff00)),i,(i==4),this));
 
-   getVariable("enabled")->setHidden(true);
+   getVariable("Enabled")->setHidden(true);
 }
 
 // Deconstructor

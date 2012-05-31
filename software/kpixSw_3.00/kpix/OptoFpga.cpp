@@ -287,7 +287,7 @@ OptoFpga::OptoFpga ( uint destination, uint index, Device *parent ) :
    // Add sub-devices
    for (uint i=0; i < 4; i++) addDevice(new KpixAsic(destination,((i << 8)& 0xFF00),i,(i==3),this));
 
-   getVariable("enabled")->setHidden(true);
+   getVariable("Enabled")->setHidden(true);
 }
 
 // Deconstructor
