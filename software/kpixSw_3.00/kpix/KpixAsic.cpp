@@ -71,7 +71,6 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
    addVariable(new Variable("SerialNumber", Variable::Configuration));
    getVariable("SerialNumber")->setDescription("ASIC serial number");
    getVariable("SerialNumber")->setPerInstance(true);
-   getVariable("SerialNumber")->setComp(0,1,0,"");
 
    // Status register & variables
    addRegister(new Register("Status", baseAddress_ + 0x00000000));
