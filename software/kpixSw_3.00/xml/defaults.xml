@@ -2,46 +2,44 @@
    <config>
       <CalChanMax>1023</CalChanMax>
       <CalChanMin>0</CalChanMin>
-      <CalDacMin>0</CalDacMin>
+      <CalDacCount>1</CalDacCount>
       <CalDacMax>255</CalDacMax>
-      <CalDacStep>16</CalDacStep>
+      <CalDacMin>0</CalDacMin>
+      <CalDacStep>1</CalDacStep>
       <CalMeanCount>4000</CalMeanCount>
-      <DataFile>will_be_auto_generated.bin</DataFile>
-      <DataBase>/u1/w_si/newsamples/</DataBase>
       <DataAuto>True</DataAuto>
+      <DataBase></DataBase>
+      <DataFile></DataFile>
       <DebugCmdTime>True</DebugCmdTime>
       <DebugEnable>False</DebugEnable>
-      <RunCount>100</RunCount>
-      <RunRate>10Hz</RunRate>
-      <enabled>True</enabled>
-      <kpixFpga>
-         <BncSourceA>PwrUpAcq</BncSourceA>
-         <BncSourceB>PwrUpAcq</BncSourceB>
-         <CalDelay>0x0</CalDelay>
+      <RunCount>1000</RunCount>
+      <RunRate>1Hz</RunRate>
+      <cntrlFpga>
+         <BncSourceA>RegClock</BncSourceA>
+         <BncSourceB>RegClock</BncSourceB>
          <ClkPeriodAcq>50nS</ClkPeriodAcq>
          <ClkPeriodDig>50nS</ClkPeriodDig>
          <ClkPeriodIdle>100nS</ClkPeriodIdle>
+         <ClkPeriodPrecharge>50nS</ClkPeriodPrecharge>
          <ClkPeriodRead>100nS</ClkPeriodRead>
-         <DropData>False</DropData>
-         <ExtRecord>Disable</ExtRecord>
-         <ExtRunDelay>0x0</ExtRunDelay>
-         <ExtRunSource>Disable</ExtRunSource>
-         <ExtRunType>Acquire</ExtRunType>
-         <KpixReadDelay>0x0</KpixReadDelay>
-         <KpixReadEdge>Neg</KpixReadEdge>
-         <RawData>False</RawData>
-         <RunEnable>False</RunEnable>
-         <ScratchPad>0x0</ScratchPad>
-         <TrigEnable>0xff</TrigEnable>
-         <TrigExpand>0x0</TrigExpand>
+         <KpixRxEn_00>False</KpixRxEn_00>
+         <KpixRxEn_01>False</KpixRxEn_01>
+         <KpixRxEn_02>False</KpixRxEn_02>
+         <KpixRxEn_03>False</KpixRxEn_03>
+         <KpixRxEn_04>False</KpixRxEn_04>
+         <KpixRxRaw_00>False</KpixRxRaw_00>
+         <KpixRxRaw_01>False</KpixRxRaw_01>
+         <KpixRxRaw_02>False</KpixRxRaw_02>
+         <KpixRxRaw_03>False</KpixRxRaw_03>
+         <KpixRxRaw_04>False</KpixRxRaw_04>
+         <RunMode>Acquire</RunMode>
          <TrigSource>None</TrigSource>
-         <enabled>True</enabled>
          <kpixAsic>
-            <BunchClockCount>8191</BunchClockCount>
-            <Cal0Delay>0x100</Cal0Delay>
-            <Cal1Delay>0x100</Cal1Delay>
-            <Cal2Delay>0x100</Cal2Delay>
-            <Cal3Delay>0x100</Cal3Delay>
+            <BunchClockCount>0x7ff</BunchClockCount>
+            <Cal0Delay>0xc8</Cal0Delay>
+            <Cal1Delay>0xc8</Cal1Delay>
+            <Cal2Delay>0xc8</Cal2Delay>
+            <Cal3Delay>0xc8</Cal3Delay>
             <CalCount>0x4</CalCount>
             <CfgAutoReadDisable>False</CfgAutoReadDisable>
             <CfgAutoStatusReadEn>False</CfgAutoStatusReadEn>
@@ -50,13 +48,13 @@
             <CfgTestDataEn>False</CfgTestDataEn>
             <CntrlCalSource>Disable</CntrlCalSource>
             <CntrlCalibHigh>False</CntrlCalibHigh>
-            <CntrlDiffTime>Quarter</CntrlDiffTime>
+            <CntrlDiffTime>Normal</CntrlDiffTime>
             <CntrlDisPerReset>True</CntrlDisPerReset>
             <CntrlDisPwrCycle>False</CntrlDisPwrCycle>
             <CntrlEnDcReset>True</CntrlEnDcReset>
             <CntrlFeCurr>31uA</CntrlFeCurr>
             <CntrlForceLowGain>False</CntrlForceLowGain>
-            <CntrlForceTrigSource>Internal</CntrlForceTrigSource>
+            <CntrlForceTrigSource>Disable</CntrlForceTrigSource>
             <CntrlHighGain>False</CntrlHighGain>
             <CntrlHoldTime>64x</CntrlHoldTime>
             <CntrlLeakNullDisable>True</CntrlLeakNullDisable>
@@ -98,13 +96,24 @@
             <ColMode_30>DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD</ColMode_30>
             <ColMode_31>DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD</ColMode_31>
             <DacCalibration>0x0</DacCalibration>
+            <DacCalibrationCharge>5e-13 / 1.1e-11</DacCalibrationCharge>
+            <DacCalibrationVolt>0 V</DacCalibrationVolt>
             <DacDefaultAnalog>0xbd</DacDefaultAnalog>
+            <DacDefaultAnalogVolt>1.89 V</DacDefaultAnalogVolt>
             <DacEventThreshold>0x50</DacEventThreshold>
+            <DacEventThresholdVoltage>0.8 V</DacEventThresholdVoltage>
             <DacRampThresh>0xe0</DacRampThresh>
+            <DacRampThreshVolt>2.24 V</DacRampThreshVolt>
             <DacRangeThreshold>0x0</DacRangeThreshold>
+            <DacRangeThresholdVolt>0 V</DacRangeThresholdVolt>
             <DacShaperBias>0x78</DacShaperBias>
+            <DacShaperBiasVolt>1.2 V</DacShaperBiasVolt>
             <DacThresholdA>0x0</DacThresholdA>
+            <DacThresholdAVolt>0 V</DacThresholdAVolt>
             <DacThresholdB>0x0</DacThresholdB>
+            <DacThresholdBVolt>0 V</DacThresholdBVolt>
+            <Enabled>False</Enabled>
+            <SerialNumber>0</SerialNumber>
             <TimeBunchClkDelay>0x4e29</TimeBunchClkDelay>
             <TimeDeselDelay>0x89</TimeDeselDelay>
             <TimeDigitizeDelay>0xc7</TimeDigitizeDelay>
@@ -114,21 +123,33 @@
             <TimeResetOff>0x3e7f</TimeResetOff>
             <TimeResetOn>0xd</TimeResetOn>
             <TimeThreshOff>0x3db7</TimeThreshOff>
-            <TrigInhibitOff>2000</TrigInhibitOff>
-            <Version>0x9</Version>
-            <enabled>False</enabled>
+            <TrigInhibitOff>0x96</TrigInhibitOff>
+            <Version>9</Version>
          </kpixAsic>
-      </kpixFpga>
-      <enabled>True</enabled>
-      <kpixFpga index="0">
+      </cntrlFpga>
+      <Enabled>True</Enabled>
+      <cntrlFpga index="0">
+         <Enabled>True</Enabled>
+         <kpixAsic index="0">
+            <Enabled>False</Enabled>
+            <SerialNumber>0</SerialNumber>
+         </kpixAsic>
+         <kpixAsic index="1">
+            <Enabled>False</Enabled>
+            <SerialNumber>0</SerialNumber>
+         </kpixAsic>
          <kpixAsic index="2">
-            <SerialNumber>999</SerialNumber>
-            <enabled>True</enabled>
+            <Enabled>False</Enabled>
+            <SerialNumber>0</SerialNumber>
          </kpixAsic>
          <kpixAsic index="3">
+            <Enabled>False</Enabled>
             <SerialNumber>0</SerialNumber>
-            <enabled>True</enabled>
          </kpixAsic>
-      </kpixFpga>
+         <kpixAsic index="4">
+            <Enabled>True</Enabled>
+            <SerialNumber>0</SerialNumber>
+         </kpixAsic>
+      </cntrlFpga>
    </config>
 </system>

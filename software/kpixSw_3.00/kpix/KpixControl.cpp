@@ -35,6 +35,8 @@ KpixControl::KpixControl ( CommLink *commLink ) : System("KpixControl",commLink)
    // Data mask, lane 0, vc 0
    commLink->setDataMask(0x11);
 
+   defaults_ = "xml/defaults.xml";
+
    // Set run states
    vector<string> states;
    states.resize(3);
