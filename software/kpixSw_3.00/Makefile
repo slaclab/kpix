@@ -24,7 +24,7 @@ UTL_SRC := $(wildcard $(UTL_DIR)/*.cpp)
 UTL_BIN := $(patsubst $(UTL_DIR)/%.cpp,$(BIN)/%,$(UTL_SRC))
 
 # Default
-all: dir $(GEN_OBJ) $(KPX_OBJ) $(UTL_BIN) gui ana online
+all: dir $(GEN_OBJ) $(KPX_OBJ) $(UTL_BIN) gui ana online pylibs
 
 # Object directory
 dir:
@@ -34,9 +34,9 @@ dir:
 clean:
 	rm -rf $(OBJ)
 	rm -f $(BIN)/*
-	cd root; make clean
-	cd cntrlGui; qmake; make clean
-	cd onlineGui; qmake; make clean
+	cd root; gmake clean
+	cd cntrlGui; qmake; gmake clean
+	cd onlineGui; qmake; gmake clean
 
 # Compile Common Sources
 $(OBJ)/%.o: $(GEN_DIR)/%.cpp $(GEN_DIR)/%.h
@@ -52,15 +52,19 @@ $(BIN)/%: $(UTL_DIR)/%.cpp $(GEN_OBJ) $(KPX_OBJ)
 
 # root
 ana:
-	cd root; make
+	cd root; gmake
+
+# python libs
+pylibs:
+	cd python; gmake
 
 # Compile gui
 gui:
 	cd cntrlGui; qmake
-	cd cntrlGui; make
+	cd cntrlGui; gmake
 
 # online gui
 online:
 	cd onlineGui; qmake
-	cd onlineGui; make
+	cd onlineGui; gmake
 

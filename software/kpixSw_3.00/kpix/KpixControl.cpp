@@ -390,7 +390,7 @@ void KpixControl::setRunState ( string state ) {
       getVariable("RunState")->set(state);
 
       // Set run command 
-      device("cntrlFpga",0)->setRunCommand("kpixRun");
+      device("cntrlFpga",0)->setRunCommand("KpixRun");
 
       // Setup run parameters
       swRunCount_ = getInt("RunCount");
@@ -459,12 +459,12 @@ void KpixControl::hardReset ( ) {
 
    System::hardReset();
 
-   device("cntrlFpga",0)->command("MasterReset","");
+   //device("cntrlFpga",0)->command("MasterReset","");
    do {
       sleep(1);
       try { 
          gotVer = true;
-         device("cntrlFpga",0)->readSingle("VersionMastReset");
+         device("cntrlFpga",0)->readSingle("Version");
       } catch ( string err ) { 
          if ( count > 5 ) {
             gotVer = true;
@@ -476,6 +476,6 @@ void KpixControl::hardReset ( ) {
          }
       }
    } while ( !gotVer );
-   device("cntrlFpga",0)->command("KpixCmdReset","");
+   device("cntrlFpga",0)->command("KpixHardReset","");
 }
 

@@ -11,6 +11,9 @@ setenv QWTDIR  /afs/slac/g/reseng/qt/qwt_6.0_x64
 # Root base directory
 setenv ROOTSYS /afs/slac/g/reseng/root/root_5.20_x64
 
+# Python search path
+setenv PYTHONPATH ${PWD}/python/lib/python/
+
 # Setup path
 if ($?PATH) then
    setenv PATH ${BASE}/bin:${ROOTSYS}/bin:${QTDIR}/bin:${PATH}
