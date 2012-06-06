@@ -37,6 +37,7 @@ clean:
 	cd root; gmake clean
 	cd cntrlGui; qmake; gmake clean
 	cd onlineGui; qmake; gmake clean
+	cd python; gmake clean
 
 # Compile Common Sources
 $(OBJ)/%.o: $(GEN_DIR)/%.cpp $(GEN_DIR)/%.h
