@@ -119,8 +119,6 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
    addRegister(new Register("TimerD", baseAddress_ + 0x0000000b));
    addRegister(new Register("TimerE", baseAddress_ + 0x0000000c));
    addRegister(new Register("TimerF", baseAddress_ + 0x0000000d));
-   //addRegister(new Register("TimerG", baseAddress_ + 0x0000000e));
-   //addRegister(new Register("TimerH", baseAddress_ + 0x0000000f));
 
    addVariable(new Variable("TimeResetOn",Variable::Configuration));
    getVariable("TimeResetOn")->setDescription("Reset assertion delay from run start");
@@ -459,25 +457,26 @@ void KpixAsic::readConfig ( ) {
    getVariable("CfgAutoStatusReadEn")->setInt(getRegister("Config")->get(5,0x1));
 
    // Timing registers
-   readRegister(getRegister("TimerA"));
-   getVariable("TimeResetOn")->setInt(getRegister("TimerA")->get(0,0xFFFF));
-   getVariable("TimeResetOff")->setInt(getRegister("TimerA")->get(16,0xFFFF));
+   if ( getVariable("Version")->getInt() != 8 ) {
+      readRegister(getRegister("TimerA"));
+      getVariable("TimeResetOn")->setInt(getRegister("TimerA")->get(0,0xFFFF));
+      getVariable("TimeResetOff")->setInt(getRegister("TimerA")->get(16,0xFFFF));
 
-   readRegister(getRegister("TimerB"));
-   getVariable("TimeOffsetNullOff")->setInt(getRegister("TimerB")->get(0,0xFFFF));
-   getVariable("TimeLeakageNullOff")->setInt(getRegister("TimerB")->get(16,0xFFFF));
+      readRegister(getRegister("TimerB"));
+      getVariable("TimeOffsetNullOff")->setInt(getRegister("TimerB")->get(0,0xFFFF));
+      getVariable("TimeLeakageNullOff")->setInt(getRegister("TimerB")->get(16,0xFFFF));
+
+      readRegister(getRegister("TimerF"));
+      getVariable("TimeDeselDelay")->setInt(getRegister("TimerF")->get(0,0xFF));
+      getVariable("TimeBunchClkDelay")->setInt(getRegister("TimerF")->get(8,0xFFFF));
+      getVariable("TimeDigitizeDelay")->setInt(getRegister("TimerF")->get(24,0xFF));
+
+   }
+   else if ( getVariable("Enabled")->getInt() ) cout << "KpixAsic::readConfig -> Skipping read of version 8 timing registers A, B & F!" << endl;
 
    readRegister(getRegister("TimerC"));
    getVariable("TimePowerUpOn")->setInt(getRegister("TimerC")->get(0,0xFFFF));
    getVariable("TimeThreshOff")->setInt(getRegister("TimerC")->get(16,0xFFFF));
-
-   readRegister(getRegister("TimerE"));
-   getVariable("BunchClockCount")->setInt(getRegister("TimerE")->get(0,0xFFFF));
-
-   readRegister(getRegister("TimerF"));
-   getVariable("TimeDeselDelay")->setInt(getRegister("TimerF")->get(0,0xFF));
-   getVariable("TimeBunchClkDelay")->setInt(getRegister("TimerF")->get(8,0xFFFF));
-   getVariable("TimeDigitizeDelay")->setInt(getRegister("TimerF")->get(24,0xFF));
 
    readRegister(getRegister("TimerD"));
    val = getRegister("TimerD")->get();
@@ -485,6 +484,9 @@ void KpixAsic::readConfig ( ) {
    val = val - 1;
    val = val / 8;
    getVariable("TrigInhibitOff")->setInt(val);
+
+   readRegister(getRegister("TimerE"));
+   getVariable("BunchClockCount")->setInt(getRegister("TimerE")->get(0,0xFFFF));
 
    // Calibration control registers & variables
    readRegister(getRegister("CalDelay0"));
@@ -667,6 +669,18 @@ void KpixAsic::writeConfig ( bool force ) {
    getRegister("Config")->set(getVariable("CfgDisableTemp")->getInt(),4,0x1);
    getRegister("Config")->set(getVariable("CfgAutoStatusReadEn")->getInt(),5,0x1);
    writeRegister(getRegister("Config"),force);
+
+   // Overwrite some values in kpix version 8
+   if ( getVariable("Version")->getInt() == 8 ) {
+      if ( getVariable("Enabled")->getInt() ) cout << "KpixAsic::writeConfig -> Overwriting version 8 timing registers A, B & F!" << endl;
+      getVariable("TimeResetOn")->setInt(0x000e);
+      getVariable("TimeResetOff")->setInt(0x0960);
+      getVariable("TimeOffsetNullOff")->setInt(0x07da);
+      getVariable("TimeLeakageNullOff")->setInt(0x0004);
+      getVariable("TimeDeselDelay")->setInt(0x8a);
+      getVariable("TimeBunchClkDelay")->setInt(0xc000);
+      getVariable("TimeDigitizeDelay")->setInt(0xff);
+   }
 
    // Timing registers
    getRegister("TimerA")->set(getVariable("TimeResetOn")->getInt(),0,0xFFFF);
@@ -921,16 +935,18 @@ void KpixAsic::verifyConfig ( ) {
    REGISTER_LOCK
 
    verifyRegister(getRegister("Config"));
-   verifyRegister(getRegister("TimerA"));
-   verifyRegister(getRegister("TimerB"));
+   verifyRegister(getRegister("CalDelay0"));
+   verifyRegister(getRegister("CalDelay1"));
    verifyRegister(getRegister("TimerC"));
    verifyRegister(getRegister("TimerD"));
    verifyRegister(getRegister("TimerE"));
-   verifyRegister(getRegister("TimerF"));
-   //verifyRegister(getRegister("TimerG"));
-   //verifyRegister(getRegister("TimerH"));
-   verifyRegister(getRegister("CalDelay0"));
-   verifyRegister(getRegister("CalDelay1"));
+
+   if ( getVariable("Version")->getInt() != 8 ) {
+      verifyRegister(getRegister("TimerA"));
+      verifyRegister(getRegister("TimerB"));
+      verifyRegister(getRegister("TimerF"));
+   } 
+   else if ( getVariable("Enabled")->getInt() ) cout << "KpixAsic::verifyConfig -> Skipping verify of version 8 timing registers A, B & F!" << endl;
 
    if ( !dummy_ ) {
 
