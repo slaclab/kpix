@@ -7,11 +7,11 @@
       <CalDacMin>0</CalDacMin>
       <CalDacStep>1</CalDacStep>
       <CalMeanCount>4000</CalMeanCount>
-      <DataAuto>True</DataAuto>
-      <DataBase></DataBase>
+      <DataAuto>False</DataAuto>
+      <DataBase>/home/bareese</DataBase>
       <DataFile></DataFile>
       <DebugCmdTime>True</DebugCmdTime>
-      <DebugEnable>False</DebugEnable>
+      <DebugEnable>True</DebugEnable>
       <RunCount>1000</RunCount>
       <RunRate>1Hz</RunRate>
       <cntrlFpga>
@@ -23,7 +23,7 @@
          <ClkPeriodPrecharge>50nS</ClkPeriodPrecharge>
          <ClkPeriodRead>100nS</ClkPeriodRead>
          <KpixRxEn_00>False</KpixRxEn_00>
-         <KpixRxEn_01>False</KpixRxEn_01>
+         <KpixRxEn_01>True</KpixRxEn_01>
          <KpixRxEn_02>False</KpixRxEn_02>
          <KpixRxEn_03>False</KpixRxEn_03>
          <KpixRxEn_04>False</KpixRxEn_04>
@@ -33,6 +33,8 @@
          <KpixRxRaw_03>False</KpixRxRaw_03>
          <KpixRxRaw_04>False</KpixRxRaw_04>
          <RunMode>Acquire</RunMode>
+         <KpixInputEdge>Rising Edge</KpixInputEdge>
+         <KpixOutputEdge>Rising Edge</KpixOutputEdge>
          <TrigSource>None</TrigSource>
          <kpixAsic>
             <BunchClockCount>0x7ff</BunchClockCount>
@@ -54,7 +56,7 @@
             <CntrlEnDcReset>True</CntrlEnDcReset>
             <CntrlFeCurr>31uA</CntrlFeCurr>
             <CntrlForceLowGain>False</CntrlForceLowGain>
-            <CntrlForceTrigSource>Disable</CntrlForceTrigSource>
+            <CntrlForceTrigSource>Internal</CntrlForceTrigSource>
             <CntrlHighGain>False</CntrlHighGain>
             <CntrlHoldTime>64x</CntrlHoldTime>
             <CntrlLeakNullDisable>True</CntrlLeakNullDisable>
@@ -124,7 +126,7 @@
             <TimeResetOn>0xd</TimeResetOn>
             <TimeThreshOff>0x3db7</TimeThreshOff>
             <TrigInhibitOff>0x96</TrigInhibitOff>
-            <Version>9</Version>
+            <Version>8</Version>
          </kpixAsic>
       </cntrlFpga>
       <Enabled>True</Enabled>
@@ -135,8 +137,8 @@
             <SerialNumber>0</SerialNumber>
          </kpixAsic>
          <kpixAsic index="1">
-            <Enabled>False</Enabled>
-            <SerialNumber>0</SerialNumber>
+            <Enabled>True</Enabled>
+            <SerialNumber>802</SerialNumber>
          </kpixAsic>
          <kpixAsic index="2">
             <Enabled>False</Enabled>
@@ -147,7 +149,7 @@
             <SerialNumber>0</SerialNumber>
          </kpixAsic>
          <kpixAsic index="4">
-            <Enabled>True</Enabled>
+            <Enabled>False</Enabled>
             <SerialNumber>0</SerialNumber>
          </kpixAsic>
       </cntrlFpga>

@@ -43,6 +43,8 @@ int main (int argc, char **argv) {
       // Dump header values
       cout << "Header:eventNumber = " << dec << event.eventNumber() << endl;
       cout << "Header:timeStamp   = " << dec << event.timestamp() << endl;
+      cout << "Header:count = " << dec << event.count() << endl;
+      cout << "Header:size = " << dec << event.size() << endl;
 
       // Iterate through samples
       for (x=0; x < event.count(); x++) {

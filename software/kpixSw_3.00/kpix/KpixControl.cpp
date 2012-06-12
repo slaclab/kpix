@@ -47,13 +47,18 @@ KpixControl::KpixControl ( CommLink *commLink ) : System("KpixControl",commLink)
 
    // Set run rates
    vector<string> rates;
-   rates.resize(6);
-   rates[0] = "1Hz";
-   rates[1] = "10Hz";
-   rates[2] = "20Hz";
-   rates[3] = "30Hz";
-   rates[4] = "40Hz";
-   rates[5] = "40Hz";
+   rates.resize(11);
+   rates[0]  = "1Hz";
+   rates[1]  = "10Hz";
+   rates[2]  = "20Hz";
+   rates[3]  = "30Hz";
+   rates[4]  = "40Hz";
+   rates[5]  = "50Hz";
+   rates[6]  = "60Hz";
+   rates[7]  = "70Hz";
+   rates[8]  = "80Hz";
+   rates[9]  = "90Hz";
+   rates[10] = "100Hz";
    getVariable("RunRate")->setEnums(rates);
 
    // Data file nameing controls
@@ -394,12 +399,17 @@ void KpixControl::setRunState ( string state ) {
 
       // Setup run parameters
       swRunCount_ = getInt("RunCount");
-      if      ( get("RunRate") == "50Hz") swRunPeriod_ =   20000;
-      else if ( get("RunRate") == "40Hz") swRunPeriod_ =   25000;
-      else if ( get("RunRate") == "30Hz") swRunPeriod_ =   33333;
-      else if ( get("RunRate") == "20Hz") swRunPeriod_ =   50000;
-      else if ( get("RunRate") == "10Hz") swRunPeriod_ =  100000;
-      else if ( get("RunRate") ==  "1Hz") swRunPeriod_ = 1000000;
+      if      ( get("RunRate") == "100Hz") swRunPeriod_ =   10000;
+      else if ( get("RunRate") == "90Hz" ) swRunPeriod_ =   11111;
+      else if ( get("RunRate") == "80Hz" ) swRunPeriod_ =   12500;
+      else if ( get("RunRate") == "70Hz" ) swRunPeriod_ =   14286;
+      else if ( get("RunRate") == "60Hz" ) swRunPeriod_ =   16667;
+      else if ( get("RunRate") == "50Hz" ) swRunPeriod_ =   20000;
+      else if ( get("RunRate") == "40Hz" ) swRunPeriod_ =   25000;
+      else if ( get("RunRate") == "30Hz" ) swRunPeriod_ =   33333;
+      else if ( get("RunRate") == "20Hz" ) swRunPeriod_ =   50000;
+      else if ( get("RunRate") == "10Hz" ) swRunPeriod_ =  100000;
+      else if ( get("RunRate") ==  "1Hz" ) swRunPeriod_ = 1000000;
       else swRunPeriod_ = 1000000;
 
       // Start thread

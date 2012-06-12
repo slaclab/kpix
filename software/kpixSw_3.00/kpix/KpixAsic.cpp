@@ -46,6 +46,7 @@ string KpixAsic::dacToVoltString(uint dac) {
 uint KpixAsic::channels() {
    if ( dummy_ ) return(0);
    switch(getVariable("Version")->getInt()) {
+      case  8: return(256);  break;
       case  9: return(512);  break;
       case 10: return(1024); break;
       default: return(0);    break;
@@ -917,6 +918,7 @@ void KpixAsic::writeConfig ( bool force ) {
                   break;
             }
          }
+
          writeRegister(getRegister(regB.str()),force);
          writeRegister(getRegister(regA.str()),force);
          getVariable(varName.str())->set(varNew);

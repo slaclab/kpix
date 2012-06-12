@@ -31,6 +31,7 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
 
    // Description
    desc_ = "KPIX Con FPGA Object.";
+   //debug_ = true;
 
    // Setup registers & variables
    addRegister(new Register("Version", 0x01000000));
@@ -158,6 +159,19 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
    // Kpix reset register
    addRegister(new Register("KpixReset", 0x01000005));
 
+   // Kpix config register
+   addRegister(new Register("KpixConfig", 0x01000006));
+   addVariable(new Variable("KpixInputEdge", Variable::Configuration));
+   getVariable("KpixInputEdge")->setDescription("Clock edge to capture serial data");
+   vector<string> edges;
+   edges.resize(2);
+   edges[0]  = "Rising Edge";
+   edges[1]  = "Falling Edge";
+   getVariable("KpixInputEdge")->setEnums(edges);
+   addVariable(new Variable("KpixOutputEdge", Variable::Configuration));
+   getVariable("KpixOutputEdge")->setDescription("Clock edge to output serial data");
+   getVariable("KpixOutputEdge")->setEnums(edges);
+
    // KPIX support registers
    for (uint i=0; i < 5; i++) {
 
@@ -213,7 +227,7 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
    getCommand("CountReset")->setDescription("Reset counters");
 
    // Add sub-devices
-   for (uint i=0; i < 5; i++) addDevice(new KpixAsic(destination,(0x01010000 | ((i<<8) & 0xff00)),i,(i==4),this));
+   for (uint i=0; i < 5; i++) addDevice(new KpixAsic(destination,(0x01100000 | ((i<<8) & 0xff00)),i,(i==4),this));
 
    getVariable("Enabled")->setHidden(true);
 }
@@ -319,6 +333,10 @@ void ConFpga::readConfig ( ) {
    getVariable("TrigSource")->setInt(getRegister("TriggerControl")->get(0,0x1));
    getVariable("RunMode")->setInt(getRegister("TriggerControl")->get(4,0x1));
 
+   readRegister(getRegister("KpixConfig"));
+   getVariable("KpixInputEdge")->setInt(getRegister("KpixConfig")->get(0,0x1));
+   getVariable("KpixOutputEdge")->setInt(getRegister("KpixConfig")->get(1,0x1));
+
    // KPIX support registers
    for (uint i=0; i < 5; i++) {
 
@@ -363,6 +381,10 @@ void ConFpga::writeConfig ( bool force ) {
    getRegister("TriggerControl")->set(getVariable("RunMode")->getInt(),4,0x1);
    writeRegister(getRegister("TriggerControl"),force);
 
+   getRegister("KpixConfig")->set(getVariable("KpixInputEdge")->getInt(),0,0x1);
+   getRegister("KpixConfig")->set(getVariable("KpixInputEdge")->getInt(),1,0x1);
+   writeRegister(getRegister("KpixConfig"),force);
+
    // KPIX support registers
    for (uint i=0; i < 5; i++) {
 
@@ -394,6 +416,7 @@ void ConFpga::verifyConfig ( ) {
    verifyRegister(getRegister("ClockSelectB"));
    verifyRegister(getRegister("DebugSelect"));
    verifyRegister(getRegister("TriggerControl"));
+   verifyRegister(getRegister("KpixConfig"));
 
    // KPIX support registers
    for (uint i=0; i < 5; i++) {

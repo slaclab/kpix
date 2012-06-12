@@ -76,14 +76,14 @@ uint KpixSample::getSampleRange() {
 // Get sample time
 uint KpixSample::getSampleTime() {
    uint ret;
-   ret = (data_[0] >> 16) & 0x1FFF;
+   ret = (data_[1] >> 16) & 0x1FFF;
    return(ret);
 }
 
 // Get sample value.
 uint KpixSample::getSampleValue() {
    uint ret;
-   ret = data_[0] & 0x1FFF;
+   ret = data_[1] & 0x1FFF;
    return(ret);
 }
 

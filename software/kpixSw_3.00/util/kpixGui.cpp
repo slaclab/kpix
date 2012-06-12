@@ -46,7 +46,7 @@ int main (int argc, char **argv) {
       int           pid;
 
       // Setup top level device
-      //cspad.setDebug(true,true);
+      kpix.setDebug(true);
 
       // Create and setup PGP link
       udpLink.setMaxRxTx(500000);
@@ -82,6 +82,7 @@ int main (int argc, char **argv) {
          default:
             while ( ! stop ) cntrlServer.receive(100);
             kill(pid,SIGINT);
+            system("killall cntrlGui");
             sleep(1);
             cntrlServer.stopListen();
             cout << "Stopped gui server" << endl;
