@@ -465,7 +465,7 @@ begin
 
       when TX_ROW_ID_S =>
         -- Row ID available on txRamRdData
-        rVar.txSample.row    := txRamRdData(4 downto 0);
+        rVar.txSample.row    := txRamRdData(4 downto 0) xor "11111"; -- Reverse row order
         rVar.txSample.column := slv(txRegs.txColumnCount);
         rVar.txColumnOffset  := txRegs.txColumnOffset + 1;  -- "0001" - timestamp 0
         rVar.txState         := TX_CNT_S;

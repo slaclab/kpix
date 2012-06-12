@@ -19,12 +19,13 @@ use ieee.std_logic_1164.all;
 
 package Version is
 
-  constant FPGA_VERSION_C : std_logic_vector(31 downto 0) := x"C0000100";  -- MAKE_VERSION
+  constant FPGA_VERSION_C : std_logic_vector(31 downto 0) := x"C0000101";  -- MAKE_VERSION
 
 end Version;
 
 -------------------------------------------------------------------------------
 -- Revision History:
 -- 05/03/2012 (0xC0000100): Initial Version
+-- 06/12/2012 (0xC0000101): Changed row order.
 -------------------------------------------------------------------------------
 
