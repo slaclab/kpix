@@ -2,18 +2,18 @@
    <config>
       <CalChanMax>1023</CalChanMax>
       <CalChanMin>0</CalChanMin>
-      <CalDacCount>1</CalDacCount>
+      <CalDacCount>16</CalDacCount>
       <CalDacMax>255</CalDacMax>
       <CalDacMin>0</CalDacMin>
-      <CalDacStep>1</CalDacStep>
+      <CalDacStep>32</CalDacStep>
       <CalMeanCount>4000</CalMeanCount>
-      <DataAuto>False</DataAuto>
-      <DataBase>/home/bareese</DataBase>
-      <DataFile></DataFile>
+      <DataAuto>True</DataAuto>
+      <DataBase>/u1/kpix/data/</DataBase>
+      <DataFile>/u1/kpix/data/</DataFile>
       <DebugCmdTime>True</DebugCmdTime>
-      <DebugEnable>True</DebugEnable>
+      <DebugEnable>False</DebugEnable>
       <RunCount>1000</RunCount>
-      <RunRate>1Hz</RunRate>
+      <RunRate>100Hz</RunRate>
       <cntrlFpga>
          <BncSourceA>RegClock</BncSourceA>
          <BncSourceB>RegClock</BncSourceB>
