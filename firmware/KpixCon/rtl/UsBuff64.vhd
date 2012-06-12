@@ -70,13 +70,10 @@ begin
   -- Data going into FIFO
   -- Variable width fifo reads out MS Word first
   -- We want LS Word first so swap words on input
-  fifoDin(71)           <= frameTxSOF;
-  fifoDin(70 downto 54) <= "0" & frameTxData(15 downto 0);
-  fifoDin(53 downto 36) <= "00" & frameTxData(31 downto 16);
-  fifoDin(35 downto 18) <= "00" & frameTxData(47 downto 32);
-  fifoDin(17)           <= frameTxEOFE or fifoFull;
-  fifoDin(16)           <= frameTxEOF or frameTxEOFE or fifoFull;
-  fifoDin(15 downto 0)  <= frameTxData(63 downto 48);
+  fifoDin(71 downto 54) <= frameTxSOF & "0" & frameTxData(63 downto 48); --(15 downto 0);
+  fifoDin(53 downto 36) <= "0" & frameTxEOF & frameTxData(47 downto 32); --(31 downto 16);
+  fifoDin(35 downto 18) <= frameTxEOF & frameTxEOF & frameTxData(31 downto 16); --(47 downto 32);
+  fifoDin(17 downto 0)  <= frameTxEOF & frameTxEOF & frameTxData(15 downto 0); --(63 downto 48);
 
 
   -- Fifo 72 bit write, 18 bit read
@@ -95,13 +92,13 @@ begin
       valid       => fifoValid);
 
   -- Control reads
-  fifoRd <= fifoValid and vcFrameTxReady;
+  fifoRd <= fifoValid and (vcFrameTxReady or (fifoDout(17) and fifoDout(16)));
 
   -- MUX Data
-  vcFrameTxValid <= fifoValid;
+  vcFrameTxValid <= fifoValid and (fifoDout(17) nand fifoDout(16));
   vcFrameTxSOF   <= fifoDout(17) and not fifoDout(16);
   vcFrameTxEOF   <= fifoDout(16) and not fifoDout(17);
-  vcFrameTxEOFE  <= fifoDout(16) and fifoDout(17);
+  vcFrameTxEOFE  <= fifoFull;
   vcFrameTxData  <= fifoDout(15 downto 0);
 
 end UsBuff;

@@ -184,7 +184,7 @@ begin
          userRxVc     => userRxVc,
          udpTxValid   => udpTxValid,
          udpTxFast    => open,
-         udpTxJumbo   => '1',
+         udpTxJumbo   => '0',
          udpTxReady   => udpTxReady,
          udpTxData    => udpTxData,
          udpTxLength  => udpTxLength,

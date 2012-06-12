@@ -27,18 +27,22 @@ NET kpixClk   TNM_NET = FFS kpixClk;
 # Define clock frequncies
 TIMESPEC TS_sysClk125 = PERIOD sysClk125 125 Mhz HIGH 50%;
 TIMESPEC TS_clk200 = PERIOD clk200 200 Mhz HIGH 50%;
-TIMESPEC TS_kpixClk = PERIOD kpixClk 60 Mhz HIGH 50%;
+TIMESPEC TS_kpixClk = PERIOD kpixClk 100 Mhz HIGH 50%;
 
 # Group clocks
 TIMEGRP TG_sysClk125_r = RISING sysClk125;
 TIMEGRP TG_kpixClk_r = RISING kpixClk;
 TIMEGRP TG_clk200_r = RISING clk200;
+TIMEGRP TG_kpixClk_f = FALLING kpixClk;
 
 # Constrain timing between clocks
-TIMESPEC TS_sysClk125_kpixClk = FROM TG_sysClk125_r TO TG_kpixClk_r 8ns;
-TIMESPEC TS_kpixClk_sysClk125 = FROM TG_kpixClk_r TO TG_sysClk125_r 8ns;
-TIMESPEC TS_sysClk125_clk200 = FROM TG_sysClk125_r TO TG_clk200_r 8 ns;
-TIMESPEC TS_kpixClk_clk200 = FROM TG_kpixClk_r TO TG_clk200_r 8 ns;
+#TIMESPEC TS_sysClk125_kpixClk = FROM TG_sysClk125_r TO TG_kpixClk_r 10 ns;
+#TIMESPEC TS_kpixClk_sysClk125 = FROM TG_kpixClk_r TO TG_sysClk125_r 16 ns;
+#TIMESPEC TS_sysClk125_clk200 = FROM TG_sysClk125_r TO TG_clk200_r 10 ns;
+#TIMESPEC TS_kpixClk_clk200 = FROM TG_kpixClk_r TO TG_clk200_r 16 ns;
+
+TIMESPEC TS_kpixClk_RF = FROM TG_kpixClk_r to TG_kpixClk_f 8 ns;
+TIMESPEC TS_kpixClk_FR = FROM TG_kpixClk_f to TG_kpixClk_r 8 ns;
 
 # Nets to ignore for timing
 NET "fpgaRstL"      TIG;
@@ -48,8 +52,8 @@ NET "fpgaRstL"      TIG;
 
 # Main clock and reset
 NET "fpgaRstL"           LOC = "J14" | IOSTANDARD = "LVCMOS33";
-NET "gtpRefClkP"         LOC = "H4";
-NET "gtpRefClkN"         LOC = "H3";
+NET "gtpRefClkP"         LOC = "K17"; #"H4";
+NET "gtpRefClkN"         LOC = "L18"; #H3";
 
 # Ethernet Interface
 NET "udpTxP"             LOC = "F2";

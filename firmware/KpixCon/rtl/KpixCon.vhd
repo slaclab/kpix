@@ -91,7 +91,7 @@ architecture rtl of KpixCon is
 
 begin
 
-  fpgaRst <= not fpgaRstL;
+  fpgaRst <= '0'; --not fpgaRstL;
 
   -- Input clock buffer
   GtpRefClkIbufds : IBUFDS
@@ -100,15 +100,15 @@ begin
       IB => gtpRefClkN,
       O  => gtpRefClk);
 
-  GtpRefClkBufgInst : BUFG
-    port map (
-      I => gtpRefClkOut,
-      O => gtpRefClkBufg);
+--  GtpRefClkBufgInst : BUFG
+--    port map (
+--      I => gtpRefClkOut,
+--      O => gtpRefClkBufg);
 
   -- Generate clocks
   main_dcm_1 : entity work.main_dcm
     port map (
-      CLKIN_IN   => gtpRefClkBufg,
+      CLKIN_IN   => gtpRefClk,
       RST_IN     => fpgaRst,
       CLKFX_OUT  => clk200,
       CLK0_OUT   => sysClk125,
@@ -141,8 +141,8 @@ begin
     port map (
       gtpClk        => sysClk125,
       gtpClkRst     => sysRst125,
-      gtpRefClk     => gtpRefClk,
-      gtpRefClkOut  => gtpRefClkOut,
+      gtpRefClk     => sysClk125,
+      gtpRefClkOut  => open,
       cmdEn         => ethCmdCntlOut.cmdEn,
       cmdOpCode     => ethCmdCntlOut.cmdOpCode,
       cmdCtxOut     => ethCmdCntlOut.cmdCtxOut,

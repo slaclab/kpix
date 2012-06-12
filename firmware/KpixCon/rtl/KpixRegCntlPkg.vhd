@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-07
--- Last update: 2012-05-24
+-- Last update: 2012-05-31
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -20,7 +20,7 @@ use work.StdRtlPkg.all;
 
 package KpixRegCntlPkg is
 
-  -- I know, it's kinda silly to define a whole package just for this.
+  -- I know, it's silly to define a whole package just for this.
   -- But it follows the same convention as the other ethernet registers.
   -- Also, it makes it easy to add more registers in the future.
   type KpixRegCntlRegsInType is record

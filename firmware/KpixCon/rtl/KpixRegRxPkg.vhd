@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-10
--- Last update: 2012-05-18
+-- Last update: 2012-06-08
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -18,6 +18,11 @@ use ieee.std_logic_1164.all;
 use work.StdRtlPkg.all;
 
 package KpixRegRxPkg is
+
+--   External registers
+--  type KpixRegRxRegsInType is record
+--    sampleEdge : sl;
+--  end record KpixRegRxRegsInType;
 
   type KpixRegRxOutType is record
     temperature  : slv(31 downto 0);

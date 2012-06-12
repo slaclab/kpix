@@ -89,7 +89,7 @@ RTL_FILES = $(abspath $(subst _PROJ_DIR_,$(PROJ_DIR),$(shell grep -o _PROJ_DIR_\
 
 #### Translate #############################################
 TRANSLATE_OPTIONS_FILE = $(CONFIG_DIR)/ngdbuild_options.txt
-TRANSLATE_INPUT = .ngc #Override with .ngo to use ChipScope core inserter output
+TRANSLATE_INPUT = .ngo #Override with .ngo to use ChipScope core inserter output
 %.ngd: %$(TRANSLATE_INPUT) $(UCF_FILE) $(TRANSLATE_OPTIONS_FILE)
 	$(call ACTION_HEADER,"Translate")
 	@cd $(OUT_DIR);	ngdbuild \

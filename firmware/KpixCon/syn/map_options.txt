@@ -136,8 +136,8 @@
 
 -logic_opt on
 -ol high
--global_opt speed
--equivalent_register_removal on
+#-global_opt speed
+#-equivalent_register_removal on
 -mt 2
 -cm area
 -ir off

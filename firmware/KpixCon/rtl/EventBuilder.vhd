@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-05-25
+-- Last update: 2012-06-08
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -38,8 +38,8 @@ entity EventBuilder is
     triggerOut : in TriggerOutType;
 
     -- KPIX data interface
-    kpixDataRxOut : in  KpixDataRxOutArray(0 to NUM_KPIX_MODULES_G-1);
-    kpixDataRxIn  : out KpixDataRxInArray(0 to NUM_KPIX_MODULES_G-1);
+    kpixDataRxOut : in  KpixDataRxOutArray(NUM_KPIX_MODULES_G-1 downto 0);
+    kpixDataRxIn  : out KpixDataRxInArray(NUM_KPIX_MODULES_G-1 downto 0);
 
     -- FIFO Interface
     ebFifoIn  : out EventBuilderFifoInType;
@@ -69,7 +69,7 @@ architecture rtl of EventBuilder is
     activeModules  : slv(NUM_KPIX_MODULES_G-1 downto 0);
     dataDone       : slv(NUM_KPIX_MODULES_G-1 downto 0);
     first          : unsigned(log2(NUM_KPIX_MODULES_G)-1 downto 0);
-    kpixDataRxIn   : KpixDataRxInArray(0 to NUM_KPIX_MODULES_G-1);
+    kpixDataRxIn   : KpixDataRxInArray(NUM_KPIX_MODULES_G-1 downto 0);
     ebFifoIn       : EventBuilderFifoInType;
 --    ethUsDataIn    : EthUsDataInType;
   end record;
@@ -125,7 +125,7 @@ begin
     ------------------------------------------------------------------------------------------------
     -- Latch trigger
     rVar.timestampCount := r.timestampCount + 1;
-    if (r.newTrigger = '0' and triggerOut.startAcquire = '1') then
+    if (r.newTrigger = '0' and triggerOut.startAcquire = '1' and r.state = WAIT_TRIGGER_S) then
       rVar.timestamp   := r.timestampCount;
       rVar.eventNumber := r.eventNumber + 1;
       rVar.newTrigger  := '1';
@@ -133,13 +133,20 @@ begin
 
     -- Registers that are 0 by default.
     rVar.ebFifoIn.wrEn := '0';
-    for i in kpixDataRxIn'range loop
-      rVar.kpixDataRxIn(i).ready := '0';
-    end loop;
+--    for i in kpixDataRxIn'range loop
+--      rVar.kpixDataRxIn(i).ready := '0';
+--    end loop;
     rVar.counter       := (others => '0');
     rVar.dataDone      := (others => '0');
     rVar.first         := (others => '0');
     rVar.activeModules := (others => '0');
+
+    -- Reset ready when valid falls
+    for i in NUM_KPIX_MODULES_G-1 downto 0 loop
+      if (kpixDataRxOut(i).valid = '0') then
+        rVar.kpixDataRxIn(i).ready := '0';
+      end if;
+    end loop;
 
     case r.state is
       when WAIT_TRIGGER_S =>
@@ -152,8 +159,8 @@ begin
       when WRITE_HEADER_S =>
         if (ebFifoOut.full = '0') then
           rVar.counter := r.counter + 1;
-          writeFifo(slvAll('0', 64));
-          if (r.counter = 3) then
+          writeFifo(X"0123456789abcdef");
+          if (r.counter = 2) then
             rVar.state := CHECK_BUSY_S;
           end if;
         else
@@ -162,13 +169,13 @@ begin
         
       when CHECK_BUSY_S =>
         -- Wait X cycles for busy signals
-        -- Tells which modules are active
+        -- Tells which modules are active 
         rVar.counter := r.counter + 1;
         if (r.counter = 100) then
           -- No busy signals detected at all
           rVar.state := WAIT_TRIGGER_S;
         end if;
-        for i in 0 to NUM_KPIX_MODULES_G-1 loop
+        for i in NUM_KPIX_MODULES_G-1 downto 0 loop
           if (kpixDataRxOut(i).busy = '1') then
             rVar.activeModules(i) := '1';
             rVar.state            := GATHER_DATA_S;
@@ -182,10 +189,10 @@ begin
         rVar.first         := r.first;
 
         if (ebFifoOut.full = '0') then  -- pause if fifo is full
-          for i in 0 to NUM_KPIX_MODULES_G-1 loop
+          for i in NUM_KPIX_MODULES_G-1 downto 0 loop
             selectedUVar   := i + r.first;
             selectedIntVar := to_integer(selectedUVar);
-            if (kpixDataRxOut(selectedIntVar).valid = '1') then
+            if (kpixDataRxOut(selectedIntVar).valid = '1' and r.kpixDataRxIn(selectedIntVar).ready = '0') then
               rVar.first                              := selectedUVar;
               rVar.kpixDataRxIn(selectedIntVar).ready := '1';
               writeFifo(kpixDataRxOut(selectedIntVar).data);
@@ -201,13 +208,16 @@ begin
             rVar.state := WAIT_TRIGGER_S;
           end if;
         end if;
+
+
     end case;
 
     -- NOT RIGHT!
-    rVar.ebFifoIn.rdEn := not ebFifoOut.empty and not ethUsDataOut.frameTxAFull;
+    rVar.ebFifoIn.rdEn := '0'; --not ebFifoOut.empty and not ethUsDataOut.frameTxAFull;
 
     -- Assign outputs to FIFO
     ebFifoIn     <= r.ebFifoIn;
+    ebFifoIn.rdEn <= not ebFifoOut.empty and not ethUsDataOut.frameTxAFull;
     kpixDataRxIn <= r.kpixDataRxIn;
 
 

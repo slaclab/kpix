@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-05-25
+-- Last update: 2012-06-11
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -39,12 +39,13 @@ entity KpixDataRx is
     kpixSerRxIn  : in sl;                -- Serial Data from KPIX
     kpixRegRxOut : in KpixRegRxOutType;  -- For Temperature
 
-    sysClk        : in  sl;                 -- Clock for Tx (EventBuilder interface)
-    sysRst        : in  sl;
-    extRegsIn     : in  KpixDataRxRegsInType;
-    extRegsOut    : out kpixDataRxRegsOutType;
-    kpixDataRxOut : out KpixDataRxOutType;  -- To EventBuilder
-    kpixDataRxIn  : in  KpixDataRxInType    -- From EventBuilder
+    sysClk         : in  sl;                 -- Clock for Tx (EventBuilder interface)
+    sysRst         : in  sl;
+    kpixConfigRegs : in  KpixConfigRegsType;
+    extRegsIn      : in  KpixDataRxRegsInType;
+    extRegsOut     : out kpixDataRxRegsOutType;
+    kpixDataRxOut  : out KpixDataRxOutType;  -- To EventBuilder
+    kpixDataRxIn   : in  KpixDataRxInType    -- From EventBuilder
 
     );
 
@@ -138,19 +139,11 @@ architecture rtl of KpixDataRx is
   end record;
 
   signal txRegs, txRegsIn : TxRegType;
+  signal kpixSerRxInFall  : sl;
 
   -----------------------------------------------------------------------------
   -- Functions
   -----------------------------------------------------------------------------
-  -- Find the nth index in shift register given number of shifts that have occured
---  function rxIndex (
---    n          : natural;
---    shiftCount : natural)
---    return natural is
---  begin
---    return SHIFT_REG_LENGTH_C - shiftCount + n - 1;
---  end function rxIndex;
-
   -- Format a data sample into a 64 bit slv for transmission
   function formatSample (
     sample : SampleType)
@@ -191,7 +184,18 @@ architecture rtl of KpixDataRx is
 
 begin
 
-
+  --------------------------------------------------------------------------------------------------
+  -- Falling Edge logic
+  -- Optionally clock in serial input on falling edge of clock
+  --------------------------------------------------------------------------------------------------
+  rxFall : process (kpixClk, kpixClkRst) is
+  begin
+    if (kpixClkRst = '1') then
+      kpixSerRxInFall <= '0';
+    elsif (falling_edge(kpixClk)) then
+      kpixSerRxInFall <= kpixSerRxIn;
+    end if;
+  end process rxFall;
 
   -----------------------------------------------------------------------------
   -- Rx Logic
@@ -223,13 +227,18 @@ begin
     end if;
   end process rxSeq;
 
-  rxComb : process (rxRegs, txRegs, kpixSerRxIn) is
+  rxComb : process (rxRegs, txRegs, kpixConfigRegs, extRegsIn, kpixSerRxIn, kpixSerRxInFall) is
     variable rVar : RxRegType;
   begin
     rVar := rxRegs;
 
     -- Shift in new bit and increment counter every clock
-    rVar.rxShiftData  := rxRegs.rxShiftData(1 to SHIFT_REG_LENGTH_C-1) & kpixSerRxIn;
+    if (kpixConfigRegs.inputEdge = '0') then
+      rVar.rxShiftData := rxRegs.rxShiftData(1 to SHIFT_REG_LENGTH_C-1) & kpixSerRxIn;
+    else
+      rVar.rxShiftData := rxRegs.rxShiftData(1 to SHIFT_REG_LENGTH_C-1) & kpixSerRxInFall;
+    end if;
+
     rVar.rxShiftCount := rxRegs.rxShiftCount + 1;
 
     -- Don't write to RAM unless overriden in rx state machine
@@ -297,13 +306,14 @@ begin
       when RX_ROW_S =>
         -- Write Row ID for column into RAM
         rVar.rxRamWrAddr                       := rxRegs.rxRowBuffer & rxRegs.rxColumnCount & ROW_ID_ADDR_C;
+        rVar.rxRamWrData                       := (others => '0');  -- Not necessary but makes things cleaner when debugging
         rVar.rxRamWrData(rxRegs.rxRowId'range) := slv(rxRegs.rxRowId);
         rVar.rxRamWrEn                         := '1';
         rVar.rxState                           := RX_DATA_S;
 
       when RX_DATA_S =>
         -- Wait for next data to arrive
-        if (rxRegs.rxShiftCount = 14) then
+        if (rxRegs.rxShiftCount = 13) then
           -- Write data to RAM (including parity bit)
           rVar.rxRamWrAddr              := rxRegs.rxRowBuffer & rxRegs.rxColumnCount & rxRegs.rxWordId;
           rVar.rxRamWrData(13 downto 0) := bitReverse(rxRegs.rxShiftData(1 to 14));
@@ -464,6 +474,8 @@ begin
         -- Just like TX_ROW_ID but don't assign row.
         -- Used when tranistioning to next column when row id is already known
         -- (and value of r.txRamRdData does not contain the row id)
+        rVar.txBucketCount := (others => '0');
+        --rVar.txSample.badCountFlag := '0';
         rVar.txSample.column := slv(txRegs.txColumnCount);
         rVar.txColumnOffset  := txRegs.txColumnOffset + 1;  -- "0001"
         rVar.txState         := TX_CNT_S;
@@ -472,6 +484,7 @@ begin
         -- Count, trig and range data now available. Parse it out of r.txRamRdData
         rVar.txRanges   := txRamRdData(3 downto 0);
         rVar.txTriggers := txRamRdData(10 downto 7);
+        rVar.txSample.badCountFlag := '0';
         case (txRamRdData(6 downto 4)) is
           when "111" => rVar.txValidBuckets := "0000";
           when "110" => rVar.txValidBuckets := "0001";
@@ -483,7 +496,7 @@ begin
             rVar.txSample.badCountFlag := '1';
         end case;
 
-        rVar.dataParityError := evenParity(txRamRdData(13 downto 0));
+        rVar.dataParityError := oddParity(txRamRdData(13 downto 0));
 
         -- Assert addr of first ADC (current addr + 1)
         rVar.txColumnOffset := txRegs.txColumnOffset + 1;
@@ -505,7 +518,7 @@ begin
           rVar.txSample.triggerBit := txRegs.txTriggers(to_integer(txRegs.txBucketCount(1 downto 0)));
           rVar.txSample.bucket     := slv(txRegs.txBucketCount(1 downto 0));
           rVar.txSample.emptyBit   := not txRegs.txValidBuckets(to_integer(txRegs.txBucketCount(1 downto 0)));
-          rVar.dataParityError     := evenParity(txRamRdData(13 downto 0));
+          rVar.dataParityError     := oddParity(txRamRdData(13 downto 0));
 
           -- Assert addr of next timestamp
 --          rVar.txColumnOffset := r.txColumnOffset + 1;  -- not necessary
@@ -532,7 +545,7 @@ begin
         -- Read ADC value from ram
         -- This happens up to 4 times depending on txValidBuckets
         rVar.txSample.adc    := grayDecode(txRamRdData(12 downto 0));
-        rVar.dataParityError := evenParity(txRamRdData(13 downto 0));
+        rVar.dataParityError := oddParity(txRamRdData(13 downto 0));
 --        rVar.txColumnOffset := r.txColumnOffset + 1;  -- not necessary
         rVar.txBucketCount   := txRegs.txBucketCount + 1;
         rVar.txState         := TX_SEND_SAMPLE_S;
@@ -600,9 +613,9 @@ begin
     end if;
 
     -- Syncrhonize rxBusy to sysClk.
-    rVar.txBusyTmp          := toSl(rxRegs.rxState /= RX_IDLE_S);
-    rVar.kpixDataRxOut.busy := txRegs.txBusyTmp;  -- 
-
+--    rVar.txBusyTmp          := toSl(rxRegs.rxState /= RX_IDLE_S);
+--    rVar.kpixDataRxOut.busy := txRegs.txBusyTmp;  -- 
+    rVar.kpixDataRxOut.busy := extRegsIn.enabled;
     -- Registers
     txRegsIn <= rVar;
 
