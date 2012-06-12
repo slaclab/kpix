@@ -534,7 +534,7 @@ begin
             rVar.txRowAck(to_integer(txRegs.txRowBuffer)) := '1';
             rVar.txRowBuffer                              := txRegs.txRowBuffer + 1;
             rVar.txState                                  := TX_CLEAR_S;
-            if (unsigned(txRegs.txSample.row) = 31) then
+            if (unsigned(txRegs.txSample.row) = 0) then
               rVar.txState := TX_TEMP_S;
             end if;
           end if;
