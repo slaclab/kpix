@@ -227,7 +227,7 @@ void KpixControl::swRunThread() {
          calDacStep   = getVariable("CalDacStep")->getInt();
          calChanMin   = getVariable("CalChanMin")->getInt();
          calChanMax   = getVariable("CalChanMax")->getInt();
-         calTotal     = calMeanCount + ((calChanMax - calChanMin + 1) * ((calDacMax - calDacMin + 1)/calDacStep));
+         calTotal     = calMeanCount + ((calChanMax - calChanMin + 1) * ((calDacMax - calDacMin + 1)/calDacStep) * calDacCount);
          calChan      = calChanMin;
          calDac       = calDacMin;
 
