@@ -93,9 +93,9 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
    // Config register & variables
    addRegister(new Register("Config", baseAddress_ + 0x00000001));
 
-   addVariable(new Variable("CfgTestDataEn",Variable::Configuration));
-   getVariable("CfgTestDataEn")->setDescription("Enable test data");
-   getVariable("CfgTestDataEn")->setTrueFalse();
+   //addVariable(new Variable("CfgTestDataEn",Variable::Configuration));
+   //getVariable("CfgTestDataEn")->setDescription("Enable test data");
+   //getVariable("CfgTestDataEn")->setTrueFalse();
 
    addVariable(new Variable("CfgAutoReadDisable",Variable::Configuration));
    getVariable("CfgAutoReadDisable")->setDescription("Disable auto data readout");
@@ -451,7 +451,7 @@ void KpixAsic::readConfig ( ) {
    // Config register & variables
    readRegister(getRegister("Config"));
 
-   getVariable("CfgTestDataEn")->setInt(getRegister("Config")->get(0,0x1));
+   //getVariable("CfgTestDataEn")->setInt(getRegister("Config")->get(0,0x1));
    getVariable("CfgAutoReadDisable")->setInt(getRegister("Config")->get(2,0x1));
    getVariable("CfgForceTemp")->setInt(getRegister("Config")->get(3,0x1));
    getVariable("CfgDisableTemp")->setInt(getRegister("Config")->get(4,0x1));
@@ -664,7 +664,7 @@ void KpixAsic::writeConfig ( bool force ) {
    REGISTER_LOCK
 
    // Config register & variables
-   getRegister("Config")->set(getVariable("CfgTestDataEn")->getInt(),0,0x1);
+   //getRegister("Config")->set(getVariable("CfgTestDataEn")->getInt(),0,0x1);
    getRegister("Config")->set(getVariable("CfgAutoReadDisable")->getInt(),2,0x1);
    getRegister("Config")->set(getVariable("CfgForceTemp")->getInt(),3,0x1);
    getRegister("Config")->set(getVariable("CfgDisableTemp")->getInt(),4,0x1);

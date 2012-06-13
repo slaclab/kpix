@@ -31,7 +31,6 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
 
    // Description
    desc_ = "KPIX Con FPGA Object.";
-   //debug_ = true;
 
    // Setup registers & variables
    addRegister(new Register("Version", 0x01000000));
@@ -173,23 +172,11 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
    getVariable("KpixOutputEdge")->setEnums(edges);
 
    // KPIX support registers
-   for (uint i=0; i < 5; i++) {
+   for (uint i=0; i < (KpixCount-1); i++) {
 
       tmp.str("");
       tmp << "KpixRxMode_" << setw(2) << setfill('0') << dec << i;
       addRegister(new Register(tmp.str(), (0x01000100 + i*5 + 0)));
-
-      tmp.str("");
-      tmp << "KpixRxEn_" << setw(2) << setfill('0') << dec << i;
-      addVariable(new Variable(tmp.str(),Variable::Configuration));
-      getVariable(tmp.str())->setDescription("Enable KPIX data receive.");
-      getVariable(tmp.str())->setTrueFalse();
-
-      tmp.str("");
-      tmp << "KpixRxRaw_" << setw(2) << setfill('0') << dec << i;
-      addVariable(new Variable(tmp.str(),Variable::Configuration));
-      getVariable(tmp.str())->setDescription("Kpix Raw Data Mode.");
-      getVariable(tmp.str())->setTrueFalse();
 
       tmp.str("");
       tmp << "KpixRxHeaderPerr_" << setw(2) << setfill('0') << dec << i;
@@ -216,6 +203,10 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
       getVariable(tmp.str())->setDescription("Kpix overflow error count.");
    }
 
+   addVariable(new Variable("KpixRxRaw",Variable::Configuration));
+   getVariable("KpixRxRaw")->setDescription("Kpix Raw Data Mode.");
+   getVariable("KpixRxRaw")->setTrueFalse();
+
    // Commands
    addCommand(new Command("KpixRun",0x0));
    getCommand("KpixRun")->setDescription("Kpix run command");
@@ -227,7 +218,8 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
    getCommand("CountReset")->setDescription("Reset counters");
 
    // Add sub-devices
-   for (uint i=0; i < 5; i++) addDevice(new KpixAsic(destination,(0x01100000 | ((i<<8) & 0xff00)),i,(i==4),this));
+   for (uint i=0; i < KpixCount; i++) 
+      addDevice(new KpixAsic(destination,(0x01100000 | ((i<<8) & 0xff00)),i,(i==(KpixCount-1)),this));
 
    getVariable("Enabled")->setHidden(true);
 }
@@ -251,7 +243,7 @@ void ConFpga::command ( string name, string arg) {
    else if ( name == "CountReset" ) {
       REGISTER_LOCK
 
-      for (uint i=0; i < 5; i++) {
+      for (uint i=0; i < (KpixCount-1); i++) {
          tmp.str("");
          tmp << "KpixRxHeaderPerr_" << setw(2) << setfill('0') << dec << i;
          writeRegister(getRegister(tmp.str()),true,true);
@@ -283,7 +275,7 @@ void ConFpga::readStatus ( ) {
    readRegister(getRegister("Version"));
    getVariable("Version")->setInt(getRegister("Version")->get());
 
-   for (uint i=0; i < 5; i++) {
+   for (uint i=0; i < (KpixCount-1); i++) {
       tmp.str("");
       tmp << "KpixRxHeaderPerr_" << setw(2) << setfill('0') << dec << i;
       readRegister(getRegister(tmp.str()));
@@ -337,22 +329,6 @@ void ConFpga::readConfig ( ) {
    getVariable("KpixInputEdge")->setInt(getRegister("KpixConfig")->get(0,0x1));
    getVariable("KpixOutputEdge")->setInt(getRegister("KpixConfig")->get(1,0x1));
 
-   // KPIX support registers
-   for (uint i=0; i < 5; i++) {
-
-      tmpA.str("");
-      tmpA << "KpixRxMode_" << setw(2) << setfill('0') << dec << i;
-      readRegister(getRegister(tmpA.str()));
-
-      tmpB.str("");
-      tmpB << "KpixRxEn_" << setw(2) << setfill('0') << dec << i;
-      getVariable(tmpB.str())->setInt(getRegister(tmpA.str())->get(0,0x1));
-
-      tmpB.str("");
-      tmpB << "KpixRxRaw_" << setw(2) << setfill('0') << dec << i;
-      getVariable(tmpB.str())->setInt(getRegister(tmpA.str())->get(1,0x1));
-   }
-
    // Sub devices
    Device::readConfig();
    REGISTER_UNLOCK
@@ -386,18 +362,18 @@ void ConFpga::writeConfig ( bool force ) {
    writeRegister(getRegister("KpixConfig"),force);
 
    // KPIX support registers
-   for (uint i=0; i < 5; i++) {
+   for (uint i=0; i < (KpixCount-1); i++) {
 
       tmpA.str("");
       tmpA << "KpixRxMode_" << setw(2) << setfill('0') << dec << i;
 
       tmpB.str("");
       tmpB << "KpixRxEn_" << setw(2) << setfill('0') << dec << i;
-      getRegister(tmpA.str())->set(getVariable(tmpB.str())->getInt(),0,0x1);
+      getRegister(tmpA.str())->set(device("kpixAsic",i)->getInt("Enabled"),0,0x1);
 
       tmpB.str("");
       tmpB << "KpixRxRaw_" << setw(2) << setfill('0') << dec << i;
-      getRegister(tmpA.str())->set(getVariable(tmpB.str())->getInt(),1,0x1);
+      getRegister(tmpA.str())->set(getVariable("KpixRxRaw")->getInt(),1,0x1);
 
       writeRegister(getRegister(tmpA.str()),force);
    }
@@ -419,7 +395,7 @@ void ConFpga::verifyConfig ( ) {
    verifyRegister(getRegister("KpixConfig"));
 
    // KPIX support registers
-   for (uint i=0; i < 5; i++) {
+   for (uint i=0; i < (KpixCount-1); i++) {
 
       tmp.str("");
       tmp << "KpixRxMode_" << setw(2) << setfill('0') << dec << i;

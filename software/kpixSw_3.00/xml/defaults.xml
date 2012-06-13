@@ -22,16 +22,7 @@
          <ClkPeriodIdle>100nS</ClkPeriodIdle>
          <ClkPeriodPrecharge>50nS</ClkPeriodPrecharge>
          <ClkPeriodRead>100nS</ClkPeriodRead>
-         <KpixRxEn_00>False</KpixRxEn_00>
-         <KpixRxEn_01>True</KpixRxEn_01>
-         <KpixRxEn_02>False</KpixRxEn_02>
-         <KpixRxEn_03>False</KpixRxEn_03>
-         <KpixRxEn_04>False</KpixRxEn_04>
-         <KpixRxRaw_00>False</KpixRxRaw_00>
-         <KpixRxRaw_01>False</KpixRxRaw_01>
-         <KpixRxRaw_02>False</KpixRxRaw_02>
-         <KpixRxRaw_03>False</KpixRxRaw_03>
-         <KpixRxRaw_04>False</KpixRxRaw_04>
+         <KpixRxRaw>False</KpixRxRaw>
          <RunMode>Acquire</RunMode>
          <KpixInputEdge>Rising Edge</KpixInputEdge>
          <KpixOutputEdge>Rising Edge</KpixOutputEdge>

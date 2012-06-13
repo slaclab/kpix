@@ -22,6 +22,9 @@ using namespace std;
 //! Class to contain APV25 
 class ConFpga : public Device {
 
+      // Number of kpix devices
+      static const unsigned int KpixCount = 5;
+
    public:
 
       //! Constructor

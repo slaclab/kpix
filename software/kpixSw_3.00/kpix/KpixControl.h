@@ -33,7 +33,7 @@ class KpixControl : public System {
    public:
 
       //! Constructor
-      KpixControl ( CommLink *commLink_ );
+      KpixControl ( CommLink *commLink_, string defFile );
 
       //! Deconstructor
       ~KpixControl ( );

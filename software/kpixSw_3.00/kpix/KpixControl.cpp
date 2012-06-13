@@ -27,7 +27,7 @@
 using namespace std;
 
 // Constructor
-KpixControl::KpixControl ( CommLink *commLink ) : System("KpixControl",commLink) {
+KpixControl::KpixControl ( CommLink *commLink, string defFile ) : System("KpixControl",commLink) {
 
    // Description
    desc_ = "Kpix Control";
@@ -35,7 +35,8 @@ KpixControl::KpixControl ( CommLink *commLink ) : System("KpixControl",commLink)
    // Data mask, lane 0, vc 0
    commLink->setDataMask(0x11);
 
-   defaults_ = "xml/defaults.xml";
+   if ( defFile == "" ) defaults_ = "xml/defaults.xml";
+   else defaults_ = defFile;
 
    // Set run states
    vector<string> states;

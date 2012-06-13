@@ -34,6 +34,10 @@ void sigTerm (int) {
 
 int main (int argc, char **argv) {
    ControlServer cntrlServer;
+   string        defFile;
+
+   if ( argc > 1 ) defFile = argv[1];
+   else defFile = "";
 
    // Catch signals
    signal (SIGINT,&sigTerm);
@@ -41,8 +45,7 @@ int main (int argc, char **argv) {
 
    try {
       UdpLink       udpLink; 
-      KpixControl   kpix(&udpLink);
-      string        xmlTest;
+      KpixControl   kpix(&udpLink,defFile);
       int           pid;
 
       // Setup top level device
@@ -73,19 +76,21 @@ int main (int argc, char **argv) {
          // Child
          case 0:
             cout << "Starting GUI" << endl;
+            usleep(100);
             system("cntrlGui");
-            cout << "Gui stopped" << endl;
+            cout << "GUI stopped" << endl;
             kill(getppid(),SIGINT);
             break;
 
          // Server
          default:
+            cout << "Starting server" << endl;
             while ( ! stop ) cntrlServer.receive(100);
-            kill(pid,SIGINT);
+            cout << "Stopping GUI" << endl;
             system("killall cntrlGui");
             sleep(1);
             cntrlServer.stopListen();
-            cout << "Stopped gui server" << endl;
+            cout << "Stopped server" << endl;
             break;
       }
 
