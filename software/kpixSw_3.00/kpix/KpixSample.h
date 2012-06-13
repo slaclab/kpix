@@ -37,7 +37,8 @@ class KpixSample {
       // Sample types
       enum SampleType {
          Data        = 0,
-         Temperature = 1
+         Temperature = 1,
+         Timestamp   = 2
       };
 
    private:

@@ -140,9 +140,10 @@ int main ( int argc, char **argv ) {
    uint                   lastPct;
    uint                   currPct;
    ChannelData            *chanData[32][1024];
+   uint                   minChan;
+   uint                   maxChan;
    uint                   x;
    uint                   y;
-   uint                   i;
    uint                   range;
    uint                   value;
    uint                   kpix;
@@ -169,6 +170,7 @@ int main ( int argc, char **argv ) {
    string                 outXml;
    TFile                  *rFile;
    uint                   tarRange;
+   TCanvas                *c1;
 
    // Init
    for (x=0; x < 32; x++) {
@@ -204,33 +206,40 @@ int main ( int argc, char **argv ) {
    // Read Data
    //////////////////////////////////////////
 
-   // Determine file size
-   fileSize   = dataRead.size();
-   filePos    = dataRead.pos();
+   cout << "Opened data file: " << argv[2] << endl;
+   fileSize = dataRead.size();
+   filePos  = dataRead.pos();
+
+   // Init
    currPct    = 0;
    lastPct    = 100;
    eventCount = 0;
+   minChan    = 0;
+   maxChan    = 0;
+
+   cout << "\rReading File: 0 %" << flush;
 
    // Process each event
    while ( dataRead.next(&event) ) {
 
       // Get calibration state
-      calState   = dataRead.getStatus("calState");
-      calChannel = dataRead.getStatusInt("calChannel");
-      calDac     = dataRead.getStatusInt("calDac");
+      calState   = dataRead.getStatus("CalState");
+      calChannel = dataRead.getStatusInt("CalChannel");
+      calDac     = dataRead.getStatusInt("CalDac");
 
       // Get injection times
       if ( eventCount == 0 ) {
-         injectTime[0] = dataRead.getConfigInt("cntrlFpga:kpixAsic:cal0Delay");
-         injectTime[1] = dataRead.getConfigInt("cntrlFpga:kpixAsic:cal1Delay") + injectTime[0] + 4;
-         injectTime[2] = dataRead.getConfigInt("cntrlFpga:kpixAsic:cal2Delay") + injectTime[1] + 4;
-         injectTime[3] = dataRead.getConfigInt("cntrlFpga:kpixAsic:cal3Delay") + injectTime[2] + 4;
+         minChan       = dataRead.getConfigInt("CalChanMin");
+         maxChan       = dataRead.getConfigInt("CalChanMax");
+         injectTime[0] = dataRead.getConfigInt("cntrlFpga:kpixAsic:Cal0Delay");
+         injectTime[1] = dataRead.getConfigInt("cntrlFpga:kpixAsic:Cal1Delay") + injectTime[0] + 4;
+         injectTime[2] = dataRead.getConfigInt("cntrlFpga:kpixAsic:Cal2Delay") + injectTime[1] + 4;
+         injectTime[3] = dataRead.getConfigInt("cntrlFpga:kpixAsic:Cal3Delay") + injectTime[2] + 4;
          injectTime[4] = 8192;
       }
 
       // get each sample
-      if ( 0 ) {
-      //for (x=0; x < event.count(); x++) {
+      for (x=0; x < event.count(); x++) {
 
          // Get sample
          sample  = event.sample(x);
@@ -252,8 +261,7 @@ int main ( int argc, char **argv ) {
             if ( time > injectTime[bucket] && time < injectTime[bucket+1] ) {
 
                // Baseline
-               if ( calState == "Baseline" ) 
-                  chanData[kpix][channel]->addBasePoint(bucket,value);
+               if ( calState == "Baseline" ) chanData[kpix][channel]->addBasePoint(bucket,value);
 
                // Injection
                else if ( calState == "Inject" && channel == calChannel ) 
@@ -266,16 +274,19 @@ int main ( int argc, char **argv ) {
       filePos  = dataRead.pos();
       currPct = (uint)((filePos / fileSize) * 100.0);
       if ( currPct != lastPct ) {
-         cout << "\rReading File: " << currPct << " %";
+         cout << "\rReading File: " << currPct << " %      " << flush;
          lastPct = currPct;
       }
       eventCount++;
    }
-   cout << "  Done!" << endl;
+   cout << "\rReading File: Done.               " << endl;
 
    //////////////////////////////////////////
    // Process Data
    //////////////////////////////////////////
+
+   // Default canvas
+   c1 = new TCanvas("c1","c1");
 
    // Open root file
    rFile = new TFile(outRoot.c_str(),"recreate");
@@ -293,10 +304,10 @@ int main ( int argc, char **argv ) {
       xmlStart = false;
 
       // Process each channel
-      for (channel=0; channel < 1024; channel++) {
+      for (channel=minChan; channel <= maxChan; channel++) {
 
          // Show progress
-         cout << "\rProcessing kpix " << dec << kpix << " / 31, Channel " << channel << " / 1023";
+         cout << "\rProcessing kpix " << dec << kpix << " / 31, Channel " << channel << " / " << dec << maxChan << "                 " << flush;
 
          // Channel is valid
          if ( chanData[kpix][channel] != NULL ) {
@@ -326,21 +337,19 @@ int main ( int argc, char **argv ) {
                hist = new TH1F(tmp.str().c_str(),tmp.str().c_str(),8192,0,8192);
 
                // Fill histogram
-               for (x=0; x < 8192; x++) {
-                  hist->SetBinContent(i+1,chanData[kpix][channel]->baseData[bucket][x]);
-                  hist->GetXaxis()->SetRangeUser(chanData[kpix][channel]->baseMin[bucket],
-                                                 chanData[kpix][channel]->baseMax[bucket]);
-                  hist->Fit("gaus","q");
-                  hist->Write();
+               for (x=0; x < 8192; x++) hist->SetBinContent(x+1,chanData[kpix][channel]->baseData[bucket][x]);
+               hist->GetXaxis()->SetRangeUser(chanData[kpix][channel]->baseMin[bucket],
+                                              chanData[kpix][channel]->baseMax[bucket]);
+               hist->Fit("gaus","q");
+               hist->Write();
 
-                  // Add to xml
-                  xml << "            <BaseMean>" << chanData[kpix][channel]->baseMean[bucket] << "</BaseMean>" << endl;
-                  xml << "            <BaseRms>" << chanData[kpix][channel]->baseRms[bucket] << "</BaseRms>" << endl;
-                  xml << "            <BaseFitMean>" << hist->GetFunction("gaus")->GetParameter(1) << "</BaseFitMean>" << endl;
-                  xml << "            <BaseFitSigma>" << hist->GetFunction("gaus")->GetParameter(2) << "</BaseFitSigma>" << endl;
-                  xml << "            <BaseFitMeanErr>" << hist->GetFunction("gaus")->GetParError(1) << "</BaseFitMeanErr>" << endl;
-                  xml << "            <BaseFitSigmaErr>" << hist->GetFunction("gaus")->GetParError(2) << "</BaseFitSigmaErr>" << endl;
-               }
+               // Add to xml
+               xml << "            <BaseMean>" << chanData[kpix][channel]->baseMean[bucket] << "</BaseMean>" << endl;
+               xml << "            <BaseRms>" << chanData[kpix][channel]->baseRms[bucket] << "</BaseRms>" << endl;
+               xml << "            <BaseFitMean>" << hist->GetFunction("gaus")->GetParameter(1) << "</BaseFitMean>" << endl;
+               xml << "            <BaseFitSigma>" << hist->GetFunction("gaus")->GetParameter(2) << "</BaseFitSigma>" << endl;
+               xml << "            <BaseFitMeanErr>" << hist->GetFunction("gaus")->GetParError(1) << "</BaseFitMeanErr>" << endl;
+               xml << "            <BaseFitSigmaErr>" << hist->GetFunction("gaus")->GetParError(2) << "</BaseFitSigmaErr>" << endl;
 
                // Create calibration graph
                grCount = 0;
@@ -354,9 +363,12 @@ int main ( int argc, char **argv ) {
                      grXErr[x]  = 0;
                      grCount++;
                   }
+               }
 
-                  // Create graph
+               // Create graph
+               if ( grCount > 0 ) {
                   grCalib = new TGraphErrors(grCount,grX,grY,grXErr,grYErr);
+                  grCalib->Draw("a+");
                   grCalib->Fit("pol1","q");
 
                   // Create name and write
@@ -382,7 +394,7 @@ int main ( int argc, char **argv ) {
       // End Asic marker
       if ( xmlStart ) xml << "   </kpixAsic>" << endl;
    }
-   cout << "  Done!" << endl;
+   cout << endl;
    cout << "Wrote root plots to " << outRoot << endl;
    cout << "Wrote xml data to " << outXml << endl;
 
