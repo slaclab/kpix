@@ -146,6 +146,7 @@ void CalibWindow::rxData (KpixEvent *event, uint calChan, uint calDac, bool calP
    uint       value;
    uint       kpix;
    uint       range;
+   uint       type;
    KpixSample *sample;
 
    for (x=0; x < event->count(); x++) {
@@ -155,8 +156,9 @@ void CalibWindow::rxData (KpixEvent *event, uint calChan, uint calDac, bool calP
       kpix    = sample->getKpixAddress();
       value   = sample->getSampleValue();
       range   = sample->getSampleRange();
+      type    = sample->getSampleType();
 
-      if ( calChan == channel ) {
+      if ( type == 0 && calChan == channel ) {
          charge_[kpix][calChan][bucket][range][calDac] = dacToCharge ( calDac, calPos, (calHigh && bucket==0));
          value_[kpix][calChan][bucket][range][calDac]  = value;
          valid_[kpix][calChan][bucket][range][calDac]  = true;

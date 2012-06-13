@@ -23,6 +23,7 @@
 #include <QCheckBox>
 #include <KpixEvent.h>
 #include <HistWindow.h>
+#include <TimeWindow.h>
 #include <CalibWindow.h>
 using namespace std;
 
@@ -36,10 +37,14 @@ class MainWindow : public QWidget {
       KpixEvent   event_;
       HistWindow  *hist_;
       CalibWindow *calib_;
+      TimeWindow  *time_;
 
       QSpinBox    *kpix_;
       QSpinBox    *chan_;
       QCheckBox   *follow_;
+
+      uint        tempValues_[32];
+      QLineEdit   *tempLine_;
 
       QLineEdit   *dText_;
       uint        dCount_;

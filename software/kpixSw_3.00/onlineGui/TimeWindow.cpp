@@ -1,11 +1,11 @@
 //-----------------------------------------------------------------------------
-// File          : HistWindow.cpp
+// File          : TimeWindow.cpp
 // Author        : Ryan Herbst  <rherbst@slac.stanford.edu>
 // Created       : 10/04/2011
 // Project       : General purpose
 //-----------------------------------------------------------------------------
 // Description :
-// Histogram window
+// Timestamp window
 //-----------------------------------------------------------------------------
 // Copyright (c) 2011 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
@@ -26,11 +26,11 @@
 #include <qwt_legend_item.h>
 #include <qwt_plot_layout.h>
 #include <qwt_plot_histogram.h>
-#include "HistWindow.h"
+#include "TimeWindow.h"
 using namespace std;
 
 // Constructor
-HistWindow::HistWindow ( QWidget *parent ) : QWidget (parent) {
+TimeWindow::TimeWindow ( QWidget *parent ) : QWidget (parent) {
    QString tmp;
    uint x;
 
@@ -41,29 +41,17 @@ HistWindow::HistWindow ( QWidget *parent ) : QWidget (parent) {
       plot_[x] = new QwtPlot;
       top->addWidget(plot_[x],x/2,x%2);
 
-      hist_[x][0] = new QwtPlotHistogram("R0");
-      hist_[x][0]->attach(plot_[x]);
-      hist_[x][0]->setStyle(QwtPlotHistogram::Columns);
-      hist_[x][0]->setPen( QPen( Qt::black ) ); 
-      hist_[x][0]->setBrush( QBrush( Qt::blue ) ); 
+      time_[x] = new QwtPlotHistogram("Time");
+      time_[x]->attach(plot_[x]);
+      time_[x]->setStyle(QwtPlotHistogram::Columns);
+      time_[x]->setPen( QPen( Qt::black ) ); 
+      time_[x]->setBrush( QBrush( Qt::blue ) ); 
  
       QwtColumnSymbol *symbol1 = new QwtColumnSymbol( QwtColumnSymbol::Box ); 
       symbol1->setFrameStyle( QwtColumnSymbol::Raised ); 
       symbol1->setLineWidth( 2 ); 
       symbol1->setPalette( QPalette( Qt::blue ) ); 
-      hist_[x][0]->setSymbol( symbol1 ); 
-
-      hist_[x][1] = new QwtPlotHistogram("R1");
-      hist_[x][1]->attach(plot_[x]);
-      hist_[x][1]->setStyle(QwtPlotHistogram::Columns);
-      hist_[x][1]->setPen( QPen( Qt::black ) ); 
-      hist_[x][1]->setBrush( QBrush( Qt::yellow ) ); 
- 
-      QwtColumnSymbol *symbol2 = new QwtColumnSymbol( QwtColumnSymbol::Box ); 
-      symbol2->setFrameStyle( QwtColumnSymbol::Raised ); 
-      symbol2->setLineWidth( 2 ); 
-      symbol2->setPalette( QPalette( Qt::yellow ) ); 
-      hist_[x][1]->setSymbol( symbol2 ); 
+      time_[x]->setSymbol( symbol1 ); 
 
       QwtLegend *legend = new QwtLegend;
       legend->setItemMode( QwtLegend::CheckableItem );
@@ -84,33 +72,32 @@ HistWindow::HistWindow ( QWidget *parent ) : QWidget (parent) {
       tmp.append(QString().setNum(x));
       plot_[x]->setTitle(tmp);
       plot_[x]->setAxisTitle(QwtPlot::yLeft,"Events");
-      plot_[x]->setAxisTitle(QwtPlot::xBottom,"ADC Value");
+      plot_[x]->setAxisTitle(QwtPlot::xBottom,"Time Value");
       plot_[x]->plotLayout()->setAlignCanvasToScales(true);
    }
 }
 
 // Delete
-HistWindow::~HistWindow ( ) { 
+TimeWindow::~TimeWindow ( ) { 
 
 }
 
-void HistWindow::setHistData(uint x, uint y, KpixHistogram *hist) {
-   QVector<QwtIntervalSample> samples( hist->binCount() );
-   for ( uint i = 0; i < hist->binCount(); i++ ) {
-      QwtInterval interval( double( hist->value(i) ), double(hist->value(i)) + 1.0 );
+void TimeWindow::setHistData(uint x, KpixHistogram *time) {
+   QVector<QwtIntervalSample> samples( time->binCount() );
+   for ( uint i = 0; i < time->binCount(); i++ ) {
+      QwtInterval interval( double( time->value(i) ), double(time->value(i)) + 1.0 );
       interval.setBorderFlags( QwtInterval::ExcludeMaximum );
-      samples[i] = QwtIntervalSample( hist->count(i), interval );
+      samples[i] = QwtIntervalSample( time->count(i), interval );
     }
-    hist_[x][y]->setData( new QwtIntervalSeriesData( samples ) );
+    time_[x]->setData( new QwtIntervalSeriesData( samples ) );
 }
 
-void HistWindow::rxData (KpixEvent *event) {
+void TimeWindow::rxData (KpixEvent *event) {
    uint       x;
    uint       channel;
    uint       bucket;
-   uint       value;
+   uint       time;
    uint       kpix;
-   uint       range;
    uint       type;
    KpixSample *sample;
 
@@ -119,25 +106,24 @@ void HistWindow::rxData (KpixEvent *event) {
       channel = sample->getKpixChannel();
       bucket  = sample->getKpixBucket();
       kpix    = sample->getKpixAddress();
-      value   = sample->getSampleValue();
-      range   = sample->getSampleRange();
+      time    = sample->getSampleTime();
       type    = sample->getSampleType();
 
-      if ( type == 0 ) data_[kpix][channel][bucket][range].fill(value);
+      if ( type == 0 ) data_[kpix][channel][bucket].fill(time);
    }
 }
 
-void HistWindow::rePlot(uint kpix, uint chan) {
+void TimeWindow::rePlot(uint kpix, uint chan) {
    uint x;
 
    for (x=0; x<4; x++) {
-      setHistData(x,0,&(data_[kpix][chan][x][0]));
-      setHistData(x,1,&(data_[kpix][chan][x][1]));
+      setHistData(x,&(data_[kpix][chan][x]));
+      setHistData(x,&(data_[kpix][chan][x]));
       plot_[x]->replot();
    }
 }
 
-void HistWindow::resetPlot() {
+void TimeWindow::resetPlot() {
    uint kpix;
    uint chan;
    uint buck;
@@ -145,14 +131,13 @@ void HistWindow::resetPlot() {
    for (kpix=0; kpix < 32; kpix++) {
       for (chan=0; chan < 1024; chan++) {
          for (buck=0; buck < 4; buck++) {
-            data_[kpix][chan][buck][0].init();
-            data_[kpix][chan][buck][1].init();
+            data_[kpix][chan][buck].init();
          }
       }
    }
 }
 
-void HistWindow::showItem( QwtPlotItem *item, bool on ) {
+void TimeWindow::showItem( QwtPlotItem *item, bool on ) {
    item->setVisible(on);
 }
 
