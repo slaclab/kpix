@@ -64,18 +64,22 @@ class KpixCalibRead {
       class KpixCalibAsic {
          public:
 
-            KpixCalibData *data[1024][4];
+            KpixCalibData *data[1024][4][2];
 
             KpixCalibAsic () {
                for (uint x=0; x < 1024; x++) 
-                  for (uint y=0; y < 4; y++) 
-                     data[x][y] = new KpixCalibData;
+                  for (uint y=0; y < 4; y++) {
+                     data[x][y][0] = new KpixCalibData;
+                     data[x][y][1] = new KpixCalibData;
+                  }
             }
       
             ~KpixCalibAsic () {
                for (uint x=0; x < 1024; x++) 
-                  for (uint y=0; y < 4; y++) 
-                     delete data[x][y];
+                  for (uint y=0; y < 4; y++) {
+                     delete data[x][y][0];
+                     delete data[x][y][1];
+                  }
             }
       };
 
@@ -83,10 +87,10 @@ class KpixCalibRead {
       map<string,KpixCalibAsic *> asicList_;
 
       // Parse XML level
-      void parseXmlLevel ( xmlNode *node, string kpix, uint channel, uint bucket );
+      void parseXmlLevel ( xmlNode *node, string kpix, uint channel, uint bucket, uint range );
 
       // Return pointer to ASIC, optional creation
-      KpixCalibData *findKpix ( string kpix, uint channel, uint bucket, bool create );
+      KpixCalibData *findKpix ( string kpix, uint channel, uint bucket, uint range, bool create );
       
    public:
 
@@ -97,34 +101,34 @@ class KpixCalibRead {
       bool parse ( string calibFile );
 
       //! Get baseline mean value
-      double baseMean ( string kpix, uint channel, uint bucket );
+      double baseMean ( string kpix, uint channel, uint bucket, uint range );
 
       //! Get baseline rms value
-      double baseRms ( string kpix, uint channel, uint bucket );
+      double baseRms ( string kpix, uint channel, uint bucket, uint range );
 
       //! Get baseline guassian fit mean
-      double baseFitMean ( string kpix, uint channel, uint bucket );
+      double baseFitMean ( string kpix, uint channel, uint bucket, uint range );
 
       //! Get baseline guassian fit sigma
-      double baseFitSigma ( string kpix, uint channel, uint bucket );
+      double baseFitSigma ( string kpix, uint channel, uint bucket, uint range );
 
       //! Get baseline guassian fit mean error
-      double baseFitMeanErr ( string kpix, uint channel, uint bucket );
+      double baseFitMeanErr ( string kpix, uint channel, uint bucket, uint range );
 
       //! Get baseline guassian fit sigma error
-      double baseFitSigmaErr ( string kpix, uint channel, uint bucket );
+      double baseFitSigmaErr ( string kpix, uint channel, uint bucket, uint range );
 
       //! Get calibration gain
-      double calibGain ( string kpix, uint channel, uint bucket );
+      double calibGain ( string kpix, uint channel, uint bucket, uint range );
 
       //! Get calibration intercept
-      double calibIntercept ( string kpix, uint channel, uint bucket );
+      double calibIntercept ( string kpix, uint channel, uint bucket, uint range );
 
       //! Get calibration gain error
-      double calibGainErr ( string kpix, uint channel, uint bucket );
+      double calibGainErr ( string kpix, uint channel, uint bucket, uint range );
 
       //! Get calibration intercept error
-      double calibInterceptErr ( string kpix, uint channel, uint bucket );
+      double calibInterceptErr ( string kpix, uint channel, uint bucket, uint range );
 };
 
 #endif

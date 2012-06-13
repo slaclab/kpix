@@ -100,8 +100,12 @@ int main (int argc, char **argv) {
          if ( sample->getSampleType() == KpixSample::Data ) {
 
             // Get gain and mean for channel/bucket
-            mean = calibRead.baseMean(serial,sample->getKpixChannel(),sample->getKpixBucket());
-            gain = calibRead.calibGain(serial,sample->getKpixChannel(),sample->getKpixBucket());
+            mean = calibRead.baseMean(serial,sample->getKpixChannel(),
+                                             sample->getKpixBucket(),
+                                             sample->getSampleRange());
+            gain = calibRead.calibGain(serial,sample->getKpixChannel(),
+                                              sample->getKpixBucket(),
+                                              sample->getSampleRange());
 
             // compute charge value from calibration
             if ( gain != 0 ) {

@@ -38,75 +38,68 @@ class ChannelData {
    public:
 
       // Baseline Data
-      uint         baseData[4][8192];
-      uint         baseMin[4];
-      uint         baseMax[4];
-      double       baseCount[4];
-      double       baseMean[4];
-      double       baseSum[4];
-      double       baseRms[4];
+      uint         baseData[8192];
+      uint         baseMin;
+      uint         baseMax;
+      double       baseCount;
+      double       baseMean;
+      double       baseSum;
+      double       baseRms;
 
       // Calib Data
-      double       calibCount[4][256];
-      double       calibMean[4][256];
-      double       calibSum[4][256];
-      double       calibRms[4][256];
+      double       calibCount[256];
+      double       calibMean[256];
+      double       calibSum[256];
+      double       calibRms[256];
 
       ChannelData() {
          uint x;
-         uint y;
 
-         for (x=0; x < 4; x++) {
-            for (y=0; y < 8192; y++) baseData[x][y] = 0;
-            baseMin[x]    = 8192;
-            baseMax[x]    = 0;
-            baseCount[x]  = 0;
-            baseMean[x]   = 0;
-            baseSum[x]    = 0;
-            baseRms[x]    = 0;
+         for (x=0; x < 8192; x++) baseData[x] = 0;
+         baseMin    = 8192;
+         baseMax    = 0;
+         baseCount  = 0;
+         baseMean   = 0;
+         baseSum    = 0;
+         baseRms    = 0;
 
-            for (y=0; y < 256; y++) {
-               calibCount[x][y]  = 0;
-               calibMean[x][y]   = 0;
-               calibSum[x][y]    = 0;
-               calibRms[x][y]    = 0;
-            }
+         for (x=0; x < 256; x++) {
+            calibCount[x]  = 0;
+            calibMean[x]   = 0;
+            calibSum[x]    = 0;
+            calibRms[x]    = 0;
          }
       }
 
-      void addBasePoint(uint b, uint data) {
-         baseData[b][data]++;
-         if ( data < baseMin[b] ) baseMin[b] = data;
-         if ( data > baseMax[b] ) baseMax[b] = data;
-         baseCount[b]++;
+      void addBasePoint(uint data) {
+         baseData[data]++;
+         if ( data < baseMin ) baseMin = data;
+         if ( data > baseMax ) baseMax = data;
+         baseCount++;
 
-         double tmpM = baseMean[b];
+         double tmpM = baseMean;
          double value = data;
 
-         baseMean[b] += (value - tmpM) / baseCount[b];
-         baseSum[b]  += (value - tmpM) * (value - baseMean[b]);
+         baseMean += (value - tmpM) / baseCount;
+         baseSum  += (value - tmpM) * (value - baseMean);
       }
 
-      void addCalibPoint(uint b, uint x, uint y) {
-         calibCount[b][x]++;
+      void addCalibPoint(uint x, uint y) {
+         calibCount[x]++;
 
-         double tmpM = calibMean[b][x];
+         double tmpM = calibMean[x];
          double value = y;
 
-         calibMean[b][x] += (value - tmpM) / calibCount[b][x];
-         calibSum[b][x]  += (value - tmpM) * (value - calibMean[b][x]);
+         calibMean[x] += (value - tmpM) / calibCount[x];
+         calibSum[x]  += (value - tmpM) * (value - calibMean[x]);
       }
 
       void compute() {
          uint x;
-         uint y;
 
-         for (x=0; x < 4; x++) {
-            if ( baseCount[x] > 0 ) baseRms[x] = sqrt(baseSum[x] / baseCount[x]);
-            for (y=0; y < 256; y++) {
-               if ( calibCount[x][y] > 0 ) 
-                  calibRms[x][y] = sqrt(calibSum[x][y] / calibCount[x][y]);
-            }
+         if ( baseCount > 0 ) baseRms = sqrt(baseSum / baseCount);
+         for (x=0; x < 256; x++) {
+            if ( calibCount[x] > 0 ) calibRms[x] = sqrt(calibSum[x] / calibCount[x]);
          }
       }
 };
@@ -139,11 +132,13 @@ int main ( int argc, char **argv ) {
    uint                   calDac;
    uint                   lastPct;
    uint                   currPct;
-   ChannelData            *chanData[32][1024];
+   bool                   chanFound[1024];
+   ChannelData            *chanData[32][1024][4][2];
+   bool                   kpixFound[32];
+   uint                   kpixMax;
    uint                   minChan;
    uint                   maxChan;
    uint                   x;
-   uint                   y;
    uint                   range;
    uint                   value;
    uint                   kpix;
@@ -155,7 +150,6 @@ int main ( int argc, char **argv ) {
    TH1F                   *hist;
    stringstream           tmp;
    ofstream               xml;
-   bool                   xmlStart;
    double                 grX[256];
    double                 grY[256];
    double                 grYErr[256];
@@ -169,44 +163,44 @@ int main ( int argc, char **argv ) {
    string                 outRoot;
    string                 outXml;
    TFile                  *rFile;
-   uint                   tarRange;
    TCanvas                *c1;
 
-   // Init
-   for (x=0; x < 32; x++) {
-      for (y=0; y < 1024; y++) {
-         chanData[x][y] = NULL;
+   // Init structure
+   for (kpix=0; kpix < 32; kpix++) {
+      for (channel=0; channel < 1024; channel++) {
+         for (bucket=0; bucket < 4; bucket++) {
+            chanData[kpix][channel][bucket][0] = NULL;
+            chanData[kpix][channel][bucket][1] = NULL;
+         }
+         chanFound[channel] = false;
       }
+      kpixFound[kpix] = false;
    }
 
    // Data file is the first and only arg
-   if ( argc != 3 ) {
-      cout << "Usage: calibrationFitter range data_file\n";
-      cout << "       Range = 0 for normal gain\n";
-      cout << "       Range = 1 for low    gain\n";
+   if ( argc != 2 ) {
+      cout << "Usage: calibrationFitter data_file\n";
       return(1);
    }
 
    // Open data file
-   if ( ! dataRead.open(argv[2]) ) {
+   if ( ! dataRead.open(argv[1]) ) {
       cout << "Error opening data file " << argv[1] << endl;
       return(1);
    }
-   tarRange = atoi(argv[1]);
 
    // Create output names
    tmp.str("");
-   tmp << argv[2] << ".r" << tarRange << ".root";
+   tmp << argv[1] << ".root";
    outRoot = tmp.str();
    tmp.str("");
-   tmp << argv[2] << ".r" << tarRange << ".xml";
+   tmp << argv[1] << ".xml";
    outXml = tmp.str();
 
    //////////////////////////////////////////
    // Read Data
    //////////////////////////////////////////
-
-   cout << "Opened data file: " << argv[2] << endl;
+   cout << "Opened data file: " << argv[1] << endl;
    fileSize = dataRead.size();
    filePos  = dataRead.pos();
 
@@ -252,20 +246,22 @@ int main ( int argc, char **argv ) {
          range   = sample->getSampleRange();
 
          // Only process real samples in the expected range
-         if ( type == KpixSample::Data && range == tarRange ) {
+         if ( type == KpixSample::Data ) {
 
             // Create entry if it does not exist
-            if ( chanData[kpix][channel] == NULL ) chanData[kpix][channel] = new ChannelData;
+            if ( chanData[kpix][channel][bucket][range] == NULL ) chanData[kpix][channel][bucket][range] = new ChannelData;
+            kpixFound[kpix]    = true;
+            chanFound[channel] = true;
 
             // Filter for time
             if ( time > injectTime[bucket] && time < injectTime[bucket+1] ) {
 
                // Baseline
-               if ( calState == "Baseline" ) chanData[kpix][channel]->addBasePoint(bucket,value);
+               if ( calState == "Baseline" ) chanData[kpix][channel][bucket][range]->addBasePoint(value);
 
                // Injection
                else if ( calState == "Inject" && channel == calChannel ) 
-                  chanData[kpix][channel]->addCalibPoint(bucket, calDac, value);
+                  chanData[kpix][channel][bucket][range]->addCalibPoint(calDac, value);
             }
          }
       }
@@ -284,6 +280,7 @@ int main ( int argc, char **argv ) {
    //////////////////////////////////////////
    // Process Data
    //////////////////////////////////////////
+   gStyle->SetOptFit(1111);
 
    // Default canvas
    c1 = new TCanvas("c1","c1");
@@ -299,100 +296,116 @@ int main ( int argc, char **argv ) {
    positive    = (dataRead.getConfig("cntrlFpga:kpixAsic:CntrlPolarity") == "Positive");
    b0CalibHigh = (dataRead.getConfig("cntrlFpga:kpixAsic:CntrlCalibHigh") == "True");
 
+   // Kpix count;
+   for (kpix=0; kpix<32; kpix++) if ( kpixFound[kpix] ) kpixMax=kpix;
+
    // Process each kpix device
    for (kpix=0; kpix<32; kpix++) {
-      xmlStart = false;
+      if ( kpixFound[kpix] ) {
 
-      // Process each channel
-      for (channel=minChan; channel <= maxChan; channel++) {
+         // Get serial number
+         tmp.str("");
+         tmp << "cntrlFpga(0):kpixAsic(" << dec << kpix << "):SerialNumber";
+         serial = dataRead.getConfig(tmp.str());
+         xml << "   <kpixAsic id=\"" << serial << "\">" << endl;
 
-         // Show progress
-         cout << "\rProcessing kpix " << dec << kpix << " / 31, Channel " << channel << " / " << dec << maxChan << "                 " << flush;
+         // Process each channel
+         for (channel=minChan; channel <= maxChan; channel++) {
 
-         // Channel is valid
-         if ( chanData[kpix][channel] != NULL ) {
+            // Show progress
+            cout << "\rProcessing kpix " << dec << kpix << " / " << dec << kpixMax
+                 << ", Channel " << channel << " / " << dec << maxChan 
+                 << "                 " << flush;
 
-            // Asic marker
-            if ( !xmlStart ) {
-               tmp.str("");
-               tmp << "cntrlFpga(0):kpixAsic(" << dec << kpix << "):SerialNumber";
-               serial = dataRead.getConfig(tmp.str());
+            // Channel is valid
+            if ( chanFound[channel] ) {
 
-               xml << "   <kpixAsic index=\"" << serial << "\">" << endl;
-               xmlStart = true;
-            }
+               // Start channel marker
+               xml << "      <Channel id=\"" << channel << "\">" << endl;
 
-            // Start channel marker
-            xml << "      <Channel index=\"" << channel << "\">" << endl;
-            chanData[kpix][channel]->compute();
-
-            // Each bucket
-            for (bucket = 0; bucket < 4; bucket++) {
-               xml << "         <Bucket index=\"" << bucket << "\">" << endl;
-
-               // Create histogram
-               tmp.str("");
-               tmp << "hist_" << serial << "_" << dec << setw(4) << setfill('0') << channel;
-               tmp << "_" << dec << bucket;
-               hist = new TH1F(tmp.str().c_str(),tmp.str().c_str(),8192,0,8192);
-
-               // Fill histogram
-               for (x=0; x < 8192; x++) hist->SetBinContent(x+1,chanData[kpix][channel]->baseData[bucket][x]);
-               hist->GetXaxis()->SetRangeUser(chanData[kpix][channel]->baseMin[bucket],
-                                              chanData[kpix][channel]->baseMax[bucket]);
-               hist->Fit("gaus","q");
-               hist->Write();
-
-               // Add to xml
-               xml << "            <BaseMean>" << chanData[kpix][channel]->baseMean[bucket] << "</BaseMean>" << endl;
-               xml << "            <BaseRms>" << chanData[kpix][channel]->baseRms[bucket] << "</BaseRms>" << endl;
-               xml << "            <BaseFitMean>" << hist->GetFunction("gaus")->GetParameter(1) << "</BaseFitMean>" << endl;
-               xml << "            <BaseFitSigma>" << hist->GetFunction("gaus")->GetParameter(2) << "</BaseFitSigma>" << endl;
-               xml << "            <BaseFitMeanErr>" << hist->GetFunction("gaus")->GetParError(1) << "</BaseFitMeanErr>" << endl;
-               xml << "            <BaseFitSigmaErr>" << hist->GetFunction("gaus")->GetParError(2) << "</BaseFitSigmaErr>" << endl;
-
-               // Create calibration graph
-               grCount = 0;
-               for (x=0; x < 256; x++) {
+               // Each bucket
+               for (bucket = 0; bucket < 4; bucket++) {
                
-                  // Calibration point is valid
-                  if ( chanData[kpix][channel]->calibCount[bucket][x] > 0 ) {
-                     grX[grCount]    = calibCharge ( x, positive, ((bucket==0)?b0CalibHigh:false));
-                     grY[grCount]    = chanData[kpix][channel]->calibMean[bucket][x];
-                     grYErr[grCount] = chanData[kpix][channel]->calibRms[bucket][x];
-                     grXErr[grCount] = 0;
-                     grCount++;
+                  // Bucket is valid
+                  if ( chanData[kpix][channel][bucket][0] != NULL || chanData[kpix][channel][bucket][0] != NULL ) {
+                     xml << "         <Bucket id=\"" << bucket << "\">" << endl;
+
+                     // Each range
+                     for (range = 0; range < 2; range++) {
+ 
+                        // Range is valid
+                        if ( chanData[kpix][channel][bucket][range] != NULL ) {
+                           xml << "            <Range id=\"" << range << "\">" << endl;
+                           chanData[kpix][channel][bucket][range]->compute();
+
+                           // Create histogram
+                           tmp.str("");
+                           tmp << "hist_" << serial << "_c" << dec << setw(4) << setfill('0') << channel;
+                           tmp << "_b" << dec << bucket;
+                           tmp << "_r" << dec << range;
+                           hist = new TH1F(tmp.str().c_str(),tmp.str().c_str(),8192,0,8192);
+
+                           // Fill histogram
+                           for (x=0; x < 8192; x++) hist->SetBinContent(x+1,chanData[kpix][channel][bucket][range]->baseData[x]);
+                           hist->GetXaxis()->SetRangeUser(chanData[kpix][channel][bucket][range]->baseMin,
+                                                          chanData[kpix][channel][bucket][range]->baseMax);
+                           hist->Fit("gaus","q");
+                           hist->Write();
+
+                           // Add to xml
+                           xml << "               <BaseMean>" << chanData[kpix][channel][bucket][range]->baseMean << "</BaseMean>" << endl;
+                           xml << "               <BaseRms>" << chanData[kpix][channel][bucket][range]->baseRms << "</BaseRms>" << endl;
+                           xml << "               <BaseFitMean>" << hist->GetFunction("gaus")->GetParameter(1) << "</BaseFitMean>" << endl;
+                           xml << "               <BaseFitSigma>" << hist->GetFunction("gaus")->GetParameter(2) << "</BaseFitSigma>" << endl;
+                           xml << "               <BaseFitMeanErr>" << hist->GetFunction("gaus")->GetParError(1) << "</BaseFitMeanErr>" << endl;
+                           xml << "               <BaseFitSigmaErr>" << hist->GetFunction("gaus")->GetParError(2) << "</BaseFitSigmaErr>" << endl;
+
+                           // Create calibration graph
+                           grCount = 0;
+                           for (x=0; x < 256; x++) {
+                           
+                              // Calibration point is valid
+                              if ( chanData[kpix][channel][bucket][range]->calibCount[x] > 0 ) {
+                                 grX[grCount]    = calibCharge ( x, positive, ((bucket==0)?b0CalibHigh:false));
+                                 grY[grCount]    = chanData[kpix][channel][bucket][range]->calibMean[x];
+                                 grYErr[grCount] = chanData[kpix][channel][bucket][range]->calibRms[x];
+                                 grXErr[grCount] = 0;
+                                 grCount++;
+                              }
+                           }
+
+                           // Create graph
+                           if ( grCount > 0 ) {
+                              grCalib = new TGraphErrors(grCount,grX,grY,grXErr,grYErr);
+                              grCalib->Draw("Ap");
+                              grCalib->Fit("pol1","q");
+                              grCalib->GetFunction("pol1")->SetLineWidth(1);
+
+                              // Create name and write
+                              tmp.str("");
+                              tmp << "calib_" << serial << "_c" << dec << setw(4) << setfill('0') << channel;
+                              tmp << "_b" << dec << bucket;
+                              tmp << "_r" << dec << range;
+                              grCalib->SetTitle(tmp.str().c_str());
+                              grCalib->Write(tmp.str().c_str());
+
+                              // Add to xml
+                              xml << "               <CalibGain>" << grCalib->GetFunction("pol1")->GetParameter(1) << "</CalibGain>" << endl;
+                              xml << "               <CalibIntercept>" << grCalib->GetFunction("pol1")->GetParameter(0) << "</CalibIntercept>" << endl;
+                              xml << "               <CalibGainErr>" << grCalib->GetFunction("pol1")->GetParError(1) << "</CalibGainErr>" << endl;
+                              xml << "               <CalibInterceptErr>" << grCalib->GetFunction("pol1")->GetParError(0) << "</CalibInterceptErr>" << endl;
+                           }
+                           xml << "            </Range>" << endl;
+                        }
+                     }
+                     xml << "         </Bucket>" << endl;
                   }
                }
-
-               // Create graph
-               if ( grCount > 0 ) {
-                  grCalib = new TGraphErrors(grCount,grX,grY,grXErr,grYErr);
-                  grCalib->Draw("Ap");
-                  grCalib->Fit("pol1","q");
-
-                  // Create name and write
-                  tmp.str("");
-                  tmp << "calib_" << serial << "_" << dec << setw(4) << setfill('0') << channel;
-                  tmp << "_" << dec << bucket;
-                  grCalib->Write(tmp.str().c_str());
-
-                  // Add to xml
-                  xml << "            <CalibGain>" << grCalib->GetFunction("pol1")->GetParameter(1) << "</CalibGain>" << endl;
-                  xml << "            <CalibIntercept>" << grCalib->GetFunction("pol1")->GetParameter(0) << "</CalibIntercept>" << endl;
-                  xml << "            <CalibGainErr>" << grCalib->GetFunction("pol1")->GetParError(1) << "</CalibGainErr>" << endl;
-                  xml << "            <CalibInterceptErr>" << grCalib->GetFunction("pol1")->GetParError(0) << "</CalibInterceptErr>" << endl;
-               }
-               xml << "         </Bucket>" << endl;
+               xml << "      </Channel>" << endl;
             }
-
-            // End channel
-            xml << "      </Channel>" << endl;
          }
+         xml << "   </kpixAsic>" << endl;
       }
-
-      // End Asic marker
-      if ( xmlStart ) xml << "   </kpixAsic>" << endl;
    }
    cout << endl;
    cout << "Wrote root plots to " << outRoot << endl;
@@ -403,9 +416,12 @@ int main ( int argc, char **argv ) {
    delete rFile;
 
    // Cleanup
-   for (x=0; x < 32; x++) {
-      for (y=0; y < 1024; y++) {
-         if ( chanData[x][y] != NULL ) delete chanData[x][y];
+   for (kpix=0; kpix < 32; kpix++) {
+      for (channel=0; channel < 1024; channel++) {
+         for (bucket=0; bucket < 4; bucket++) {
+            if ( chanData[kpix][channel][bucket][0] != NULL ) delete chanData[kpix][channel][bucket][0];
+            if ( chanData[kpix][channel][bucket][1] != NULL ) delete chanData[kpix][channel][bucket][1];
+         }
       }
    }
 
