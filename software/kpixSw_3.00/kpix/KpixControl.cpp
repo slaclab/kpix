@@ -125,6 +125,18 @@ KpixControl::KpixControl ( CommLink *commLink, string defFile ) : System("KpixCo
    getVariable("CalDac")->setComp(0,1,0,"");
    getVariable("CalDac")->setInt(0);
 
+   addVariable(new Variable("UserDataA",Variable::Configuration));
+   getVariable("UserDataA")->setDescription("User defined data field");
+
+   addVariable(new Variable("UserDataB",Variable::Configuration));
+   getVariable("UserDataB")->setDescription("User defined data field");
+
+   addVariable(new Variable("UserDataC",Variable::Configuration));
+   getVariable("UserDataC")->setDescription("User defined data field");
+
+   addVariable(new Variable("UserDataD",Variable::Configuration));
+   getVariable("UserDataD")->setDescription("User defined data field");
+
    // Add sub-devices
    addDevice(new ConFpga(0, 0, this));
 }
