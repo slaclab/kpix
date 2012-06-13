@@ -34,10 +34,12 @@ dir:
 clean:
 	rm -rf $(OBJ)
 	rm -f $(BIN)/*
-	cd root; gmake clean
 	cd cntrlGui; qmake; gmake clean
-	cd onlineGui; qmake; gmake clean
+	cd root; gmake clean
 	cd python; gmake clean
+ifneq ($(QWTDIR),)
+	cd onlineGui; qmake; gmake clean
+endif
 
 # Compile Common Sources
 $(OBJ)/%.o: $(GEN_DIR)/%.cpp $(GEN_DIR)/%.h
@@ -53,11 +55,15 @@ $(BIN)/%: $(UTL_DIR)/%.cpp $(GEN_OBJ) $(KPX_OBJ)
 
 # root
 ana:
+ifneq ($(ROOTSYS),)
 	cd root; gmake
+endif
 
 # python libs
 pylibs:
+ifneq ($(PYTHONPATH),)
 	cd python; gmake
+endif
 
 # Compile gui
 gui:
@@ -66,6 +72,8 @@ gui:
 
 # online gui
 online:
+ifneq ($(QWTDIR),)
 	cd onlineGui; qmake
 	cd onlineGui; gmake
+endif
 
