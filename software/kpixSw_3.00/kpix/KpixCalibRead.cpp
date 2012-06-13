@@ -26,39 +26,47 @@
 using namespace std;
 
 // Calib Data Class Constructor
-// Pass path to calibration data or
-KpixCalibRead::KpixCalibRead ( string calibFile ) {
+KpixCalibRead::KpixCalibRead ( ) {
+   asicList_.clear();  
+}
+
+// Parse xml file
+bool KpixCalibRead::parse ( string calibFile ) {
    xmlDocPtr    doc;
    xmlNodePtr   node;
    ifstream     is;
    stringstream buffer;
-
-   asicList_.clear();  
+   bool         ret;
 
    // Open file
    is.open(calibFile.c_str());
-   if ( ! is.is_open() ) cout << "Error opening xml file for read: " << calibFile << endl;
-   else {
-      buffer.str("");
-      buffer << is.rdbuf();
-      is.close();
+   if ( ! is.is_open() ) {
+      cout << "Error opening xml file for read: " << calibFile << endl;
+      return(false);
+   }
 
-      // Parse string
-      doc = xmlReadMemory(buffer.str().c_str(), strlen(buffer.str().c_str()), "config.xml", NULL, 0);
-      if (doc != NULL) {
+   buffer.str("");
+   buffer << is.rdbuf();
+   is.close();
+   ret = false;
 
-         // get the root element node
-         node = xmlDocGetRootElement(doc);
+   // Parse string
+   doc = xmlReadMemory(buffer.str().c_str(), strlen(buffer.str().c_str()), "calib.xml", NULL, 0);
+   if (doc != NULL) {
 
-         // Process
-         parseXmlLevel(node,0,0,0);
+      // get the root element node
+      node = xmlDocGetRootElement(doc);
 
-         // Cleanup
-         xmlFreeDoc(doc);
-      }
+      // Process
+      parseXmlLevel(node,"",0,0);
+
+      // Cleanup
+      xmlFreeDoc(doc);
+      ret = true;
    }
    xmlCleanupParser();
    xmlMemoryDump();
+   return(ret);
 }
 
 // Parse XML level
@@ -72,7 +80,6 @@ void KpixCalibRead::parseXmlLevel ( xmlNode *node, string kpix, uint channel, ui
    string     kpixLocal;
    char       *nodeValue;
    double     value;
-   //string     valStr;
 
    kpixLocal = kpix;
 
@@ -100,12 +107,9 @@ void KpixCalibRead::parseXmlLevel ( xmlNode *node, string kpix, uint channel, ui
          }
 
          // Look for tags
-         if ( nameStr == "kpixAsic" ) kpixLocal = idxStr;
          if ( nameStr == "Channel"  ) channel   = idxNum;
          if ( nameStr == "Bucket"   ) bucket    = idxNum;
-
-         if ( channel > 1023 ) channel = 0;
-         if ( bucket  > 3    ) bucket  = 0;
+         if ( nameStr == "kpixAsic" ) kpixLocal = idxStr;
 
          // Process next level
          parseXmlLevel(childNode,kpixLocal,channel,bucket);
@@ -117,81 +121,130 @@ void KpixCalibRead::parseXmlLevel ( xmlNode *node, string kpix, uint channel, ui
          if ( nodeValue != NULL ) {
 
             // Convert to double
-            value = sscanf(nodeValue,"%lf",&value);
+            sscanf(nodeValue,"%lf",&value);
 
             // What do we do with this value
-            if ( topStr == "baseMean" )          findKpix(kpix,true)->baseMean[channel][bucket] = value;
-            if ( topStr == "baseRms" )           findKpix(kpix,true)->baseRms[channel][bucket] = value;
-            if ( topStr == "baseFitMean" )       findKpix(kpix,true)->baseFitMean[channel][bucket] = value;
-            if ( topStr == "baseFitSigma" )      findKpix(kpix,true)->baseFitSigma[channel][bucket] = value;
-            if ( topStr == "baseFitMeanErr" )    findKpix(kpix,true)->baseFitMeanErr[channel][bucket] = value;
-            if ( topStr == "baseFitSigmaErr" )   findKpix(kpix,true)->baseFitSigmaErr[channel][bucket] = value;
-            if ( topStr == "calibGain" )         findKpix(kpix,true)->calibGain[channel][bucket] = value;
-            if ( topStr == "calibIntercept" )    findKpix(kpix,true)->calibIntercept[channel][bucket] = value;
-            if ( topStr == "calibGainErr" )      findKpix(kpix,true)->calibGainErr[channel][bucket] = value;
-            if ( topStr == "calibInterceptErr" ) findKpix(kpix,true)->calibInterceptErr[channel][bucket] = value;
+            if ( bucket < 4 && channel < 1024 ) {
+               if ( topStr == "BaseMean" )          findKpix(kpix,channel,bucket,true)->baseMean          = value;
+               if ( topStr == "BaseRms" )           findKpix(kpix,channel,bucket,true)->baseRms           = value;
+               if ( topStr == "BaseFitMean" )       findKpix(kpix,channel,bucket,true)->baseFitMean       = value;
+               if ( topStr == "BaseFitSigma" )      findKpix(kpix,channel,bucket,true)->baseFitSigma      = value;
+               if ( topStr == "BaseFitMeanErr" )    findKpix(kpix,channel,bucket,true)->baseFitMeanErr    = value;
+               if ( topStr == "BaseFitSigmaErr" )   findKpix(kpix,channel,bucket,true)->baseFitSigmaErr   = value;
+               if ( topStr == "CalibGain" )         findKpix(kpix,channel,bucket,true)->calibGain         = value;
+               if ( topStr == "CalibIntercept" )    findKpix(kpix,channel,bucket,true)->calibIntercept    = value;
+               if ( topStr == "CalibGainErr" )      findKpix(kpix,channel,bucket,true)->calibGainErr      = value;
+               if ( topStr == "CalibInterceptErr" ) findKpix(kpix,channel,bucket,true)->calibInterceptErr = value;
+            }
          }
       }
    }
 }
 
 // Return pointer to ASIC, optional creation
-KpixCalibReadStruct *KpixCalibRead::findKpix ( string kpix, bool create ) {
-   AsicMap::iterator   asicMapIter;
-   KpixCalibReadStruct *asic;
-   stringstream        err;
+KpixCalibRead::KpixCalibData *KpixCalibRead::findKpix ( string kpix, uint channel, uint bucket, bool create ) {
+   KpixCalibAsic *asic;
 
-   asic = NULL;
+   map<string,KpixCalibAsic *>::iterator asicMapIter;
+
+   if ( channel > 1024 ) return(NULL);
+   if ( bucket  > 3    ) return(NULL);
 
    asicMapIter = asicList_.find(kpix);
 
    if ( asicMapIter == asicList_.end() ) {
       if ( create ) {
-         asic = new KpixCalibReadStruct;
-         asicList_.insert(pair<string,KpixCalibReadStruct*>(kpix,asic));
+         asic = new KpixCalibAsic;
+         asicList_.insert(pair<string,KpixCalibAsic*>(kpix,asic));
+         //cout << "KpixCalibRead::findKpix -> Creating entry for Kpix " << kpix << endl;
+      }
+      else {
+         //cout << "KpixCalibRead::findKpix -> Could not find Kpix " << kpix << endl;
+         return(NULL);
       }
    }
    else asic = asicMapIter->second;
 
-   return(asic);
+   return(asic->data[channel][bucket]);
 }
 
-// Get Calibration Graph Fit Results
-bool KpixCalibRead::getCalibData ( string kpix, uint channel, uint bucket,
-                                   double *calibGain, double *calibIntercept,
-                                   double *calibGainErr, double *calibInterceptErr ) {
+// Get baseline mean value
+double KpixCalibRead::baseMean ( string kpix, uint channel, uint bucket ) {
+   KpixCalibData *data;
 
-   KpixCalibReadStruct *asic = findKpix ( kpix, false);
-
-   if ( asic == NULL ) return false;
-
-   *calibGain      = asic->calibGain[channel][bucket];
-   *calibIntercept = asic->calibIntercept[channel][bucket];
-
-   if ( calibGainErr      != NULL ) *calibGainErr      = asic->calibGainErr[channel][bucket];
-   if ( calibInterceptErr != NULL ) *calibInterceptErr = asic->calibInterceptErr[channel][bucket];
-
-   return(true);
+   if ( (data = findKpix(kpix,channel,bucket,false)) == NULL ) return(0.0);
+   return(data->baseMean);
 }
 
-// Get Baseline Fit Results
-bool KpixCalibRead::getHistData ( string kpix, uint channel, uint bucket,
-                                  double *mean, double *rms, 
-                                  double *fitMean, double *fitSigma,
-                                  double *fitMeanErr, double *fitSigmaErr) {
+// Get baseline rms value
+double KpixCalibRead::baseRms ( string kpix, uint channel, uint bucket ) {
+   KpixCalibData *data;
 
-   KpixCalibReadStruct *asic = findKpix ( kpix, false);
+   if ( (data = findKpix(kpix,channel,bucket,false)) == NULL ) return(0.0);
+   return(data->baseRms);
+}
 
-   if ( asic == NULL ) return false;
+// Get baseline guassian fit mean
+double KpixCalibRead::baseFitMean ( string kpix, uint channel, uint bucket ) {
+   KpixCalibData *data;
 
-   *mean = asic->baseMean[channel][bucket];
-   *rms  = asic->baseRms[channel][bucket];
+   if ( (data = findKpix(kpix,channel,bucket,false)) == NULL ) return(0.0);
+   return(data->baseFitMean);
+}
 
-   if ( fitMean     != NULL ) *fitMean     = asic->baseFitMean[channel][bucket];
-   if ( fitSigma    != NULL ) *fitSigma    = asic->baseFitSigma[channel][bucket];
-   if ( fitMeanErr  != NULL ) *fitMeanErr  = asic->baseFitMeanErr[channel][bucket];
-   if ( fitSigmaErr != NULL ) *fitSigmaErr = asic->baseFitSigmaErr[channel][bucket];
+// Get baseline guassian fit sigma
+double KpixCalibRead::baseFitSigma ( string kpix, uint channel, uint bucket ) {
+   KpixCalibData *data;
 
-   return(true);
+   if ( (data = findKpix(kpix,channel,bucket,false)) == NULL ) return(0.0);
+   return(data->baseFitSigma);
+}
+
+// Get baseline guassian fit mean error
+double KpixCalibRead::baseFitMeanErr ( string kpix, uint channel, uint bucket ) {
+   KpixCalibData *data;
+
+   if ( (data = findKpix(kpix,channel,bucket,false)) == NULL ) return(0.0);
+   return(data->baseFitMeanErr);
+}
+
+// Get baseline guassian fit sigma error
+double KpixCalibRead::baseFitSigmaErr ( string kpix, uint channel, uint bucket ) {
+   KpixCalibData *data;
+
+   if ( (data = findKpix(kpix,channel,bucket,false)) == NULL ) return(0.0);
+   return(data->baseFitSigmaErr);
+}
+
+// Get calibration gain
+double KpixCalibRead::calibGain ( string kpix, uint channel, uint bucket ) {
+   KpixCalibData *data;
+
+   if ( (data = findKpix(kpix,channel,bucket,false)) == NULL ) return(0.0);
+   return(data->calibGain);
+}
+
+// Get calibration intercept
+double KpixCalibRead::calibIntercept ( string kpix, uint channel, uint bucket ) {
+   KpixCalibData *data;
+
+   if ( (data = findKpix(kpix,channel,bucket,false)) == NULL ) return(0.0);
+   return(data->calibIntercept);
+}
+
+// Get calibration gain error
+double KpixCalibRead::calibGainErr ( string kpix, uint channel, uint bucket ) {
+   KpixCalibData *data;
+
+   if ( (data = findKpix(kpix,channel,bucket,false)) == NULL ) return(0.0);
+   return(data->calibGainErr);
+}
+
+// Get calibration intercept error
+double KpixCalibRead::calibInterceptErr ( string kpix, uint channel, uint bucket ) {
+   KpixCalibData *data;
+
+   if ( (data = findKpix(kpix,channel,bucket,false)) == NULL ) return(0.0);
+   return(data->calibInterceptErr);
 }
 

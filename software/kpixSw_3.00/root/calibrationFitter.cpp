@@ -357,10 +357,10 @@ int main ( int argc, char **argv ) {
                
                   // Calibration point is valid
                   if ( chanData[kpix][channel]->calibCount[bucket][x] > 0 ) {
-                     grX[x]     = calibCharge ( x, positive, ((bucket==0)?b0CalibHigh:false));
-                     grY[x]     = chanData[kpix][channel]->calibMean[bucket][x];
-                     grYErr[x]  = chanData[kpix][channel]->calibRms[bucket][x];
-                     grXErr[x]  = 0;
+                     grX[grCount]    = calibCharge ( x, positive, ((bucket==0)?b0CalibHigh:false));
+                     grY[grCount]    = chanData[kpix][channel]->calibMean[bucket][x];
+                     grYErr[grCount] = chanData[kpix][channel]->calibRms[bucket][x];
+                     grXErr[grCount] = 0;
                      grCount++;
                   }
                }
@@ -368,7 +368,7 @@ int main ( int argc, char **argv ) {
                // Create graph
                if ( grCount > 0 ) {
                   grCalib = new TGraphErrors(grCount,grX,grY,grXErr,grYErr);
-                  grCalib->Draw("a+");
+                  grCalib->Draw("Ap");
                   grCalib->Fit("pol1","q");
 
                   // Create name and write
@@ -379,11 +379,11 @@ int main ( int argc, char **argv ) {
 
                   // Add to xml
                   xml << "            <CalibGain>" << grCalib->GetFunction("pol1")->GetParameter(1) << "</CalibGain>" << endl;
-                  xml << "            <CalibIntercept>" << grCalib->GetFunction("pol1")->GetParameter(2) << "</CalibIntercept>" << endl;
+                  xml << "            <CalibIntercept>" << grCalib->GetFunction("pol1")->GetParameter(0) << "</CalibIntercept>" << endl;
                   xml << "            <CalibGainErr>" << grCalib->GetFunction("pol1")->GetParError(1) << "</CalibGainErr>" << endl;
-                  xml << "            <CalibInterceptErr>" << grCalib->GetFunction("pol1")->GetParError(2) << "</CalibInterceptErr>" << endl;
+                  xml << "            <CalibInterceptErr>" << grCalib->GetFunction("pol1")->GetParError(0) << "</CalibInterceptErr>" << endl;
                }
-               xml << "         <Bucket>" << endl;
+               xml << "         </Bucket>" << endl;
             }
 
             // End channel
