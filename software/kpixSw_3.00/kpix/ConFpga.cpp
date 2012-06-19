@@ -31,6 +31,7 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
 
    // Description
    desc_ = "KPIX Con FPGA Object.";
+   setDebug(true);
 
    // Setup registers & variables
    addRegister(new Register("Version", 0x01000000));
@@ -142,9 +143,12 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
    addVariable(new Variable("TrigSource", Variable::Configuration));
    getVariable("TrigSource")->setDescription("External trigger source");
    vector<string> trgSource;
-   trgSource.resize(2);
+   trgSource.resize(5);
    trgSource[0]  = "None";
    trgSource[1]  = "NimA";
+   trgSource[2]  = "NimB";
+   trgSource[3]  = "CmosA";
+   trgSource[4]  = "CmosB";
    getVariable("TrigSource")->setEnums(trgSource);
 
    addVariable(new Variable("RunMode", Variable::Configuration));
@@ -170,6 +174,19 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
    addVariable(new Variable("KpixOutputEdge", Variable::Configuration));
    getVariable("KpixOutputEdge")->setDescription("Clock edge to output serial data");
    getVariable("KpixOutputEdge")->setEnums(edges);
+   addVariable(new Variable("KpixRxRaw", Variable::Configuration));
+   getVariable("KpixRxRaw")->setDescription("Receive every sample regardless of validity");
+   getVariable("KpixRxRaw")->setTrueFalse();
+   addVariable(new Variable("KpixNumColumns", Variable::Configuration));
+   getVariable("KpixNumColumns")->setDescription("Number of columns in attached KPIXs");
+   getVariable("KpixNumColumns")->setRange(1,32);
+
+   //Timestamp Config Register
+   addRegister(new Register("TimestampConfig", 0x01000007));
+   addVariable(new Variable("TimestampSource", Variable::Configuration));
+   getVariable("TimestampSource")->setDescription("Timestamp Trigger Source");
+   getVariable("TimestampSource")->setEnums(trgSource);
+   
 
    // KPIX support registers
    for (uint i=0; i < (KpixCount-1); i++) {
@@ -202,10 +219,6 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
       addVariable(new Variable(tmp.str(),Variable::Status));
       getVariable(tmp.str())->setDescription("Kpix overflow error count.");
    }
-
-   addVariable(new Variable("KpixRxRaw",Variable::Configuration));
-   getVariable("KpixRxRaw")->setDescription("Kpix Raw Data Mode.");
-   getVariable("KpixRxRaw")->setTrueFalse();
 
    // Commands
    addCommand(new Command("KpixRun",0x0));
@@ -322,12 +335,17 @@ void ConFpga::readConfig ( ) {
    getVariable("BncSourceB")->setInt(getRegister("DebugSelect")->get(8,0x1F));
 
    readRegister(getRegister("TriggerControl"));
-   getVariable("TrigSource")->setInt(getRegister("TriggerControl")->get(0,0x1));
+   getVariable("TrigSource")->setInt(getRegister("TriggerControl")->get(0,0x7));
    getVariable("RunMode")->setInt(getRegister("TriggerControl")->get(4,0x1));
 
    readRegister(getRegister("KpixConfig"));
    getVariable("KpixInputEdge")->setInt(getRegister("KpixConfig")->get(0,0x1));
    getVariable("KpixOutputEdge")->setInt(getRegister("KpixConfig")->get(1,0x1));
+   getVariable("KpixRxRaw")->setInt(getRegister("KpixConfig")->get(4,0x1));
+   getVariable("KpixNumColumns")->setInt(getRegister("KpixConfig")->get(8,0x1F)+1);
+
+   readRegister(getRegister("TimestampConfig"));
+   getVariable("TimestampSource")->setInt(getRegister("TimestampConfig")->get(0,0x7));
 
    // Sub devices
    Device::readConfig();
@@ -353,13 +371,17 @@ void ConFpga::writeConfig ( bool force ) {
    getRegister("DebugSelect")->set(getVariable("BncSourceB")->getInt(),8,0x1F);
    writeRegister(getRegister("DebugSelect"),force);
 
-   getRegister("TriggerControl")->set(getVariable("TrigSource")->getInt(),0,0x1);
+   getRegister("TriggerControl")->set(getVariable("TrigSource")->getInt(),0,0x7);
    getRegister("TriggerControl")->set(getVariable("RunMode")->getInt(),4,0x1);
    writeRegister(getRegister("TriggerControl"),force);
 
    getRegister("KpixConfig")->set(getVariable("KpixInputEdge")->getInt(),0,0x1);
    getRegister("KpixConfig")->set(getVariable("KpixInputEdge")->getInt(),1,0x1);
+   getRegister("KpixConfig")->set(getVariable("KpixRxRaw")->getInt(),4,0x1);
+   getRegister("KpixConfig")->set(getVariable("KpixNumColumns")->getInt()-1,8,0x1F);
    writeRegister(getRegister("KpixConfig"),force);
+
+   getRegister("TimestampConfig")->set(getVariable("TimestampSource")->getInt(),0,0x7);
 
    // KPIX support registers
    for (uint i=0; i < (KpixCount-1); i++) {
@@ -371,9 +393,9 @@ void ConFpga::writeConfig ( bool force ) {
       tmpB << "KpixRxEn_" << setw(2) << setfill('0') << dec << i;
       getRegister(tmpA.str())->set(device("kpixAsic",i)->getInt("Enabled"),0,0x1);
 
-      tmpB.str("");
-      tmpB << "KpixRxRaw_" << setw(2) << setfill('0') << dec << i;
-      getRegister(tmpA.str())->set(getVariable("KpixRxRaw")->getInt(),1,0x1);
+//       tmpB.str("");
+//       tmpB << "KpixRxRaw_" << setw(2) << setfill('0') << dec << i;
+//       getRegister(tmpA.str())->set(getVariable("KpixRxRaw")->getInt(),1,0x1);
 
       writeRegister(getRegister(tmpA.str()),force);
    }
@@ -393,6 +415,7 @@ void ConFpga::verifyConfig ( ) {
    verifyRegister(getRegister("DebugSelect"));
    verifyRegister(getRegister("TriggerControl"));
    verifyRegister(getRegister("KpixConfig"));
+   verifyRegister(getRegister("TimestampConfig"));
 
    // KPIX support registers
    for (uint i=0; i < (KpixCount-1); i++) {

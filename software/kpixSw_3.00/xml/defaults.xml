@@ -1,6 +1,6 @@
 <system>
    <config>
-      <CalChanMax>1023</CalChanMax>
+      <CalChanMax>255</CalChanMax>
       <CalChanMin>0</CalChanMin>
       <CalDacCount>16</CalDacCount>
       <CalDacMax>255</CalDacMax>
@@ -26,7 +26,9 @@
          <RunMode>Acquire</RunMode>
          <KpixInputEdge>Rising Edge</KpixInputEdge>
          <KpixOutputEdge>Rising Edge</KpixOutputEdge>
+	 <KpixNumColumns>32</KpixNumColumns>
          <TrigSource>None</TrigSource>
+	 <TimestampSource>None</TimestampSource>
          <kpixAsic>
             <BunchClockCount>0x7ff</BunchClockCount>
             <Cal0Delay>0xc8</Cal0Delay>
