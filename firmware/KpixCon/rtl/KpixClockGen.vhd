@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-05-29
+-- Last update: 2012-06-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -30,12 +30,12 @@ entity KpixClockGen is
     DELAY_G : time := 1 ns);
 
   port (
-    clk200       : in  sl;
-    rst200       : in  sl;
-    extRegsIn    : in  KpixClockGenRegsInType;
-    kpixLocalOut : in  KpixLocalOutType;
-    kpixClk      : out sl;
-    kpixRst      : out sl);
+    clk200    : in  sl;
+    rst200    : in  sl;
+    extRegsIn : in  KpixClockGenRegsInType;
+    coreState : in  slv(3 downto 0);
+    kpixClk   : out sl;
+    kpixRst   : out sl);
 
 end entity KpixClockGen;
 
@@ -45,8 +45,8 @@ architecture rtl of KpixClockGen is
   type RegType is record
     newValueSync : SynchronizerType;
     extRegsSync  : KpixClockGenRegsInType;
-    divCount     : unsigned(4 downto 0);
-    clkSel       : unsigned(4 downto 0);
+    divCount     : unsigned(7 downto 0);
+    clkSel       : unsigned(7 downto 0);
     clkDiv       : sl;
   end record RegType;
 
@@ -72,7 +72,7 @@ begin
   end process seq;
 
 
-  comb : process (r, kpixLocalOut, extRegsIn) is
+  comb : process (r, coreState, extRegsIn) is
     variable rVar : RegType;
   begin
     rVar := r;
@@ -88,15 +88,15 @@ begin
     rVar.divCount := r.divCount + 1;
 
     if (r.divCount = r.clkSel) then
-      -- Invert clock every time divCount reacheck clkSel
+      -- Invert clock every time divCount reaches clkSel
       rVar.divCount := (others => '0');
       rVar.clkDiv   := not r.clkDiv;
 
       -- Assign new clkSel dependant on kpixState
-      if (kpixLocalOut.kpixState = KPIX_PRECHARGE_STATE_C) then
+      if (coreState = KPIX_PRECHARGE_STATE_C) then
         rVar.clkSel := unsigned(r.extRegsSync.clkSelPrecharge);
       else
-        case kpixLocalOut.kpixState(2 downto 0) is
+        case coreState(2 downto 0) is
           when KPIX_IDLE_STATE_C =>
             rVar.clkSel := unsigned(r.extRegsSync.clkSelIdle);
           when KPIX_ACQUISITION_STATE_C =>

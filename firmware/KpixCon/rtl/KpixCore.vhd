@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-17
--- Last update: 2012-06-05
+-- Last update: 2012-06-14
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -24,6 +24,7 @@ use work.KpixRegCntlPkg.all;
 use work.KpixDataRxPkg.all;
 use work.KpixRegRxPkg.all;
 use work.TriggerPkg.all;
+use work.TimestampPkg.all;
 use work.KpixLocalPkg.all;
 use work.KpixClockGenPkg.all;
 
@@ -31,7 +32,7 @@ entity KpixCore is
   
   generic (
     DELAY_G            : time    := 1 ns;
-    NUM_KPIX_MODULES_G : natural := 5);
+    NUM_KPIX_MODULES_G : natural := 4);
   port (
     sysClk : in sl;                     -- 125 MHz
     sysRst : in sl;
@@ -60,8 +61,8 @@ entity KpixCore is
     kpixClkOut     : out sl;
     kpixTriggerOut : out sl;
     kpixResetOut   : out sl;
-    kpixSerTxOut   : out slv(NUM_KPIX_MODULES_G-2 downto 0);
-    kpixSerRxIn    : in  slv(NUM_KPIX_MODULES_G-2 downto 0));
+    kpixSerTxOut   : out slv(NUM_KPIX_MODULES_G-1 downto 0);
+    kpixSerRxIn    : in  slv(NUM_KPIX_MODULES_G-1 downto 0));
 
 
 end entity KpixCore;
@@ -78,6 +79,7 @@ architecture rtl of KpixCore is
   -- Ethernet accessible registers
   signal kpixClockGenRegsIn : KpixClockGenRegsInType;
   signal triggerRegsIn      : TriggerRegsInType;
+  signal timestampRegsIn    : TimestampRegsInType;
   signal kpixConfigRegs     : KpixConfigRegsType;
   signal kpixRegCntlRegsIn  : KpixRegCntlRegsInType;
   signal kpixDataRxRegsIn   : KpixDataRxRegsInArray(NUM_KPIX_MODULES_G-1 downto 0);
@@ -92,15 +94,22 @@ architecture rtl of KpixCore is
   signal kpixDataRxIn  : KpixDataRxInArray(NUM_KPIX_MODULES_G-1 downto 0);
 
   -- KPIX Rx Reg Interface
-  signal kpixRegRxOut : KpixRegRxOutArray(NUM_KPIX_MODULES_G-1 downto 0);
+  -- One extra for the internal kpix
+  signal kpixRegRxOut : KpixRegRxOutArray(NUM_KPIX_MODULES_G downto 0);
 
   -- KPIX Local signals
-  signal kpixLocalOut : KpixLocalOutType;
+  signal kpixLocalSysOut : KpixLocalSysOutType;
+  signal coreState       : slv(3 downto 0);
+
+  -- Timestamp interface to EventBuilder
+  signal timestampIn  : TimestampInType;
+  signal timestampOut : TimestampOutType;
 
   -- Internal Kpix Signals
-  signal intKpixResetOut   : sl;
-  signal intKpixSerTxOut : slv(NUM_KPIX_MODULES_G-1 downto 0);
-  signal intKpixSerRxIn  : slv(NUM_KPIX_MODULES_G-1 downto 0);
+  -- One extra for internal kpix
+  signal intKpixResetOut : sl;
+  signal intKpixSerTxOut : slv(NUM_KPIX_MODULES_G downto 0);
+  signal intKpixSerRxIn  : slv(NUM_KPIX_MODULES_G downto 0);
   
 begin
 
@@ -123,6 +132,7 @@ begin
       kpixRegCntlOut     => kpixRegCntlOut,
       kpixRegCntlIn      => kpixRegCntlIn,
       triggerRegsIn      => triggerRegsIn,
+      timestampRegsIn    => timestampRegsIn,
       kpixConfigRegs     => kpixConfigRegs,
       kpixRegCntlRegsIn  => kpixRegCntlRegsIn,
       kpixClockGenRegsIn => kpixClockGenRegsIn,
@@ -137,12 +147,12 @@ begin
     generic map (
       DELAY_G => DELAY_G)
     port map (
-      clk200       => clk200,
-      rst200       => rst200,
-      extRegsIn    => kpixClockGenRegsIn,
-      kpixLocalOut => kpixLocalOut,
-      kpixClk      => kpixClk,
-      kpixRst      => kpixClkRst);
+      clk200    => clk200,
+      rst200    => rst200,
+      extRegsIn => kpixClockGenRegsIn,
+      coreState => coreState,
+      kpixClk   => kpixClk,
+      kpixRst   => kpixClkRst);
 
   --------------------------------------------------------------------------------------------------
   -- Trigger generator
@@ -151,13 +161,13 @@ begin
     generic map (
       DELAY_G => DELAY_G)
     port map (
-      sysClk        => sysClk,
-      sysRst        => sysRst,
-      ethCmdCntlOut => ethCmdCntlOut,
-      kpixLocalOut  => kpixLocalOut,
-      extRegsIn     => triggerRegsIn,
-      triggerIn     => triggerIn,
-      triggerOut    => triggerOut);
+      sysClk          => sysClk,
+      sysRst          => sysRst,
+      ethCmdCntlOut   => ethCmdCntlOut,
+      kpixLocalSysOut => kpixLocalSysOut,
+      extRegsIn       => triggerRegsIn,
+      triggerIn       => triggerIn,
+      triggerOut      => triggerOut);
 
   --------------------------------------------------------------------------------------------------
   -- Event Builder
@@ -172,14 +182,16 @@ begin
       triggerOut    => triggerOut,
       kpixDataRxOut => kpixDataRxOut,
       kpixDataRxIn  => kpixDataRxIn,
+      timestampIn   => timestampIn,
+      timestampOut  => timestampOut,
       ebFifoIn      => ebFifoIn,
       ebFifoOut     => ebFifoOut,
       ethUsDataOut  => ethUsDataOut,
       ethUsDataIn   => ethUsDataIn);
 
 
-  kpixSerTxOut                                  <= intKpixSerTxOut(NUM_KPIX_MODULES_G-2 downto 0);
-  intKpixSerRxIn(NUM_KPIX_MODULES_G-2 downto 0) <= kpixSerRxIn;
+  kpixSerTxOut                                  <= intKpixSerTxOut(NUM_KPIX_MODULES_G-1 downto 0);
+  intKpixSerRxIn(NUM_KPIX_MODULES_G-1 downto 0) <= kpixSerRxIn;
 
   --------------------------------------------------------------------------------------------------
   -- KPIX Register Controller
@@ -195,6 +207,7 @@ begin
       ethRegCntlOut  => kpixRegCntlIn,
       ethRegCntlIn   => kpixRegCntlOut,
       triggerOut     => triggerOut,
+      kpixDataRxOut  => kpixDataRxOut,
       kpixConfigRegs => kpixConfigRegs,
       extRegsIn      => kpixRegCntlRegsIn,
       kpixClk        => kpixClk,
@@ -212,7 +225,7 @@ begin
   -- when a register response is detected
   -- Must instantiate one for every connected KPIX including the local kpix
   --------------------------------------------------------------------------------------------------
-  KpixRegRxGen : for i in NUM_KPIX_MODULES_G-1 downto 0 generate
+  KpixRegRxGen : for i in NUM_KPIX_MODULES_G downto 0 generate
     KpixRegRxInst : entity work.KpixRegRx
       generic map (
         DELAY_G   => DELAY_G,
@@ -249,6 +262,20 @@ begin
         kpixDataRxIn   => kpixDataRxIn(i));
   end generate KpixDataRxGen;
 
+  --------------------------------------------------------------------------------------------------
+  -- Timestamp Generator
+  --------------------------------------------------------------------------------------------------
+  Timestamp_1 : entity work.Timestamp
+    generic map (
+      DELAY_G => DELAY_G)
+    port map (
+      sysClk          => sysClk,
+      sysRst          => sysRst,
+      triggerIn       => triggerIn,
+      kpixLocalSysOut => kpixLocalSysOut,
+      timestampRegsIn => timestampRegsIn,
+      timestampIn     => timestampIn,
+      timestampOut    => timestampOut);
   ----------------------------------------
   -- Local KPIX Device
   ----------------------------------------
@@ -261,11 +288,14 @@ begin
       debugASel    => kpixLocalRegsIn.debugASel,
       debugBSel    => kpixLocalRegsIn.debugBSel,
       kpixReset    => not intKpixResetOut,
-      kpixCmd      => intKpixSerTxOut(NUM_KPIX_MODULES_G-1),
-      kpixData     => intKpixSerRxIn(NUM_KPIX_MODULES_G-1),
-      coreState    => kpixLocalOut.kpixState,
-      kpixBunch    => open,
-      calStrobeOut => open
+      kpixCmd      => intKpixSerTxOut(NUM_KPIX_MODULES_G),
+      kpixData     => intKpixSerRxIn(NUM_KPIX_MODULES_G),
+      coreState    => coreState,
+      calStrobeOut => open,
+
+      sysClk          => sysClk,
+      sysRst          => sysRst,
+      kpixLocalSysOut => kpixLocalSysOut
       );
 
 end architecture rtl;

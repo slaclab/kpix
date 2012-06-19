@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-06-11
+-- Last update: 2012-06-14
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ architecture rtl of KpixDataRx is
   ---------------------------------------------------------------------------
   -- Rx controlled Registers
   ---------------------------------------------------------------------------
-  type RxStateType is (RX_IDLE_S, RX_HEADER_S, RX_ROW_S, RX_DATA_S, RX_FRAME_DONE_S, RX_DUMP_S, RX_RESP_S);
+  type RxStateType is (RX_IDLE_S, RX_HEADER_S, RX_ROW_ID_S, RX_DATA_S, RX_FRAME_DONE_S, RX_DUMP_S, RX_RESP_S);
 
   type RxRegType is record
     rxShiftData       : slv(0 to SHIFT_REG_LENGTH_C-1);  -- Upward indexed to match documentation
@@ -172,13 +172,12 @@ architecture rtl of KpixDataRx is
     temp : KpixRegRxOutType)
     return slv
   is
-    variable retVar : slv(63 downto 0);
+    variable retVar : slv(63 downto 0) := (others => '0');
   begin
     retVar(63 downto 60) := TEMP_SAMPLE_C;
     retVar(59 downto 48) := slv(to_unsigned(KPIX_ID_G, 12));
-    retVar(47 downto 42) := "000000";
-    retVar(41 downto 32) := temp.tempCount;
-    retVar(31 downto 0)  := temp.temperature;
+    retVar(28 downto 16) := temp.tempCount;
+    retVar(12 downto 0)  := temp.temperature;
     return retVar;
   end function formatTemperature;
 
@@ -263,7 +262,7 @@ begin
     case (rxRegs.rxState) is
       when RX_IDLE_S =>
         -- Wait for start bit
-        -- Should synchronize enabled
+        -- No need to synchronize enabled, never changes during a run.
         if (rxRegs.rxShiftData(SHIFT_REG_LENGTH_C-1) = '1' and extRegsIn.enabled = '1') then
           rVar.rxShiftCount := (others => '0');
           rVar.rxState      := RX_HEADER_S;
@@ -277,7 +276,7 @@ begin
           rVar.rxWordId      := unsigned(bitReverse(rxRegs.rxShiftData(10 to 13)));
           rVar.rxShiftCount  := (others => '0');
           rVar.rxColumnCount := (others => '0');
-          rVar.rxState       := RX_ROW_S;
+          rVar.rxState       := RX_ROW_ID_S;
 
           if (rxRegs.rxShiftData(KPIX_MARKER_RANGE_C) /= KPIX_MARKER_C) then
             -- Invalid Marker
@@ -303,7 +302,7 @@ begin
         end if;
 
 
-      when RX_ROW_S =>
+      when RX_ROW_ID_S =>
         -- Write Row ID for column into RAM
         rVar.rxRamWrAddr                       := rxRegs.rxRowBuffer & rxRegs.rxColumnCount & ROW_ID_ADDR_C;
         rVar.rxRamWrData                       := (others => '0');  -- Not necessary but makes things cleaner when debugging
@@ -321,9 +320,11 @@ begin
           -- Increment Column count and reset shift count
           rVar.rxColumnCount            := rxRegs.rxColumnCount + 1;
           rVar.rxShiftCount             := (others => '0');
-          rVar.rxState                  := RX_ROW_S;
+          rVar.rxState                  := RX_ROW_ID_S;
 
-          if (rxRegs.rxColumnCount = 31) then
+          -- numColumns is in sysClk domain but never changes during a run so no need to worry about
+          -- syncing it
+          if (rxRegs.rxColumnCount = unsigned(kpixConfigRegs.numColumns)) then
             -- All Columns in row have been received
             rVar.rxState := RX_FRAME_DONE_S;
           end if;
@@ -459,22 +460,23 @@ begin
         if (txRegs.txRowReq(to_integer(txRegs.txRowBuffer)).sync = '1' and
             txRegs.txRowAck(to_integer(txRegs.txRowBuffer)) = '0') then
           -- Assert offset of Count
-          rVar.txColumnOffset := txRegs.txColumnOffset + 1;  -- "0000"
-          rVar.txState        := TX_ROW_ID_S;
+          rVar.txColumnOffset     := txRegs.txColumnOffset + 1;  -- "0000"
+          rVar.kpixDataRxOut.busy := '1';
+          rVar.txState            := TX_ROW_ID_S;
         end if;
 
       when TX_ROW_ID_S =>
         -- Row ID available on txRamRdData
-        rVar.txSample.row    := txRamRdData(4 downto 0) xor "11111"; -- Reverse row order
+        rVar.txSample.row    := txRamRdData(4 downto 0) xor "11111";  -- Reverse row order
         rVar.txSample.column := slv(txRegs.txColumnCount);
-        rVar.txColumnOffset  := txRegs.txColumnOffset + 1;  -- "0001" - timestamp 0
+        rVar.txColumnOffset  := txRegs.txColumnOffset + 1;            -- "0001" - timestamp 0
         rVar.txState         := TX_CNT_S;
 
       when TX_NXT_COL_S =>
         -- Just like TX_ROW_ID but don't assign row.
         -- Used when tranistioning to next column when row id is already known
         -- (and value of r.txRamRdData does not contain the row id)
-        rVar.txBucketCount := (others => '0');
+        rVar.txBucketCount   := (others => '0');
         --rVar.txSample.badCountFlag := '0';
         rVar.txSample.column := slv(txRegs.txColumnCount);
         rVar.txColumnOffset  := txRegs.txColumnOffset + 1;  -- "0001"
@@ -482,8 +484,8 @@ begin
 
       when TX_CNT_S =>
         -- Count, trig and range data now available. Parse it out of r.txRamRdData
-        rVar.txRanges   := txRamRdData(3 downto 0);
-        rVar.txTriggers := txRamRdData(10 downto 7);
+        rVar.txRanges              := txRamRdData(3 downto 0);
+        rVar.txTriggers            := txRamRdData(10 downto 7);
         rVar.txSample.badCountFlag := '0';
         case (txRamRdData(6 downto 4)) is
           when "111" => rVar.txValidBuckets := "0000";
@@ -506,7 +508,8 @@ begin
         -- Must decide here if there are any buckets left to process
         -- And if there are any columns left in the row buffer to process
 
-        if ((txRegs.txValidBuckets(to_integer(txRegs.txBucketCount(1 downto 0))) = '1' or extRegsIn.rawDataMode = '1') and
+        if ((txRegs.txValidBuckets(to_integer(txRegs.txBucketCount(1 downto 0))) = '1' or
+             kpixConfigRegs.rawDataMode = '1') and
             txRegs.txBucketCount(2) = '0') then  -- Bucket count hasn't rolled over
 
           -- Buckets remain
@@ -526,15 +529,15 @@ begin
         else
           -- Done with buckets, go to next column in row
           rVar.txColumnCount  := txRegs.txColumnCount + 1;
-          rVar.txColumnOffset := "0000";  -- Make this a constant
+          rVar.txColumnOffset := "0000";                 -- Make this a constant
           rVar.txState        := TX_NXT_COL_S;
-          if (txRegs.txColumnCount = 31) then
+          if (txRegs.txColumnCount = unsigned(kpixConfigRegs.numColumns)) then
             -- Done with row, mark row buffer clear.
             -- increment row buffer and go all the way back
             rVar.txRowAck(to_integer(txRegs.txRowBuffer)) := '1';
             rVar.txRowBuffer                              := txRegs.txRowBuffer + 1;
             rVar.txState                                  := TX_CLEAR_S;
-            if (unsigned(txRegs.txSample.row) = 0) then
+            if (unsigned(txRegs.txSample.row) = 0) then  -- last row read out (31-0)
               rVar.txState := TX_TEMP_S;
             end if;
           end if;
@@ -574,6 +577,7 @@ begin
         if (kpixDataRxIn.ready = '1') then
           rVar.kpixDataRxOut.valid := '0';
           rVar.kpixDataRxOut.last  := '0';
+          rVar.kpixDataRxOut.busy  := '0';
           rVar.txState             := TX_CLEAR_S;
         end if;
     end case;
@@ -615,7 +619,7 @@ begin
     -- Syncrhonize rxBusy to sysClk.
 --    rVar.txBusyTmp          := toSl(rxRegs.rxState /= RX_IDLE_S);
 --    rVar.kpixDataRxOut.busy := txRegs.txBusyTmp;  -- 
-    rVar.kpixDataRxOut.busy := extRegsIn.enabled;
+--    rVar.kpixDataRxOut.busy := extRegsIn.enabled;
     -- Registers
     txRegsIn <= rVar;
 

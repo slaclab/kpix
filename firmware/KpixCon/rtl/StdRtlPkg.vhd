@@ -51,13 +51,15 @@ package StdRtlPkg is
   function uXorBool (vec : slv) return boolean;
 
   -- Avoid bla = "00000" literal comarisons that don't scale naturally with bla'length
-  function slvZero (length      : integer) return slv;
-  function unsignedZero (length : integer) return unsigned;
-  function isZero (vec          : slv) return boolean;
-  function isZero (vec          : unsigned) return boolean;
-
-  -- Create an slv of given size with every v
   function slvAll (value : sl; length : natural) return slv;
+  function slvZero (length      : integer) return slv;
+--  function unsignedZero (length : integer) return unsigned;
+  function isAll (vec : slv; value : sl) return boolean;
+  function isAll (vec   : unsigned; value : sl)  return boolean;
+  function isZero (vec          : slv) return boolean;
+
+
+  -- Create an slv of given size with every bit set to value
 
   -- These just use uXor to calulate parity
   -- Output is parity bit value needed to achieve that parity given vec.
@@ -250,18 +252,17 @@ package body StdRtlPkg is
     return vec = slvAll(value, vec'length);
   end function;
 
+  function isAll (vec : unsigned; value : sl)
+    return boolean is
+  begin
+    return slv(vec) = slvAll(value, vec'length);
+  end function;
+
   function isZero (vec : slv)
     return boolean is
   begin
     return vec = slvZero(vec'length);
   end function;
-
-  function isZero (vec : unsigned)
-    return boolean is
-  begin
-    return vec = unsignedZero(vec'length);
-  end function;
-
 
 
 

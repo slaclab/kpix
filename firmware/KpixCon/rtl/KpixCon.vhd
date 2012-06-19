@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2012-05-30
+-- Last update: 2012-06-13
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ entity KpixCon is
   
   generic (
     DELAY_G            : time    := 1 ns;
-    NUM_KPIX_MODULES_G : natural := 5);
+    NUM_KPIX_MODULES_G : natural := 4);
 
   port (
     -- System clock, reset
@@ -53,8 +53,8 @@ entity KpixCon is
     kpixClkOut     : out sl;
     kpixRstOut     : out sl;
     kpixTriggerOut : out sl;
-    kpixSerTxOut   : out slv(NUM_KPIX_MODULES_G-2 downto 0);
-    kpixSerRxIn    : in  slv(NUM_KPIX_MODULES_G-2 downto 0));
+    kpixSerTxOut   : out slv(NUM_KPIX_MODULES_G-1 downto 0);
+    kpixSerRxIn    : in  slv(NUM_KPIX_MODULES_G-1 downto 0));
 
 end entity KpixCon;
 

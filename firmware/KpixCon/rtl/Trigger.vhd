@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-05-29
+-- Last update: 2012-06-14
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -33,7 +33,7 @@ entity Trigger is
     sysClk        : in  sl;
     sysRst        : in  sl;
     ethCmdCntlOut : in  EthCmdCntlOutType;
-    kpixLocalOut  : in  KpixLocalOutType;
+    kpixLocalSysOut  : in  KpixLocalSysOutType;
     extRegsIn     : in  TriggerRegsInType;
     triggerIn     : in  TriggerInType;
     triggerOut    : out TriggerOutType);
@@ -45,9 +45,7 @@ architecture rtl of Trigger is
   constant CLOCKS_PER_USEC_C : natural := 1000 / CLOCK_PERIOD_G;
 
   type RegType is record
-    kpixStateSync      : SynchronizerArray(2 downto 0);
-    kpixStateStable    : slv(3 downto 0);
-    extTriggerSync     : SynchronizerType;
+    extTriggerSync     : SynchronizerArray(0 to 7);
     triggerCounter     : unsigned(log2(CLOCKS_PER_USEC_C)-1 downto 0);
     triggerCountEnable : sl;
     startCounter       : unsigned(3 downto 0);
@@ -66,9 +64,7 @@ begin
       r <= rin after DELAY_G;
     end if;
     if (sysRst = '1') then
-      r.kpixStateSync             <= (others => SYNCHRONIZER_INIT_0_C) after DELAY_G;
-      r.kpixStateStable           <= (others => '0')                   after DELAY_G;
-      r.extTriggerSync            <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
+      r.extTriggerSync            <= (others => SYNCHRONIZER_INIT_0_C) after DELAY_G;
       r.triggerCounter            <= (others => '0')                   after DELAY_G;
       r.triggerCountEnable        <= '0'                               after DELAY_G;
       r.startCounter              <= (others => '0')                   after DELAY_G;
@@ -79,24 +75,25 @@ begin
     end if;
   end process sync;
 
-  comb : process (r, ethCmdCntlOut, extRegsIn, triggerIn, kpixLocalOut) is
+  comb : process (r, ethCmdCntlOut, extRegsIn, triggerIn, kpixLocalSysOut) is
     variable rVar           : RegType;
-    variable acquireModeVar : boolean;
   begin
     rVar := r;
 
     ------------------------------------------------------------------------------------------------
-    -- Synchronize KPIX State to sysClk
-    ------------------------------------------------------------------------------------------------
-    synchronize(kpixLocalOut.kpixState(2 downto 0), r.kpixStateSync, rVar.kpixStateSync);
-    rVar.kpixStateStable := r.kpixStateStable(2 downto 0) & toSl(detectEdge(r.kpixStateSync));
-    acquireModeVar       := isZero(rVar.kpixStateStable) and toSlvSync(r.kpixStateSync) = KPIX_ACQUISITION_STATE_C;
-
-    ------------------------------------------------------------------------------------------------
     -- External Trigger
     ------------------------------------------------------------------------------------------------
-    synchronize(triggerIn.extTrigger, r.extTriggerSync, rVar.extTriggerSync);
-    if (detectRisingEdge(r.extTriggerSync) and extRegsIn.extTriggerEn = '1' and acquireModeVar) then
+    synchronize('0', r.extTriggerSync(0), rVar.extTriggerSync(0));  -- It makes the code cleaner
+    synchronize(triggerIn.nimA, r.extTriggerSync(1), rVar.extTriggerSync(1));
+    synchronize(triggerIn.nimB, r.extTriggerSync(2), rVar.extTriggerSync(2));
+    synchronize(triggerIn.cmosB, r.extTriggerSync(3), rVar.extTriggerSync(3));
+    synchronize(triggerIn.cmosA, r.extTriggerSync(4), rVar.extTriggerSync(4));
+    synchronize('0', r.extTriggerSync(5), rVar.extTriggerSync(0));
+    synchronize('0', r.extTriggerSync(6), rVar.extTriggerSync(0));
+    synchronize('0', r.extTriggerSync(7), rVar.extTriggerSync(0)); 
+    
+    if (detectRisingEdge(r.extTriggerSync(to_integer(unsigned(extRegsIn.extTriggerSrc))))  and
+        kpixLocalSysOut.coreState(2 downto 0) = KPIX_ACQUISITION_STATE_C) then
       rVar.triggerOut.trigger := '1';
       rVar.triggerCountEnable := '1';
       rVar.triggerCounter     := (others => '0');
@@ -133,7 +130,6 @@ begin
         rVar.triggerOut.startCalibrate := '0';
       end if;
     end if;
-
 
 
     rin        <= rVar;

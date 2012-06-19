@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-04-30
--- Last update: 2012-05-22
+-- Last update: 2012-06-14
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -31,20 +31,9 @@ package SynchronizePkg is
 
   type SynchronizerArray is array (natural range <>) of SynchronizerType;
 
-  
-
   -- Constants for initializing a SynchronizerType
   constant SYNCHRONIZER_INIT_0_C : SynchronizerType := (tmp => '0', sync => '0', last => '0');
   constant SYNCHRONIZER_INIT_1_C : SynchronizerType := (tmp => '1', sync => '1', last => '1');
-
---  procedure initSynchronizerArray (
---    signal vec    : out SynchronizerArray;
---    constant init : in  SynchronizerType);
-
---  function synchronizerArrayInit (
---    vec  : SynchronizerArray;
---    init : SynchronizerType)
---    return SynchronizerArray;
 
   procedure synchronize (
     input   : in  sl;
@@ -92,27 +81,6 @@ end package SynchronizePkg;
 
 package body SynchronizePkg is
 
---  procedure initSynchronizerArray (
---    signal vec    : out SynchronizerArray;
---    constant init : in  SynchronizerType) is
---  begin
---    for i in vec'range loop
---      vec(i) <= init;
---    end loop;
---  end procedure initSynchronizerArray;
-
---  function synchronizerArrayInit (
---    vec  : SynchronizerArray;
---    init : SynchronizerType)
---    return SynchronizerArray is
---    variable retVar : SynchronizerArray(vec'range);
---  begin
---    for i in retVar'range loop
---      retVar(i) := init;
---    end loop;
---    return retVar;
---  end function synchronizerArrayInit;
-  
   procedure synchronize (
     input   : in  sl;
     current : in  SynchronizerType;

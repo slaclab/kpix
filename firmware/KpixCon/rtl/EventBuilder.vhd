@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-06-08
+-- Last update: 2012-06-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -23,6 +23,7 @@ use work.KpixDataRxPkg.all;
 use work.EthFrontEndPkg.all;
 use work.EventBuilderFifoPkg.all;
 use work.TriggerPkg.all;
+use work.TimestampPkg.all;
 
 entity EventBuilder is
   
@@ -41,6 +42,10 @@ entity EventBuilder is
     kpixDataRxOut : in  KpixDataRxOutArray(NUM_KPIX_MODULES_G-1 downto 0);
     kpixDataRxIn  : out KpixDataRxInArray(NUM_KPIX_MODULES_G-1 downto 0);
 
+    -- Timestamp Interface
+    timestampOut : in  TimestampOutType;
+    timestampIn  : out TimestampInType;
+
     -- FIFO Interface
     ebFifoIn  : out EventBuilderFifoInType;
     ebFifoOut : in  EventBuilderFifoOutType;
@@ -57,7 +62,7 @@ architecture rtl of EventBuilder is
   constant EOF_BIT_C : natural := 65;
 
   type FlagType is (NONE_C, SOF_C, EOF_C);
-  type StateType is (WAIT_TRIGGER_S, WRITE_HEADER_S, CHECK_BUSY_S, GATHER_DATA_S);
+  type StateType is (WAIT_TRIGGER_S, WRITE_HEADER_S, READ_TIMESTAMPS_S, CHECK_BUSY_S, GATHER_DATA_S);
 
   type RegType is record
     timestampCount : unsigned(31 downto 0);
@@ -65,11 +70,12 @@ architecture rtl of EventBuilder is
     eventNumber    : unsigned(31 downto 0);
     newTrigger     : sl;
     state          : StateType;
-    counter        : unsigned(7 downto 0);  -- Generic counter for stalling in a state
+    counter        : unsigned(31 downto 0);  -- Generic counter for stalling in a state
     activeModules  : slv(NUM_KPIX_MODULES_G-1 downto 0);
     dataDone       : slv(NUM_KPIX_MODULES_G-1 downto 0);
     first          : unsigned(log2(NUM_KPIX_MODULES_G)-1 downto 0);
     kpixDataRxIn   : KpixDataRxInArray(NUM_KPIX_MODULES_G-1 downto 0);
+    timestampIn    : TimestampInType;
     ebFifoIn       : EventBuilderFifoInType;
 --    ethUsDataIn    : EthUsDataInType;
   end record;
@@ -81,18 +87,19 @@ begin
   sync : process (sysClk, sysRst) is
   begin
     if (sysRst = '1') then
-      r.timestampCount  <= (others => '0');
-      r.timestamp       <= (others => '0');
-      r.eventNumber     <= (others => '1');  -- So first event is 0 (eventNumber + 1)
-      r.newTrigger      <= '0';
-      r.state           <= WAIT_TRIGGER_S;
-      r.counter         <= (others => '0');
-      r.activeModules   <= (others => '0');
-      r.dataDone        <= (others => '0');
-      r.first           <= (others => '0');
-      r.kpixDataRxIn    <= (others => (ready => '0'));
-      r.ebFifoIn.wrData <= (others => '0');
-      r.ebFifoIn.wrEn   <= '0';
+      r.timestampCount   <= (others => '0');
+      r.timestamp        <= (others => '0');
+      r.eventNumber      <= (others => '1');  -- So first event is 0 (eventNumber + 1)
+      r.newTrigger       <= '0';
+      r.state            <= WAIT_TRIGGER_S;
+      r.counter          <= (others => '0');
+      r.activeModules    <= (others => '0');
+      r.dataDone         <= (others => '0');
+      r.first            <= (others => '0');
+      r.kpixDataRxIn     <= (others => (ready => '0'));
+      r.timestampIn.rdEn <= '0';
+      r.ebFifoIn.wrData  <= (others => '0');
+      r.ebFifoIn.wrEn    <= '0';
     elsif (rising_edge(sysClk)) then
       r <= rin;
     end if;
@@ -117,6 +124,18 @@ begin
       rVar.ebFifoIn.wrEn := '1';
     end procedure writeFifo;
 
+    function formatTimestamp
+      return slv is
+      variable retVar : slv(63 downto 0) := (others => '0');
+    begin
+      retVar(63 downto 60) := "0010";
+      retVar(60 downto 32) := (others => '0');
+      retVar(31 downto 29) := "000";
+      retVar(28 downto 16) := timestampOut.data;
+      retVar(15 downto 0)  := (others => '0');
+      return retVar;
+    end function formatTimestamp;
+
   begin
     rVar := r;
 
@@ -132,14 +151,12 @@ begin
     end if;
 
     -- Registers that are 0 by default.
-    rVar.ebFifoIn.wrEn := '0';
---    for i in kpixDataRxIn'range loop
---      rVar.kpixDataRxIn(i).ready := '0';
---    end loop;
-    rVar.counter       := (others => '0');
-    rVar.dataDone      := (others => '0');
-    rVar.first         := (others => '0');
-    rVar.activeModules := (others => '0');
+    rVar.timestampIn.rdEn := '0';
+    rVar.ebFifoIn.wrEn    := '0';
+    rVar.counter          := (others => '0');
+    rVar.dataDone         := (others => '0');
+    rVar.first            := (others => '0');
+    rVar.activeModules    := (others => '0');
 
     -- Reset ready when valid falls
     for i in NUM_KPIX_MODULES_G-1 downto 0 loop
@@ -159,21 +176,30 @@ begin
       when WRITE_HEADER_S =>
         if (ebFifoOut.full = '0') then
           rVar.counter := r.counter + 1;
-          writeFifo(X"0123456789abcdef");
+          writeFifo(slvAll('0', 64));
           if (r.counter = 2) then
-            rVar.state := CHECK_BUSY_S;
+            rVar.state := READ_TIMESTAMPS_S;
           end if;
         else
           rVar.counter := r.counter;
+        end if;
+
+      when READ_TIMESTAMPS_S =>
+        if (timestampOut.valid = '1') then
+          rVar.timestampIn.rdEn := '1';
+          writeFifo(formatTimestamp);
+        else
+          rVar.state := CHECK_BUSY_S;
         end if;
         
       when CHECK_BUSY_S =>
         -- Wait X cycles for busy signals
         -- Tells which modules are active 
         rVar.counter := r.counter + 1;
-        if (r.counter = 100) then
+        if (isAll(r.counter, '1')) then
           -- No busy signals detected at all
           rVar.state := WAIT_TRIGGER_S;
+          writeFifo(X"0123456789abcdef", EOF_C);
         end if;
         for i in NUM_KPIX_MODULES_G-1 downto 0 loop
           if (kpixDataRxOut(i).busy = '1') then
@@ -212,14 +238,14 @@ begin
 
     end case;
 
-    -- NOT RIGHT!
-    rVar.ebFifoIn.rdEn := '0'; --not ebFifoOut.empty and not ethUsDataOut.frameTxAFull;
+    -- Unused. Output signal assigned below rather than from this register
+    rVar.ebFifoIn.rdEn := '0';
 
     -- Assign outputs to FIFO
-    ebFifoIn     <= r.ebFifoIn;
+    ebFifoIn      <= r.ebFifoIn;
     ebFifoIn.rdEn <= not ebFifoOut.empty and not ethUsDataOut.frameTxAFull;
-    kpixDataRxIn <= r.kpixDataRxIn;
-
+    kpixDataRxIn  <= r.kpixDataRxIn;
+    timestampIn   <= r.timestampIn;
 
     rin <= rVar;
   end process comb;

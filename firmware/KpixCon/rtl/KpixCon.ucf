@@ -66,7 +66,10 @@ NET "debugOutA" LOC = "K12" | IOSTANDARD = "LVCMOS33"; # DBG_OUT0
 NET "debugOutB" LOC = "K13" | IOSTANDARD = "LVCMOS33"; # DBG_OUT1
 
 #External Trigger - NimA
-NET "triggerIn_extTrigger" LOC = "K14" | IOSTANDARD = "LVCMOS33"; #NUM_IN0
+NET "triggerIn_nimA" LOC = "K14" | IOSTANDARD = "LVCMOS33"; #NIM_IN0
+NET "triggerIn_nimB" LOC = "L14" | IOSTANDARD = "LVCMOS33"; #NIM_IN1
+NET "triggerIn_cmosA" LOC = "H22" | IOSTANDARD = "LVCMOS33"; #BNC_IN0
+NET "triggerIn_cmosB" LOC = "G22" | IOSTANDARD = "LVCMOS33"; #BNC_IN1
 
 NET "kpixClkOut" LOC = "N7" | IOSTANDARD = "LVCMOS33"; #KPIX_CLK_OUTA
 NET "kpixRstOut" LOC = "P5" | IOSTANDARD = "LVCMOS33";

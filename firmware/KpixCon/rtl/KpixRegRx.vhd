@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-06-12
+-- Last update: 2012-06-14
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -122,7 +122,7 @@ begin
             if (bitReverse(r.shiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C)) = KPIX_TEMP_REG_ADDR_C and
                 rVar.kpixRegRxOut.regParityErr = '0') then
               -- Output Temperature
-              rVar.kpixRegRxOut.temperature := bitReverse(r.shiftReg(KPIX_DATA_RANGE_C));
+              rVar.kpixRegRxOut.temperature := bitReverse(r.shiftReg(KPIX_DATA_RANGE_C))(31 downto 19);
               rVar.kpixRegRxOut.tempCount   := slv(unsigned(r.kpixRegRxOut.tempCount) + 1);
             else
               -- Valid register read response received
