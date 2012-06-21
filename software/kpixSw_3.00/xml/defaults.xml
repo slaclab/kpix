@@ -130,7 +130,7 @@
             <SerialNumber>1010</SerialNumber>
          </kpixAsic>
          <kpixAsic index="1">
-            <Enabled>False</Enabled>
+            <Enabled>True</Enabled>
             <SerialNumber>802</SerialNumber>
          </kpixAsic>
          <kpixAsic index="2">
@@ -142,7 +142,7 @@
             <SerialNumber>0</SerialNumber>
          </kpixAsic>
          <kpixAsic index="4">
-            <Enabled>False</Enabled>
+            <Enabled>True</Enabled>
             <SerialNumber>0</SerialNumber>
          </kpixAsic>
       </cntrlFpga>
