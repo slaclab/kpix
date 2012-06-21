@@ -375,7 +375,8 @@ void ConFpga::writeConfig ( bool force ) {
    getRegister("KpixConfig")->set(getVariable("KpixInputEdge")->getInt(),0,0x1);
    getRegister("KpixConfig")->set(getVariable("KpixInputEdge")->getInt(),1,0x1);
    getRegister("KpixConfig")->set(getVariable("KpixRxRaw")->getInt(),4,0x1);
-   getRegister("KpixConfig")->set((((KpixAsic*)(device("kpixAsic",0)))->channels() / 32),8,0x1F);
+   //getRegister("KpixConfig")->set(((((KpixAsic*)(device("kpixAsic",0)))->channels() / 32)-1),8,0x1F);
+   getRegister("KpixConfig")->set(31,8,0x1F);
    writeRegister(getRegister("KpixConfig"),force);
 
    getRegister("TimestampConfig")->set(getVariable("TimestampSource")->getInt(),0,0x7);

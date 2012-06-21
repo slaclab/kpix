@@ -1,6 +1,6 @@
 <system>
    <config>
-      <CalChanMax>255</CalChanMax>
+      <CalChanMax>1023</CalChanMax>
       <CalChanMin>0</CalChanMin>
       <CalDacCount>16</CalDacCount>
       <CalDacMax>255</CalDacMax>
@@ -11,7 +11,7 @@
       <DataBase>/u1/kpix/data/</DataBase>
       <DataFile>/u1/kpix/data/</DataFile>
       <DebugCmdTime>True</DebugCmdTime>
-      <DebugEnable>True</DebugEnable>
+      <DebugEnable>False</DebugEnable>
       <RunCount>1000</RunCount>
       <RunRate>No Limit</RunRate>
       <cntrlFpga>
@@ -118,7 +118,7 @@
             <TimeResetOn>0xd</TimeResetOn>
             <TimeThreshOff>0x3db7</TimeThreshOff>
             <TrigInhibitOff>0x96</TrigInhibitOff>
-            <Version>10</Version>
+            <Version>0xa</Version>
          </kpixAsic>
       </cntrlFpga>
       <Enabled>True</Enabled>
