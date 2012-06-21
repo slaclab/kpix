@@ -11,7 +11,7 @@
       <DataBase>/u1/kpix/data/</DataBase>
       <DataFile>/u1/kpix/data/</DataFile>
       <DebugCmdTime>True</DebugCmdTime>
-      <DebugEnable>False</DebugEnable>
+      <DebugEnable>True</DebugEnable>
       <RunCount>1000</RunCount>
       <RunRate>100Hz</RunRate>
       <cntrlFpga>
@@ -26,9 +26,9 @@
          <RunMode>Acquire</RunMode>
          <KpixInputEdge>Rising Edge</KpixInputEdge>
          <KpixOutputEdge>Rising Edge</KpixOutputEdge>
-	 <KpixNumColumns>32</KpixNumColumns>
+	      <KpixNumColumns>32</KpixNumColumns>
          <TrigSource>None</TrigSource>
-	 <TimestampSource>None</TimestampSource>
+	      <TimestampSource>None</TimestampSource>
          <kpixAsic>
             <BunchClockCount>0x7ff</BunchClockCount>
             <Cal0Delay>0xc8</Cal0Delay>
@@ -119,7 +119,7 @@
             <TimeResetOn>0xd</TimeResetOn>
             <TimeThreshOff>0x3db7</TimeThreshOff>
             <TrigInhibitOff>0x96</TrigInhibitOff>
-            <Version>8</Version>
+            <Version>10</Version>
          </kpixAsic>
       </cntrlFpga>
       <Enabled>True</Enabled>
@@ -127,10 +127,10 @@
          <Enabled>True</Enabled>
          <kpixAsic index="0">
             <Enabled>False</Enabled>
-            <SerialNumber>0</SerialNumber>
+            <SerialNumber>1010</SerialNumber>
          </kpixAsic>
          <kpixAsic index="1">
-            <Enabled>True</Enabled>
+            <Enabled>False</Enabled>
             <SerialNumber>802</SerialNumber>
          </kpixAsic>
          <kpixAsic index="2">

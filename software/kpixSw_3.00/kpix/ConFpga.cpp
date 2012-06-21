@@ -31,7 +31,7 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
 
    // Description
    desc_ = "KPIX Con FPGA Object.";
-   setDebug(true);
+   //   setDebug(true);
 
    // Setup registers & variables
    addRegister(new Register("Version", 0x01000000));

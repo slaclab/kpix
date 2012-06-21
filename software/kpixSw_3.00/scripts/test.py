@@ -13,7 +13,7 @@
 # daqResetCounters      
 # daqSendCommand        command
 # daqReadStatus         
-# daqGetStatus          
+# daqGetStatus          variable
 # daqReadConfig         
 # daqVerifyConfig       
 # daqSetConfig          variable arg
@@ -30,7 +30,7 @@ pythonDaq.daqHardReset();
 pythonDaq.daqSetDefaults();
 pythonDaq.daqResetCounters();
 pythonDaq.daqSetConfig("cntrlFpga:BncSourceA","SelCell");
-pythonDaq.daqSetRunParameters("10Hz",3553);
+pythonDaq.daqSetRunParameters("10Hz",100);
 pythonDaq.daqRefreshState();
 pythonDaq.daqSetRunState("Running");
 while pythonDaq.daqGetRunState() == "Running":
