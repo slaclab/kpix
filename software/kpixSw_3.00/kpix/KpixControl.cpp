@@ -48,7 +48,7 @@ KpixControl::KpixControl ( CommLink *commLink, string defFile ) : System("KpixCo
 
    // Set run rates
    vector<string> rates;
-   rates.resize(11);
+   rates.resize(12);
    rates[0]  = "1Hz";
    rates[1]  = "10Hz";
    rates[2]  = "20Hz";
@@ -60,6 +60,7 @@ KpixControl::KpixControl ( CommLink *commLink, string defFile ) : System("KpixCo
    rates[8]  = "80Hz";
    rates[9]  = "90Hz";
    rates[10] = "100Hz";
+   rates[11] = "No Limit";
    getVariable("RunRate")->setEnums(rates);
 
    // Data file nameing controls
@@ -412,17 +413,18 @@ void KpixControl::setRunState ( string state ) {
 
       // Setup run parameters
       swRunCount_ = getInt("RunCount");
-      if      ( get("RunRate") == "100Hz") swRunPeriod_ =   10000;
-      else if ( get("RunRate") == "90Hz" ) swRunPeriod_ =   11111;
-      else if ( get("RunRate") == "80Hz" ) swRunPeriod_ =   12500;
-      else if ( get("RunRate") == "70Hz" ) swRunPeriod_ =   14286;
-      else if ( get("RunRate") == "60Hz" ) swRunPeriod_ =   16667;
-      else if ( get("RunRate") == "50Hz" ) swRunPeriod_ =   20000;
-      else if ( get("RunRate") == "40Hz" ) swRunPeriod_ =   25000;
-      else if ( get("RunRate") == "30Hz" ) swRunPeriod_ =   33333;
-      else if ( get("RunRate") == "20Hz" ) swRunPeriod_ =   50000;
-      else if ( get("RunRate") == "10Hz" ) swRunPeriod_ =  100000;
-      else if ( get("RunRate") ==  "1Hz" ) swRunPeriod_ = 1000000;
+      if      ( get("RunRate") == "100Hz"    ) swRunPeriod_ =   10000;
+      else if ( get("RunRate") == "90Hz"     ) swRunPeriod_ =   11111;
+      else if ( get("RunRate") == "80Hz"     ) swRunPeriod_ =   12500;
+      else if ( get("RunRate") == "70Hz"     ) swRunPeriod_ =   14286;
+      else if ( get("RunRate") == "60Hz"     ) swRunPeriod_ =   16667;
+      else if ( get("RunRate") == "50Hz"     ) swRunPeriod_ =   20000;
+      else if ( get("RunRate") == "40Hz"     ) swRunPeriod_ =   25000;
+      else if ( get("RunRate") == "30Hz"     ) swRunPeriod_ =   33333;
+      else if ( get("RunRate") == "20Hz"     ) swRunPeriod_ =   50000;
+      else if ( get("RunRate") == "10Hz"     ) swRunPeriod_ =  100000;
+      else if ( get("RunRate") == "1Hz"      ) swRunPeriod_ = 1000000;
+      else if ( get("RunRate") == "No Limit" ) swRunPeriod_ = 0;
       else swRunPeriod_ = 1000000;
 
       // Start thread

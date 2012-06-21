@@ -49,6 +49,8 @@ uint KpixAsic::channels() {
       case  8: return(256);  break;
       case  9: return(512);  break;
       case 10: return(1024); break;
+      case 11: return(128);  break;
+      case 12: return(1024); break;
       default: return(0);    break;
    }
 }

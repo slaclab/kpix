@@ -37,9 +37,6 @@ class KpixAsic : public Device {
       // Function to convert dac value into a voltage
       static string dacToVoltString(uint dac);
 
-      // Channel count
-      uint channels();
-
    public:
 
       //! Constructor
@@ -76,6 +73,9 @@ class KpixAsic : public Device {
 
       //! Verify hardware state of configuration
       void verifyConfig ( );
+
+      //! Channel count
+      uint channels();
 
 };
 #endif

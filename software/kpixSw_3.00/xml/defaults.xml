@@ -13,7 +13,7 @@
       <DebugCmdTime>True</DebugCmdTime>
       <DebugEnable>True</DebugEnable>
       <RunCount>1000</RunCount>
-      <RunRate>100Hz</RunRate>
+      <RunRate>No Limit</RunRate>
       <cntrlFpga>
          <BncSourceA>RegClock</BncSourceA>
          <BncSourceB>RegClock</BncSourceB>
@@ -26,7 +26,6 @@
          <RunMode>Acquire</RunMode>
          <KpixInputEdge>Rising Edge</KpixInputEdge>
          <KpixOutputEdge>Rising Edge</KpixOutputEdge>
-	      <KpixNumColumns>32</KpixNumColumns>
          <TrigSource>None</TrigSource>
 	      <TimestampSource>None</TimestampSource>
          <kpixAsic>
@@ -126,11 +125,11 @@
       <cntrlFpga index="0">
          <Enabled>True</Enabled>
          <kpixAsic index="0">
-            <Enabled>False</Enabled>
+            <Enabled>True</Enabled>
             <SerialNumber>1010</SerialNumber>
          </kpixAsic>
          <kpixAsic index="1">
-            <Enabled>True</Enabled>
+            <Enabled>False</Enabled>
             <SerialNumber>802</SerialNumber>
          </kpixAsic>
          <kpixAsic index="2">

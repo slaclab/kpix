@@ -171,22 +171,20 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
    edges[0]  = "Rising Edge";
    edges[1]  = "Falling Edge";
    getVariable("KpixInputEdge")->setEnums(edges);
+
    addVariable(new Variable("KpixOutputEdge", Variable::Configuration));
    getVariable("KpixOutputEdge")->setDescription("Clock edge to output serial data");
    getVariable("KpixOutputEdge")->setEnums(edges);
+
    addVariable(new Variable("KpixRxRaw", Variable::Configuration));
    getVariable("KpixRxRaw")->setDescription("Receive every sample regardless of validity");
    getVariable("KpixRxRaw")->setTrueFalse();
-   addVariable(new Variable("KpixNumColumns", Variable::Configuration));
-   getVariable("KpixNumColumns")->setDescription("Number of columns in attached KPIXs");
-   getVariable("KpixNumColumns")->setRange(1,32);
 
    //Timestamp Config Register
    addRegister(new Register("TimestampConfig", 0x01000007));
    addVariable(new Variable("TimestampSource", Variable::Configuration));
    getVariable("TimestampSource")->setDescription("Timestamp Trigger Source");
    getVariable("TimestampSource")->setEnums(trgSource);
-   
 
    // KPIX support registers
    for (uint i=0; i < (KpixCount-1); i++) {
@@ -342,7 +340,6 @@ void ConFpga::readConfig ( ) {
    getVariable("KpixInputEdge")->setInt(getRegister("KpixConfig")->get(0,0x1));
    getVariable("KpixOutputEdge")->setInt(getRegister("KpixConfig")->get(1,0x1));
    getVariable("KpixRxRaw")->setInt(getRegister("KpixConfig")->get(4,0x1));
-   getVariable("KpixNumColumns")->setInt(getRegister("KpixConfig")->get(8,0x1F)+1);
 
    readRegister(getRegister("TimestampConfig"));
    getVariable("TimestampSource")->setInt(getRegister("TimestampConfig")->get(0,0x7));
@@ -378,10 +375,11 @@ void ConFpga::writeConfig ( bool force ) {
    getRegister("KpixConfig")->set(getVariable("KpixInputEdge")->getInt(),0,0x1);
    getRegister("KpixConfig")->set(getVariable("KpixInputEdge")->getInt(),1,0x1);
    getRegister("KpixConfig")->set(getVariable("KpixRxRaw")->getInt(),4,0x1);
-   getRegister("KpixConfig")->set(getVariable("KpixNumColumns")->getInt()-1,8,0x1F);
+   getRegister("KpixConfig")->set((((KpixAsic*)(device("kpixAsic",0)))->channels() / 32),8,0x1F);
    writeRegister(getRegister("KpixConfig"),force);
 
    getRegister("TimestampConfig")->set(getVariable("TimestampSource")->getInt(),0,0x7);
+   writeRegister(getRegister("TimestampConfig"),force);
 
    // KPIX support registers
    for (uint i=0; i < (KpixCount-1); i++) {
