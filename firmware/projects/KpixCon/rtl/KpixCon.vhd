@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2012-06-20
+-- Last update: 2012-06-22
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -169,7 +169,7 @@ begin
   --------------------------------------------------------------------------------------------------
   -- KPIX Core
   --------------------------------------------------------------------------------------------------
-  KpixCore_1 : entity work.KpixCore
+  KpixDaqCore_1 : entity work.KpixDaqCore
     generic map (
       DELAY_G            => DELAY_G,
       NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
