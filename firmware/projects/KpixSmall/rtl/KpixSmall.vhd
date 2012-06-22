@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
--- Title      : KpixCon
+-- Title      : KpixSmall
 -------------------------------------------------------------------------------
--- File       : KpixCon2.vhd
+-- File       : KpixSmall.vhd
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
@@ -24,7 +24,7 @@ use work.TriggerPkg.all;
 library unisim;
 use unisim.vcomponents.all;
 
-entity KpixCon is
+entity KpixSmall is
   
   generic (
     DELAY_G            : time    := 1 ns;
@@ -50,25 +50,27 @@ entity KpixCon is
     triggerIn : in TriggerInType;
 
     -- Interface to KPiX modules
-    kpixClkOut     : out sl;
-    kpixRstOut     : out sl;
-    kpixTriggerOut : out sl;
-    kpixSerTxOut   : out slv(NUM_KPIX_MODULES_G-1 downto 0);
-    kpixSerRxIn    : in  slv(NUM_KPIX_MODULES_G-1 downto 0));
+    kpixClkOutP     : out sl;
+    kpixClkOutN     : out sl;
+    kpixRstOut      : out sl;
+    kpixTriggerOutP : out sl;
+    kpixTriggerOutN : out sl;
+    kpixSerTxOut    : out slv(NUM_KPIX_MODULES_G-1 downto 0);
+    kpixSerRxIn     : in  slv(NUM_KPIX_MODULES_G-1 downto 0));
 
-end entity KpixCon;
+end entity KpixSmall;
 
-architecture rtl of KpixCon is
+architecture rtl of KpixSmall is
 
-  signal fpgaRst       : sl;
-  signal gtpRefClk     : sl;
-  signal gtpRefClkOut  : sl;
+  signal fpgaRst      : sl;
+  signal gtpRefClk    : sl;
+  signal gtpRefClkOut : sl;
   signal gtpRefClkBufg : sl;
-  signal sysClk125     : sl;
-  signal sysRst125     : sl;
-  signal clk200        : sl;
-  signal rst200        : sl;
-  signal dcmLocked     : sl;
+  signal sysClk125    : sl;
+  signal sysRst125    : sl;
+  signal clk200       : sl;
+  signal rst200       : sl;
+  signal dcmLocked    : sl;
 
   -- Eth Front End Signals
   signal ethRegCntlIn  : EthRegCntlInType;
@@ -85,16 +87,15 @@ architecture rtl of KpixCon is
   signal kpixTrigger : sl;
 
   -- Internal Kpix signals
-  signal intKpixResetOut : sl;
   signal intKpixSerTxOut : slv(NUM_KPIX_MODULES_G-1 downto 0);
-  signal intKpixSerRxIn : slv(NUM_KPIX_MODULES_G-1 downto 0);
-  signal kpixClk : sl;
-  signal kpixRst : sl;
+  signal intKpixSerRxIn  : slv(NUM_KPIX_MODULES_G-1 downto 0);
+  signal kpixClk         : sl;
+  signal kpixRst         : sl;
 
 
 begin
 
-  fpgaRst <= '0'; --not fpgaRstL;
+  fpgaRst <= not fpgaRstL;
 
   -- Input clock buffer
   GtpRefClkIbufds : IBUFDS
@@ -103,15 +104,15 @@ begin
       IB => gtpRefClkN,
       O  => gtpRefClk);
 
---  GtpRefClkBufgInst : BUFG
---    port map (
---      I => gtpRefClkOut,
---      O => gtpRefClkBufg);
+  GtpRefClkOutBufg : BUFG
+    port map (
+      I => gtpRefClkOut,
+      O => gtpRefClkBufg);
 
   -- Generate clocks
   main_dcm_1 : entity work.main_dcm
     port map (
-      CLKIN_IN   => gtpRefClk,
+      CLKIN_IN   => gtpRefClkBufg,
       RST_IN     => fpgaRst,
       CLKFX_OUT  => clk200,
       CLK0_OUT   => sysClk125,
@@ -144,8 +145,8 @@ begin
     port map (
       gtpClk        => sysClk125,
       gtpClkRst     => sysRst125,
-      gtpRefClk     => sysClk125,
-      gtpRefClkOut  => open,
+      gtpRefClk     => gtpRefClk,
+      gtpRefClkOut  => gtpRefClkOut,
       cmdEn         => ethCmdCntlOut.cmdEn,
       cmdOpCode     => ethCmdCntlOut.cmdOpCode,
       cmdCtxOut     => ethCmdCntlOut.cmdCtxOut,
@@ -191,7 +192,7 @@ begin
       debugOutB      => debugOutB,
       kpixClkOut     => kpixClk,
       kpixTriggerOut => kpixTrigger,
-      kpixResetOut   => intKpixResetOut,
+      kpixResetOut   => kpixRst,
       kpixSerTxOut   => intKpixSerTxOut,
       kpixSerRxIn    => intKpixSerRxIn);
 
@@ -211,50 +212,37 @@ begin
       valid => ebFifoOut.valid); 
 
   -- Output KPIX clocks
-  U_KpixClkDDR : ODDR
+--  U_KpixClkDDR : ODDR
+--    port map (
+--      Q  => kpixClkOut,
+--      CE => '1',
+--      C  => kpixClk,
+--      D1 => '1',
+--      D2 => '0',
+--      R  => '0',
+--      S  => '0'
+--      );
+
+  OBUF_KPIX_CLK : OBUFDS
     port map (
-      Q  => kpixClkOut,
-      CE => '1',
-      C  => kpixClk,
-      D1 => '1',
-      D2 => '0',
-      R  => '0',
-      S  => '0'
-      );
+      I  => kpixClk,
+      O  => kpixClkOutP,
+      OB => kpixClkOutN);
 
-  -- Some signals are inverted due to KpixCon board features
-  serTxInvert: process (intKpixSerTxOut) is
-  begin
-    for i in NUM_KPIX_MODULES_G-1 downto 0 loop
-      if (i mod 2 = 0) then
-        kpixSerTxOut(i) <= not intKpixSerTxOut(i);
-      else
-        kpixSerTxOut(i) <= intKpixSerTxOut(i);
-      end if;
-    end loop;
-  end process serTxInvert;
+  kpixSerTxOut   <= intKpixSerTxOut;
+  intKpixSerRxIn <= kpixSerRxIn;
 
- serRxInvert: process (intKpixSerRxIn) is
-  begin
-    for i in NUM_KPIX_MODULES_G-1 downto 0 loop
-      if (i mod 2 = 0) then
-        intKpixSerRxin(i) <= not kpixSerRxin(i);
-      else
-        intKpixSerRxin(i) <= kpixSerRxin(i);
-      end if;
-    end loop;
-  end process serRxInvert;
-  
   OBUF_RST : OBUF
     port map (
-      I => not intKpixResetOut,
+      I => kpixRst,
       O => kpixRstOut);
 
 
-  OBUF_TRIG : OBUF
+  OBUF_TRIG : OBUFDS
     port map (
-      I => kpixTrigger,
-      O => kpixTriggerOut);
+      I  => kpixTrigger,
+      O  => kpixTriggerOutP,
+      OB => kpixTriggerOutN);
 
 
 end architecture rtl;

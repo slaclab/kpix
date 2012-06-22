@@ -1,7 +1,7 @@
 
 # Top level directory
 export PROJ_DIR = $(abspath $(PWD))
-export TOP_DIR = $(abspath $(PWD))
+export TOP_DIR = $(abspath $(PWD)/../..)
 
 # Project Build Directory
 export OUT_DIR = $(TOP_DIR)/build/$(PROJECT)
@@ -19,7 +19,7 @@ PRJ_RTL     = $(PROJ_DIR)/rtl
 UCF_FILE = $(PRJ_RTL)/$(PROJECT).ucf
 
 # Get Project Version
-PRJ_VERSION = $(shell grep MAKE_VERSION $(PRJ_RTL)/KpixConVersion.vhd | cut -d ' ' -f 10 | cut -d'"' -f2)
+PRJ_VERSION = $(shell grep MAKE_VERSION $(PRJ_RTL)/Version.vhd | cut -d ' ' -f 10 | cut -d'"' -f2)
 
 define ACTION_HEADER
 @echo 
@@ -63,7 +63,7 @@ XST_OPTIONS_FILE = $(CONFIG_DIR)/xst_options.txt
 RAW_SOURCES_FILE = $(CONFIG_DIR)/sources.txt
 OUT_SOURCES_FILE = $(OUT_DIR)/sources.txt
 
-RTL_FILES = $(abspath $(subst _PROJ_DIR_,$(PROJ_DIR),$(shell grep -o _PROJ_DIR_\.\*.vhd $(RAW_SOURCES_FILE))))
+RTL_FILES = $(abspath $(subst _PROJ_DIR_,$(PROJ_DIR),$(shell grep -o _PROJ_DIR_\.\*.[vhd,v] $(RAW_SOURCES_FILE))))
 
 %.ngc :  $(RTL_FILES) $(XST_OPTIONS_FILE) $(RAW_SOURCES_FILE)
 	$(call ACTION_HEADER,"Synthesize")

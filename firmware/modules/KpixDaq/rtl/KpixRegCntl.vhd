@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-06-20
+-- Last update: 2012-06-22
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -124,7 +124,7 @@ begin
       r.startAcquireSync       <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
       r.startCalibrateSync     <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
       r.triggerSync            <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
-      r.kpixResetSync          <= SYNCHRONIZER_INIT_1_C             after DELAY_G;
+      r.kpixResetSync          <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
       r.kpixDataRxBusySync     <= (others => SYNCHRONIZER_INIT_0_C) after DELAY_G;
       r.state                  <= IDLE_S                            after DELAY_G;
       r.txShiftReg             <= (others => '0')                   after DELAY_G;
@@ -152,7 +152,7 @@ begin
     synchronize(triggerOut.startAcquire, r.startAcquireSync, rVar.startAcquireSync);
     synchronize(triggerOut.startCalibrate, r.startCalibrateSync, rVar.startCalibrateSync);
     synchronize(triggerOut.trigger, r.triggerSync, rVar.triggerSync);
-    synchronize(not extRegsIn.kpixReset, r.kpixResetSync, rVar.kpixResetSync);
+    synchronize(extRegsIn.kpixReset, r.kpixResetSync, rVar.kpixResetSync);
 
     -- Synchronize dataRx busy signals to kpixClk
     -- Reset txEnable upon the falling edge of each
