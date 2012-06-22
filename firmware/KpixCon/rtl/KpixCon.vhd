@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2012-06-13
+-- Last update: 2012-06-20
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -85,6 +85,8 @@ architecture rtl of KpixCon is
   signal kpixTrigger : sl;
 
   -- Internal Kpix signals
+  signal intKpixSerTxOut : slv(NUM_KPIX_MODULES_G-1 downto 0);
+  signal intKpixSerRxIn : slv(NUM_KPIX_MODULES_G-1 downto 0);
   signal kpixClk : sl;
   signal kpixRst : sl;
 
@@ -189,8 +191,8 @@ begin
       kpixClkOut     => kpixClk,
       kpixTriggerOut => kpixTrigger,
       kpixResetOut   => kpixRst,
-      kpixSerTxOut   => kpixSerTxOut,
-      kpixSerRxIn    => kpixSerRxIn);
+      kpixSerTxOut   => intKpixSerTxOut,
+      kpixSerRxIn    => intKpixSerRxIn);
 
   --------------------------------------------------------------------------------------------------
   -- Event Builder FIFO
@@ -219,8 +221,28 @@ begin
       S  => '0'
       );
 
+  serTxInvert: process (intKpixSerTxOut) is
+  begin
+    for i in NUM_KPIX_MODULES_G-1 downto 0 loop
+      if (i mod 2 = 0) then
+        kpixSerTxOut(i) <= not intKpixSerTxOut(i);
+      else
+        kpixSerTxOut(i) <= intKpixSerTxOut(i);
+      end if;
+    end loop;
+  end process serTxInvert;
 
-
+ serRxInvert: process (intKpixSerRxIn) is
+  begin
+    for i in NUM_KPIX_MODULES_G-1 downto 0 loop
+      if (i mod 2 = 0) then
+        intKpixSerRxin(i) <= not kpixSerRxin(i);
+      else
+        intKpixSerRxin(i) <= kpixSerRxin(i);
+      end if;
+    end loop;
+  end process serRxInvert;
+  
   OBUF_RST : OBUF
     port map (
       I => kpixRst,

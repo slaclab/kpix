@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-06-18
+-- Last update: 2012-06-20
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -215,7 +215,7 @@ begin
         rVar.first         := r.first;
 
         if (ebFifoOut.full = '0') then  -- pause if fifo is full
-          for i in NUM_KPIX_MODULES_G-1 downto 0 loop
+          for i in 0 to NUM_KPIX_MODULES_G-1 loop
             selectedUVar   := i + r.first;
             selectedIntVar := to_integer(selectedUVar);
             if (kpixDataRxOut(selectedIntVar).valid = '1' and r.kpixDataRxIn(selectedIntVar).ready = '0') then

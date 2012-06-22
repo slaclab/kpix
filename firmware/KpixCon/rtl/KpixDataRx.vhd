@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-06-14
+-- Last update: 2012-06-21
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -91,6 +91,7 @@ architecture rtl of KpixDataRx is
     rxRowBuffer       : unsigned(log2(NUM_ROW_BUFFERS_G)-1 downto 0);
     rxRowReq          : slv(NUM_ROW_BUFFERS_G-1 downto 0);
     rxRowAck          : SynchronizerArray(NUM_ROW_BUFFERS_G-1 downto 0);
+    rxBusy            : sl;
     markerError       : sl;
     headerParityError : sl;
     overflowError     : sl;
@@ -117,25 +118,24 @@ architecture rtl of KpixDataRx is
   end record SampleType;
 
   type TxRegType is record
-    txRowBuffer    : unsigned(log2(NUM_ROW_BUFFERS_G)-1 downto 0);
-    txSample       : SampleType;
-    txState        : TxStateType;
-    txColumnCount  : unsigned(4 downto 0);
-    txBucketCount  : unsigned(2 downto 0);
-    txColumnOffset : unsigned(3 downto 0);
-    txTriggers     : slv(3 downto 0);
-    txValidBuckets : unsigned(3 downto 0);
-
+    txRowBuffer           : unsigned(log2(NUM_ROW_BUFFERS_G)-1 downto 0);
+    txSample              : SampleType;
+    txState               : TxStateType;
+    txColumnCount         : unsigned(4 downto 0);
+    txBucketCount         : unsigned(2 downto 0);
+    txColumnOffset        : unsigned(3 downto 0);
+    txTriggers            : slv(3 downto 0);
+    txValidBuckets        : unsigned(3 downto 0);
     txRanges              : slv(3 downto 0);
     txRowReq              : SynchronizerArray(NUM_ROW_BUFFERS_G-1 downto 0);
     txRowAck              : slv(NUM_ROW_BUFFERS_G-1 downto 0);
-    txBusyTmp             : sl;
+    txRxBusySync          : SynchronizerType;       -- Sync rx busy to tx clock
     markerErrorSync       : SynchronizerType;
     headerParityErrorSync : SynchronizerType;
     overflowErrorSync     : SynchronizerType;
     dataParityError       : sl;
-    extRegsOut            : kpixDataRxRegsOutType;
-    kpixDataRxOut         : KpixDataRxOutType;  -- Output
+    extRegsOut            : kpixDataRxRegsOutType;  -- Output
+    kpixDataRxOut         : KpixDataRxOutType;      -- Output
   end record;
 
   signal txRegs, txRegsIn : TxRegType;
@@ -215,6 +215,7 @@ begin
       rxRegs.rxRowBuffer       <= (others => '0');
       rxRegs.rxRowReq          <= (others => '0');
       rxRegs.rxRowAck          <= (others => SYNCHRONIZER_INIT_0_C);
+      rxRegs.rxBusy            <= '0';
       rxRegs.markerError       <= '0';
       rxRegs.headerParityError <= '0';
       rxRegs.overflowError     <= '0';
@@ -352,16 +353,10 @@ begin
           rVar.rxState := RX_IDLE_S;
         end if;
 
---      when others =>                    -- Necessary?
---        rVar.rxShiftCount  := (others => '0');
---        rVar.rxColumnCount := (others => '0');
---        rVar.rxRowId       := (others => '0');
---        rVar.rxWordId      := (others => '0');
---        rVar.rxState       := RX_IDLE_S;
---        rVar.rxRamWrAddr   := (others => '0');
---        rVar.rxRamWrData   := (others => '0');
---        rVar.rxRamWrEn     := '0';
     end case;
+
+    rVar.rxBusy := toSl(rxRegs.rxState /= RX_IDLE_S and rxRegs.rxState /= RX_HEADER_S and
+                        rxRegs.rxState /= RX_DUMP_S and rxRegs.rxState /= RX_RESP_S);
 
     rxRegsIn <= rVar;
   end process;
@@ -391,7 +386,7 @@ begin
       txRegs.txRanges                          <= (others => '0');
       txRegs.txRowReq                          <= (others => SYNCHRONIZER_INIT_0_C);
       txRegs.txRowAck                          <= (others => '0');
-      txRegs.txBusyTmp                         <= '0';
+      txRegs.txRxBusySync                      <= SYNCHRONIZER_INIT_0_C;
       txRegs.markerErrorSync                   <= SYNCHRONIZER_INIT_0_C;
       txRegs.headerParityErrorSync             <= SYNCHRONIZER_INIT_0_C;
       txRegs.overflowErrorSync                 <= SYNCHRONIZER_INIT_0_C;
@@ -428,6 +423,7 @@ begin
 
     -- Synchronize signals from rx
     synchronize(rxRegs.rxRowReq, txRegs.txRowReq, rVar.txRowReq);
+    synchronize(rxRegs.rxBusy, txRegs.txRxBusySync, rVar.txRxBusySync);
 
 
     -- Reset row ack when req falls
@@ -437,9 +433,16 @@ begin
       end if;
     end loop;
 
+    -- Trip busy output high whenever rxBusy rises
+    -- Will be left high until last sample from kpix is processed
+    -- (in TX_TEMP_S state)
+    if (detectRisingEdge(txRegs.txRxBusySync)) then
+      rVar.kpixDataRxOut.busy := '1';
+    end if;
+
 
     -- Each run through the states and back to idle processes one "row"
-    -- of 32 pixels. Each pixel contains up to 4 buckets, resulting in up
+    -- of pixels. Each pixel contains up to 4 buckets, resulting in up
     -- to 4 samples being transmitted for each pixel.
     -- Remember, when a ram address is asserted, the data isn't available on
     -- txRamRdData until 2 cycles later (pipelined).
@@ -461,7 +464,7 @@ begin
             txRegs.txRowAck(to_integer(txRegs.txRowBuffer)) = '0') then
           -- Assert offset of Count
           rVar.txColumnOffset     := txRegs.txColumnOffset + 1;  -- "0000"
-          rVar.kpixDataRxOut.busy := '1';
+          rVar.kpixDataRxOut.busy := '1';  -- Should already be busy from rxBusy trigger but whatever
           rVar.txState            := TX_ROW_ID_S;
         end if;
 
@@ -477,7 +480,6 @@ begin
         -- Used when tranistioning to next column when row id is already known
         -- (and value of r.txRamRdData does not contain the row id)
         rVar.txBucketCount   := (others => '0');
-        --rVar.txSample.badCountFlag := '0';
         rVar.txSample.column := slv(txRegs.txColumnCount);
         rVar.txColumnOffset  := txRegs.txColumnOffset + 1;  -- "0001"
         rVar.txState         := TX_CNT_S;
@@ -616,10 +618,6 @@ begin
       rVar.extRegsOut.dataParityErrorCount := (others => '0');
     end if;
 
-    -- Syncrhonize rxBusy to sysClk.
---    rVar.txBusyTmp          := toSl(rxRegs.rxState /= RX_IDLE_S);
---    rVar.kpixDataRxOut.busy := txRegs.txBusyTmp;  -- 
---    rVar.kpixDataRxOut.busy := extRegsIn.enabled;
     -- Registers
     txRegsIn <= rVar;
 

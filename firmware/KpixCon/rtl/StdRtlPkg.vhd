@@ -97,27 +97,6 @@ package body StdRtlPkg is
   -- Arg: number - integer to find log2 of
   -- Returns: Integer containing log base two of input.
   ---------------------------------------------------------------------------------------------------------------------
---  function log2(
---    constant number : integer)
---    return integer
---  is
---    variable plus1Var : boolean := false;
---    variable divVar : integer;
---    variable retVar : integer := 0;
---  begin
---    divVar := number;
-
---    while (divVar /= 1) loop
---      if (divVar mod 2 > 0 and not plus1Var) then
---        retVar := retVar + 1;
---        plus1Var := true;
---      end if;
---      divVar := divVar/2;
---      retVar := retVar + 1;
---    end loop;
---    return retVar;
---  end function log2;
-
   function log2(
     constant number : integer)
     return integer
@@ -132,6 +111,7 @@ package body StdRtlPkg is
     return retVar;
   end function;
 
+  -- NOTE: XST will crap its pants if you try to pass a constant to this function
   function bitReverse (a : slv)
     return slv
   is

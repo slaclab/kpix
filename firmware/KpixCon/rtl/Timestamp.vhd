@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-06-14
--- Last update: 2012-06-14
+-- Last update: 2012-06-21
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -68,8 +68,8 @@ begin
     synchronize('0', r.extTriggerSync(0), rVar.extTriggerSync(0));  -- It makes the code cleaner
     synchronize(triggerIn.nimA, r.extTriggerSync(1), rVar.extTriggerSync(1));
     synchronize(triggerIn.nimB, r.extTriggerSync(2), rVar.extTriggerSync(2));
-    synchronize(triggerIn.cmosB, r.extTriggerSync(3), rVar.extTriggerSync(3));
-    synchronize(triggerIn.cmosA, r.extTriggerSync(4), rVar.extTriggerSync(4));
+    synchronize(triggerIn.cmosA, r.extTriggerSync(3), rVar.extTriggerSync(3));
+    synchronize(triggerIn.cmosB, r.extTriggerSync(4), rVar.extTriggerSync(4));
     synchronize('0', r.extTriggerSync(5), rVar.extTriggerSync(0));
     synchronize('0', r.extTriggerSync(6), rVar.extTriggerSync(0));
     synchronize('0', r.extTriggerSync(7), rVar.extTriggerSync(0));

@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-10
--- Last update: 2012-06-13
+-- Last update: 2012-06-20
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ package KpixDataRxPkg is
   type KpixDataRxRegsOutArray is array (natural range <>) of KpixDataRxRegsOutType;
 
   --------------------------------------------------------------------------------------------------
-  -- Event Builder Interface
+  -- Data interface
   --------------------------------------------------------------------------------------------------
   type KpixDataRxInType is record
     ready : sl;

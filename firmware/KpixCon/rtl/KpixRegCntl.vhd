@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-06-18
+-- Last update: 2012-06-20
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -73,13 +73,14 @@ architecture rtl of KpixRegCntl is
   subtype VALID_KPIX_ADDR_RANGE_C is natural range 8+log2(NUM_KPIX_MODULES_G) downto 8;
   subtype INVALID_KPIX_ADDR_RANGE_C is natural range 15 downto VALID_KPIX_ADDR_RANGE_C'high+1;
 
+  constant DATA_WAIT_CYCLES_C : natural := 255;
   constant WRITE_WAIT_CYCLES_C : natural := 20;
   constant READ_WAIT_CYCLES_C  : natural := 63;
 
   -----------------------------------------------------------------------------
   -- kpixClk clocked registers
   -----------------------------------------------------------------------------
-  type StateType is (IDLE_S, PARITY_S, TRANSMIT_S, WRITE_WAIT_S, READ_WAIT_S, WAIT_RELEASE_S);
+  type StateType is (IDLE_S, PARITY_S, TRANSMIT_S, DATA_WAIT_S, WRITE_WAIT_S, READ_WAIT_S, WAIT_RELEASE_S);
 
   type RegType is record
     -- Synchronizer for inputs from sysClock domain
@@ -93,7 +94,7 @@ architecture rtl of KpixRegCntl is
     -- Internal registers
     state        : StateType;           -- State machine state
     txShiftReg   : slv(0 to KPIX_NUM_TX_BITS_C-1);  -- Range direction matches documentation
-    txShiftCount : unsigned(log2(KPIX_NUM_TX_BITS_C)-1 downto 0);  -- Counter for shifting
+    txShiftCount : unsigned(log2(KPIX_NUM_TX_BITS_C)+1 downto 0);  -- Counter for shifting
     txEnable     : slv(NUM_KPIX_MODULES_G downto 0);               -- Enables for each serial
                                                                    -- outpus
     -- Output Registers
@@ -159,18 +160,15 @@ begin
     -- from the previous cycle are 0.
     for i in NUM_KPIX_MODULES_G-1 downto 0 loop
       synchronize(kpixDataRxOut(i).busy, r.kpixDataRxBusySync(i), rVar.kpixDataRxBusySync(i));
-      if (detectFallingEdge(r.kpixDataRxBusySync(i)) and isZero(toSlvSync(r.kpixDataRxBusySync))) then
-        rVar.txEnable := (others => '0');
-      end if;
     end loop;
 
     case (r.state) is
       when IDLE_S =>
         rVar.txShiftCount := (others => '0');
-
+        rVar.txEnable := (others => '0');
         -- Only start new reg access or data acquisition cycle if previous data acq cycle is done
-        -- (indicated by txEnable all zeros).
-        if (isZero(r.txEnable)) then
+        -- (indicated by all KpixDataRx modules being not busy
+        if (isZero(toSlvSync(r.kpixDataRxBusySync))) then
           if (r.regReqSync.sync = '1' and isZero(ethRegCntlOut.regAddr(INVALID_KPIX_ADDR_RANGE_C))) then
             -- Register access, format output word
             rVar.txShiftReg                               := (others => '0');  -- Simplifies parity calc
@@ -230,7 +228,7 @@ begin
           if (isAll(r.txEnable, '1')) then
             -- All txEnable bits set indicates an acquire cmd being transmitted
             -- Don't need to wait for req to fall on CMD requests
-            rVar.state := IDLE_S;
+            rVar.state := DATA_WAIT_S;
           else
             -- Register request
             if (ethRegCntlOut.regOp = '1') then
@@ -239,6 +237,13 @@ begin
               rVar.state := READ_WAIT_S;
             end if;
           end if;
+        end if;
+
+      when DATA_WAIT_S =>
+        -- Wait for KpixDataRx modules to start getting data and assert busy
+        rVar.txShiftCount := r.txShiftCount + 1;
+        if (r.txShiftCount = DATA_WAIT_CYCLES_C) then
+          rVar.state := IDLE_S;
         end if;
 
       when WRITE_WAIT_S =>

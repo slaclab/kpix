@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-06-14
+-- Last update: 2012-06-20
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -98,11 +98,11 @@ begin
     rVar.shiftCount := r.shiftCount + 1;
 
     rVar.kpixRegRxOut.regValid := '0';
---    rVar.kpixRegRxOut.regData      := bitReverse(r.shiftReg(KPIX_DATA_RANGE_C));
---    rVar.kpixRegRxOut.regAddr      := bitReverse(r.shiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C));
---    -- Parity should be even so oddParity = error
---    rVar.kpixRegRxOut.regParityErr := oddParity(r.shiftReg(KPIX_FULL_HEADER_RANGE_C)) or
---                                        oddParity(r.shiftReg(KPIX_FULL_DATA_RANGE_C));
+    rVar.kpixRegRxOut.regData      := bitReverse(r.shiftReg(KPIX_DATA_RANGE_C));
+    rVar.kpixRegRxOut.regAddr      := bitReverse(r.shiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C));
+    -- Parity should be even so oddParity = error
+    rVar.kpixRegRxOut.regParityErr := oddParity(r.shiftReg(KPIX_FULL_HEADER_RANGE_C)) or
+                                        oddParity(r.shiftReg(KPIX_FULL_DATA_RANGE_C));
 
     case (r.state) is
       when IDLE_S =>
@@ -126,10 +126,10 @@ begin
               rVar.kpixRegRxOut.tempCount   := slv(unsigned(r.kpixRegRxOut.tempCount) + 1);
             else
               -- Valid register read response received
-              rVar.kpixRegRxOut.regAddr      := bitReverse(r.shiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C));
-              rVar.kpixRegRxOut.regData      := bitReverse(r.shiftReg(KPIX_DATA_RANGE_C));
-              rVar.kpixRegRxOut.regParityErr := oddParity(r.shiftReg(KPIX_FULL_HEADER_RANGE_C)) or
-                                                oddParity(r.shiftReg(KPIX_FULL_DATA_RANGE_C));
+--              rVar.kpixRegRxOut.regAddr      := bitReverse(r.shiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C));
+--              rVar.kpixRegRxOut.regData      := bitReverse(r.shiftReg(KPIX_DATA_RANGE_C));
+--              rVar.kpixRegRxOut.regParityErr := oddParity(r.shiftReg(KPIX_FULL_HEADER_RANGE_C)) or
+--                                                oddParity(r.shiftReg(KPIX_FULL_DATA_RANGE_C));
               rVar.kpixRegRxOut.regValid := '1';
             end if;
           end if;
