@@ -1,11 +1,11 @@
 -------------------------------------------------------------------------------
 -- Title      : 
 -------------------------------------------------------------------------------
--- File       : KpixCore2.vhd
+-- File       : KpixDaqCore.vhd
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-17
--- Last update: 2012-06-14
+-- Last update: 2012-06-22
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ use work.TimestampPkg.all;
 use work.KpixLocalPkg.all;
 use work.KpixClockGenPkg.all;
 
-entity KpixCore is
+entity KpixDaqCore is
   
   generic (
     DELAY_G            : time    := 1 ns;
@@ -65,9 +65,9 @@ entity KpixCore is
     kpixSerRxIn    : in  slv(NUM_KPIX_MODULES_G-1 downto 0));
 
 
-end entity KpixCore;
+end entity KpixDaqCore;
 
-architecture rtl of KpixCore is
+architecture rtl of KpixDaqCore is
 
   -- Clock and reset for kpix clocked modules
   signal kpixClk    : sl;
