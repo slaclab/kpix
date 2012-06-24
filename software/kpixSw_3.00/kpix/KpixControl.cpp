@@ -270,6 +270,7 @@ void KpixControl::swRunThread() {
 
          // Check that we received a data frame
          gotEvent = true;
+
          while ( commLink_->dataRxCount() == lastData ) {
             usleep(1);
             clock_gettime(CLOCK_REALTIME,&tme);
@@ -286,7 +287,7 @@ void KpixControl::swRunThread() {
             }
             if ( !swRunEnable_ ) break;
          }
-         if ( !swRunEnable_ ) break;
+         if ( !swRunEnable_ ) break; 
 
          // Setup next calibration data point
          if ( getVariable("RunState")->get() == "Running Calibration" ) {

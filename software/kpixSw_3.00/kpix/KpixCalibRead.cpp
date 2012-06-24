@@ -27,7 +27,14 @@ using namespace std;
 
 // Calib Data Class Constructor
 KpixCalibRead::KpixCalibRead ( ) {
+   xmlInitParser();
    asicList_.clear();  
+}
+
+// Calib Data Class DecConstructor
+KpixCalibRead::~KpixCalibRead ( ) {
+   xmlCleanupParser();
+   xmlMemoryDump();
 }
 
 // Parse xml file

@@ -317,6 +317,7 @@ void ConFpga::readStatus ( ) {
 void ConFpga::readConfig ( ) {
    stringstream tmpA;
    stringstream tmpB;
+
    REGISTER_LOCK
 
    readRegister(getRegister("ClockSelectA"));
@@ -353,6 +354,7 @@ void ConFpga::readConfig ( ) {
 void ConFpga::writeConfig ( bool force ) {
    stringstream tmpA;
    stringstream tmpB;
+
    REGISTER_LOCK
 
    getRegister("ClockSelectA")->set(getVariable("ClkPeriodIdle")->getInt(),0,0x1F);
@@ -407,6 +409,7 @@ void ConFpga::writeConfig ( bool force ) {
 // Verify hardware state of configuration
 void ConFpga::verifyConfig ( ) {
    stringstream tmp;
+
    REGISTER_LOCK
 
    verifyRegister(getRegister("ClockSelectA"));

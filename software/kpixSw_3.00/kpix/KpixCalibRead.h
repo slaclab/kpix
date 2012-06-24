@@ -97,6 +97,9 @@ class KpixCalibRead {
       //! Calib Data Class Constructor
       KpixCalibRead ( );
 
+      //! Calib Data Class DeConstructor
+      ~KpixCalibRead ( );
+
       //! Parse XML file
       bool parse ( string calibFile );
 
