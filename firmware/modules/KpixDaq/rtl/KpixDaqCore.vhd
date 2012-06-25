@@ -287,7 +287,7 @@ begin
       debugOutB    => debugOutB,
       debugASel    => kpixLocalRegsIn.debugASel,
       debugBSel    => kpixLocalRegsIn.debugBSel,
-      kpixReset    => not intKpixResetOut,
+      kpixReset    => intKpixResetOut,
       kpixCmd      => intKpixSerTxOut(NUM_KPIX_MODULES_G),
       kpixData     => intKpixSerRxIn(NUM_KPIX_MODULES_G),
       coreState    => coreState,
