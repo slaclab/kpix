@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2012-06-22
+-- Last update: 2012-06-25
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -62,15 +62,15 @@ end entity KpixSmall;
 
 architecture rtl of KpixSmall is
 
-  signal fpgaRst      : sl;
-  signal gtpRefClk    : sl;
-  signal gtpRefClkOut : sl;
+  signal fpgaRst       : sl;
+  signal gtpRefClk     : sl;
+  signal gtpRefClkOut  : sl;
   signal gtpRefClkBufg : sl;
-  signal sysClk125    : sl;
-  signal sysRst125    : sl;
-  signal clk200       : sl;
-  signal rst200       : sl;
-  signal dcmLocked    : sl;
+  signal sysClk125     : sl;
+  signal sysRst125     : sl;
+  signal clk200        : sl;
+  signal rst200        : sl;
+  signal dcmLocked     : sl;
 
   -- Eth Front End Signals
   signal ethRegCntlIn  : EthRegCntlInType;
@@ -211,26 +211,25 @@ begin
       empty => ebFifoOut.empty,
       valid => ebFifoOut.valid); 
 
-  -- Output KPIX clocks
---  U_KpixClkDDR : ODDR
---    port map (
---      Q  => kpixClkOut,
---      CE => '1',
---      C  => kpixClk,
---      D1 => '1',
---      D2 => '0',
---      R  => '0',
---      S  => '0'
---      );
-
   OBUF_KPIX_CLK : OBUFDS
     port map (
       I  => kpixClk,
       O  => kpixClkOutP,
       OB => kpixClkOutN);
 
-  kpixSerTxOut   <= intKpixSerTxOut;
-  intKpixSerRxIn <= kpixSerRxIn;
+  SER_TX_OBUF_GEN : for i in NUM_KPIX_MODULES_G-1 downto 0 generate
+    OBUF_TX : OBUF
+      port map (
+        I => intKpixSerTxOut(i),
+        O => kpixSerTxOut(i));
+  end generate;
+
+  SER_RX_IBUF_GEN : for i in NUM_KPIX_MODULES_G-1 downto 0 generate
+    IBUF_RX : IBUF
+      port map (
+        I => kpixSerRxIn(i),
+        O => intKpixSerRxIn(i));
+  end generate;
 
   OBUF_RST : OBUF
     port map (

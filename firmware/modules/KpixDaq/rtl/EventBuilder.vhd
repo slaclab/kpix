@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-06-20
+-- Last update: 2012-06-26
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -196,7 +196,7 @@ begin
         -- Wait X cycles for busy signals
         -- Tells which modules are active 
         rVar.counter := r.counter + 1;
-        if (isAll(r.counter, '1')) then
+        if (r.counter = 125000000) then  -- Wait 1 second
           -- No busy signals detected at all
           rVar.state := WAIT_TRIGGER_S;
           writeFifo(X"0123456789abcdef", EOF_C);
@@ -204,10 +204,15 @@ begin
         for i in NUM_KPIX_MODULES_G-1 downto 0 loop
           if (kpixDataRxOut(i).busy = '1') then
             rVar.activeModules(i) := '1';
-            rVar.state            := GATHER_DATA_S;
+          end if;
+          -- Due to clock crossing, busy signals may arrive 1 cycle appart
+          -- Checking r.activeModules rather than busy inputs assures that
+          -- any late arriving busy signals will set the corresponding activeModules
+          -- signal correctly.
+          if (r.activeModules(i) = '1') then
+            rVar.state := GATHER_DATA_S;
           end if;
         end loop;
-
 
       when GATHER_DATA_S =>
         rVar.dataDone      := r.dataDone;
@@ -219,7 +224,7 @@ begin
             selectedUVar   := i + r.first;
             selectedIntVar := to_integer(selectedUVar);
             if (kpixDataRxOut(selectedIntVar).valid = '1' and r.kpixDataRxIn(selectedIntVar).ready = '0') then
-              rVar.first                              := selectedUVar;
+              rVar.first                              := selectedUVar + 1;
               rVar.kpixDataRxIn(selectedIntVar).ready := '1';
               writeFifo(kpixDataRxOut(selectedIntVar).data);
               if (kpixDataRxOut(selectedIntVar).last = '1') then

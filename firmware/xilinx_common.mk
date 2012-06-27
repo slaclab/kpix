@@ -57,6 +57,8 @@ dir:
 #### Check Source Files ###################################
 %.vhd : 
 	@test -d $*.vhd || echo "$*.vhd does not exist"; false;
+%.v : 
+	@test -d $*.v || echo "$*.v does not exist"; false;
 
 #### Synthesis #############################################
 XST_OPTIONS_FILE = $(CONFIG_DIR)/xst_options.txt
