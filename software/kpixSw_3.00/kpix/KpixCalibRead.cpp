@@ -142,6 +142,7 @@ void KpixCalibRead::parseXmlLevel ( xmlNode *node, string kpix, uint channel, ui
                if ( topStr == "CalibGain" )         findKpix(kpix,channel,bucket,range,true)->calibGain         = value;
                if ( topStr == "CalibIntercept" )    findKpix(kpix,channel,bucket,range,true)->calibIntercept    = value;
                if ( topStr == "CalibGainErr" )      findKpix(kpix,channel,bucket,range,true)->calibGainErr      = value;
+               if ( topStr == "CalibGainRms" )      findKpix(kpix,channel,bucket,range,true)->calibGainRms      = value;
                if ( topStr == "CalibInterceptErr" ) findKpix(kpix,channel,bucket,range,true)->calibInterceptErr = value;
             }
          }
@@ -247,6 +248,14 @@ double KpixCalibRead::calibGainErr ( string kpix, uint channel, uint bucket, uin
 
    if ( (data = findKpix(kpix,channel,bucket,range,false)) == NULL ) return(0.0);
    return(data->calibGainErr);
+}
+
+// Get calibration gain rms
+double KpixCalibRead::calibGainRms ( string kpix, uint channel, uint bucket, uint range ) {
+   KpixCalibData *data;
+
+   if ( (data = findKpix(kpix,channel,bucket,range,false)) == NULL ) return(0.0);
+   return(data->calibGainRms);
 }
 
 // Get calibration intercept error

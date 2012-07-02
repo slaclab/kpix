@@ -123,8 +123,8 @@ double calibCharge ( uint dac, bool positive, bool highCalib ) {
 // Process the data
 int main ( int argc, char **argv ) {
    DataRead               dataRead;
-   double                 fileSize;
-   double                 filePos;
+   off_t                  fileSize;
+   off_t                  filePos;
    KpixEvent              event;
    KpixSample             *sample;
    string                 calState;
@@ -164,6 +164,8 @@ int main ( int argc, char **argv ) {
    string                 outXml;
    TFile                  *rFile;
    TCanvas                *c1;
+   double                 fitMin[2];
+   double                 fitMax[2];
 
    // Init structure
    for (kpix=0; kpix < 32; kpix++) {
@@ -178,8 +180,8 @@ int main ( int argc, char **argv ) {
    }
 
    // Data file is the first and only arg
-   if ( argc != 2 ) {
-      cout << "Usage: calibrationFitter data_file\n";
+   if ( (argc != 2) && (argc != 4) && (argc != 6) ) {
+      cout << "Usage: calibrationFitter data_file [r0minFit r0MaxFit] [r1MinFit r1MaxFit]\n";
       return(1);
    }
 
@@ -187,6 +189,24 @@ int main ( int argc, char **argv ) {
    if ( ! dataRead.open(argv[1]) ) {
       cout << "Error opening data file " << argv[1] << endl;
       return(1);
+   }
+
+   // Normal range fit min/max
+   if ( argc >= 4 ) {
+      fitMin[0] = atof(argv[2]);
+      fitMax[0] = atof(argv[3]);
+   } else {
+      fitMin[0] = 0.0;
+      fitMax[0] = 0.0;
+   }
+      
+   // Low range fit min/max
+   if ( argc == 6 ) {
+      fitMin[1] = atof(argv[4]);
+      fitMax[1] = atof(argv[5]);
+   } else {
+      fitMin[1] = 0.0;
+      fitMax[1] = 0.0;
    }
 
    // Create output names
@@ -268,7 +288,7 @@ int main ( int argc, char **argv ) {
 
       // Show progress
       filePos  = dataRead.pos();
-      currPct = (uint)((filePos / fileSize) * 100.0);
+      currPct = (uint)(((double)filePos / (double)fileSize) * 100.0);
       if ( currPct != lastPct ) {
          cout << "\rReading File: " << currPct << " %      " << flush;
          lastPct = currPct;
@@ -378,7 +398,7 @@ int main ( int argc, char **argv ) {
                            if ( grCount > 0 ) {
                               grCalib = new TGraphErrors(grCount,grX,grY,grXErr,grYErr);
                               grCalib->Draw("Ap");
-                              grCalib->Fit("pol1","q");
+                              grCalib->Fit("pol1","q","",fitMin[range],fitMax[range]);
                               grCalib->GetFunction("pol1")->SetLineWidth(1);
 
                               // Create name and write
@@ -394,6 +414,7 @@ int main ( int argc, char **argv ) {
                               xml << "               <CalibIntercept>" << grCalib->GetFunction("pol1")->GetParameter(0) << "</CalibIntercept>" << endl;
                               xml << "               <CalibGainErr>" << grCalib->GetFunction("pol1")->GetParError(1) << "</CalibGainErr>" << endl;
                               xml << "               <CalibInterceptErr>" << grCalib->GetFunction("pol1")->GetParError(0) << "</CalibInterceptErr>" << endl;
+                              xml << "               <CalibGainRms>" << grCalib->GetRMS(2) << "</CalibGainRms>" << endl;
                            }
                            xml << "            </Range>" << endl;
                         }

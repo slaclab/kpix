@@ -395,16 +395,17 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
    // Mode registers
    for (x=0; x < 32; x++) {
       tmp.str("");
-      tmp << "ColMode_" << setw(2) << setfill('0') << dec << x;
+      tmp << "Chan_" << setw(4) << setfill('0') << dec << (x*32);
+      tmp << "_"     << setw(4) << setfill('0') << dec << ((x*32)+31);
       addVariable(new Variable(tmp.str(),Variable::Configuration));
-      getVariable(tmp.str())->setDescription("Channel configuration for column.\n"
-                                            "Each charactor represents a row in the column with row 0 being the leftmost value\n"
-                                            "The following charactors are allowed:\n"
+      getVariable(tmp.str())->setDescription("Channel configuration.\n"
+                                            "Each charactor represents a channel in a column with the lowest numbered channel on the left\n"
+                                            "The following charactors are allowed (whitespace is also allowed):\n"
                                             "D = Channel trigger disabled\n"
                                             "A = Channel trigger threshold A\n"
                                             "B = Channel trigger threshold B\n"
                                             "C = Channel trigger threshold A, with calibration enabled");
-      getVariable(tmp.str())->set("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+      getVariable(tmp.str())->set("DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD");
       getVariable(tmp.str())->setPerInstance(true);
 
       tmp.str("");
@@ -627,14 +628,16 @@ void KpixAsic::readConfig ( ) {
          regB << "ChanModeB_0x" << setw(2) << setfill('0') << hex << col;
 
          varName.str("");
-         varName << "ColMode_" << setw(2) << setfill('0') << dec << col;
+         varName << "Chan_" << setw(4) << setfill('0') << dec << (col*32);
+         varName << "_"     << setw(4) << setfill('0') << dec << ((col*32)+31);
          varTemp = "";
 
          readRegister(getRegister(regB.str()));
          readRegister(getRegister(regA.str()));
 
          for (row=0; row < 32; row++) {
-            switch(getRegister(regB.str())->get(row,0x1),getRegister(regA.str())->get(row,0x1)) {
+            if ( (row != 0) && ((row % 8) == 0) ) varTemp.append(" ");
+            switch((getRegister(regB.str())->get(row,0x1) << 1) | getRegister(regA.str())->get(row,0x1)) {
                case  0: varTemp.append("B"); break;
                case  1: varTemp.append("D"); break;
                case  2: varTemp.append("A"); break;
@@ -657,11 +660,13 @@ void KpixAsic::writeConfig ( bool force ) {
    stringstream varName;
    string       varOld;
    string       varNew;
-   uint val;
-   uint col;
-   uint row;
-   uint calCount;
-   bool dacStale;
+   string       varTmp;
+   uint         val;
+   uint         col;
+   uint         row;
+   uint         x;
+   uint         calCount;
+   bool         dacStale;
 
    REGISTER_LOCK
 
@@ -886,12 +891,25 @@ void KpixAsic::writeConfig ( bool force ) {
          regB << "ChanModeB_0x" << setw(2) << setfill('0') << hex << col;
 
          varName.str("");
-         varName << "ColMode_" << setw(2) << setfill('0') << dec << col;
-         varOld = getVariable(varName.str())->get();
+         varName << "Chan_" << setw(4) << setfill('0') << dec << (col*32);
+         varName << "_"     << setw(4) << setfill('0') << dec << ((col*32)+31);
+         varTmp = getVariable(varName.str())->get();
          varNew = "";
 
+         // Remove whitespace
+         row = 0;
+         for (x=0; x < varTmp.length(); x++) 
+            if ( varTmp[x] != ' ' ) {
+               varOld.append(" ");
+               varOld[row++] = varTmp[x];
+            }
+
+         // Pad if less than 32
+         for (; row < 32; row++) varOld.append("D");
+
+         // Process variables
          for (row=0; row < 32; row++) {
-            if ( varOld.length() < (row+1) ) varOld.append("D");
+            if ( (row != 0) && ((row % 8) == 0) ) varNew.append(" ");
             switch(varOld[row]) {
                case 'B':
                   getRegister(regB.str())->set(0,row,0x1);
