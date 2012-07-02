@@ -337,8 +337,9 @@ void KpixControl::swRunThread() {
          }
          else {
             if ( gotEvent ) runTotal++;
-            getVariable("RunProgress")->setInt((uint)(((double)runTotal/(double)swRunCount_)*100.0));
-            if ( runTotal >= swRunCount_ ) break;
+            if ( swRunCount_ == 0 ) getVariable("RunProgress")->setInt(0);
+            else getVariable("RunProgress")->setInt((uint)(((double)runTotal/(double)swRunCount_)*100.0));
+            if ( swRunCount_ != 0 && runTotal >= swRunCount_ ) break;
          }
 
          // Execute command
@@ -429,7 +430,7 @@ void KpixControl::setRunState ( string state ) {
       else swRunPeriod_ = 1000000;
 
       // Start thread
-      if ( swRunCount_ > 0 && pthread_create(&swRunThread_,NULL,swRunStatic,this) ) {
+      if ( pthread_create(&swRunThread_,NULL,swRunStatic,this) ) {
          err << "KpixControl::startRun -> Failed to create ioThread" << endl;
          if ( debug_ ) cout << err.str();
          getVariable("RunState")->set(swRunRetState_);
