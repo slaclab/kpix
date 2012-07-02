@@ -48,7 +48,7 @@ $(OBJ)/%.o: $(GEN_DIR)/%.cpp $(GEN_DIR)/%.h
 
 # Comile applications
 $(BIN)/%: $(ROOT_DIR)/%.cpp $(KPX_OBJ) $(GEN_OBJ)
-	$(CC) $(CFLAGS) $(LFLAGS) $(DEF) $(OBJ)/*.o -o $@ $<
+	$(CC) $(CFLAGS) $(DEF) $(OBJ)/*.o -o $@ $< $(LFLAGS) 
 
 # Comile root
 $(BIN)/root_kpix: root_kpix.cc $(KPX_OBJ) $(GEN_OBJ) $(OBJ)/kpix_headers.C
