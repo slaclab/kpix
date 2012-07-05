@@ -258,6 +258,8 @@ void MainWindow::selChanged() {
 void MainWindow::resetPressed() {
    hist_->resetPlot();
    calib_->resetPlot();
+   time_->resetPlot();
+   hits_->resetPlot();
    dCount_ = 0;
    selChanged();
 }

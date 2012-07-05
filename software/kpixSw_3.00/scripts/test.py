@@ -30,7 +30,7 @@ pythonDaq.daqHardReset();
 pythonDaq.daqSetDefaults();
 pythonDaq.daqResetCounters();
 pythonDaq.daqSetConfig("cntrlFpga:BncSourceA","SelCell");
-pythonDaq.daqSetRunParameters("10Hz",100);
+pythonDaq.daqSetRunParameters("No Limit",100);
 pythonDaq.daqRefreshState();
 pythonDaq.daqSetRunState("Running");
 while pythonDaq.daqGetRunState() == "Running":
