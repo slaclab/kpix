@@ -118,7 +118,6 @@ void TimeWindow::rePlot(uint kpix, uint chan) {
 
    for (x=0; x<4; x++) {
       setHistData(x,&(data_[kpix][chan][x]));
-      setHistData(x,&(data_[kpix][chan][x]));
       plot_[x]->replot();
    }
 }

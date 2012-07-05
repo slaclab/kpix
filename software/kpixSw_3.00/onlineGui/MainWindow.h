@@ -24,6 +24,7 @@
 #include <KpixEvent.h>
 #include <HistWindow.h>
 #include <TimeWindow.h>
+#include <HitWindow.h>
 #include <CalibWindow.h>
 using namespace std;
 
@@ -38,6 +39,7 @@ class MainWindow : public QWidget {
       HistWindow  *hist_;
       CalibWindow *calib_;
       TimeWindow  *time_;
+      HitWindow   *hits_;
 
       QSpinBox    *kpix_;
       QSpinBox    *chan_;

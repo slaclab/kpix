@@ -45,6 +45,9 @@ MainWindow::MainWindow ( QWidget *parent ) : QWidget (parent) {
    time_ = new TimeWindow;
    tab->addTab(time_,"Timestamp Plots");
 
+   hits_ = new HitWindow;
+   tab->addTab(hits_,"Hit Plots");
+
    QHBoxLayout *hbox = new QHBoxLayout;
    top->addLayout(hbox);
    
@@ -189,6 +192,7 @@ void MainWindow::rxData (uint size, uint *data) {
    if ( calInject_ ) calib_->rxData (&event_, calChannel_, calDac_, kpixPol_, kpixCalHigh_);
    else hist_->rxData(&event_);
    time_->rxData(&event_);
+   hits_->rxData(&event_);
 
    // Extract temperatures
    for (x=0; x < event_.count(); x++) {
@@ -219,6 +223,7 @@ void MainWindow::selChanged() {
    hist_->rePlot(kpix,chan);
    calib_->rePlot(kpix,chan);
    time_->rePlot(kpix,chan);
+   hits_->rePlot(kpix);
 
    dText_->setText(QString().setNum(dCount_));
 
