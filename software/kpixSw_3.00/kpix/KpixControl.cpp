@@ -206,6 +206,9 @@ void KpixControl::swRunThread() {
    uint            calDac;
    bool            gotEvent;
    stringstream    oldConfig;
+   stringstream    xml;
+   uint            runNumber;
+
    oldConfig.str("");
 
    // Setup run status and init clock
@@ -225,6 +228,19 @@ void KpixControl::swRunThread() {
            << ", RunCount=" << dec << swRunCount_
            << ", RunPeriod=" << dec << swRunPeriod_ << endl;
    }
+
+   // Increment run number
+   runNumber = getVariable("RunNumber")->getInt() + 1;
+   getVariable("RunNumber")->setInt(runNumber);
+
+   // Add record to data file
+   xml.str("");
+   xml << "<runStart>" << endl;
+   xml << "<runNumber>" << runNumber << "</runNumber>" << endl;
+   xml << "<timestamp>" << genTime(time(0)) << "</timestamp>" << endl;
+   xml << "<user>" << getlogin() << "</user>" << endl;
+   xml << "</runStart>" << endl;
+   commLink_->addRunStart(xml.str());
 
    try {
 
@@ -365,6 +381,16 @@ void KpixControl::swRunThread() {
 
    // Cleanup
    sleep(1);
+
+   // Add record to data file
+   xml.str("");
+   xml << "<runStop>" << endl;
+   xml << "<runNumber>" << runNumber << "</runNumber>" << endl;
+   xml << "<timestamp>" << genTime(time(0)) << "</timestamp>" << endl;
+   xml << "<user>" << getlogin() << "</user>" << endl;
+   xml << "</runStop>" << endl;
+   commLink_->addRunStop(xml.str());
+
    getVariable("RunState")->set(swRunRetState_);
    swRunning_ = false;
    pthread_exit(NULL);

@@ -66,6 +66,9 @@ int main (int argc, char **argv) {
          }
       }
 
+      if ( dataRead.sawRunStart() ) dataRead.dumpRunStart();
+      if ( dataRead.sawRunStop()  ) dataRead.dumpRunStop();
+
       // Dump header values
       cout << "Header:eventNumber = " << dec << event.eventNumber() << endl;
       cout << "Header:timeStamp   = " << dec << event.timestamp() << endl;
@@ -121,6 +124,7 @@ int main (int argc, char **argv) {
          cout << endl;
       }
    }
+   if ( dataRead.sawRunStop()  ) dataRead.dumpRunStop();
 
    // Dump config
    dataRead.dumpConfig();
