@@ -26,8 +26,8 @@
 --    All rights reserved.                                                    --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
--- You must compile the wrapper file fifo_72x32k_fwft.vhd when simulating
--- the core, fifo_72x32k_fwft. When compiling the wrapper file, be sure to
+-- You must compile the wrapper file EventBuilderFifo.vhd when simulating
+-- the core, EventBuilderFifo. When compiling the wrapper file, be sure to
 -- reference the XilinxCoreLib VHDL simulation library. For detailed
 -- instructions, please refer to the "CORE Generator Help".
 
@@ -40,7 +40,7 @@ USE ieee.std_logic_1164.ALL;
 -- synthesis translate_off
 LIBRARY XilinxCoreLib;
 -- synthesis translate_on
-ENTITY fifo_72x32k_fwft IS
+ENTITY EventBuilderFifo IS
   PORT (
     clk : IN STD_LOGIC;
     rst : IN STD_LOGIC;
@@ -52,11 +52,11 @@ ENTITY fifo_72x32k_fwft IS
     empty : OUT STD_LOGIC;
     valid : OUT STD_LOGIC
   );
-END fifo_72x32k_fwft;
+END EventBuilderFifo;
 
-ARCHITECTURE fifo_72x32k_fwft_a OF fifo_72x32k_fwft IS
+ARCHITECTURE EventBuilderFifo_a OF EventBuilderFifo IS
 -- synthesis translate_off
-COMPONENT wrapped_fifo_72x32k_fwft
+COMPONENT wrapped_EventBuilderFifo
   PORT (
     clk : IN STD_LOGIC;
     rst : IN STD_LOGIC;
@@ -71,7 +71,7 @@ COMPONENT wrapped_fifo_72x32k_fwft
 END COMPONENT;
 
 -- Configuration specification
-  FOR ALL : wrapped_fifo_72x32k_fwft USE ENTITY XilinxCoreLib.fifo_generator_v8_4(behavioral)
+  FOR ALL : wrapped_EventBuilderFifo USE ENTITY XilinxCoreLib.fifo_generator_v8_4(behavioral)
     GENERIC MAP (
       c_add_ngc_constraint => 0,
       c_application_type_axis => 0,
@@ -266,7 +266,7 @@ END COMPONENT;
 -- synthesis translate_on
 BEGIN
 -- synthesis translate_off
-U0 : wrapped_fifo_72x32k_fwft
+U0 : wrapped_EventBuilderFifo
   PORT MAP (
     clk => clk,
     rst => rst,
@@ -280,4 +280,4 @@ U0 : wrapped_fifo_72x32k_fwft
   );
 -- synthesis translate_on
 
-END fifo_72x32k_fwft_a;
+END EventBuilderFifo_a;

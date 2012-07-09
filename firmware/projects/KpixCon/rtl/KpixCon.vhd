@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2012-07-05
+-- Last update: 2012-07-09
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -205,7 +205,7 @@ begin
   --------------------------------------------------------------------------------------------------
   -- Event Builder FIFO
   --------------------------------------------------------------------------------------------------
-  fifo_72x32k_fwft_1 : entity work.fifo_72x32k_fwft
+  EventBuilderFifo_1 : entity work.EventBuilderFifo
     port map (
       clk   => sysClk125,
       rst   => sysRst125,

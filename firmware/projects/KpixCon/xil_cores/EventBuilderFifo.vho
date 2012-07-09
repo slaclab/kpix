@@ -52,7 +52,7 @@
 -- The following code must appear in the VHDL architecture header:
 
 ------------- Begin Cut here for COMPONENT Declaration ------ COMP_TAG
-COMPONENT fifo_72x32k_fwft
+COMPONENT EventBuilderFifo
   PORT (
     clk : IN STD_LOGIC;
     rst : IN STD_LOGIC;
@@ -71,7 +71,7 @@ END COMPONENT;
 -- body. Substitute your own instance name and net names.
 
 ------------- Begin Cut here for INSTANTIATION Template ----- INST_TAG
-your_instance_name : fifo_72x32k_fwft
+your_instance_name : EventBuilderFifo
   PORT MAP (
     clk => clk,
     rst => rst,
@@ -85,8 +85,8 @@ your_instance_name : fifo_72x32k_fwft
   );
 -- INST_TAG_END ------ End INSTANTIATION Template ------------
 
--- You must compile the wrapper file fifo_72x32k_fwft.vhd when simulating
--- the core, fifo_72x32k_fwft. When compiling the wrapper file, be sure to
+-- You must compile the wrapper file EventBuilderFifo.vhd when simulating
+-- the core, EventBuilderFifo. When compiling the wrapper file, be sure to
 -- reference the XilinxCoreLib VHDL simulation library. For detailed
 -- instructions, please refer to the "CORE Generator Help".
 

@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 13.4
-# Date: Wed Jun 27 21:51:41 2012
+# Date: Mon Jul  9 17:29:38 2012
 #
 ##############################################################
 #
@@ -51,7 +51,7 @@ CSET axis_type=FIFO
 CSET buser_width=1
 CSET clock_enable_type=Slave_Interface_Clock_Enable
 CSET clock_type_axi=Common_Clock
-CSET component_name=fifo_72x32k_fwft
+CSET component_name=EventBuilderFifo
 CSET data_count=false
 CSET data_count_width=12
 CSET disable_timing_violations=false
@@ -216,4 +216,4 @@ CSET wuser_width=1
 MISC pkg_timestamp=2011-10-22T06:08:52Z
 # END Extra information
 GENERATE
-# CRC: e4cf0af5
+# CRC: 2e7874e3

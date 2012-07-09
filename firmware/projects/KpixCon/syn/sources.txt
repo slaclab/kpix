@@ -14,7 +14,6 @@ vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixDataRxPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegCntlPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegRxPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/TriggerPkg.vhd"
-#vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/TimestampPkg.vhd"
 
 ## eth_client
 vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClientPackage.vhd"
@@ -26,7 +25,7 @@ vhdl work "_PROJ_DIR_/rtl/Version.vhd"
 # Xilinx Cores
 
 ## KpixDaq
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/xil_cores/fifo_72x32k_fwft.vhd"
+
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/xil_cores/fifo_72x512_18x2048_fwft.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/xil_cores/timestamp_fifo.vhd"
 
@@ -38,6 +37,7 @@ vhdl work "_PROJ_DIR_/../../modules/eth_client/xil_cores/eth_fifo_18x1k.vhd"
 vhdl work "_PROJ_DIR_/../../modules/eth_client/xil_cores/eth_fifo_13x1k.vhd"
 
 ## KpixCon
+vhdl work "_PROJ_DIR_/xil_cores/EventBuilderFifo.vhd"
 vhdl work "_PROJ_DIR_/xil_cores/main_dcm.vhd"
 
 
@@ -57,7 +57,6 @@ vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixLocal.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegCntl.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegRx.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/Trigger.vhd"
-#vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/Timestamp.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/UsBuff64.vhd"
 
 ## KpixCore

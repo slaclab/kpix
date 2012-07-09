@@ -73,7 +73,7 @@ NET "triggerExtIn_cmosB" LOC = "G22" | IOSTANDARD = "LVCMOS33"; #BNC_IN1
 
 NET "kpixClkOut" LOC = "N7" | IOSTANDARD = "LVCMOS33"; #KPIX_CLK_OUTA
 NET "kpixRstOut" LOC = "P5" | IOSTANDARD = "LVCMOS33";
-NET "kpixTriggerOut" LOC = "M5" | IOSTANDARD = "LVCMOS33";
+NET "kpixTriggerOut" LOC = "M5" | IOSTANDARD = "LVCMOS33"; #KPIX_CLK_OUTC
 NET "kpixSerTxOut<0>" LOC = "L4" | IOSTANDARD = "LVCMOS33";
 NET "kpixSerTxOut<1>" LOC = "L5" | IOSTANDARD = "LVCMOS33";
 NET "kpixSerTxOut<2>" LOC = "P7" | IOSTANDARD = "LVCMOS33";
