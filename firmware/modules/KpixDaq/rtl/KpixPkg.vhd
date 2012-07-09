@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-10
--- Last update: 2012-06-13
+-- Last update: 2012-07-03
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -49,13 +49,16 @@ package KpixPkg is
   constant KPIX_TEMP_REG_ADDR_C        : slv(6 downto 0) := "0000111";
   constant KPIX_ACQUIRE_CMD_ID_REV_C   : slv(0 to 6)     := "0100000";  -- Reversed
   constant KPIX_CALIBRATE_CMD_ID_REV_C : slv(0 to 6)     := "1100000";  -- Reversed
+  constant KPIX_READOUT_CMD_ID_REV_C   : slv(0 to 6)     := "1000000";  -- Reversed
 
   -- Configuration Registers
   type KpixConfigRegsType is record
-    inputEdge   : sl;
-    outputEdge  : sl;
-    rawDataMode : sl;
-    numColumns  : slv(4 downto 0);
+    kpixReset       : sl;
+    inputEdge       : sl;
+    outputEdge      : sl;
+    rawDataMode     : sl;
+    numColumns      : slv(4 downto 0);
+    autoReadDisable : sl;
   end record KpixConfigRegsType;
 
   

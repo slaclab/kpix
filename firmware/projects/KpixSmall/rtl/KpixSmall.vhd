@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2012-06-25
+-- Last update: 2012-07-03
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ entity KpixSmall is
     debugOutB : out sl;
 
     -- External Trigger
-    triggerIn : in TriggerInType;
+    triggerExtIn : in TriggerExtInType;
 
     -- Interface to KPiX modules
     kpixClkOutP     : out sl;
@@ -185,7 +185,7 @@ begin
       ethCmdCntlOut  => ethCmdCntlOut,
       ethUsDataOut   => ethUsDataOut,
       ethUsDataIn    => ethUsDataIn,
-      triggerIn      => triggerIn,
+      triggerExtIn   => triggerExtIn,
       ebFifoOut      => ebFifoOut,
       ebFifoIn       => ebFifoIn,
       debugOutA      => debugOutA,

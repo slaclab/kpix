@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2012-06-22
+-- Last update: 2012-07-05
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ entity KpixCon is
     debugOutB : out sl;
 
     -- External Trigger
-    triggerIn : in TriggerInType;
+    triggerExtIn : in TriggerExtInType;
 
     -- Interface to KPiX modules
     kpixClkOut     : out sl;
@@ -77,6 +77,8 @@ architecture rtl of KpixCon is
   signal ethUsDataOut  : EthUsDataOutType;
   signal ethUsDataIn   : EthUsDataInType;
 
+  signal intTriggerExtIn : TriggerExtInType;
+
   -- Event Builder FIFO signals
   -- Optionaly pass this through as IO to external FIFO
   signal ebFifoOut : EventBuilderFifoOutType;
@@ -87,14 +89,14 @@ architecture rtl of KpixCon is
   -- Internal Kpix signals
   signal intKpixResetOut : sl;
   signal intKpixSerTxOut : slv(NUM_KPIX_MODULES_G-1 downto 0);
-  signal intKpixSerRxIn : slv(NUM_KPIX_MODULES_G-1 downto 0);
-  signal kpixClk : sl;
-  signal kpixRst : sl;
+  signal intKpixSerRxIn  : slv(NUM_KPIX_MODULES_G-1 downto 0);
+  signal kpixClk         : sl;
+  signal kpixRst         : sl;
 
 
 begin
 
-  fpgaRst <= '0'; --not fpgaRstL;
+  fpgaRst <= '0';                       --not fpgaRstL;
 
   -- Input clock buffer
   GtpRefClkIbufds : IBUFDS
@@ -167,6 +169,11 @@ begin
       gtpTxN        => udpTxN,
       gtpTxP        => udpTxP);
 
+  intTriggerExtIn.nimA  <= not triggerExtIn.nimA;
+  intTriggerExtIn.nimB  <= not triggerExtIn.nimB;
+  intTriggerExtIn.cmosA <= not triggerExtIn.cmosA;
+  intTriggerExtIn.cmosB <= not triggerExtIn.cmosB;
+
   --------------------------------------------------------------------------------------------------
   -- KPIX Core
   --------------------------------------------------------------------------------------------------
@@ -184,7 +191,7 @@ begin
       ethCmdCntlOut  => ethCmdCntlOut,
       ethUsDataOut   => ethUsDataOut,
       ethUsDataIn    => ethUsDataIn,
-      triggerIn      => triggerIn,
+      triggerExtIn   => intTriggerExtIn,
       ebFifoOut      => ebFifoOut,
       ebFifoIn       => ebFifoIn,
       debugOutA      => debugOutA,
@@ -223,7 +230,7 @@ begin
       );
 
   -- Some signals are inverted due to KpixCon board features
-  serTxInvert: process (intKpixSerTxOut) is
+  serTxInvert : process (intKpixSerTxOut) is
   begin
     for i in NUM_KPIX_MODULES_G-1 downto 0 loop
       if (i mod 2 = 0) then
@@ -234,7 +241,7 @@ begin
     end loop;
   end process serTxInvert;
 
- serRxInvert: process (intKpixSerRxIn) is
+  serRxInvert : process (intKpixSerRxIn) is
   begin
     for i in NUM_KPIX_MODULES_G-1 downto 0 loop
       if (i mod 2 = 0) then
@@ -244,7 +251,7 @@ begin
       end if;
     end loop;
   end process serRxInvert;
-  
+
   OBUF_RST : OBUF
     port map (
       I => not intKpixResetOut,

@@ -48,7 +48,9 @@ entity KpixLocal is
     kpixData  : out std_logic;          -- Response Data out
 
     -- KPIX State
-    coreState : out std_logic_vector(3 downto 0);  -- Core state value
+    analogState  : out std_logic_vector(2 downto 0);  -- Core state value
+    readoutState : out std_logic_vector(2 downto 0);
+    prechargeBus : out std_logic;
 
     -- Cal strobe out
     calStrobeOut : out std_logic;
@@ -96,9 +98,8 @@ architecture KpixLocal of KpixLocal is
       desel_all_cells : out std_logic;
       ramp_period     : out std_logic;
       precharge_bus   : out std_logic;
-      analog_state0   : out std_logic;
-      analog_state1   : out std_logic;
-      read_state      : out std_logic;
+      analog_state    : out std_logic_vector(2 downto 0);
+      read_state      : out std_logic_vector(2 downto 0);
       reg_data        : out std_logic;
       reg_wr_ena      : out std_logic;
       rdback          : in  std_logic
@@ -127,9 +128,8 @@ architecture KpixLocal of KpixLocal is
   signal v8_precharge_bus   : std_logic;
   signal v8_reg_data        : std_logic;
   signal v8_reg_wr_ena      : std_logic;
-  signal v8_analog_state0   : std_logic;
-  signal v8_analog_state1   : std_logic;
-  signal v8_read_state      : std_logic;
+  signal v8_analog_state    : std_logic_vector(2 downto 0);
+  signal v8_read_state      : std_logic_vector(2 downto 0);
   signal reg_clock          : std_logic;
   signal reg_sel1           : std_logic;
   signal reg_sel0           : std_logic;
@@ -138,7 +138,7 @@ architecture KpixLocal of KpixLocal is
   signal leakage_null       : std_logic;
   signal offset_null        : std_logic;
   signal thresh_off         : std_logic;
-  signal trig_inh           : std_logic; 
+  signal trig_inh           : std_logic;
   signal cal_strobe         : std_logic;
   signal pwr_up_acq_dig     : std_logic;
   signal sel_cell           : std_logic;
@@ -148,17 +148,19 @@ architecture KpixLocal of KpixLocal is
   signal reg_data           : std_logic;
   signal reg_wr_ena         : std_logic;
   signal int_data_out       : std_logic;
-  signal intCoreState       : std_logic_vector(3 downto 0);
+
 
   type RegType is record
-    regClkSync      : SynchronizerType;
-    regSel0Sync     : SynchronizerType;
-    regSel1Sync     : SynchronizerType;
-    div             : sl;
-    coreStateSync   : SynchronizerArray(3 downto 0);
-    coreStateStable : std_logic_vector(3 downto 0);
-    trigInhibitSync : SynchronizerType;
-    sysOut          : KpixLocalSysOutType;
+    regClkSync         : SynchronizerType;
+    regSel0Sync        : SynchronizerType;
+    regSel1Sync        : SynchronizerType;
+    trigInhibitSync    : SynchronizerType;
+    div                : sl;
+    analogStateSync    : SynchronizerArray(3 downto 0);
+    analogStateStable  : std_logic_vector(3 downto 0);
+    readoutStateSync   : SynchronizerArray(3 downto 0);
+    readoutStateStable : std_logic_vector(3 downto 0);
+    sysOut             : KpixLocalSysOutType;
   end record RegType;
 
   signal r, rin : RegType;
@@ -194,8 +196,7 @@ begin
     reg_data        => v8_reg_data,
     reg_wr_ena      => v8_reg_wr_ena,
     rdback          => '0',
-    analog_state0   => v8_analog_state0,
-    analog_state1   => v8_analog_state1,
+    analog_state    => v8_analog_state,
     read_state      => v8_read_state,
     temp_id0        => '0',
     temp_id1        => '0',
@@ -236,12 +237,12 @@ begin
   precharge_bus   <= v8_precharge_bus;
   reg_data        <= v8_reg_data;
   reg_wr_ena      <= v8_reg_wr_ena;
-  intCoreState(0) <= v8_analog_state0;
-  intCoreState(1) <= v8_analog_state1;
-  intCoreState(2) <= v8_read_state;
-  intCoreState(3) <= v8_precharge_bus;
 
-  coreState <= intCoreState;
+  analogState  <= v8_analog_state;
+  readoutState <= v8_read_state;
+  prechargeBus <= v8_precharge_bus;
+
+
 
   --------------------------------------------------------------------------------------------------
   -- Synchronize kpix core outputs to sysclk
@@ -250,22 +251,25 @@ begin
   process (sysClk, sysRst)
   begin
     if (sysRst = '1') then
-      r.regClkSync         <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
-      r.regSel0Sync        <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
-      r.regSel1Sync        <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
-      r.div                <= '0'                               after DELAY_G;
-      r.coreStateSync      <= (others => SYNCHRONIZER_INIT_0_C) after DELAY_G;
-      r.coreStateStable    <= (others => '0')                   after DELAY_G;
-      r.trigInhibitSync    <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
-      r.sysOut.bunchCount  <= (others => '0')                   after DELAY_G;
-      r.sysOut.coreState   <= (others => '0')                   after DELAY_G;
-      r.sysOut.trigInhibit <= '0'                               after DELAY_G;
+      r.regClkSync          <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
+      r.regSel0Sync         <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
+      r.regSel1Sync         <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
+      r.div                 <= '0'                               after DELAY_G;
+      r.analogStateSync     <= (others => SYNCHRONIZER_INIT_0_C) after DELAY_G;
+      r.analogStateStable   <= (others => '0')                   after DELAY_G;
+      r.readoutStateSync    <= (others => SYNCHRONIZER_INIT_0_C) after DELAY_G;
+      r.readoutStateStable  <= (others => '0')                   after DELAY_G;
+      r.trigInhibitSync     <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
+      r.sysOut.bunchCount   <= (others => '0')                   after DELAY_G;
+      r.sysOut.analogState  <= (others => '0')                   after DELAY_G;
+      r.sysOut.readoutState <= (others => '0')                   after DELAY_G;
+      r.sysOut.trigInhibit  <= '0'                               after DELAY_G;
     elsif rising_edge(sysClk) then
       r <= rin after DELAY_G;
     end if;
   end process;
 
-  process (r, reg_sel1, reg_sel0, reg_clock, trig_inh, intCoreState) is
+  process (r, reg_sel1, reg_sel0, reg_clock, trig_inh, v8_read_state, v8_analog_state) is
     variable rVar : RegType;
   begin
     rVar := r;
@@ -275,20 +279,31 @@ begin
     synchronize(reg_clock, r.regClkSync, rVar.regClkSync);
     synchronize(reg_sel0, r.regSel0Sync, rVar.regSel0Sync);
     synchronize(reg_sel1, r.regSel1Sync, rVar.regSel1Sync);
-    if (r.regSel1Sync.sync = '1' and r.regSel0Sync.sync = '0') then
+
+    --if (r.regSel1Sync.sync = '1' and r.regSel0Sync.sync = '0') then
+    if (r.sysOut.analogState = KPIX_ANALOG_SAMP_STATE_C) then
       if (detectRisingEdge(r.regClkSync)) then
         rVar.div := not r.div;
         if (r.div = '1') then
           rVar.sysOut.bunchCount := r.sysOut.bunchCount + 1;
         end if;
       end if;
+    else
+      rVar.sysOut.bunchCount := (others => '0');
     end if;
 
-    -- Sync coreState to sysClk
-    synchronize(intCoreState, r.coreStateSync, rVar.coreStateSync);
-    rVar.coreStateStable := r.coreStateStable(2 downto 0) & toSl(detectEdge(r.coreStateSync));
-    if (isZero(rVar.coreStateStable)) then
-      rVar.sysOut.coreState := toSlvSync(r.coreStateSync);
+    -- Sync analogState to sysClk
+    synchronize(v8_analog_state, r.analogStateSync, rVar.analogStateSync);
+    rVar.analogStateStable := r.analogStateStable(2 downto 0) & toSl(detectEdge(r.analogStateSync));
+    if (isZero(rVar.analogStateStable)) then
+      rVar.sysOut.analogState := toSlvSync(r.analogStateSync);
+    end if;
+
+    -- Sync readoutState to sysClk
+    synchronize(v8_read_state, r.readoutStateSync, rVar.readoutStateSync);
+    rVar.readoutStateStable := r.readoutStateStable(2 downto 0) & toSl(detectEdge(r.readoutStateSync));
+    if (isZero(rVar.readoutStateStable)) then
+      rVar.sysOut.readoutState := toSlvSync(r.readoutStateSync);
     end if;
 
     -- Synchronize trigger inhibit

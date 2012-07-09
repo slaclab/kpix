@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-06-26
+-- Last update: 2012-07-05
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -18,12 +18,15 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.StdRtlPkg.all;
+use work.SynchronizePkg.all;
 use work.KpixPkg.all;
 use work.KpixDataRxPkg.all;
 use work.EthFrontEndPkg.all;
 use work.EventBuilderFifoPkg.all;
 use work.TriggerPkg.all;
-use work.TimestampPkg.all;
+use work.KpixLocalPkg.all;
+--use work.TimestampPkg.all;
+--use work.KpixRegCntlPkg.all;
 
 entity EventBuilder is
   
@@ -38,13 +41,20 @@ entity EventBuilder is
     -- Trigger Interface
     triggerOut : in TriggerOutType;
 
+    -- Trigger Timestamp Interface
+    timestampOut : in  TimestampOutType;
+    timestampIn  : out TimestampInType;
+
+    -- Kpix Local Interface
+    kpixLocalSysOut : in KpixLocalSysOutType;
+
     -- KPIX data interface
     kpixDataRxOut : in  KpixDataRxOutArray(NUM_KPIX_MODULES_G-1 downto 0);
     kpixDataRxIn  : out KpixDataRxInArray(NUM_KPIX_MODULES_G-1 downto 0);
+    kpixClk       : in  sl;
 
-    -- Timestamp Interface
-    timestampOut : in  TimestampOutType;
-    timestampIn  : out TimestampInType;
+    -- Eth Registers
+    kpixConfigRegs : in KpixConfigRegsType;
 
     -- FIFO Interface
     ebFifoIn  : out EventBuilderFifoInType;
@@ -62,15 +72,17 @@ architecture rtl of EventBuilder is
   constant EOF_BIT_C : natural := 65;
 
   type FlagType is (NONE_C, SOF_C, EOF_C);
-  type StateType is (WAIT_TRIGGER_S, WRITE_HEADER_S, READ_TIMESTAMPS_S, CHECK_BUSY_S, GATHER_DATA_S);
+  type StateType is (WAIT_ACQUIRE_S, WRITE_HEADER_S, WAIT_DIGITIZE_S, READ_TIMESTAMPS_S, WAIT_READOUT_S,
+                     CHECK_BUSY_S, GATHER_DATA_S);
 
   type RegType is record
     timestampCount : unsigned(31 downto 0);
     timestamp      : unsigned(31 downto 0);
     eventNumber    : unsigned(31 downto 0);
-    newTrigger     : sl;
+    newAcquire     : sl;
+    kpixClkSync    : SynchronizerType;
     state          : StateType;
-    counter        : unsigned(31 downto 0);  -- Generic counter for stalling in a state
+    counter        : unsigned(7 downto 0);  -- Generic counter for stalling in a state
     activeModules  : slv(NUM_KPIX_MODULES_G-1 downto 0);
     dataDone       : slv(NUM_KPIX_MODULES_G-1 downto 0);
     first          : unsigned(log2(NUM_KPIX_MODULES_G)-1 downto 0);
@@ -87,21 +99,22 @@ begin
   sync : process (sysClk, sysRst) is
   begin
     if (sysRst = '1') then
-      r.timestampCount   <= (others => '0');
-      r.timestamp        <= (others => '0');
-      r.eventNumber      <= (others => '1');  -- So first event is 0 (eventNumber + 1)
-      r.newTrigger       <= '0';
-      r.state            <= WAIT_TRIGGER_S;
-      r.counter          <= (others => '0');
-      r.activeModules    <= (others => '0');
-      r.dataDone         <= (others => '0');
-      r.first            <= (others => '0');
-      r.kpixDataRxIn     <= (others => (ready => '0'));
-      r.timestampIn.rdEn <= '0';
-      r.ebFifoIn.wrData  <= (others => '0');
-      r.ebFifoIn.wrEn    <= '0';
+      r.timestampCount   <= (others => '0') after DELAY_G;
+      r.timestamp        <= (others => '0') after DELAY_G;
+      r.eventNumber      <= (others => '1') after DELAY_G;  -- So first event is 0 (eventNumber + 1)
+      r.newAcquire       <= '0' after DELAY_G;
+      r.kpixClkSync      <= SYNCHRONIZER_INIT_0_C after DELAY_G;
+      r.state            <= WAIT_ACQUIRE_S after DELAY_G;
+      r.counter          <= (others => '0') after DELAY_G;
+      r.activeModules    <= (others => '0') after DELAY_G;
+      r.dataDone         <= (others => '0') after DELAY_G;
+      r.first            <= (others => '0') after DELAY_G;
+      r.kpixDataRxIn     <= (others => (ready => '0')) after DELAY_G;
+      r.timestampIn.rdEn <= '0' after DELAY_G;
+      r.ebFifoIn.wrData  <= (others => '0') after DELAY_G;
+      r.ebFifoIn.wrEn    <= '0' after DELAY_G;
     elsif (rising_edge(sysClk)) then
-      r <= rin;
+      r <= rin after DELAY_G;
     end if;
   end process sync;
 
@@ -124,7 +137,7 @@ begin
       rVar.ebFifoIn.wrEn := '1';
     end procedure writeFifo;
 
-    function formatTimestamp
+    impure function formatTimestamp
       return slv is
       variable retVar : slv(63 downto 0) := (others => '0');
     begin
@@ -139,15 +152,21 @@ begin
   begin
     rVar := r;
 
+    synchronize(kpixClk, r.kpixClkSync, rVar.kpixClkSync);
+
     ------------------------------------------------------------------------------------------------
     -- FIFO WR Logic
     ------------------------------------------------------------------------------------------------
     -- Latch trigger
     rVar.timestampCount := r.timestampCount + 1;
-    if (r.newTrigger = '0' and triggerOut.startAcquire = '1' and r.state = WAIT_TRIGGER_S) then
+    if (r.newAcquire = '0' and triggerOut.startAcquire = '1' and r.state = WAIT_ACQUIRE_S) then
       rVar.timestamp   := r.timestampCount;
       rVar.eventNumber := r.eventNumber + 1;
-      rVar.newTrigger  := '1';
+      rVar.newAcquire  := '1';
+    end if;
+
+    if (kpixConfigRegs.kpixReset = '1') then
+      rVar.eventNumber := (others => '0');
     end if;
 
     -- Registers that are 0 by default.
@@ -166,9 +185,9 @@ begin
     end loop;
 
     case r.state is
-      when WAIT_TRIGGER_S =>
-        if (r.newTrigger = '1' and ebFifoOut.full = '0') then
-          rVar.newTrigger := '0';
+      when WAIT_ACQUIRE_S =>
+        if (r.newAcquire = '1' and ebFifoOut.full = '0') then
+          rVar.newAcquire := '0';
           rVar.state      := WRITE_HEADER_S;
           writeFifo(slv(r.eventNumber & r.timestamp), SOF_C);
         end if;
@@ -178,10 +197,22 @@ begin
           rVar.counter := r.counter + 1;
           writeFifo(slvAll('0', 64));
           if (r.counter = 2) then
-            rVar.state := READ_TIMESTAMPS_S;
+            rVar.state := WAIT_DIGITIZE_S;
           end if;
         else
           rVar.counter := r.counter;
+        end if;
+
+      when WAIT_DIGITIZE_S =>
+        -- Must wait until acquire state is done before reading timestamps
+        if (kpixLocalSysOut.analogState = KPIX_ANALOG_DIG_STATE_C) then
+          if (kpixConfigRegs.autoReadDisable = '1' and timestampOut.valid = '0') then
+            -- No data, Close frame
+            writeFifo(slvAll('0',64), EOF_C);
+            rVar.state := WAIT_ACQUIRE_S;
+          else
+            rVar.state := READ_TIMESTAMPS_S;
+          end if;
         end if;
 
       when READ_TIMESTAMPS_S =>
@@ -189,16 +220,24 @@ begin
           rVar.timestampIn.rdEn := '1';
           writeFifo(formatTimestamp);
         else
+          rVar.state := WAIT_READOUT_S;
+        end if;
+
+      when WAIT_READOUT_S =>
+        if (kpixLocalSysOut.readoutState = KPIX_READOUT_DATA_STATE_C) then
           rVar.state := CHECK_BUSY_S;
         end if;
         
       when CHECK_BUSY_S =>
-        -- Wait X cycles for busy signals
-        -- Tells which modules are active 
-        rVar.counter := r.counter + 1;
-        if (r.counter = 125000000) then  -- Wait 1 second
+        -- Wait X kpixClk cycles for busy signals
+        -- Tells which modules are active
+        rVar.counter := r.counter;
+        if (detectRisingEdge(r.kpixClkSync)) then
+          rVar.counter := r.counter + 1;
+        end if;
+        if (r.counter = 255) then  -- Wait some amount of time for data to arrive
           -- No busy signals detected at all
-          rVar.state := WAIT_TRIGGER_S;
+          rVar.state := WAIT_ACQUIRE_S;
           writeFifo(X"0123456789abcdef", EOF_C);
         end if;
         for i in NUM_KPIX_MODULES_G-1 downto 0 loop
@@ -236,7 +275,7 @@ begin
           -- Check if done
           if (r.dataDone = r.activeModules) then
             writeFifo(slvAll('0', 64), EOF_C);  -- Write tail
-            rVar.state := WAIT_TRIGGER_S;
+            rVar.state := WAIT_ACQUIRE_S;
           end if;
         end if;
 

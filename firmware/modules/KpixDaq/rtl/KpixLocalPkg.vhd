@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-22
--- Last update: 2012-06-14
+-- Last update: 2012-07-03
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -26,6 +26,25 @@ package KpixLocalPkg is
   constant KPIX_READOUT_STATE_C      : slv(2 downto 0) := "100";
   constant KPIX_PRECHARGE_STATE_C    : slv(3 downto 0) := "1010";
 
+  -- Analog States
+  constant KPIX_ANALOG_IDLE_STATE_C  : slv(2 downto 0) := "000";  -- Idle time
+  constant KPIX_ANALOG_PRE_STATE_C   : slv(2 downto 0) := "001";  -- Pre-Sample
+  constant KPIX_ANALOG_SAMP_STATE_C  : slv(2 downto 0) := "011";  -- Sample
+  constant KPIX_ANALOG_PAUSE_STATE_C : slv(2 downto 0) := "010";  -- Pause
+  constant KPIX_ANALOG_DIG_STATE_C   : slv(2 downto 0) := "110";  -- Digitize
+  constant KPIX_ANALOG_READ_STATE_C  : slv(2 downto 0) := "100";  -- Read
+
+  -- Readout States
+  constant KPIX_READOUT_IDLE_STATE_C      : slv(2 downto 0) := "000";  -- Idle Time
+  constant KPIX_READOUT_PRECHARGE_STATE_C : slv(2 downto 0) := "001";  -- Precharge Bus
+  constant KPIX_READOUT_HEADER_STATE_C    : slv(2 downto 0) := "011";  -- Send Header
+  constant KPIX_READOUT_DATA_STATE_C      : slv(2 downto 0) := "010";  -- Send Data
+  constant KPIX_READOUT_SHIFT_STATE_C     : slv(2 downto 0) := "110";  -- Shift row/word select
+  constant KPIX_REAOUT_DONE_STATE_C       : slv(2 downto 0) := "111";  -- Done With Readout
+
+
+
+
   -- External Configuration registers
   type KpixLocalRegsInType is record
     debugASel : slv(4 downto 0);
@@ -34,9 +53,10 @@ package KpixLocalPkg is
 
   -- Kpix Local outputs that are synchronous with sysClk
   type KpixLocalSysOutType is record
-    coreState      : slv(3 downto 0);
-    bunchCount : slv(12 downto 0);
-    trigInhibit    : sl;
+    analogState   : slv(2 downto 0);
+    readoutState : slv(2 downto 0);
+    bunchCount  : slv(12 downto 0);
+    trigInhibit : sl;
   end record KpixLocalSysOutType;
 
 end package KpixLocalPkg;

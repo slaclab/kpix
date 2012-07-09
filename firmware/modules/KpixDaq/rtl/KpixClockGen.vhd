@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-06-18
+-- Last update: 2012-07-05
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -30,12 +30,14 @@ entity KpixClockGen is
     DELAY_G : time := 1 ns);
 
   port (
-    clk200    : in  sl;
-    rst200    : in  sl;
-    extRegsIn : in  KpixClockGenRegsInType;
-    coreState : in  slv(3 downto 0);
-    kpixClk   : out sl;
-    kpixRst   : out sl);
+    clk200       : in  sl;
+    rst200       : in  sl;
+    extRegsIn    : in  KpixClockGenRegsInType;
+    analogState  : in  slv(2 downto 0);
+    readoutState : in  slv(2 downto 0);
+    prechargeBus : in  sl;
+    kpixClk      : out sl;
+    kpixRst      : out sl);
 
 end entity KpixClockGen;
 
@@ -72,7 +74,7 @@ begin
   end process seq;
 
 
-  comb : process (r, coreState, extRegsIn) is
+  comb : process (r, analogState, readoutState, prechargeBus, extRegsIn) is
     variable rVar : RegType;
   begin
     rVar := r;
@@ -93,21 +95,20 @@ begin
       rVar.clkDiv   := not r.clkDiv;
 
       -- Assign new clkSel dependant on kpixState
-      if (coreState = KPIX_PRECHARGE_STATE_C) then
+      if (analogState = KPIX_ANALOG_DIG_STATE_C and prechargeBus = '1') then
         rVar.clkSel := unsigned(r.extRegsSync.clkSelPrecharge);
+      elsif (analogState = KPIX_ANALOG_IDLE_STATE_C) then
+        rVar.clkSel := unsigned(r.extRegsSync.clkSelIdle);
+      elsif (analogState = KPIX_ANALOG_PRE_STATE_C or
+             analogState = KPIX_ANALOG_SAMP_STATE_C or
+             analogState = KPIX_ANALOG_PAUSE_STATE_C) then
+        rVar.clkSel := unsigned(r.extRegsSync.clkSelAcquire);
+      elsif (analogState = KPIX_ANALOG_DIG_STATE_C) then
+        rVar.clkSel := unsigned(r.extRegsSync.clkSelDigitize);
+      elsif (KPIX_READOUT_STATE_C /= KPIX_READOUT_IDLE_STATE_C) then
+        rVar.clkSel := unsigned(r.extRegsSync.clkSelReadout);
       else
-        case coreState(2 downto 0) is
-          when KPIX_IDLE_STATE_C =>
-            rVar.clkSel := unsigned(r.extRegsSync.clkSelIdle);
-          when KPIX_ACQUISITION_STATE_C =>
-            rVar.clkSel := unsigned(r.extRegsSync.clkSelAcquire);
-          when KPIX_DIGITIZATION_STATE_C =>
-            rVar.clkSel := unsigned(r.extRegsSync.clkSelDigitize);
-          when KPIX_READOUT_STATE_C =>
-            rVar.clkSel := unsigned(r.extRegsSync.clkSelReadout);
-          when others =>
-            rVar.clkSel := unsigned(r.extRegsSync.clkSelIdle);
-        end case;
+        rVar.clkSel := unsigned(r.extRegsSync.clkSelIdle);
       end if;
     end if;
 

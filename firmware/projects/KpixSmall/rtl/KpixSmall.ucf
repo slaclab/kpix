@@ -66,23 +66,23 @@ NET "debugOutA" LOC = "V13" | IOSTANDARD = "LVCMOS33";
 NET "debugOutB" LOC = "V11" | IOSTANDARD = "LVCMOS33"; 
 
 #External Trigger - NimA
-NET "triggerIn_nimA" LOC = "M10" | IOSTANDARD = "LVCMOS33"; 
-NET "triggerIn_nimB" LOC = "T17" | IOSTANDARD = "LVCMOS33"; 
-NET "triggerIn_cmosA" LOC = "T12" | IOSTANDARD = "LVCMOS33"; 
-NET "triggerIn_cmosB" LOC = "T18" | IOSTANDARD = "LVCMOS33"; 
+NET "triggerExtIn_nimA" LOC = "M10" | IOSTANDARD = "LVCMOS33"; 
+NET "triggerExtIn_nimB" LOC = "T17" | IOSTANDARD = "LVCMOS33"; 
+NET "triggerExtIn_cmosA" LOC = "T12" | IOSTANDARD = "LVCMOS33"; 
+NET "triggerExtIn_cmosB" LOC = "T18" | IOSTANDARD = "LVCMOS33"; 
 
 NET "kpixClkOutP" LOC = "H13";
 NET "kpixClkOutN" LOC = "J14";
 NET "kpixRstOut" LOC = "H18" | IOSTANDARD = "LVCMOS25";
 NET "kpixTriggerOutP" LOC = "N13";
 NET "kpixTriggerOutN" LOC = "M13";
-NET "kpixSerTxOut<0>" LOC = "L12" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<1>" LOC = "J17" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<2>" LOC = "K17" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<3>" LOC = "H15" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<0>" LOC = "L16" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<1>" LOC = "N18" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<2>" LOC = "M18" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<3>" LOC = "M14" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<0>" LOC = "L16" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<1>" LOC = "N18" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<2>" LOC = "M18" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<3>" LOC = "M14" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<0>" LOC = "L12" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<1>" LOC = "J17" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<2>" LOC = "K17" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<3>" LOC = "H15" | IOSTANDARD = "LVCMOS25";
 
 

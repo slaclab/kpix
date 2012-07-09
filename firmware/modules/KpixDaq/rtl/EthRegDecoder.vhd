@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-07
--- Last update: 2012-06-14
+-- Last update: 2012-07-03
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -21,10 +21,10 @@ use work.StdRtlPkg.all;
 use work.Version.all;
 use work.EthFrontEndPkg.all;
 use work.KpixRegRxPkg.all;
-use work.KpixRegCntlPkg.all;
+--use work.KpixRegCntlPkg.all;
 use work.KpixPkg.all;
 use work.TriggerPkg.all;
-use work.TimestampPkg.all;
+--use work.TimestampPkg.all;
 use work.KpixClockGenPkg.all;
 use work.KpixLocalPkg.all;
 use work.KpixDataRxPkg.all;
@@ -50,11 +50,9 @@ entity EthRegDecoder is
 
     -- Interface to local module registers
     triggerRegsIn      : out TriggerRegsInType;
-    timestampRegsIn    : out TimestampRegsInType;
     kpixConfigRegs     : out KpixConfigRegsType;
     kpixClockGenRegsIn : out KpixClockGenRegsInType;
     kpixLocalRegsIn    : out KpixLocalRegsInType;
-    kpixRegCntlRegsIn  : out KpixRegCntlRegsInType;
     kpixDataRxRegsIn   : out KpixDataRxRegsInArray(NUM_KPIX_MODULES_G-1 downto 0);
     kpixDataRxRegsOut  : in  KpixDataRxRegsOutArray(NUM_KPIX_MODULES_G-1 downto 0));
 
@@ -94,11 +92,10 @@ architecture rtl of EthRegDecoder is
     ethRegCntlIn       : EthRegCntlInType;
     kpixRegCntlIn      : EthRegCntlOutType;
     triggerRegsIn      : TriggerRegsInType;
-    timestampRegsIn    : TimestampRegsInType;
+--    timestampRegsIn    : TimestampRegsInType;
     kpixConfigRegs     : KpixConfigRegsType;
     kpixClockGenRegsIn : KpixClockGenRegsInType;
     kpixLocalRegsIn    : KpixLocalRegsInType;
-    kpixRegCntlRegsIn  : KpixRegCntlRegsInType;
     kpixDataRxRegsIn   : KpixDataRxRegsInArray(NUM_KPIX_MODULES_G-1 downto 0);
   end record RegType;
 
@@ -109,42 +106,43 @@ begin
   sync : process (sysClk, sysRst) is
   begin
     if (sysRst = '1') then
-      r.ethRegCntlIn.regAck    <= '0';
-      r.ethRegCntlIn.regDataIn <= (others => '0');
-      r.ethRegCntlIn.regFail   <= '0';
+      r.ethRegCntlIn.regAck    <= '0'             after DELAY_G;
+      r.ethRegCntlIn.regDataIn <= (others => '0') after DELAY_G;
+      r.ethRegCntlIn.regFail   <= '0'             after DELAY_G;
 
-      r.kpixRegCntlIn.regInp     <= '0';
-      r.kpixRegCntlIn.regReq     <= '0';
-      r.kpixRegCntlIn.regOp      <= '0';
-      r.kpixRegCntlIn.regAddr    <= (others => '0');
-      r.kpixRegCntlIn.regDataOut <= (others => '0');
+      r.kpixRegCntlIn.regInp     <= '0'             after DELAY_G;
+      r.kpixRegCntlIn.regReq     <= '0'             after DELAY_G;
+      r.kpixRegCntlIn.regOp      <= '0'             after DELAY_G;
+      r.kpixRegCntlIn.regAddr    <= (others => '0') after DELAY_G;
+      r.kpixRegCntlIn.regDataOut <= (others => '0') after DELAY_G;
 
-      r.triggerRegsIn.extTriggerSrc        <= (others => '0');
-      r.triggerRegsIn.calibrate            <= '0';
-      r.timestampRegsIn.extTriggerSrc      <= (others => '0');
-      r.kpixConfigRegs.inputEdge           <= '0';         -- Rising Edge
-      r.kpixConfigRegs.outputEdge          <= '0';         -- Rising Edge
-      r.kpixConfigRegs.rawDataMode         <= '0';
-      r.kpixConfigRegs.numColumns          <= "11111";     -- 32 columns
-      r.kpixClockGenRegsIn.clkSelReadout   <= "00001001";  -- 100 ns
-      r.kpixClockGenRegsIn.clkSelDigitize  <= "00000100";  -- 50 ns
-      r.kpixClockGenRegsIn.clkSelAcquire   <= "00000100";  -- 50 ns
-      r.kpixClockGenRegsIn.clkSelIdle      <= "00001001";  -- 100 ns
-      r.kpixClockGenRegsIn.clkSelPrecharge <= "00000100";  -- 50 ns
-      r.kpixClockGenRegsIn.newValue        <= '0';
+      r.triggerRegsIn.extTriggerSrc        <= (others => '0') after DELAY_G;
+      r.triggerRegsIn.calibrate            <= '0'             after DELAY_G;
+      r.triggerRegsIn.extTimestampSrc      <= (others => '0') after DELAY_G;
+      r.KpixConfigRegs.kpixReset           <= '0'             after DELAY_G;
+      r.kpixConfigRegs.inputEdge           <= '0'             after DELAY_G;  -- Rising Edge
+      r.kpixConfigRegs.outputEdge          <= '0'             after DELAY_G;  -- Rising Edge
+      r.kpixConfigRegs.rawDataMode         <= '0'             after DELAY_G;
+      r.kpixConfigRegs.numColumns          <= "11111"         after DELAY_G;  -- 32 columns
+      r.kpixConfigRegs.autoReadDisable     <= '0'             after DELAY_G;
+      r.kpixClockGenRegsIn.clkSelReadout   <= "00001001"      after DELAY_G;  -- 100 ns
+      r.kpixClockGenRegsIn.clkSelDigitize  <= "00000100"      after DELAY_G;  -- 50 ns
+      r.kpixClockGenRegsIn.clkSelAcquire   <= "00000100"      after DELAY_G;  -- 50 ns
+      r.kpixClockGenRegsIn.clkSelIdle      <= "00001001"      after DELAY_G;  -- 100 ns
+      r.kpixClockGenRegsIn.clkSelPrecharge <= "00000100"      after DELAY_G;  -- 50 ns
+      r.kpixClockGenRegsIn.newValue        <= '0'             after DELAY_G;
 
-      r.kpixRegCntlRegsIn.kpixReset <= '0';
-      r.kpixLocalRegsIn.debugASel   <= (others => '0');
-      r.kpixLocalRegsIn.debugBsel   <= (others => '0');
+      r.kpixLocalRegsIn.debugASel <= (others => '0') after DELAY_G;
+      r.kpixLocalRegsIn.debugBsel <= (others => '0') after DELAY_G;
       r.kpixDataRxRegsIn <= (others =>
                              (enabled                     => '0',
                               resetHeaderParityErrorCount => '0',
                               resetDataParityErrorCount   => '0',
                               resetMarkerErrorCount       => '0',
-                              resetOverflowErrorCount     => '0'));
+                              resetOverflowErrorCount     => '0')) after DELAY_G;
 
     elsif (rising_edge(sysClk)) then
-      r <= rin;
+      r <= rin after DELAY_G;
     end if;
   end process sync;
 
@@ -230,9 +228,9 @@ begin
             end if;
 
           when KPIX_RESET_REG_ADDR_C =>
-            rVar.ethRegCntlIn.regDataIn(0) := r.kpixRegCntlRegsIn.kpixReset;
+            rVar.ethRegCntlIn.regDataIn(0) := r.kpixConfigRegs.kpixReset;
             if (ethRegCntlOut.regOp = ETH_REG_WRITE_C) then
-              rVar.kpixRegCntlRegsIn.kpixReset := ethRegCntlOut.regDataOut(0);
+              rVar.kpixConfigRegs.kpixReset := ethRegCntlOut.regDataOut(0);
             end if;
 
           when KPIX_CONFIG_REG_ADDR_C =>
@@ -240,17 +238,19 @@ begin
             rVar.ethRegCntlIn.regDataIn(1)           := r.kpixConfigRegs.outputEdge;
             rVar.ethRegCntlIn.regDataIn(4)           := r.kpixConfigRegs.rawDataMode;
             rVar.ethRegCntlIn.regDataIn(12 downto 8) := r.kpixConfigRegs.numColumns;
+            rVar.ethRegCntlIn.regDataIn(16)          := r.kpixConfigRegs.autoReadDisable;
             if (ethRegCntlOut.regOp = ETH_REG_WRITE_C) then
-              rVar.kpixConfigRegs.inputEdge   := ethRegCntlOut.regDataOut(0);
-              rVar.kpixConfigRegs.outputEdge  := ethRegCntlOut.regDataOut(1);
-              rVar.kpixConfigRegs.rawDataMode := ethRegCntlOut.regDataOut(4);
-              rVar.kpixConfigRegs.numColumns  := ethRegCntlOut.regDataOut(12 downto 8);
+              rVar.kpixConfigRegs.inputEdge       := ethRegCntlOut.regDataOut(0);
+              rVar.kpixConfigRegs.outputEdge      := ethRegCntlOut.regDataOut(1);
+              rVar.kpixConfigRegs.rawDataMode     := ethRegCntlOut.regDataOut(4);
+              rVar.kpixConfigRegs.numColumns      := ethRegCntlOut.regDataOut(12 downto 8);
+              rVar.kpixConfigRegs.autoReadDisable := ethRegCntlOut.regDataOut(16);
             end if;
 
           when TIMESTAMP_CONTROL_REG_ADDR_C =>
-            rVar.ethRegCntlIn.regDataIn(2 downto 0) := r.timestampRegsIn.extTriggerSrc;
+            rVar.ethRegCntlIn.regDataIn(2 downto 0) := r.triggerRegsIn.extTimestampSrc;
             if (ethRegCntlOut.regOp = ETH_REG_WRITE_C) then
-              rVar.timestampRegsIn.extTriggerSrc := ethRegCntlOut.regDataOut(2 downto 0);
+              rVar.triggerRegsIn.extTimestampSrc := ethRegCntlOut.regDataOut(2 downto 0);
             end if;
 
 
@@ -323,9 +323,8 @@ begin
     ethRegCntlIn       <= r.ethRegCntlIn;
     kpixRegCntlIn      <= r.kpixRegCntlIn;
     triggerRegsIn      <= r.triggerRegsIn;
-    timestampRegsIn    <= r.timestampRegsIn;
+--    timestampRegsIn    <= r.timestampRegsIn;
     kpixConfigRegs     <= r.kpixConfigRegs;
-    kpixRegCntlRegsIn  <= r.kpixRegCntlRegsIn;
     kpixClockGenRegsIn <= r.kpixClockGenRegsIn;
     kpixLocalRegsIn    <= r.kpixLocalRegsIn;
     kpixDataRxRegsIn   <= r.kpixDataRxRegsIn;

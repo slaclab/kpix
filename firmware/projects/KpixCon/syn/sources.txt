@@ -14,7 +14,7 @@ vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixDataRxPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegCntlPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegRxPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/TriggerPkg.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/TimestampPkg.vhd"
+#vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/TimestampPkg.vhd"
 
 ## eth_client
 vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClientPackage.vhd"
@@ -57,7 +57,7 @@ vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixLocal.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegCntl.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegRx.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/Trigger.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/Timestamp.vhd"
+#vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/Timestamp.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/UsBuff64.vhd"
 
 ## KpixCore
