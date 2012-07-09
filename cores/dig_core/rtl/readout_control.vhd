@@ -51,7 +51,7 @@ entity readout_control is port (
       no_auto_rd          : in  std_logic;
 
       -- Readout state
-      read_state          : out std_logic;
+      read_state          : out std_logic_vector(2 downto 0);
 
       -- Readout control signals
       precharge_dig_bus   : out std_logic;
@@ -219,7 +219,7 @@ begin
          int_par        <= '0'            after 1 ns;
          int_pre_dig    <= '0'            after 1 ns;
          readout_done   <= '0'            after 1 ns;
-         read_state     <= '0'            after 1 ns;
+         read_state     <= "000"            after 1 ns;
 
       elsif rising_edge(sysclk) then
          rd_state       <= nxt_state      after 1 ns;
@@ -228,7 +228,7 @@ begin
          int_par        <= nxt_par        after 1 ns;
          int_pre_dig    <= nxt_pre_dig    after 1 ns;
          readout_done   <= nxt_done       after 1 ns;
-         read_state     <= nxt_read_state after 1 ns;
+         read_state     <= nxt_state     after 1 ns;  --nxt_read_state
       end if;
    end process;
 
