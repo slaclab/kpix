@@ -151,9 +151,10 @@ architecture KpixLocal of KpixLocal is
 
 
   type RegType is record
+    kpixClkSync        : SynchronizerType;
     regClkSync         : SynchronizerType;
-    regSel0Sync        : SynchronizerType;
-    regSel1Sync        : SynchronizerType;
+--    regSel0Sync        : SynchronizerType;
+--    regSel1Sync        : SynchronizerType;
     trigInhibitSync    : SynchronizerType;
     div                : sl;
     analogStateSync    : SynchronizerArray(3 downto 0);
@@ -251,9 +252,10 @@ begin
   process (sysClk, sysRst)
   begin
     if (sysRst = '1') then
+      r.kpixClkSync         <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
       r.regClkSync          <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
-      r.regSel0Sync         <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
-      r.regSel1Sync         <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
+--      r.regSel0Sync         <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
+--      r.regSel1Sync         <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
       r.div                 <= '0'                               after DELAY_G;
       r.analogStateSync     <= (others => SYNCHRONIZER_INIT_0_C) after DELAY_G;
       r.analogStateStable   <= (others => '0')                   after DELAY_G;
@@ -261,6 +263,7 @@ begin
       r.readoutStateStable  <= (others => '0')                   after DELAY_G;
       r.trigInhibitSync     <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
       r.sysOut.bunchCount   <= (others => '0')                   after DELAY_G;
+      r.sysOut.subCount     <= (others => '0')                   after DELAY_G;
       r.sysOut.analogState  <= (others => '0')                   after DELAY_G;
       r.sysOut.readoutState <= (others => '0')                   after DELAY_G;
       r.sysOut.trigInhibit  <= '0'                               after DELAY_G;
@@ -269,23 +272,27 @@ begin
     end if;
   end process;
 
-  process (r, reg_sel1, reg_sel0, reg_clock, trig_inh, v8_read_state, v8_analog_state) is
+  process (r, reg_sel1, reg_sel0, reg_clock, trig_inh, v8_read_state, v8_analog_state, kpixClk) is
     variable rVar : RegType;
   begin
     rVar := r;
 
-    -- Bunch clock counter
-    -- Increment counter every other rising edge of reg_clock
+    -- Bunch clock counter and sub bunch counter
+    -- Increment bunchCount every other rising edge of reg_clock when in SAMPLE state
+    -- Increment subCount every kpixClk, reset to zero every time bunchCount increments
+    synchronize(kpixClk, r.kpixClkSync, rVar.kpixClkSync);
     synchronize(reg_clock, r.regClkSync, rVar.regClkSync);
-    synchronize(reg_sel0, r.regSel0Sync, rVar.regSel0Sync);
-    synchronize(reg_sel1, r.regSel1Sync, rVar.regSel1Sync);
 
-    --if (r.regSel1Sync.sync = '1' and r.regSel0Sync.sync = '0') then
+    if (detectRisingEdge(r.kpixClkSync)) then
+      rVar.sysOut.subCount := r.sysOut.subCount + 1;
+    end if;
+
     if (r.sysOut.analogState = KPIX_ANALOG_SAMP_STATE_C) then
       if (detectRisingEdge(r.regClkSync)) then
         rVar.div := not r.div;
         if (r.div = '1') then
           rVar.sysOut.bunchCount := r.sysOut.bunchCount + 1;
+          rVar.sysOut.subCount   := (others => '0');
         end if;
       end if;
     else

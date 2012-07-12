@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-22
--- Last update: 2012-07-03
+-- Last update: 2012-07-10
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -53,10 +53,11 @@ package KpixLocalPkg is
 
   -- Kpix Local outputs that are synchronous with sysClk
   type KpixLocalSysOutType is record
-    analogState   : slv(2 downto 0);
+    analogState  : slv(2 downto 0);
     readoutState : slv(2 downto 0);
-    bunchCount  : slv(12 downto 0);
-    trigInhibit : sl;
+    bunchCount   : slv(12 downto 0);
+    subCount     : slv(2 downto 0);
+    trigInhibit  : sl;
   end record KpixLocalSysOutType;
 
 end package KpixLocalPkg;

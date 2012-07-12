@@ -1,5 +1,4 @@
 # Output products list for <timestamp_fifo>
-_xmsgs/pn_parser.xmsgs
 fifo_generator_ug175.pdf
 fifo_generator_v8_4_readme.txt
 timestamp_fifo/example_design/timestamp_fifo_top.ucf

@@ -6,7 +6,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-14
--- Last update: 2012-07-03
+-- Last update: 2012-07-10
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -49,8 +49,9 @@ package TriggerPkg is
   end record TriggerOutType;
 
   type TimestampOutType is record
-    data  : slv(12 downto 0);
-    valid : sl;
+    bunchCount : slv(12 downto 0);
+    subCount   : slv(2 downto 0);
+    valid      : sl;
   end record TimestampOutType;
 
   type TimestampInType is record

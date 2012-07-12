@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-07-05
+-- Last update: 2012-07-11
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -36,7 +36,7 @@ entity Trigger is
     ethCmdCntlOut   : in  EthCmdCntlOutType;
     kpixLocalSysOut : in  KpixLocalSysOutType;
     triggerRegsIn   : in  TriggerRegsInType;
-    kpixConfigRegs : in KpixConfigRegsType;
+    kpixConfigRegs  : in  KpixConfigRegsType;
     triggerExtIn    : in  TriggerExtInType;
     triggerOut      : out TriggerOutType;
     timestampIn     : in  TimestampInType;
@@ -61,7 +61,7 @@ architecture rtl of Trigger is
     triggerOut         : TriggerOutType;
   end record;
 
-  signal r, rin : RegType;
+  signal r, rin   : RegType;
   signal fifoFull : sl;
 
 begin
@@ -99,8 +99,8 @@ begin
     synchronize('0', r.extTriggerSync(0), rVar.extTriggerSync(0));  -- It makes the code cleaner
     synchronize(triggerExtIn.nimA, r.extTriggerSync(1), rVar.extTriggerSync(1));
     synchronize(triggerExtIn.nimB, r.extTriggerSync(2), rVar.extTriggerSync(2));
-    synchronize(triggerExtIn.cmosB, r.extTriggerSync(3), rVar.extTriggerSync(3));
-    synchronize(triggerExtIn.cmosA, r.extTriggerSync(4), rVar.extTriggerSync(4));
+    synchronize(triggerExtIn.cmosA, r.extTriggerSync(3), rVar.extTriggerSync(3));
+    synchronize(triggerExtIn.cmosB, r.extTriggerSync(4), rVar.extTriggerSync(4));
     synchronize('0', r.extTriggerSync(5), rVar.extTriggerSync(0));
     synchronize('0', r.extTriggerSync(6), rVar.extTriggerSync(0));
     synchronize('0', r.extTriggerSync(7), rVar.extTriggerSync(0));
@@ -192,14 +192,16 @@ begin
 
   timestamp_fifo_1 : entity work.timestamp_fifo
     port map (
-      clk   => sysClk,
-      rst   => sysRst,
-      din   => kpixLocalSysOut.bunchCount,
-      wr_en => r.timestampFifoWrEn,
-      rd_en => timestampIn.rdEn,
-      dout  => timestampOut.data,
-      full  => fifoFull,
-      empty => open,
-      valid => timestampOut.valid);
+      clk               => sysClk,
+      rst               => sysRst,
+      din(15 downto 3)  => kpixLocalSysOut.bunchCount,
+      din(2 downto 0)   => kpixLocalSysOut.subCount,
+      wr_en             => r.timestampFifoWrEn,
+      rd_en             => timestampIn.rdEn,
+      dout(15 downto 3) => timestampOut.bunchCount,
+      dout(2 downto 0)  => timestampOut.subCount,
+      full              => fifoFull,
+      empty             => open,
+      valid             => timestampOut.valid);
 
 end architecture rtl;

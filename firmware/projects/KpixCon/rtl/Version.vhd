@@ -27,5 +27,6 @@ end Version;
 -- Revision History:
 -- 05/03/2012 (0xC0000100): Initial Version
 -- 06/12/2012 (0xC0000101): Changed row order.
+-- 07/12/2012 (0xC0000105): Added timestamp support. Bugfixes.
 -------------------------------------------------------------------------------
 

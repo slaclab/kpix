@@ -44,10 +44,10 @@ ENTITY timestamp_fifo IS
   PORT (
     clk : IN STD_LOGIC;
     rst : IN STD_LOGIC;
-    din : IN STD_LOGIC_VECTOR(12 DOWNTO 0);
+    din : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
     wr_en : IN STD_LOGIC;
     rd_en : IN STD_LOGIC;
-    dout : OUT STD_LOGIC_VECTOR(12 DOWNTO 0);
+    dout : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
     full : OUT STD_LOGIC;
     empty : OUT STD_LOGIC;
     valid : OUT STD_LOGIC
@@ -60,10 +60,10 @@ COMPONENT wrapped_timestamp_fifo
   PORT (
     clk : IN STD_LOGIC;
     rst : IN STD_LOGIC;
-    din : IN STD_LOGIC_VECTOR(12 DOWNTO 0);
+    din : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
     wr_en : IN STD_LOGIC;
     rd_en : IN STD_LOGIC;
-    dout : OUT STD_LOGIC_VECTOR(12 DOWNTO 0);
+    dout : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
     full : OUT STD_LOGIC;
     empty : OUT STD_LOGIC;
     valid : OUT STD_LOGIC
@@ -100,7 +100,7 @@ END COMPONENT;
       c_count_type => 0,
       c_data_count_width => 5,
       c_default_value => "BlankString",
-      c_din_width => 13,
+      c_din_width => 16,
       c_din_width_axis => 1,
       c_din_width_rach => 32,
       c_din_width_rdch => 64,
@@ -108,7 +108,7 @@ END COMPONENT;
       c_din_width_wdch => 64,
       c_din_width_wrch => 2,
       c_dout_rst_val => "0",
-      c_dout_width => 13,
+      c_dout_width => 16,
       c_enable_rlocs => 0,
       c_enable_rst_sync => 1,
       c_error_injection_type => 0,

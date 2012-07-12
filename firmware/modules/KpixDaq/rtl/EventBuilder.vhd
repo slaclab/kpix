@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-07-05
+-- Last update: 2012-07-11
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -82,7 +82,7 @@ architecture rtl of EventBuilder is
     newAcquire     : sl;
     kpixClkSync    : SynchronizerType;
     state          : StateType;
-    counter        : unsigned(7 downto 0);  -- Generic counter for stalling in a state
+    counter        : unsigned(15 downto 0);  -- Generic counter for stalling in a state
     activeModules  : slv(NUM_KPIX_MODULES_G-1 downto 0);
     dataDone       : slv(NUM_KPIX_MODULES_G-1 downto 0);
     first          : unsigned(log2(NUM_KPIX_MODULES_G)-1 downto 0);
@@ -99,20 +99,20 @@ begin
   sync : process (sysClk, sysRst) is
   begin
     if (sysRst = '1') then
-      r.timestampCount   <= (others => '0') after DELAY_G;
-      r.timestamp        <= (others => '0') after DELAY_G;
-      r.eventNumber      <= (others => '1') after DELAY_G;  -- So first event is 0 (eventNumber + 1)
-      r.newAcquire       <= '0' after DELAY_G;
-      r.kpixClkSync      <= SYNCHRONIZER_INIT_0_C after DELAY_G;
-      r.state            <= WAIT_ACQUIRE_S after DELAY_G;
-      r.counter          <= (others => '0') after DELAY_G;
-      r.activeModules    <= (others => '0') after DELAY_G;
-      r.dataDone         <= (others => '0') after DELAY_G;
-      r.first            <= (others => '0') after DELAY_G;
+      r.timestampCount   <= (others => '0')            after DELAY_G;
+      r.timestamp        <= (others => '0')            after DELAY_G;
+      r.eventNumber      <= (others => '1')            after DELAY_G;  -- So first event is 0 (eventNumber + 1)
+      r.newAcquire       <= '0'                        after DELAY_G;
+      r.kpixClkSync      <= SYNCHRONIZER_INIT_0_C      after DELAY_G;
+      r.state            <= WAIT_ACQUIRE_S             after DELAY_G;
+      r.counter          <= (others => '0')            after DELAY_G;
+      r.activeModules    <= (others => '0')            after DELAY_G;
+      r.dataDone         <= (others => '0')            after DELAY_G;
+      r.first            <= (others => '0')            after DELAY_G;
       r.kpixDataRxIn     <= (others => (ready => '0')) after DELAY_G;
-      r.timestampIn.rdEn <= '0' after DELAY_G;
-      r.ebFifoIn.wrData  <= (others => '0') after DELAY_G;
-      r.ebFifoIn.wrEn    <= '0' after DELAY_G;
+      r.timestampIn.rdEn <= '0'                        after DELAY_G;
+      r.ebFifoIn.wrData  <= (others => '0')            after DELAY_G;
+      r.ebFifoIn.wrEn    <= '0'                        after DELAY_G;
     elsif (rising_edge(sysClk)) then
       r <= rin after DELAY_G;
     end if;
@@ -144,8 +144,9 @@ begin
       retVar(63 downto 60) := "0010";
       retVar(60 downto 32) := (others => '0');
       retVar(31 downto 29) := "000";
-      retVar(28 downto 16) := timestampOut.data;
-      retVar(15 downto 0)  := (others => '0');
+      retVar(28 downto 16) := timestampOut.bunchCount;
+      retVar(15 downto 3)  := (others => '0');
+      retVar(2 downto 0)   := timestampOut.subCount;
       return retVar;
     end function formatTimestamp;
 
@@ -208,7 +209,7 @@ begin
         if (kpixLocalSysOut.analogState = KPIX_ANALOG_DIG_STATE_C) then
           if (kpixConfigRegs.autoReadDisable = '1' and timestampOut.valid = '0') then
             -- No data, Close frame
-            writeFifo(slvAll('0',64), EOF_C);
+            writeFifo(slvAll('0', 64), EOF_C);
             rVar.state := WAIT_ACQUIRE_S;
           else
             rVar.state := READ_TIMESTAMPS_S;
@@ -218,7 +219,9 @@ begin
       when READ_TIMESTAMPS_S =>
         if (timestampOut.valid = '1') then
           rVar.timestampIn.rdEn := '1';
-          writeFifo(formatTimestamp);
+          if (r.timestampIn.rdEn = '1') then
+            writeFifo(formatTimestamp);
+          end if;
         else
           rVar.state := WAIT_READOUT_S;
         end if;
@@ -235,7 +238,7 @@ begin
         if (detectRisingEdge(r.kpixClkSync)) then
           rVar.counter := r.counter + 1;
         end if;
-        if (r.counter = 255) then  -- Wait some amount of time for data to arrive
+        if (r.counter = 65532) then     -- Wait some amount of time for data to arrive
           -- No busy signals detected at all
           rVar.state := WAIT_ACQUIRE_S;
           writeFifo(X"0123456789abcdef", EOF_C);

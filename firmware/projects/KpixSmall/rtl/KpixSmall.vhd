@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2012-07-09
+-- Last update: 2012-07-11
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -84,7 +84,8 @@ architecture rtl of KpixSmall is
   signal ebFifoOut : EventBuilderFifoOutType;
   signal ebFifoIn  : EventBuilderFifoInType;
 
-  signal kpixTrigger : sl;
+  signal kpixTrigger  : sl;
+  signal intTriggerIn : TriggerExtInType;
 
   -- Internal Kpix signals
   signal intKpixSerTxOut : slv(NUM_KPIX_MODULES_G-1 downto 0);
@@ -168,6 +169,10 @@ begin
       gtpTxN        => udpTxN,
       gtpTxP        => udpTxP);
 
+  intTriggerIn.nimA  <= not triggerExtIn.nimA;
+  intTriggerIn.nimB  <= not triggerExtIn.nimB;
+  intTriggerIn.cmosA <= not triggerExtIn.cmosA;
+  intTriggerIn.cmosB <= not triggerExtIn.cmosB;
   --------------------------------------------------------------------------------------------------
   -- KPIX Core
   --------------------------------------------------------------------------------------------------
@@ -185,7 +190,7 @@ begin
       ethCmdCntlOut  => ethCmdCntlOut,
       ethUsDataOut   => ethUsDataOut,
       ethUsDataIn    => ethUsDataIn,
-      triggerExtIn   => triggerExtIn,
+      triggerExtIn   => intTriggerIn,
       ebFifoOut      => ebFifoOut,
       ebFifoIn       => ebFifoIn,
       debugOutA      => debugOutA,
