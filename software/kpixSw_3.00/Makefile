@@ -1,6 +1,6 @@
 # Variables
 CC     := g++
-DEF    :=
+DEF    := -DMAKE_SW_VERSION=\"kpixSw_3.01\"
 BIN    := $(PWD)/bin
 OBJ    := $(PWD)/.obj
 CFLAGS := -Wall `xml2-config --cflags` -I$(PWD)/generic -I$(PWD)/kpix -I$(PWD)/offline
