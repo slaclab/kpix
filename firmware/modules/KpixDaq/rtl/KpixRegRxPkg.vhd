@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-10
--- Last update: 2012-06-14
+-- Last update: 2012-08-07
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -25,8 +25,8 @@ package KpixRegRxPkg is
 --  end record KpixRegRxRegsInType;
 
   type KpixRegRxOutType is record
-    temperature  : slv(12 downto 0);
-    tempCount    : slv(12 downto 0);
+    temperature  : slv(7 downto 0);
+    tempCount    : slv(11 downto 0);
     regAddr      : slv(6 downto 0);     
     regData      : slv(31 downto 0);
     regValid     : sl;

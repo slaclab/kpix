@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-17
--- Last update: 2012-07-05
+-- Last update: 2012-07-13
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -171,6 +171,8 @@ begin
       timestampIn     => timestampIn,
       timestampOut    => timestampOut);
 
+  kpixTriggerOut <= triggerOut.trigger;
+
   --------------------------------------------------------------------------------------------------
   -- Event Builder
   --------------------------------------------------------------------------------------------------
@@ -219,7 +221,7 @@ begin
       kpixClkRst       => kpixClkRst,
       kpixRegRxOut     => kpixRegRxOut,
       kpixSerTxOut     => intKpixSerTxOut,
-      kpixTriggerOut   => kpixTriggerOut,
+      kpixTriggerOut   => open,
       kpixResetOut     => intKpixResetOut);
 
   kpixResetOut <= intKpixResetOut;
