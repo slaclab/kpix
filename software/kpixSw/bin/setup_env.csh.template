@@ -2,10 +2,10 @@
 setenv KPIX_SW ${PWD}/../
 
 # QT Base Directory
-setenv QTDIR /afs/slac/g/reseng/qt/qt_3.3.8
+setenv QTDIR /afs/slac/g/reseng/qt/qt_3.3.8_x64
 
 # Root Base Directory
-setenv ROOTSYS /afs/slac/g/reseng/root/root_5.20
+setenv ROOTSYS /afs/slac/g/reseng/root/root_5.20_x64
 
 # Kpix GUI Settings. run 'kpixGui -h' for more info
 setenv KPIX_DEVICE   /dev/ttyUSB0
