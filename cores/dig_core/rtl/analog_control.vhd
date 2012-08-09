@@ -95,7 +95,7 @@ entity analog_control is port (
       readout_start     : out std_logic;
 
       -- State output
-      analog_state      : out std_logic_vector(1 downto 0)
+      analog_state      : out std_logic_vector(2 downto 0)
 
    );
 
@@ -206,7 +206,7 @@ begin
          sft_desel_all_cells   <= (others=>'0') after 1 ns;
          int_bunch_clock       <= '0'           after 1 ns;
          int_cur_cell          <= "0000"        after 1 ns;
-         analog_state          <= "00"          after 1 ns;
+         analog_state          <= "000"          after 1 ns;
 
       elsif rising_edge(sysclk) then
          mst_state             <= nxt_mst_state         after 1 ns;
@@ -215,7 +215,7 @@ begin
          int_precharge_ana_bus <= nxt_precharge_ana_bus after 1 ns;
          int_bunch_clock       <= nxt_bunch_clock       after 1 ns;
          int_cur_cell          <= nxt_cur_cell          after 1 ns;
-         analog_state          <= nxt_analog_state      after 1 ns;
+         analog_state          <= nxt_mst_state         after 1 ns;  --nxt_analog_state
 
          -- De-Select all amp is always ~84.25ns wide
          int_desel_all_cells  <=  

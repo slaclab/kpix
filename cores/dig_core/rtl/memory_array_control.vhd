@@ -94,9 +94,9 @@ entity memory_array_control is port (
       precharge_bus     : out std_logic;
 
       -- State Outputs
-      analog_state0     : out std_logic;
-      analog_state1     : out std_logic;
-      read_state        : out std_logic;
+      analog_state  : out std_logic_vector(2 downto 0);
+      read_state    : out std_logic_vector(2 downto 0);
+             
 
       -- Configuration
       reg_data          : out std_logic;
@@ -173,7 +173,7 @@ architecture memory_array_control of memory_array_control is
          cd0_data          : in  std_logic_vector(31 downto 0);
          cd1_data          : in  std_logic_vector(31 downto 0);
          readout_start     : out std_logic;
-         analog_state      : out std_logic_vector(1  downto 0)
+         analog_state      : out std_logic_vector(2  downto 0)
       );
    end component;
 
@@ -187,7 +187,7 @@ architecture memory_array_control of memory_array_control is
          readout_done        : out std_logic;
          test_mode           : in  std_logic;
          no_auto_rd          : in  std_logic;
-         read_state          : out std_logic;
+         read_state          : out std_logic_vector(2 downto 0);
          precharge_dig_bus   : out std_logic;
          load_shift_reg      : out std_logic;
          read_shift_clock_en : out std_logic;
@@ -359,7 +359,7 @@ begin
       tc3_data          => tc3_data,           tc4_data          => tc4_data,
       tc5_data          => tc5_data,           cd0_data          => cd0_data,
       cd1_data          => cd1_data,           readout_start     => readout_start,
-      analog_state(0)   => analog_state0,      analog_state(1)   => analog_state1
+      analog_state      => analog_state
    );
 
 
