@@ -39,16 +39,11 @@ VHDL = $(PWD)/../firmware/legacy/opto/cores/afifo_17x32.vhd \
        $(PWD)/../firmware/legacy/opto/cores/afifo_19x8k.vhd \
        $(PWD)/../firmware/legacy/opto/cores/fifo_13x1k.vhd \
        $(PWD)/../firmware/legacy/opto/cores/dpram_sync_1kx14 \
-       $(PWD)/../cores/dig_core/rtl/analog_control.vhd \
-       $(PWD)/../cores/dig_core/rtl/command_control.vhd \
-       $(PWD)/../cores/dig_core/rtl/memory_array_control.vhd \
-       $(PWD)/../cores/dig_core/rtl/readout_control.vhd \
-       $(PWD)/../cores/dig_core/rtl/reg_rw_32.vhd \
-       $(PWD)/../cores/dig_core/rtl_v7/analog_control_v7.vhd \
-       $(PWD)/../cores/dig_core/rtl_v7/command_control_v7.vhd \
-       $(PWD)/../cores/dig_core/rtl_v7/memory_array_control_v7.vhd \
-       $(PWD)/../cores/dig_core/rtl_v7/readout_control_v7.vhd \
-       $(PWD)/../cores/dig_core/rtl_v7/reg_rw_32_v7.vhd \
+       $(PWD)/../cores/dig_core/rtl_opto/analog_control.vhd \
+       $(PWD)/../cores/dig_core/rtl_opto/command_control.vhd \
+       $(PWD)/../cores/dig_core/rtl_opto/memory_array_control.vhd \
+       $(PWD)/../cores/dig_core/rtl_opto/readout_control.vhd \
+       $(PWD)/../cores/dig_core/rtl_opto/reg_rw_32.vhd \
        $(PWD)/../firmware/legacy/opto/rtl/OptoVersion.vhd \
        $(PWD)/../firmware/legacy/opto/rtl/Usb.vhd \
        $(PWD)/../firmware/legacy/opto/rtl/GenAdc.vhd \
