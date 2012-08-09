@@ -1,7 +1,7 @@
 # Commands for exemplar synthesis
 
 set process typical
-set_working_dir /u/ey/rherbst/projects/w_si/cores/dig_core/rtl/out
+set_working_dir /u/ey/rherbst/projects/w_si/devel/cores/dig_core/rtl/out
 
 set temp 25
 set voltage 2.5
@@ -9,11 +9,11 @@ set max_fanout_load "0.000000"
 load_library tsmm025DL_mosis
 set encoding Gray
 
-read -dont_elaborate -technology "tsmm025DL_mosis"  { /u/ey/rherbst/projects/w_si/cores/dig_core/rtl/reg_rw_32.vhd 
-                                                      /u/ey/rherbst/projects/w_si/cores/dig_core/rtl/analog_control.vhd 
-                                                      /u/ey/rherbst/projects/w_si/cores/dig_core/rtl/command_control.vhd 
-                                                      /u/ey/rherbst/projects/w_si/cores/dig_core/rtl/readout_control.vhd 
-                                                      /u/ey/rherbst/projects/w_si/cores/dig_core/rtl/memory_array_control.vhd }
+read -dont_elaborate -technology "tsmm025DL_mosis"  { /u/ey/rherbst/projects/w_si/devel/cores/dig_core/rtl/reg_rw_32.vhd 
+                                                      /u/ey/rherbst/projects/w_si/devel/cores/dig_core/rtl/analog_control.vhd 
+                                                      /u/ey/rherbst/projects/w_si/devel/cores/dig_core/rtl/command_control.vhd 
+                                                      /u/ey/rherbst/projects/w_si/devel/cores/dig_core/rtl/readout_control.vhd 
+                                                      /u/ey/rherbst/projects/w_si/devel/cores/dig_core/rtl/memory_array_control.vhd }
 elaborate memory_array_control -architecture memory_array_control
 
 pre_optimize .work.memory_array_control.memory_array_control -common_logic -unused_logic -boundary -xor_comparator_optimize 
