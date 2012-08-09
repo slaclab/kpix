@@ -44,10 +44,10 @@ INC = $(PWD)/olib_tsmc025.cir \
       $(PWD)/resis_map.txt
 
 # VHDL Source Files
-VHDL = $(PWD)/../firmware/opto/cores/afifo_17x32.vhd \
-       $(PWD)/../firmware/opto/cores/afifo_19x8k.vhd \
-       $(PWD)/../firmware/opto/cores/fifo_13x1k.vhd \
-       $(PWD)/../firmware/opto/cores/dpram_sync_1kx14 \
+VHDL = $(PWD)/../firmware/legacy/opto/cores/afifo_17x32.vhd \
+       $(PWD)/../firmware/legacy/opto/cores/afifo_19x8k.vhd \
+       $(PWD)/../firmware/legacy/opto/cores/fifo_13x1k.vhd \
+       $(PWD)/../firmware/legacy/opto/cores/dpram_sync_1kx14 \
        $(PWD)/../cores/dig_core/rtl/analog_control.vhd \
        $(PWD)/../cores/dig_core/rtl/command_control.vhd \
        $(PWD)/../cores/dig_core/rtl/memory_array_control.vhd \
@@ -58,21 +58,21 @@ VHDL = $(PWD)/../firmware/opto/cores/afifo_17x32.vhd \
        $(PWD)/../cores/dig_core/rtl_v7/memory_array_control_v7.vhd \
        $(PWD)/../cores/dig_core/rtl_v7/readout_control_v7.vhd \
        $(PWD)/../cores/dig_core/rtl_v7/reg_rw_32_v7.vhd \
-       $(PWD)/../firmware/opto/rtl/OptoVersion.vhd \
-       $(PWD)/../firmware/opto/rtl/Usb.vhd \
-       $(PWD)/../firmware/opto/rtl/GenAdc.vhd \
-       $(PWD)/../firmware/opto/rtl/UsbWord.vhd \
-       $(PWD)/../firmware/opto/rtl/KpixRspRx.vhd \
-       $(PWD)/../firmware/opto/rtl/KpixDataRx.vhd \
-       $(PWD)/../firmware/opto/rtl/KpixTrigRec.vhd \
-       $(PWD)/../firmware/opto/rtl/DownstreamData.vhd \
-       $(PWD)/../firmware/opto/rtl/KpixTrainData.vhd \
-       $(PWD)/../firmware/opto/rtl/KpixLocal.vhd \
-       $(PWD)/../firmware/opto/rtl/UpstreamData.vhd \
-       $(PWD)/../firmware/opto/rtl/KpixCmdTx.vhd \
-       $(PWD)/../firmware/opto/rtl/CmdControl.vhd \
-       $(PWD)/../firmware/opto/rtl/KpixControl.vhd \
-       $(PWD)/../firmware/opto/rtl/OptoCore.vhd \
+       $(PWD)/../firmware/legacy/opto/rtl/OptoVersion.vhd \
+       $(PWD)/../firmware/legacy/opto/rtl/Usb.vhd \
+       $(PWD)/../firmware/legacy/opto/rtl/GenAdc.vhd \
+       $(PWD)/../firmware/legacy/opto/rtl/UsbWord.vhd \
+       $(PWD)/../firmware/legacy/opto/rtl/KpixRspRx.vhd \
+       $(PWD)/../firmware/legacy/opto/rtl/KpixDataRx.vhd \
+       $(PWD)/../firmware/legacy/opto/rtl/KpixTrigRec.vhd \
+       $(PWD)/../firmware/legacy/opto/rtl/DownstreamData.vhd \
+       $(PWD)/../firmware/legacy/opto/rtl/KpixTrainData.vhd \
+       $(PWD)/../firmware/legacy/opto/rtl/KpixLocal.vhd \
+       $(PWD)/../firmware/legacy/opto/rtl/UpstreamData.vhd \
+       $(PWD)/../firmware/legacy/opto/rtl/KpixCmdTx.vhd \
+       $(PWD)/../firmware/legacy/opto/rtl/CmdControl.vhd \
+       $(PWD)/../firmware/legacy/opto/rtl/KpixControl.vhd \
+       $(PWD)/../firmware/legacy/opto/rtl/OptoCore.vhd \
        $(PWD)/OptoSim.vhd \
        $(PWD)/UsbChip.vhd \
        $(PWD)/RtlKpix.vhd \
