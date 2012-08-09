@@ -69,7 +69,8 @@ architecture RtlKpix of RtlKpix is
          desel_all_cells   : out std_logic;
          ramp_period       : out std_logic;
          precharge_bus     : out std_logic;
-         analog_state      : out std_logic;
+         analog_state0     : out std_logic;
+         analog_state1     : out std_logic;
          read_state        : out std_logic;
          reg_data          : out std_logic;
          reg_wr_ena        : out std_logic;
@@ -99,7 +100,8 @@ architecture RtlKpix of RtlKpix is
    signal v8_precharge_bus   : std_logic;
    signal v8_reg_data        : std_logic;
    signal v8_reg_wr_ena      : std_logic;
-   signal v8_analog_state    : std_logic;
+   signal v8_analog_state0   : std_logic;
+   signal v8_analog_state1   : std_logic;
    signal v8_read_state      : std_logic;
 
    -- Register delay for simulation
@@ -121,7 +123,9 @@ begin
       desel_all_cells => v8_desel_all_cells,  ramp_period     => v8_ramp_period,
       precharge_bus   => v8_precharge_bus,    reg_data        => v8_reg_data,
       reg_wr_ena      => v8_reg_wr_ena,       rdback          => '0',
-      analog_state    => v8_analog_state,     read_state      => v8_read_state,
+      analog_state0   => v8_analog_state0,
+      analog_state1   => v8_analog_state1,
+      read_state      => v8_read_state,
       temp_id0        => '0',                 temp_id1        => '0',
       temp_id2        => '0',                 temp_id3        => '0',
       temp_id4        => '0',                 temp_id5        => '0',

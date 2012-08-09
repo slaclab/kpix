@@ -30,6 +30,8 @@ entity Opto is
       -- System clock, reset
       iFpgaRstL      : in    std_logic;                     -- Asynchronous local reset
       iSysClk20      : in    std_logic;                     -- 20Mhz system clock
+      iSysClk200     : in    std_logic;                     -- 20Mhz system clock
+      kpixLock       : in    std_logic;
 
       -- Jumper, Debug & Spare Signals
       iJumpL         : in    std_logic_vector(3  downto 0); -- Opto jumpers, active low
@@ -187,7 +189,8 @@ architecture Opto of Opto is
          clkSelA       : out   std_logic_vector(4  downto 0); -- Clock selection
          clkSelB       : out   std_logic_vector(4  downto 0); -- Clock selection
          clkSelC       : out   std_logic_vector(4  downto 0); -- Clock selection
-         coreState     : out   std_logic_vector(2  downto 0); -- State of internal core
+         clkSelD       : out   std_logic_vector(4  downto 0); -- Clock selection
+         coreState     : out   std_logic_vector(3  downto 0); -- State of internal core
          jumpL         : in    std_logic_vector(3  downto 0); -- Test jumpers, active low
          ledL          : out   std_logic_vector(3  downto 0); -- FPGA LEDs
          debug         : out   std_logic_vector(31 downto 0); -- Debug connector
@@ -219,13 +222,15 @@ architecture Opto of Opto is
          dacDin        : out   std_logic;                     -- Cal Data Data
          dacSclk       : out   std_logic;                     -- Cal Data Clock
          dacCsL        : out   std_logic;                     -- Cal Data Chip Select
-         dacClrL       : out   std_logic                      -- Cal Data Clear
+         dacClrL       : out   std_logic;                     -- Cal Data Clear
+         trainNumClk   : in    std_logic
       );
    end component;
 
    -- Interface Signals
    signal fpgaRstL      : std_logic;                     -- Asynchronous local reset
    signal sysClk20      : std_logic;                     -- 20Mhz system clock
+   signal sysClk200     : std_logic;                     -- 20Mhz system clock
    signal kpixClk       : std_logic;                     --
    signal kpixClkL      : std_logic;                     --
    signal jumpL         : std_logic_vector(3  downto 0); -- Test jumpers, active low
@@ -265,10 +270,15 @@ architecture Opto of Opto is
    signal clkSelA       : std_logic_vector(4  downto 0); -- Clock selection
    signal clkSelB       : std_logic_vector(4  downto 0); -- Clock selection
    signal clkSelC       : std_logic_vector(4  downto 0); -- Clock selection
-   signal coreState     : std_logic_vector(2  downto 0); -- State of internal core
+   signal clkSelD       : std_logic_vector(4  downto 0); -- Clock selection
+   signal clkSel        : std_logic_vector(4  downto 0); -- Clock selection
+   signal coreState     : std_logic_vector(3  downto 0); -- State of internal core
 
    -- Local signals
+   signal divCount      : std_logic_vector(4 downto 0);
+   signal divClk        : std_logic;
    signal tmpClk20      : std_logic;
+   signal tmpClk200     : std_logic;
 
 begin
 
@@ -294,13 +304,15 @@ begin
       dacSclk   => dacSclk,    dacCsL    => dacCsL,
       dacClrL   => dacClrL,    clkSelA   => clkSelA,
       clkSelB   => clkSelB,    clkSelC   => clkSelC,
-      coreState => coreState
+      clkSelD   => clkSelD,
+      coreState => coreState,  trainNumClk => '0'
    );
 
 
    -- Incoming clock & reset
-   U_FpgaRstL : IBUF  port map ( I => iFpgaRstL, O => fpgaRstL );
-   U_SysClk20 : IBUFG port map ( I => iSysClk20, O => tmpClk20 );
+   U_FpgaRstL  : IBUF  port map ( I => iFpgaRstL,  O => fpgaRstL );
+   U_SysClk20  : IBUFG port map ( I => iSysClk20,  O => tmpClk20 );
+   U_SysClk200 : IBUFG port map ( I => iSysClk200, O => tmpClk200 );
 
    -- Connect 20Mhz clock to global buffer
    U_BUF20M: BUFGMUX port map (
@@ -310,14 +322,65 @@ begin
       S  => '0'
    );
 
-   -- Connect mult clock to global buffer
-   U_BUFkpix: BUFGMUX port map (
-      O  => kpixClk,
-      I0 => tmpClk20,
+   -- Connect 200Mhz clock to global buffer
+   U_BUF200M: BUFGMUX port map (
+      O  => sysClk200,
+      I0 => tmpClk200,
       I1 => '0',
       S  => '0'
    );
 
+   -- Control clock divide counter
+   process ( sysClk200, kpixLock ) begin
+      if kpixLock = '0' then
+         divCount  <= (others=>'0');
+         divClk    <= '0';
+         clkSel    <= "00100";
+      elsif rising_edge(sysClk200) then
+
+         -- Invert clock each time count reaches div value
+         -- Choose new clock setting at this boundary
+         if divCount = clkSel then
+            divCount <= (others=>'0');
+            divClk   <= not divClk;
+
+            -- Precharge extension
+            if coreState(3) = '1' then
+               clkSel <= "11111";
+
+            -- Clock rate select
+            else case coreState(2 downto 0) is
+
+               -- Idle
+               when "000" => clkSel <= clkSelD;
+
+               -- Acquisition
+               when "001" => clkSel <= clkSelA;
+
+               -- Digitization
+               when "010" => clkSel <= clkSelB;
+
+               -- Readout
+               when "100" => clkSel <= clkSelC;
+
+               -- Default
+               when others => clkSel <= clkSelD;
+            end case;
+            end if;
+         else
+            divCount <= divCount + 1;
+         end if;
+      end if;
+   end process;
+
+
+   -- Connect mult clock to global buffer
+   U_BUFkpix: BUFGMUX port map (
+      O  => kpixClk,
+      I0 => divClk,
+      I1 => '0',
+      S  => '0'
+   );
 
    -- Debug Clock Output
    U_GenDbgClk : FDDRRSE port map ( 

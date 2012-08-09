@@ -33,6 +33,8 @@ architecture KpixTb of KpixTb is
       port (
          iFpgaRstL      : in    std_logic;
          iSysClk20      : in    std_logic;
+         iSysClk200     : in    std_logic;
+         kpixLock       : in    std_logic;
          iJumpL         : in    std_logic_vector(3  downto 0);
          oLedL          : out   std_logic_vector(3  downto 0);
          oDebug         : out   std_logic_vector(31 downto 0);
@@ -113,6 +115,8 @@ architecture KpixTb of KpixTb is
    signal iFpgaRstL      : std_logic;
    signal iFpgaRst       : std_logic;
    signal iSysClk20      : std_logic;
+   signal iSysClk200     : std_logic;
+   signal kpixLock       : std_logic;
    signal iJumpL         : std_logic_vector(3  downto 0);
    signal oLedL          : std_logic_vector(3  downto 0);
    signal oDebug         : std_logic_vector(31 downto 0);
@@ -159,6 +163,15 @@ begin
       wait for (50 ns / 2);
    end process;
 
+   -- 200Mhz User Clock generation
+   process 
+   begin
+      iSysClk200 <= '0';
+      wait for (5 ns / 2);
+      iSysClk200 <= '1';
+      wait for (5 ns / 2);
+   end process;
+
    -- Reset generation
    process 
    begin
@@ -167,6 +180,16 @@ begin
       iFpgaRstL <= '1';
       wait;
    end process;
+
+   -- Reset generation
+   process 
+   begin
+      kpixLock  <= '0';
+      wait for (50 ns * 5);
+      kpixLock  <= '1';
+      wait;
+   end process;
+
 
    -- Invert reset
    iFpgaRst <= not iFpgaRstL;
@@ -200,6 +223,7 @@ begin
    -- Opto FPGA
    U_Opto: Opto port map (
       iFpgaRstL  => iFpgaRstL,   iSysClk20  => iSysClk20,
+      iSysClk200 => iSysClk200,  kpixLock   => kpixLock,
       iJumpL     => iJumpL,      oLedL      => oLedL,
       oDebug     => oDebug,      oDbgClk    => oDbgClk,
       oForceTrig => oForceTrig,  ioUsbData  => ioUsbData,

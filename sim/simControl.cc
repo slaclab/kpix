@@ -30,10 +30,25 @@ int main ( int argc, char **argv ) {
    KpixAsic       *kpixAsic[2];
    KpixBunchTrain *trainData;
    KpixRunWrite   *kpixRunWrite;
+   uint           gain;
+   uint           cal;
    bool           cmdPerr, dataPerr, tempEn;
    unsigned char  tempValue;
    KpixAsic::KpixChanMode   modes[1024];
    unsigned int   x;
+   char           *eptr;
+
+   if ( argc != 3 ) {
+      cout << "Usage: simControl gain cal" << endl;
+      cout << "       gain = 1 for high, 0 for normal" << endl;
+      cout << "       cal  = cal input dac value" << endl;
+      return 1;
+   }
+
+   gain = (uint)strtoul(argv[1],&eptr,0);
+   cal  = (uint)strtoul(argv[2],&eptr,0);
+
+   cout << "Using gain=" << dec << gain << ", cal=0x" << hex << cal << endl;
 
    try {
 
@@ -54,17 +69,20 @@ int main ( int argc, char **argv ) {
       kpixFpga->cmdResetKpix();
 
       // Setup Kpix Version
-      kpixFpga->setKpixVer  ( true, true );
-      kpixFpga->setRawData  ( true, true );
+      kpixFpga->setKpixVer  ( false, true ); // False = 1024 channels, true = 512 channels
+      kpixFpga->setRawData  ( true,  true );
 
       // Create the KPIX Devices
-      kpixAsic[0] = new KpixAsic(sidLink,9,2,900,false);
-      kpixAsic[1] = new KpixAsic(sidLink,9,3,0,true);
+      kpixAsic[0] = new KpixAsic(sidLink,11,2,900,false);
+      kpixAsic[1] = new KpixAsic(sidLink,11,3,0,true);
 
       // Enable debugging
       kpixAsic[0]->kpixDebug(true);
       kpixAsic[1]->kpixDebug(true);
-
+      kpixAsic[0]->disableVerify(false);
+      kpixAsic[1]->disableVerify(false);
+      //kpixAsic[0]->disableVerify(true);
+      //kpixAsic[1]->disableVerify(true);
 
       kpixAsic[0]->getStatus (&cmdPerr, &dataPerr, &tempEn, &tempValue);
 
@@ -84,7 +102,7 @@ int main ( int argc, char **argv ) {
                                   200,       // Leakage Null Off
                                   100500,    // Offset Null Off
                                   101500,    // Thresh Off
-                                  0,         // Trig Inhibit Off (bunch periods)
+                                  100,       // Trig Inhibit Off (bunch periods)
                                   900,       // Power Up On
                                   6900,      // Desel Sequence
                                   467500,    // Bunch Clock Delay
@@ -95,30 +113,33 @@ int main ( int argc, char **argv ) {
                                 );
       }
 
+
       // Real asic only settings, don't write to fpga core
+      kpixAsic[0]->setCntrlDoubleGain   ( (gain==1),  false );
       kpixAsic[0]->setCntrlCalibHigh    ( false,  false );
       kpixAsic[0]->setCntrlCalDacInt    ( true,   false );
       kpixAsic[0]->setCntrlForceLowGain ( false,  false );
       kpixAsic[0]->setCntrlLeakNullDis  ( true,   false );
-      kpixAsic[0]->setCntrlDoubleGain   ( true,   false );   // SIM_SETUP
       kpixAsic[0]->setCntrlNearNeighbor ( false,  false );
       kpixAsic[0]->setCntrlPosPixel     ( true,   false );
       kpixAsic[0]->setCntrlDisPerRst    ( true,   false );
       kpixAsic[0]->setCntrlEnDcRst      ( true,   false );
-      kpixAsic[0]->setCntrlCalSrcCore   ( true,   false );
-      kpixAsic[0]->setCntrlTrigSrcCore  ( false,  false );
+      kpixAsic[0]->setCntrlCalSrc       ( KpixAsic::KpixInternal, false );
+      kpixAsic[0]->setCntrlTrigSrc      ( KpixAsic::KpixDisable,  false );
       kpixAsic[0]->setCntrlShortIntEn   ( false,  false );
       kpixAsic[0]->setCntrlDisPwrCycle  ( false,  false );
+      kpixAsic[0]->setCntrlTrigDisable  ( false,  false );
+      kpixAsic[0]->setCntrlMonSrc       ( KpixAsic::KpixMonNone,  false );
       kpixAsic[0]->setCntrlFeCurr       ( KpixAsic::FeCurr_121uA, false );
       kpixAsic[0]->setCntrlHoldTime     ( KpixAsic::HoldTime_64x, true  ); // Only write control register once
 
       // Setup DACs
-      kpixAsic[0]->setDacCalib          ( (unsigned char)0x80, true ); // was 0x80, new 0x40   // SIM_SETUP
       kpixAsic[0]->setDacRampThresh     ( (unsigned char)0xE0, true );
       kpixAsic[0]->setDacRangeThresh    ( (unsigned char)0x3E, true );
       kpixAsic[0]->setDacDefaultAnalog  ( (unsigned char)0xBD, true );
       kpixAsic[0]->setDacEventThreshRef ( (unsigned char)0x50, true );
       kpixAsic[0]->setDacShaperBias     ( (unsigned char)0x78, true );
+      kpixAsic[0]->setDacCalib          ( (unsigned char)cal,  true );
 
       // Set Threshold DACs
       kpixAsic[0]->setDacThreshRangeA ( (unsigned char)0xF0, // Range A Reset Inhibit Threshold
