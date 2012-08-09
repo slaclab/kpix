@@ -1,0 +1,37 @@
+
+*******************************************************
+
+Cell: memory_array_control    View: memory_array_control    Library: work
+
+*******************************************************
+
+
+ Cell    Library  References     Total Area
+
+AO22     tsmm025DL_mosis    19 x     58   1104 gates
+AOI22    tsmm025DL_mosis    67 x     45   2995 gates
+Buf1     tsmm025DL_mosis    46 x     27   1233 gates
+Buf4     tsmm025DL_mosis    36 x     49   1771 gates
+BufI4    tsmm025DL_mosis    62 x     39   2425 gates
+DFF      tsmm025DL_mosis     1 x    156    156 gates
+DFFC     tsmm025DL_mosis   469 x    197  92252 gates
+DFFP     tsmm025DL_mosis     4 x    179    715 gates
+Inv      tsmm025DL_mosis   300 x     22   6720 gates
+Mux2     tsmm025DL_mosis   322 x     63  20157 gates
+Nand2    tsmm025DL_mosis   351 x     28   9652 gates
+Nand3    tsmm025DL_mosis    81 x     36   2897 gates
+Nand4    tsmm025DL_mosis    88 x     45   3934 gates
+Nor2     tsmm025DL_mosis   289 x     27   7745 gates
+Nor3     tsmm025DL_mosis   126 x     36   4511 gates
+Nor4     tsmm025DL_mosis    31 x     45   1386 gates
+Xnor2    tsmm025DL_mosis    86 x     54   4618 gates
+Xor2     tsmm025DL_mosis   107 x     58   6217 gates
+
+ Number of ports :                      35
+ Number of nets :                     2606
+ Number of instances :                2485
+ Number of references to this view :     0
+
+Total accumulated area : 
+ Number of gates :                  170490
+ Number of accumulated instances :    2485
