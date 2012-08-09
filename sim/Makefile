@@ -17,10 +17,7 @@
 TOP=KpixTb
 
 # Sim directory
-#SIM_DIR=$(PWD)/../run_0x40
-SIM_DIR=$(PWD)/../run_0x80
-#SIM_DIR=$(PWD)/../run_0x40_high
-#SIM_DIR=$(PWD)/../run_0x80_high
+SIM_DIR= /u1/rherbst/w_si/sim/run/
 
 # Set 64-bit compile flags
 ifeq ($(PLATFORM),lin64)
@@ -30,13 +27,7 @@ VARGS=
 endif
 
 # Set Main Netlist, Include Netlists & Configure Files For Copy
-#NET = kpix_9_136_hier_P.cir
-#NET = kpix_a_02.cir
-#NET = kpix_a_64_submit9.cir
-#NET = kpix_a_64_submit11.cir
-#NET = kpix_b2.cir
-#NET = kpix_b_trunc2.cir
-NET = kpix_b_trunc2_test.cir
+NET = kpix_b_trunc2.cir
 
 INC = $(PWD)/olib_tsmc025.cir \
       $(PWD)/w_si_chip_driver.cir \
