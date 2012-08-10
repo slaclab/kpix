@@ -144,7 +144,7 @@ int main ( int argc, char **argv ) {
    uint                   kpix;
    uint                   channel;
    uint                   bucket;
-   uint                   time;
+   uint                   tstamp;
    string                 serial;
    KpixSample::SampleType type;
    TH1F                   *hist;
@@ -166,6 +166,9 @@ int main ( int argc, char **argv ) {
    TCanvas                *c1;
    double                 fitMin[2];
    double                 fitMax[2];
+   char                   tstr[200];
+   struct tm              *timeinfo;
+   time_t                 tme;
 
    // Init structure
    for (kpix=0; kpix < 32; kpix++) {
@@ -181,7 +184,7 @@ int main ( int argc, char **argv ) {
 
    // Data file is the first and only arg
    if ( (argc != 2) && (argc != 4) && (argc != 6) ) {
-      cout << "Usage: calibrationFitter data_file [r0minFit r0MaxFit] [r1MinFit r1MaxFit]\n";
+      cout << "Usage: calibrationFitter data_file [r0MinFit r0MaxFit] [r1MinFit r1MaxFit]\n";
       return(1);
    }
 
@@ -262,7 +265,7 @@ int main ( int argc, char **argv ) {
          bucket  = sample->getKpixBucket();
          value   = sample->getSampleValue();
          type    = sample->getSampleType();
-         time    = sample->getSampleTime();
+         tstamp  = sample->getSampleTime();
          range   = sample->getSampleRange();
 
          // Only process real samples in the expected range
@@ -274,7 +277,7 @@ int main ( int argc, char **argv ) {
             chanFound[channel] = true;
 
             // Filter for time
-            if ( time > injectTime[bucket] && time < injectTime[bucket+1] ) {
+            if ( tstamp > injectTime[bucket] && tstamp < injectTime[bucket+1] ) {
 
                // Baseline
                if ( calState == "Baseline" ) chanData[kpix][channel][bucket][range]->addBasePoint(value);
@@ -312,6 +315,19 @@ int main ( int argc, char **argv ) {
    xml.open(outXml.c_str(),ios::out | ios::trunc);
    xml << "<calibrationData>" << endl;
 
+   // Add notes
+   xml << "   <sourceFile>" << argv[1] << "</sourceFile>" << endl;
+   xml << "   <user>" <<  getlogin() << "</user>" << endl;
+   xml << "   <r0MinFit>" <<  fitMin[0] << "</r0MinFit>" << endl;
+   xml << "   <r0MaxFit>" <<  fitMax[0] << "</r0MaxFit>" << endl;
+   xml << "   <r1MinFit>" <<  fitMin[1] << "</r1MinFit>" << endl;
+   xml << "   <r1MaxFit>" <<  fitMax[1] << "</r1MaxFit>" << endl;
+
+   time(&tme);
+   timeinfo = localtime(&tme);
+   strftime(tstr,200,"%Y_%m_%d_%H_%M_%S",timeinfo);
+   xml << "   <timestamp>" << tstr << "</timestamp>" << endl;
+
    // get calibration mode variables for charge computation
    positive    = (dataRead.getConfig("cntrlFpga:kpixAsic:CntrlPolarity") == "Positive");
    b0CalibHigh = (dataRead.getConfig("cntrlFpga:kpixAsic:CntrlCalibHigh") == "True");
@@ -342,6 +358,7 @@ int main ( int argc, char **argv ) {
 
                // Start channel marker
                xml << "      <Channel id=\"" << channel << "\">" << endl;
+               xml << "         <BadChannel>0</BadChannel>" << endl;
 
                // Each bucket
                for (bucket = 0; bucket < 4; bucket++) {

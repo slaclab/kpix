@@ -45,6 +45,7 @@ class KpixCalibRead {
             double calibGainErr;
             double calibInterceptErr;
             double calibGainRms;
+            bool   badChannel;
 
             // Init
             KpixCalibData () {
@@ -59,6 +60,7 @@ class KpixCalibRead {
                calibGainErr      = 0;
                calibGainRms      = 0;
                calibInterceptErr = 0;
+               badChannel        = false;
             }
       };
 
@@ -137,6 +139,9 @@ class KpixCalibRead {
 
       //! Get calibration intercept error
       double calibInterceptErr ( string kpix, uint channel, uint bucket, uint range );
+
+      //! Get bad channel flag
+      bool badChannel ( string kpix, uint channel );
 };
 
 #endif
