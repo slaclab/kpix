@@ -80,6 +80,8 @@ int main (int argc, char **argv) {
          // Get sample
          sample = event.sample(x);
 
+         if ( sample->getSampleType() == KpixSample::Temperature ) {
+
          // Get serial number
          if ( sample->getKpixAddress() < 32 ) serial = serialList[sample->getKpixAddress()];
          else serial = "";
@@ -122,6 +124,7 @@ int main (int argc, char **argv) {
             cout << "Sample:CalDac      = " << dataRead.getConfigInt("conFpga:kpixAsic:DacCalibration") << endl;
          }
          cout << endl;
+         }
       }
    }
    if ( dataRead.sawRunStop()  ) dataRead.dumpRunStop();
