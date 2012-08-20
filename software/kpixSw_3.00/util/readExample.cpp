@@ -80,7 +80,7 @@ int main (int argc, char **argv) {
          // Get sample
          sample = event.sample(x);
 
-         if ( sample->getSampleType() == KpixSample::Temperature ) {
+         if ( sample->getTrigType() == 0 && sample->getSampleType() == 0 ) {
 
          // Get serial number
          if ( sample->getKpixAddress() < 32 ) serial = serialList[sample->getKpixAddress()];

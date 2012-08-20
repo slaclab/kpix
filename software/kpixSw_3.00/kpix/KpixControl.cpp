@@ -167,11 +167,11 @@ void KpixControl::calibConfig ( uint channel, uint dac ) {
    newConfig << "<CntrlTrigDisable>True</CntrlTrigDisable>";
    newConfig << "<DacCalibration>"<< dec << dac << "</DacCalibration>";
    for (x=0; x < 32; x++) {
-      newConfig << "<ColMode_" << setw(2) << setfill('0') << dec << x << ">";
+      newConfig << "<Chan_" << setw(4) << setfill('0') << dec << (x*32) << "_" << setw(4) << setfill('0') << dec << ((x*32)+31) << ">";
       modeString = "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD";
       if ( col == x ) modeString[row] = 'C';
       newConfig << modeString;
-      newConfig << "</ColMode_" << setw(2) << setfill('0') << dec << x << ">";
+      newConfig << "</Chan_" << setw(4) << setfill('0') << dec << (x*32) << "_" << setw(4) << setfill('0') << dec << ((x*32)+31) << ">";
    }
    newConfig << "</kpixAsic></cntrlFpga></config></system>\n";
    parseXml(newConfig.str(),false);
