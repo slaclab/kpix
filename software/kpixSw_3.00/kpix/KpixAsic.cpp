@@ -42,6 +42,14 @@ string KpixAsic::dacToVoltString(uint dac) {
    return(tmp.str());
 }
 
+// Function to convert dac value into a voltage
+string KpixAsic::timeString(uint period, uint value) {
+   stringstream tmp;
+   tmp.str("");
+   tmp << ((value+1)*period) << " nS";
+   return(tmp.str());
+}
+
 // Channel count
 uint KpixAsic::channels() {
    if ( dummy_ ) return(0);
@@ -125,53 +133,70 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
 
    addVariable(new Variable("TimeResetOn",Variable::Configuration));
    getVariable("TimeResetOn")->setDescription("Reset assertion delay from run start");
-   getVariable("TimeResetOn")->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
    getVariable("TimeResetOn")->setRange(0,65535);
+
+   addVariable(new Variable("TimeResetOnFb",Variable::Feedback));
+   getVariable("TimeResetOnFb")->setDescription("Reset assertion delay from run start, True Time");
 
    addVariable(new Variable("TimeResetOff",Variable::Configuration));
    getVariable("TimeResetOff")->setDescription("Reset de-assertion delay from run start");
-   getVariable("TimeResetOff")->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
    getVariable("TimeResetOff")->setRange(0,65535);
+
+   addVariable(new Variable("TimeResetOffFb",Variable::Feedback));
+   getVariable("TimeResetOffFb")->setDescription("Reset de-assertion delay from run start, True Time");
 
    addVariable(new Variable("TimeLeakageNullOff",Variable::Configuration));
    getVariable("TimeLeakageNullOff")->setDescription("LeakageNull signal turn off delay from run start");
-   getVariable("TimeLeakageNullOff")->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
    getVariable("TimeLeakageNullOff")->setRange(0,65535);
+
+   addVariable(new Variable("TimeLeakageNullOffFb",Variable::Feedback));
+   getVariable("TimeLeakageNullOffFb")->setDescription("LeakageNull signal turn off delay from run start, True Time");
 
    addVariable(new Variable("TimeOffsetNullOff",Variable::Configuration));
    getVariable("TimeOffsetNullOff")->setDescription("OffsetNull signal turn off delay from run start");
-   getVariable("TimeOffsetNullOff")->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
    getVariable("TimeOffsetNullOff")->setRange(0,65535);
+
+   addVariable(new Variable("TimeOffsetNullOffFb",Variable::Feedback));
+   getVariable("TimeOffsetNullOffFb")->setDescription("OffsetNull signal turn off delay from run start, True Time");
 
    addVariable(new Variable("TimeThreshOff",Variable::Configuration));
    getVariable("TimeThreshOff")->setDescription("Threshold signal turn off delay from run start");
-   getVariable("TimeThreshOff")->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
    getVariable("TimeThreshOff")->setRange(0,65535);
+
+   addVariable(new Variable("TimeThreshOffFb",Variable::Feedback));
+   getVariable("TimeThreshOff")->setDescription("Threshold signal turn off delay from run start, True Time");
 
    addVariable(new Variable("TrigInhibitOff",Variable::Configuration));
    getVariable("TrigInhibitOff")->setDescription("Trigger inhibit turn off bunch crossing");
-   getVariable("TrigInhibitOff")->setComp(0,1,0,"");
    getVariable("TrigInhibitOff")->setRange(0,8191);
 
    addVariable(new Variable("TimePowerUpOn",Variable::Configuration));
    getVariable("TimePowerUpOn")->setDescription("Power up delay from run start");
-   getVariable("TimePowerUpOn")->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
    getVariable("TimePowerUpOn")->setRange(0,65535);
+
+   addVariable(new Variable("TimePowerUpOnFb",Variable::Feedback));
+   getVariable("TimePowerUpOnFb")->setDescription("Power up delay from run start, True Time");
 
    addVariable(new Variable("TimeDeselDelay",Variable::Configuration));
    getVariable("TimeDeselDelay")->setDescription("Deselect sequence delay from run start");
-   getVariable("TimeDeselDelay")->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
    getVariable("TimeDeselDelay")->setRange(0,255);
+
+   addVariable(new Variable("TimeDeselDelayFb",Variable::Feedback));
+   getVariable("TimeDeselDelayFb")->setDescription("Deselect sequence delay from run start");
 
    addVariable(new Variable("TimeBunchClkDelay",Variable::Configuration));
    getVariable("TimeBunchClkDelay")->setDescription("Bunch clock start delay from from run start");
-   getVariable("TimeBunchClkDelay")->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
    getVariable("TimeBunchClkDelay")->setRange(0,65535);
+
+   addVariable(new Variable("TimeBunchClkDelayFb",Variable::Feedback));
+   getVariable("TimeBunchClkDelayFb")->setDescription("Bunch clock start delay from from run start");
 
    addVariable(new Variable("TimeDigitizeDelay",Variable::Configuration));
    getVariable("TimeDigitizeDelay")->setDescription("Digitization delay after power down");
-   getVariable("TimeDigitizeDelay")->setComp(1,KpixAcqPeriod,0,"nS (@50nS)");
    getVariable("TimeDigitizeDelay")->setRange(0,255);
+
+   addVariable(new Variable("TimeDigitizeDelayFb",Variable::Feedback));
+   getVariable("TimeDigitizeDelayFb")->setDescription("Digitization delay after power down");
 
    addVariable(new Variable("BunchClockCount",Variable::Configuration));
    getVariable("BunchClockCount")->setDescription("Bunch cock count");
@@ -188,22 +213,18 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
 
    addVariable(new Variable("Cal0Delay",Variable::Configuration));
    getVariable("Cal0Delay")->setDescription("Calibration injection 0 delay in bunch crossings");
-   getVariable("Cal0Delay")->setComp(1,400,0,"nS");
    getVariable("Cal0Delay")->setRange(0,4095);
 
    addVariable(new Variable("Cal1Delay",Variable::Configuration));
    getVariable("Cal1Delay")->setDescription("Calibration injection 1 delay in bunch crossings");
-   getVariable("Cal1Delay")->setComp(1,400,0,"nS");
    getVariable("Cal1Delay")->setRange(0,4095);
 
    addVariable(new Variable("Cal2Delay",Variable::Configuration));
    getVariable("Cal2Delay")->setDescription("Calibration injection 2 delay in bunch crossings");
-   getVariable("Cal2Delay")->setComp(1,400,0,"nS");
    getVariable("Cal2Delay")->setRange(0,4095);
 
    addVariable(new Variable("Cal3Delay",Variable::Configuration));
    getVariable("Cal3Delay")->setDescription("Calibration injection 3 delay in bunch crossings");
-   getVariable("Cal3Delay")->setComp(0,400,0,"nS");
    getVariable("Cal3Delay")->setRange(0,4095);
 
    // DAC registers and variables
@@ -448,8 +469,12 @@ void KpixAsic::readConfig ( ) {
    uint row;
    uint calCount;
    uint oldControl;
+   uint clkPeriod;
 
    REGISTER_LOCK
+
+   // Get acquistion clock rate
+   clkPeriod = (parent_->getInt("ClkPeriodAcq") + 1) * 10;
 
    // Config register & variables
    readRegister(getRegister("Config"));
@@ -491,6 +516,16 @@ void KpixAsic::readConfig ( ) {
 
    readRegister(getRegister("TimerE"));
    getVariable("BunchClockCount")->setInt(getRegister("TimerE")->get(0,0xFFFF));
+
+   // Feedback
+   getVariable("TimeResetOffFb")->set(timeString(clkPeriod,getVariable("TimeResetOff")->getInt()));
+   getVariable("TimeOffsetNullOffFb")->set(timeString(clkPeriod,getVariable("TimeOffsetNullOff")->getInt()));
+   getVariable("TimeLeakageNullOffFb")->set(timeString(clkPeriod,getVariable("TimeLeakageNullOff")->getInt()));
+   getVariable("TimeDeselDelayFb")->set(timeString(clkPeriod,getVariable("TimeDeselDelay")->getInt()));
+   getVariable("TimeBunchClkDelayFb")->set(timeString(clkPeriod,getVariable("TimeBunchClkDelay")->getInt()));
+   getVariable("TimeDigitizeDelayFb")->set(timeString(clkPeriod,getVariable("TimeDigitizeDelay")->getInt()));
+   getVariable("TimePowerUpOnFb")->set(timeString(clkPeriod,getVariable("TimePowerUpOn")->getInt()));
+   getVariable("TimeThreshOffFb")->set(timeString(clkPeriod,getVariable("TimeThreshOff")->getInt()));
 
    // Calibration control registers & variables
    readRegister(getRegister("CalDelay0"));
@@ -667,8 +702,12 @@ void KpixAsic::writeConfig ( bool force ) {
    uint         x;
    uint         calCount;
    bool         dacStale;
+   uint         clkPeriod;
 
    REGISTER_LOCK
+
+   // Get acquistion clock rate
+   clkPeriod = (parent_->getInt("ClkPeriodAcq") + 1) * 10;
 
    // Config register & variables
    //getRegister("Config")->set(getVariable("CfgTestDataEn")->getInt(),0,0x1);
@@ -715,6 +754,17 @@ void KpixAsic::writeConfig ( bool force ) {
    getRegister("TimerF")->set(getVariable("TimeBunchClkDelay")->getInt(),8,0xFFFF);
    getRegister("TimerF")->set(getVariable("TimeDigitizeDelay")->getInt(),24,0xFF);
    writeRegister(getRegister("TimerF"),force);
+
+   // Feedback
+   getVariable("TimeResetOnFb")->set(timeString(clkPeriod,getVariable("TimeResetOn")->getInt()));
+   getVariable("TimeResetOffFb")->set(timeString(clkPeriod,getVariable("TimeResetOff")->getInt()));
+   getVariable("TimeOffsetNullOffFb")->set(timeString(clkPeriod,getVariable("TimeOffsetNullOff")->getInt()));
+   getVariable("TimeLeakageNullOffFb")->set(timeString(clkPeriod,getVariable("TimeLeakageNullOff")->getInt()));
+   getVariable("TimeDeselDelayFb")->set(timeString(clkPeriod,getVariable("TimeDeselDelay")->getInt()));
+   getVariable("TimeBunchClkDelayFb")->set(timeString(clkPeriod,getVariable("TimeBunchClkDelay")->getInt()));
+   getVariable("TimeDigitizeDelayFb")->set(timeString(clkPeriod,getVariable("TimeDigitizeDelay")->getInt()));
+   getVariable("TimePowerUpOnFb")->set(timeString(clkPeriod,getVariable("TimePowerUpOn")->getInt()));
+   getVariable("TimeThreshOffFb")->set(timeString(clkPeriod,getVariable("TimeThreshOff")->getInt()));
 
    // Calibration control registers & variables
    getRegister("CalDelay0")->set(getVariable("Cal0Delay")->getInt(),0,0x1FFF);

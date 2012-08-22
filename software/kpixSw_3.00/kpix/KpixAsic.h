@@ -37,6 +37,9 @@ class KpixAsic : public Device {
       // Function to convert dac value into a voltage
       static string dacToVoltString(uint dac);
 
+      // Function to time value to string
+      static string timeString(uint period, uint value);
+
    public:
 
       //! Constructor
