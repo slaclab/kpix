@@ -240,22 +240,40 @@ KpixAsic::KpixAsic ( uint destination, uint baseAddress, uint index, bool dummy,
    addRegister(new Register("Dac9", baseAddress_ + 0x00000029));
 
    addVariable(new Variable("DacThresholdA",Variable::Configuration));
-   getVariable("DacThresholdA")->setDescription("Trigger Threshold A dac\nDAC 0/8");
+   getVariable("DacThresholdA")->setDescription("Trigger Threshold A dac\nDAC 8");
    getVariable("DacThresholdA")->setPerInstance(true);
    getVariable("DacThresholdA")->setRange(0,255);
 
    addVariable(new Variable("DacThresholdAVolt",Variable::Feedback));
-   getVariable("DacThresholdAVolt")->setDescription("Trigger Threshold A dac voltage feedback\nDAC 0/8");
+   getVariable("DacThresholdAVolt")->setDescription("Trigger Threshold A dac voltage feedback\nDAC 8");
    getVariable("DacThresholdAVolt")->setPerInstance(true);
 
+   addVariable(new Variable("DacPreThresholdA",Variable::Configuration));
+   getVariable("DacPreThresholdA")->setDescription("Trigger Pre-Threshold A dac\nDAC 0");
+   getVariable("DacPreThresholdA")->setPerInstance(true);
+   getVariable("DacPreThresholdA")->setRange(0,255);
+
+   addVariable(new Variable("DacPreThresholdAVolt",Variable::Feedback));
+   getVariable("DacPreThresholdAVolt")->setDescription("Trigger Pre-Threshold A dac voltage feedback\nDAC 0");
+   getVariable("DacPreThresholdAVolt")->setPerInstance(true);
+
    addVariable(new Variable("DacThresholdB",Variable::Configuration));
-   getVariable("DacThresholdB")->setDescription("Trigger Threshold B dac\nDAC 1/9");
+   getVariable("DacThresholdB")->setDescription("Trigger Threshold B dac\nDAC 9");
    getVariable("DacThresholdB")->setPerInstance(true);
    getVariable("DacThresholdB")->setRange(0,255);
 
    addVariable(new Variable("DacThresholdBVolt",Variable::Feedback));
-   getVariable("DacThresholdBVolt")->setDescription("Trigger Threshold B dac voltage feedback\nDAC 1/9");
+   getVariable("DacThresholdBVolt")->setDescription("Trigger Threshold B dac voltage feedback\nDAC 9");
    getVariable("DacThresholdBVolt")->setPerInstance(true);
+
+   addVariable(new Variable("DacPreThresholdB",Variable::Configuration));
+   getVariable("DacPreThresholdB")->setDescription("Trigger Pre-Threshold B dac\nDAC 1");
+   getVariable("DacPreThresholdB")->setPerInstance(true);
+   getVariable("DacPreThresholdB")->setRange(0,255);
+
+   addVariable(new Variable("DacPreThresholdBVolt",Variable::Feedback));
+   getVariable("DacPreThresholdBVolt")->setDescription("Trigger Pre-Threshold B dac voltage feedback\nDAC 1");
+   getVariable("DacPreThresholdBVolt")->setPerInstance(true);
 
    addVariable(new Variable("DacRampThresh",Variable::Configuration));
    getVariable("DacRampThresh")->setDescription("Ramp threshold dac\nDAC 2");
@@ -557,13 +575,13 @@ void KpixAsic::readConfig ( ) {
       // DAC registers and variables
       readRegister(getRegister("Dac0"));
       val = getRegister("Dac0")->get(0,0xFF);
-      getVariable("DacThresholdA")->setInt(val);
-      getVariable("DacThresholdAVolt")->set(dacToVoltString(val));
+      getVariable("DacPreThresholdA")->setInt(val);
+      getVariable("DacPreThresholdAVolt")->set(dacToVoltString(val));
 
       readRegister(getRegister("Dac1"));
       val = getRegister("Dac1")->get(0,0xFF);
-      getVariable("DacThresholdB")->setInt(val);
-      getVariable("DacThresholdBVolt")->set(dacToVoltString(val));
+      getVariable("DacPreThresholdB")->setInt(val);
+      getVariable("DacPreThresholdBVolt")->set(dacToVoltString(val));
 
       readRegister(getRegister("Dac2"));
       val = getRegister("Dac2")->get(0,0xFF);
@@ -607,6 +625,16 @@ void KpixAsic::readConfig ( ) {
       val = getRegister("Dac7")->get(0,0xFF);
       getVariable("DacDefaultAnalog")->setInt(val);
       getVariable("DacDefaultAnalogVolt")->set(dacToVoltString(val));
+
+      readRegister(getRegister("Dac8"));
+      val = getRegister("Dac8")->get(0,0xFF);
+      getVariable("DacThresholdA")->setInt(val);
+      getVariable("DacThresholdAVolt")->set(dacToVoltString(val));
+
+      readRegister(getRegister("Dac9"));
+      val = getRegister("Dac9")->get(0,0xFF);
+      getVariable("DacThresholdB")->setInt(val);
+      getVariable("DacThresholdBVolt")->set(dacToVoltString(val));
 
       // Restore control register settings
       if ( getVariable("Version")->getInt() == 9 && getVariable("Enabled")->getInt() == 1 ) {
@@ -784,28 +812,19 @@ void KpixAsic::writeConfig ( bool force ) {
    if ( !dummy_ ) {
 
       // DAC registers and variables
-      val = getVariable("DacThresholdA")->getInt();
-      getVariable("DacThresholdAVolt")->set(dacToVoltString(val));
+      val = getVariable("DacPreThresholdA")->getInt();
+      getVariable("DacPreThresholdAVolt")->set(dacToVoltString(val));
       getRegister("Dac0")->set(val,0,0xFF);
       getRegister("Dac0")->set(val,8,0xFF);
       getRegister("Dac0")->set(val,16,0xFF);
       getRegister("Dac0")->set(val,24,0xFF);
-      getRegister("Dac8")->set(val,0,0xFF);
-      getRegister("Dac8")->set(val,8,0xFF);
-      getRegister("Dac8")->set(val,16,0xFF);
-      getRegister("Dac8")->set(val,24,0xFF);
 
-      val = getVariable("DacThresholdB")->getInt();
-      getVariable("DacThresholdBVolt")->set(dacToVoltString(val));
+      val = getVariable("DacPreThresholdB")->getInt();
+      getVariable("DacPreThresholdBVolt")->set(dacToVoltString(val));
       getRegister("Dac1")->set(val,0,0xFF);
       getRegister("Dac1")->set(val,8,0xFF);
       getRegister("Dac1")->set(val,16,0xFF);
       getRegister("Dac1")->set(val,24,0xFF);
-      writeRegister(getRegister("Dac1"),force);
-      getRegister("Dac9")->set(val,0,0xFF);
-      getRegister("Dac9")->set(val,8,0xFF);
-      getRegister("Dac9")->set(val,16,0xFF);
-      getRegister("Dac9")->set(val,24,0xFF);
 
       val = getVariable("DacRampThresh")->getInt();
       getVariable("DacRampThreshVolt")->set(dacToVoltString(val));
@@ -861,6 +880,20 @@ void KpixAsic::writeConfig ( bool force ) {
       getRegister("Dac7")->set(val,8,0xFF);
       getRegister("Dac7")->set(val,16,0xFF);
       getRegister("Dac7")->set(val,24,0xFF);
+
+      val = getVariable("DacThresholdA")->getInt();
+      getVariable("DacThresholdAVolt")->set(dacToVoltString(val));
+      getRegister("Dac8")->set(val,0,0xFF);
+      getRegister("Dac8")->set(val,8,0xFF);
+      getRegister("Dac8")->set(val,16,0xFF);
+      getRegister("Dac8")->set(val,24,0xFF);
+
+      val = getVariable("DacThresholdB")->getInt();
+      getVariable("DacThresholdBVolt")->set(dacToVoltString(val));
+      getRegister("Dac9")->set(val,0,0xFF);
+      getRegister("Dac9")->set(val,8,0xFF);
+      getRegister("Dac9")->set(val,16,0xFF);
+      getRegister("Dac9")->set(val,24,0xFF);
 
       // Determine if dac registers are stale
       dacStale = force;
