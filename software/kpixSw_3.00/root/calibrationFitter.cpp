@@ -120,6 +120,18 @@ double calibCharge ( uint dac, bool positive, bool highCalib ) {
    return(charge);
 }
 
+void addDoubleToXml ( ofstream *xml, uint indent, string variable, Double_t value ) {
+   uint x;
+
+   if ( ! isnan(value) ) {
+      for (x=0; x < indent; x++) *xml << " ";
+      *xml << "<" << variable << ">";
+      *xml << value;
+      *xml << "</" << variable << ">";
+      *xml << endl;
+   }
+}
+
 // Process the data
 int main ( int argc, char **argv ) {
    DataRead               dataRead;
@@ -390,12 +402,15 @@ int main ( int argc, char **argv ) {
                            hist->Write();
 
                            // Add to xml
-                           xml << "               <BaseMean>" << chanData[kpix][channel][bucket][range]->baseMean << "</BaseMean>" << endl;
-                           xml << "               <BaseRms>" << chanData[kpix][channel][bucket][range]->baseRms << "</BaseRms>" << endl;
-                           xml << "               <BaseFitMean>" << hist->GetFunction("gaus")->GetParameter(1) << "</BaseFitMean>" << endl;
-                           xml << "               <BaseFitSigma>" << hist->GetFunction("gaus")->GetParameter(2) << "</BaseFitSigma>" << endl;
-                           xml << "               <BaseFitMeanErr>" << hist->GetFunction("gaus")->GetParError(1) << "</BaseFitMeanErr>" << endl;
-                           xml << "               <BaseFitSigmaErr>" << hist->GetFunction("gaus")->GetParError(2) << "</BaseFitSigmaErr>" << endl;
+                           addDoubleToXml(&xml,15,"BaseMean",chanData[kpix][channel][bucket][range]->baseMean);
+                           addDoubleToXml(&xml,15,"BaseRms",chanData[kpix][channel][bucket][range]->baseRms);
+
+                           if ( hist->GetFunction("gaus") ) {
+                              addDoubleToXml(&xml,15,"BaseFitMean",hist->GetFunction("gaus")->GetParameter(1));
+                              addDoubleToXml(&xml,15,"BaseFitSigma",hist->GetFunction("gaus")->GetParameter(2));
+                              addDoubleToXml(&xml,15,"BaseFitMeanErr",hist->GetFunction("gaus")->GetParError(1));
+                              addDoubleToXml(&xml,15,"BaseFitSigmaErr",hist->GetFunction("gaus")->GetParError(2));
+                           }
 
                            // Create calibration graph
                            grCount = 0;
@@ -427,11 +442,13 @@ int main ( int argc, char **argv ) {
                               grCalib->Write(tmp.str().c_str());
 
                               // Add to xml
-                              xml << "               <CalibGain>" << grCalib->GetFunction("pol1")->GetParameter(1) << "</CalibGain>" << endl;
-                              xml << "               <CalibIntercept>" << grCalib->GetFunction("pol1")->GetParameter(0) << "</CalibIntercept>" << endl;
-                              xml << "               <CalibGainErr>" << grCalib->GetFunction("pol1")->GetParError(1) << "</CalibGainErr>" << endl;
-                              xml << "               <CalibInterceptErr>" << grCalib->GetFunction("pol1")->GetParError(0) << "</CalibInterceptErr>" << endl;
-                              xml << "               <CalibGainRms>" << grCalib->GetRMS(2) << "</CalibGainRms>" << endl;
+                              if ( grCalib->GetFunction("pol1") ) {
+                                 addDoubleToXml(&xml,15,"CalibGain",grCalib->GetFunction("pol1")->GetParameter(1));
+                                 addDoubleToXml(&xml,15,"CalibIntercept",grCalib->GetFunction("pol1")->GetParameter(0));
+                                 addDoubleToXml(&xml,15,"CalibGainErr",grCalib->GetFunction("pol1")->GetParError(1));
+                                 addDoubleToXml(&xml,15,"CalibInterceptErr",grCalib->GetFunction("pol1")->GetParError(0));
+                              }
+                              addDoubleToXml(&xml,15,"CalibGainRms",grCalib->GetRMS(2));
                            }
                            xml << "            </Range>" << endl;
                         }
