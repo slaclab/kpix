@@ -443,7 +443,7 @@ public class CalibrationFitter extends AbstractLoopListener implements RecordLis
                         rangeString += genXml(15,"CalibIntercept",fitPars[0]);
                         rangeString += genXml(15,"CalibGainErr",fitParErrs[1] * 1e15);
                         rangeString += genXml(15,"CalibInterceptErr",fitParErrs[0]);
-                        //rangeString += genXml(,15,"CalibGainRms",0);
+                        //rangeString += genXml(,15,"CalibGainRms",0); // Not sure how to get proper linear fit RMS
 
                         // Display the results
                         if ( k == 0 && c == 0 && b == 0 && r == 0 ) {
