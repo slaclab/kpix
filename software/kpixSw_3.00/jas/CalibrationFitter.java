@@ -3,22 +3,25 @@ import org.freehep.record.loop.AbstractLoopListener;
 import org.freehep.record.loop.LoopEvent;
 import org.freehep.record.loop.RecordEvent;
 import org.freehep.record.loop.RecordListener;
+import org.freehep.record.loop.RecordLoop;
+import org.freehep.application.Application;
+import org.freehep.application.studio.Studio;
 import org.hep.io.kpixreader.KpixXMLRecord;
 import org.hep.io.kpixreader.KpixDataRecord;
 import org.hep.io.kpixreader.KpixRecord;
 import org.hep.io.kpixreader.KpixSample;
 import javax.xml.parsers.*;
 import javax.xml.xpath.*;
-import org.w3c.dom.*;
-import org.xml.sax.SAXException;
 import java.lang.String;
-import java.util.Arrays;
 import java.util.*;
+import java.util.Arrays;
+import java.util.Vector;
 import java.text.*;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-import java.util.Vector;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
 
 public class CalibrationFitter extends AbstractLoopListener implements RecordListener {
    int                  _kpixCount;
@@ -351,8 +354,10 @@ public class CalibrationFitter extends AbstractLoopListener implements RecordLis
       String           bucketString;
       String           rangeString;
 
-      // It would be great to generate this filename from the input name
-      outName = "calibration_result.xml";
+      // Attempt to fine source name
+      RecordLoop loop = (RecordLoop) 
+         ((Studio)(Application.getApplication())).getLookup().lookup(RecordLoop.class);
+      outName = loop.getRecordSource().getName() + ".xml";
 
       // Open the file
       try {
