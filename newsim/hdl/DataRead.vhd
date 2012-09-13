@@ -60,7 +60,7 @@ begin
 
            -- Shift data
            else
-              shiftReg <= '0' & shiftData(415 downto 1);
+              shiftReg <= '0' & shiftReg(415 downto 1);
            end if;
          end if;
       end if;
