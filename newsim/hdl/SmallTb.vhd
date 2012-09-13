@@ -21,6 +21,7 @@ architecture SmallTb of SmallTb is
    signal kpixClkOutP   : std_logic;
    signal kpixRstOut    : std_logic;
    signal trigIn        : TriggerExtInType;
+   signal kpixRst       : std_logic;
 
 begin
 
@@ -75,10 +76,26 @@ begin
    -- KPIX simulation
    U_AsicSim : entity AsicSim port map ( 
       sysclk    => kpixClkOutP,
-      reset     => kpixRstOut,
+      reset     => kpixRst,
       command   => kpixSerTxOut(0),
       data_out  => kpixSerRxIn(0)
    );
+
+   kpixSerRxIn(1) <= '0';
+   kpixSerRxIn(2) <= '0';
+   kpixSerRxIn(3) <= '0';
+
+   process ( kpixClkOutP, kpixRstOut, fpgaRstL ) begin
+      if fpgaRstL = '0' or kpixRstOut = '1' then
+         kpixRst <= '1';
+      elsif (falling_edge(kpixClkOutP)) then
+         if fpgaRstL = '0' or kpixRstOut = '1' then
+            kpixRst <= '1';
+         else
+            kpixRst <= '0';
+         end if;
+      end if;
+   end process;
 
 end SmallTb;
 

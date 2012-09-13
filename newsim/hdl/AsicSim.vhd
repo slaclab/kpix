@@ -29,6 +29,18 @@ architecture AsicSim of AsicSim is
    signal reset_l           : std_logic;
    signal reset_load        : std_logic;
    signal pwr_up_acq_dig    : std_logic;
+   signal pwr_up_acq        : std_logic;
+   signal leakage_null      : std_logic;
+   signal offset_null       : std_logic;
+   signal thresh_off        : std_logic;
+   signal trig_inh          : std_logic;
+   signal cal_strobe        : std_logic;
+   signal sel_cell          : std_logic;
+   signal desel_all_cells   : std_logic;
+   signal ramp_period       : std_logic;
+   signal precharge_bus     : std_logic;
+   signal analog_state      : std_logic_vector(2 downto 0);
+   signal read_state        : std_logic_vector(2 downto 0);
 
 begin
 
@@ -52,20 +64,20 @@ begin
       reg_clock         => reg_clock,
       reg_sel1          => reg_sel1,
       reg_sel0          => reg_sel0,
-      pwr_up_acq        => open,
+      pwr_up_acq        => pwr_up_acq,
       reset_load        => reset_load,
-      leakage_null      => open,
-      offset_null       => open,
-      thresh_off        => open,
-      trig_inh          => open,
-      cal_strobe        => open,
+      leakage_null      => leakage_null,
+      offset_null       => offset_null,
+      thresh_off        => thresh_off,
+      trig_inh          => trig_inh,
+      cal_strobe        => cal_strobe,
       pwr_up_acq_dig    => pwr_up_acq_dig,
-      sel_cell          => open,
-      desel_all_cells   => open,
-      ramp_period       => open,
-      precharge_bus     => open,
-      analog_state      => open,
-      read_state        => open,
+      sel_cell          => sel_cell,
+      desel_all_cells   => desel_all_cells,
+      ramp_period       => ramp_period,
+      precharge_bus     => precharge_bus,
+      analog_state      => analog_state,
+      read_state        => read_state,
       reg_data          => reg_data,
       reg_wr_ena        => reg_wr_ena,
       rdback            => rdback

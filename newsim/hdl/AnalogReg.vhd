@@ -49,7 +49,7 @@ begin
          addrReg <= (others=>'0');
       elsif (rising_edge(reg_clock)) then
          if reg_sel0 = '0' and reg_sel1 = '0' then
-            addrReg <= reg_data & addrReg(5 downto 0);
+            addrReg <= reg_data & addrReg(6 downto 1);
          end if;
       end if;
    end process;
