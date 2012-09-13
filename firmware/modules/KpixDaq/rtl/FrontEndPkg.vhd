@@ -1,15 +1,15 @@
 -------------------------------------------------------------------------------
--- Title      : Ethernet Controller Interface Package
+-- Title      : Front End Interface Package
 -------------------------------------------------------------------------------
--- File       : RegCntlPkg.vhd
+-- File       : FrontEndPkg.vhd
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-05-21
+-- Last update: 2012-09-12
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
--- Description: Port types for EthernetCore Interfaces
+-- Description: Port types for Generic Front End interface
 -------------------------------------------------------------------------------
 -- Copyright (c) 2012 SLAC National Accelerator Laboratory
 -------------------------------------------------------------------------------
@@ -18,40 +18,40 @@ library ieee;
 use ieee.std_logic_1164.all;
 use work.StdRtlPkg.all;
 
-package EthFrontEndPkg is
+package FrontEndPkg is
 
   -- Register Interface
-  type EthRegCntlInType is record
+  type FrontEndRegCntlInType is record
     regAck    : sl;
     regFail   : sl;
     regDataIn : slv(31 downto 0);
-  end record EthRegCntlInType;
+  end record FrontEndRegCntlInType;
 
-  type EthRegCntlOutType is record
+  type FrontEndRegCntlOutType is record
     regInp     : sl;                    -- Operation in progress
     regReq     : sl;                    -- Request reg transaction
     regOp      : sl;                    -- Read (0) or write (1)
     regAddr    : slv(23 downto 0);      -- Address
     regDataOut : slv(31 downto 0);      -- Write Data
-  end record EthRegCntlOutType;
+  end record FrontEndRegCntlOutType;
 
   -- Command Interface
-  type EthCmdCntlOutType is record
+  type FrontEndCmdCntlOutType is record
     cmdEn     : sl;                     -- Command available
     cmdOpCode : slv(7 downto 0);        -- Command Op Code
     cmdCtxOut : slv(23 downto 0);       -- Command Context
-  end record EthCmdCntlOutType;
+  end record FrontEndCmdCntlOutType;
 
   -- Upstream Data Buffer Interface
-  type EthUsDataOutType is record
+  type FrontEndUsDataOutType is record
     frameTxAfull : sl;
-  end record EthUsDataOutType;
+  end record FrontEndUsDataOutType;
 
-  type EthUsDataInType is record
+  type FrontEndUsDataInType is record
     frameTxEnable : sl;
     frameTxSOF    : sl;
     frameTxEOF    : sl;
     frameTxData   : slv(63 downto 0);
-  end record EthUsDataInType;
+  end record FrontEndUsDataInType;
 
-end package EthFrontEndPkg;
+end package FrontEndPkg;

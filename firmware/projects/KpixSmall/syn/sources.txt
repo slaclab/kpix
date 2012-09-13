@@ -5,7 +5,7 @@ vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/StdRtlPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SynchronizePkg.vhd"
 
 ## KpixDaq
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EthFrontEndPkg.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/FrontEndPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EventBuilderFifoPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixLocalPkg.vhd"
@@ -48,7 +48,7 @@ vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/RstSync.vhd"
 
 ## KpixDaq
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EthFrontEnd.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EthRegDecoder.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/FrontEndRegDecoder.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EventBuilder.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixClockGen.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixDaqCore.vhd"

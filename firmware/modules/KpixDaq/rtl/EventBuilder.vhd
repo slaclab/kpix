@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-07-11
+-- Last update: 2012-09-12
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -21,12 +21,10 @@ use work.StdRtlPkg.all;
 use work.SynchronizePkg.all;
 use work.KpixPkg.all;
 use work.KpixDataRxPkg.all;
-use work.EthFrontEndPkg.all;
+use work.FrontEndPkg.all;
 use work.EventBuilderFifoPkg.all;
 use work.TriggerPkg.all;
 use work.KpixLocalPkg.all;
---use work.TimestampPkg.all;
---use work.KpixRegCntlPkg.all;
 
 entity EventBuilder is
   
@@ -53,16 +51,16 @@ entity EventBuilder is
     kpixDataRxIn  : out KpixDataRxInArray(NUM_KPIX_MODULES_G-1 downto 0);
     kpixClk       : in  sl;
 
-    -- Eth Registers
+    -- Front End Registers
     kpixConfigRegs : in KpixConfigRegsType;
 
     -- FIFO Interface
     ebFifoIn  : out EventBuilderFifoInType;
     ebFifoOut : in  EventBuilderFifoOutType;
 
-    -- Eth US Buffer interface
-    ethUsDataOut : in  EthUsDataOutType;
-    ethUsDataIn  : out EthUsDataInType);
+    -- Front End US Buffer interface
+    frontEndUsDataOut : in  FrontEndUsDataOutType;
+    frontEndUsDataIn  : out FrontEndUsDataInType);
 
 end entity EventBuilder;
 
@@ -85,11 +83,10 @@ architecture rtl of EventBuilder is
     counter        : unsigned(15 downto 0);  -- Generic counter for stalling in a state
     activeModules  : slv(NUM_KPIX_MODULES_G-1 downto 0);
     dataDone       : slv(NUM_KPIX_MODULES_G-1 downto 0);
-    first          : unsigned(log2(NUM_KPIX_MODULES_G)-1 downto 0);
+    kpixCounter    : unsigned(log2(NUM_KPIX_MODULES_G)-1 downto 0);
     kpixDataRxIn   : KpixDataRxInArray(NUM_KPIX_MODULES_G-1 downto 0);
     timestampIn    : TimestampInType;
     ebFifoIn       : EventBuilderFifoInType;
---    ethUsDataIn    : EthUsDataInType;
   end record;
 
   signal r, rin : RegType;
@@ -108,8 +105,8 @@ begin
       r.counter          <= (others => '0')            after DELAY_G;
       r.activeModules    <= (others => '0')            after DELAY_G;
       r.dataDone         <= (others => '0')            after DELAY_G;
-      r.first            <= (others => '0')            after DELAY_G;
-      r.kpixDataRxIn     <= (others => (ready => '0')) after DELAY_G;
+      r.kpixCounter      <= (others => '0')            after DELAY_G;
+      r.kpixDataRxIn     <= (others => (ack => '0')) after DELAY_G;
       r.timestampIn.rdEn <= '0'                        after DELAY_G;
       r.ebFifoIn.wrData  <= (others => '0')            after DELAY_G;
       r.ebFifoIn.wrEn    <= '0'                        after DELAY_G;
@@ -118,11 +115,10 @@ begin
     end if;
   end process sync;
 
-  comb : process (r, triggerOut, kpixDataRxOut, ebFifoOut, ethUsDataOut) is
-    variable rVar           : RegType;
-    variable selectedUVar   : unsigned(r.first'range);
-    variable selectedIntVar : natural;
-    
+  comb : process (r, triggerOut, kpixDataRxOut, ebFifoOut, frontEndUsDataOut) is
+    variable rVar        : RegType;
+
+    -- Write data to the EventBuilder FIFO
     procedure writeFifo (
       data : in slv(63 downto 0);
       flag : in FlagType := NONE_C) is
@@ -175,13 +171,16 @@ begin
     rVar.ebFifoIn.wrEn    := '0';
     rVar.counter          := (others => '0');
     rVar.dataDone         := (others => '0');
-    rVar.first            := (others => '0');
     rVar.activeModules    := (others => '0');
 
-    -- Reset ready when valid falls
+    -- Determines which kpix to look for data from.
+    -- Increments every cycle so that kpixes are read in round robin fashion.
+    rVar.kpixCounter := r.kpixCounter + 1;
+
+    -- Reset ack when valid falls
     for i in NUM_KPIX_MODULES_G-1 downto 0 loop
       if (kpixDataRxOut(i).valid = '0') then
-        rVar.kpixDataRxIn(i).ready := '0';
+        rVar.kpixDataRxIn(i).ack := '0';
       end if;
     end loop;
 
@@ -259,21 +258,17 @@ begin
       when GATHER_DATA_S =>
         rVar.dataDone      := r.dataDone;
         rVar.activeModules := r.activeModules;
-        rVar.first         := r.first;
 
         if (ebFifoOut.full = '0') then  -- pause if fifo is full
-          for i in 0 to NUM_KPIX_MODULES_G-1 loop
-            selectedUVar   := i + r.first;
-            selectedIntVar := to_integer(selectedUVar);
-            if (kpixDataRxOut(selectedIntVar).valid = '1' and r.kpixDataRxIn(selectedIntVar).ready = '0') then
-              rVar.first                              := selectedUVar + 1;
-              rVar.kpixDataRxIn(selectedIntVar).ready := '1';
-              writeFifo(kpixDataRxOut(selectedIntVar).data);
-              if (kpixDataRxOut(selectedIntVar).last = '1') then
-                rVar.dataDone(selectedIntVar) := '1';
-              end if;
+          -- kpixCounter increments every clock.
+          -- Check to see if the KpixDataRx module selected by kpixCounter has data.
+          if (kpixDataRxOut(to_integer(r.kpixCounter)).valid = '1' and r.kpixDataRxIn(to_integer(r.kpixCounter)).ack = '0') then
+            rVar.kpixDataRxIn(to_integer(r.kpixCounter)).ack := '1';
+            writeFifo(kpixDataRxOut(to_integer(r.kpixCounter)).data);
+            if (kpixDataRxOut(to_integer(r.kpixCounter)).last = '1') then
+              rVar.dataDone(to_integer(r.kpixCounter)) := '1';
             end if;
-          end loop;
+          end if;
 
           -- Check if done
           if (r.dataDone = r.activeModules) then
@@ -290,7 +285,7 @@ begin
 
     -- Assign outputs to FIFO
     ebFifoIn      <= r.ebFifoIn;
-    ebFifoIn.rdEn <= not ebFifoOut.empty and not ethUsDataOut.frameTxAFull;
+    ebFifoIn.rdEn <= not ebFifoOut.empty and not frontEndUsDataOut.frameTxAFull;
     kpixDataRxIn  <= r.kpixDataRxIn;
     timestampIn   <= r.timestampIn;
 
@@ -300,10 +295,10 @@ begin
   ------------------------------------------------------------------------------------------------
   -- FIFO Rd Logic
   ------------------------------------------------------------------------------------------------
-  ethUsDataIn.frameTxEnable <= not ebFifoOut.empty and not ethUsDataOut.frameTxAFull;
-  ethUsDataIn.frameTxData   <= ebFifoOut.rdData(63 downto 0);
-  ethUsDataIn.frameTxSOF    <= ebFifoOut.rdData(SOF_BIT_C);
-  ethUsDataIn.frameTxEOF    <= ebFifoOut.rdData(EOF_BIT_C);
+  frontEndUsDataIn.frameTxEnable <= not ebFifoOut.empty and not frontEndUsDataOut.frameTxAFull;
+  frontEndUsDataIn.frameTxData   <= ebFifoOut.rdData(63 downto 0);
+  frontEndUsDataIn.frameTxSOF    <= ebFifoOut.rdData(SOF_BIT_C);
+  frontEndUsDataIn.frameTxEOF    <= ebFifoOut.rdData(EOF_BIT_C);
   
 
 end architecture rtl;

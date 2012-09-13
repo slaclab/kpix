@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-10
--- Last update: 2012-06-20
+-- Last update: 2012-09-12
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ package KpixDataRxPkg is
   -- Data interface
   --------------------------------------------------------------------------------------------------
   type KpixDataRxInType is record
-    ready : sl;
+    ack : sl;
   end record KpixDataRxInType;
 
   type KpixDataRxInArray is array (natural range <>) of KpixDataRxInType;

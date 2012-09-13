@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2012-07-11
+-- Last update: 2012-09-12
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -18,7 +18,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use work.StdRtlPkg.all;
 use work.KpixPkg.all;
-use work.EthFrontEndPkg.all;
+use work.FrontEndPkg.all;
 use work.EventBuilderFifoPkg.all;
 use work.TriggerPkg.all;
 library unisim;
@@ -72,12 +72,12 @@ architecture rtl of KpixSmall is
   signal rst200        : sl;
   signal dcmLocked     : sl;
 
-  -- Eth Front End Signals
-  signal ethRegCntlIn  : EthRegCntlInType;
-  signal ethRegCntlOut : EthRegCntlOutType;
-  signal ethCmdCntlOut : EthCmdCntlOutType;
-  signal ethUsDataOut  : EthUsDataOutType;
-  signal ethUsDataIn   : EthUsDataInType;
+  -- Front End Signals
+  signal frontEndRegCntlIn  : FrontEndRegCntlInType;
+  signal frontEndRegCntlOut : FrontEndRegCntlOutType;
+  signal frontEndCmdCntlOut : FrontEndCmdCntlOutType;
+  signal frontEndUsDataOut  : FrontEndUsDataOutType;
+  signal frontEndUsDataIn   : FrontEndUsDataInType;
 
   -- Event Builder FIFO signals
   -- Optionaly pass this through as IO to external FIFO
@@ -148,22 +148,22 @@ begin
       gtpClkRst     => sysRst125,
       gtpRefClk     => gtpRefClk,
       gtpRefClkOut  => gtpRefClkOut,
-      cmdEn         => ethCmdCntlOut.cmdEn,
-      cmdOpCode     => ethCmdCntlOut.cmdOpCode,
-      cmdCtxOut     => ethCmdCntlOut.cmdCtxOut,
-      regReq        => ethRegCntlOut.regReq,
-      regOp         => ethRegCntlOut.regOp,
-      regInp        => ethRegCntlOut.regInp,
-      regAck        => ethRegCntlIn.regAck,
-      regFail       => ethRegCntlIn.regFail,
-      regAddr       => ethRegCntlOut.regAddr,
-      regDataOut    => ethRegCntlOut.regDataOut,
-      regDataIn     => ethRegCntlIn.regDataIn,
-      frameTxEnable => ethUsDataIn.frameTxEnable,
-      frameTxSOF    => ethUsDataIn.frameTxSOF,
-      frameTxEOF    => ethUsDataIn.frameTxEOF,
-      frameTxAfull  => ethUsDataOut.frameTxAfull,
-      frameTxData   => ethUsDataIn.frameTxData,
+      cmdEn         => frontEndCmdCntlOut.cmdEn,
+      cmdOpCode     => frontEndCmdCntlOut.cmdOpCode,
+      cmdCtxOut     => frontEndCmdCntlOut.cmdCtxOut,
+      regReq        => frontEndRegCntlOut.regReq,
+      regOp         => frontEndRegCntlOut.regOp,
+      regInp        => frontEndRegCntlOut.regInp,
+      regAck        => frontEndRegCntlIn.regAck,
+      regFail       => frontEndRegCntlIn.regFail,
+      regAddr       => frontEndRegCntlOut.regAddr,
+      regDataOut    => frontEndRegCntlOut.regDataOut,
+      regDataIn     => frontEndRegCntlIn.regDataIn,
+      frameTxEnable => frontEndUsDataIn.frameTxEnable,
+      frameTxSOF    => frontEndUsDataIn.frameTxSOF,
+      frameTxEOF    => frontEndUsDataIn.frameTxEOF,
+      frameTxAfull  => frontEndUsDataOut.frameTxAfull,
+      frameTxData   => frontEndUsDataIn.frameTxData,
       gtpRxN        => udpRxN,
       gtpRxP        => udpRxP,
       gtpTxN        => udpTxN,
@@ -181,25 +181,25 @@ begin
       DELAY_G            => DELAY_G,
       NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
     port map (
-      sysClk         => sysClk125,
-      sysRst         => sysRst125,
-      clk200         => clk200,
-      rst200         => rst200,
-      ethRegCntlOut  => ethRegCntlOut,
-      ethRegCntlIn   => ethRegCntlIn,
-      ethCmdCntlOut  => ethCmdCntlOut,
-      ethUsDataOut   => ethUsDataOut,
-      ethUsDataIn    => ethUsDataIn,
-      triggerExtIn   => intTriggerIn,
-      ebFifoOut      => ebFifoOut,
-      ebFifoIn       => ebFifoIn,
-      debugOutA      => debugOutA,
-      debugOutB      => debugOutB,
-      kpixClkOut     => kpixClk,
-      kpixTriggerOut => kpixTrigger,
-      kpixResetOut   => kpixRst,
-      kpixSerTxOut   => intKpixSerTxOut,
-      kpixSerRxIn    => intKpixSerRxIn);
+      sysClk             => sysClk125,
+      sysRst             => sysRst125,
+      clk200             => clk200,
+      rst200             => rst200,
+      frontEndRegCntlOut => frontEndRegCntlOut,
+      frontEndRegCntlIn  => frontEndRegCntlIn,
+      frontEndCmdCntlOut => frontEndCmdCntlOut,
+      frontEndUsDataOut  => frontEndUsDataOut,
+      frontEndUsDataIn   => frontEndUsDataIn,
+      triggerExtIn       => intTriggerIn,
+      ebFifoOut          => ebFifoOut,
+      ebFifoIn           => ebFifoIn,
+      debugOutA          => debugOutA,
+      debugOutB          => debugOutB,
+      kpixClkOut         => kpixClk,
+      kpixTriggerOut     => kpixTrigger,
+      kpixResetOut       => kpixRst,
+      kpixSerTxOut       => intKpixSerTxOut,
+      kpixSerRxIn        => intKpixSerRxIn);
 
   --------------------------------------------------------------------------------------------------
   -- Event Builder FIFO

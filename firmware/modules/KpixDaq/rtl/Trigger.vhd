@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-07-11
+-- Last update: 2012-09-12
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -19,7 +19,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.StdRtlPkg.all;
 use work.SynchronizePkg.all;
-use work.EthFrontEndPkg.all;
+use work.FrontEndPkg.all;
 use work.KpixLocalPkg.all;
 use work.KpixPkg.all;
 use work.TriggerPkg.all;
@@ -31,16 +31,16 @@ entity Trigger is
     CLOCK_PERIOD_G : natural := 8);     -- In ns
 
   port (
-    sysClk          : in  sl;
-    sysRst          : in  sl;
-    ethCmdCntlOut   : in  EthCmdCntlOutType;
-    kpixLocalSysOut : in  KpixLocalSysOutType;
-    triggerRegsIn   : in  TriggerRegsInType;
-    kpixConfigRegs  : in  KpixConfigRegsType;
-    triggerExtIn    : in  TriggerExtInType;
-    triggerOut      : out TriggerOutType;
-    timestampIn     : in  TimestampInType;
-    timestampOut    : out TimestampOutType);
+    sysClk             : in  sl;
+    sysRst             : in  sl;
+    frontEndCmdCntlOut : in  FrontEndCmdCntlOutType;
+    kpixLocalSysOut    : in  KpixLocalSysOutType;
+    triggerRegsIn      : in  TriggerRegsInType;
+    kpixConfigRegs     : in  KpixConfigRegsType;
+    triggerExtIn       : in  TriggerExtInType;
+    triggerOut         : out TriggerOutType;
+    timestampIn        : in  TimestampInType;
+    timestampOut       : out TimestampOutType);
 
 end entity Trigger;
 
@@ -88,7 +88,7 @@ begin
     end if;
   end process sync;
 
-  comb : process (r, ethCmdCntlOut, triggerRegsIn, triggerExtIn, kpixLocalSysOut, fifoFull) is
+  comb : process (r, frontEndCmdCntlOut, triggerRegsIn, triggerExtIn, kpixLocalSysOut, fifoFull) is
     variable rVar : RegType;
   begin
     rVar := r;
@@ -163,8 +163,8 @@ begin
     ------------------------------------------------------------------------------------------------
     -- Acquire Command
     ------------------------------------------------------------------------------------------------
-    if (ethCmdCntlOut.cmdEn = '1') then
-      if (ethCmdCntlOut.cmdOpCode = TRIGGER_OPCODE_C) then
+    if (frontEndCmdCntlOut.cmdEn = '1') then
+      if (frontEndCmdCntlOut.cmdOpCode = TRIGGER_OPCODE_C) then
         rVar.triggerOut.startAcquire   := '1';
         rVar.triggerOut.startCalibrate := triggerRegsIn.calibrate;
         rVar.startCountEnable          := '1';

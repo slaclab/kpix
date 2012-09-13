@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-17
--- Last update: 2012-07-13
+-- Last update: 2012-09-12
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -17,7 +17,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use work.StdRtlPkg.all;
-use work.EthFrontEndPkg.all;
+use work.FrontEndPkg.all;
 use work.EventBuilderFifoPkg.all;
 use work.KpixPkg.all;
 use work.KpixRegCntlPkg.all;
@@ -39,12 +39,12 @@ entity KpixDaqCore is
     clk200 : in sl;                     -- Used by KpixClockGen
     rst200 : in sl;
 
-    -- Ethernet Interface (Should just make generic so PGP works as well)
-    ethRegCntlOut : in  EthRegCntlOutType;
-    ethRegCntlIn  : out EthRegCntlInType;
-    ethCmdCntlOut : in  EthCmdCntlOutType;
-    ethUsDataOut  : in  EthUsDataOutType;
-    ethUsDataIn   : out EthUsDataInType;
+    -- Front End Interface (Generic. Could be Ethernet, PGP or other)
+    frontEndRegCntlOut : in  FrontEndRegCntlOutType;
+    frontEndRegCntlIn  : out FrontEndRegCntlInType;
+    frontEndCmdCntlOut : in  FrontEndCmdCntlOutType;
+    frontEndUsDataOut  : in  FrontEndUsDataOutType;
+    frontEndUsDataIn   : out FrontEndUsDataInType;
 
     -- Trigger interface
     triggerExtIn : in TriggerExtInType;
@@ -72,10 +72,10 @@ architecture rtl of KpixDaqCore is
   signal kpixClk    : sl;
   signal kpixClkRst : sl;
 
-  signal kpixRegCntlIn  : EthRegCntlOutType;
-  signal kpixRegCntlOut : EthRegCntlInType;
+  signal kpixRegCntlIn  : FrontEndRegCntlOutType;
+  signal kpixRegCntlOut : FrontEndRegCntlInType;
 
-  -- Ethernet accessible registers
+  -- Front end accessible registers
   signal kpixClockGenRegsIn : KpixClockGenRegsInType;
   signal triggerRegsIn      : TriggerRegsInType;
   signal kpixConfigRegs     : KpixConfigRegsType;
@@ -119,15 +119,15 @@ begin
   -- Decode local register accesses
   -- Pass KPIX register accesses to KpixRegCntl
   --------------------------------------------------------------------------------------------------
-  EthRegDecoder_1 : entity work.EthRegDecoder
+  FrontEndRegDecoder_1 : entity work.FrontEndRegDecoder
     generic map (
       DELAY_G            => DELAY_G,
       NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
     port map (
       sysClk             => sysClk,
       sysRst             => sysRst,
-      ethRegCntlOut      => ethRegCntlOut,
-      ethRegCntlIn       => ethRegCntlIn,
+      frontEndRegCntlOut => frontEndRegCntlOut,
+      frontEndRegCntlIn  => frontEndRegCntlIn,
       kpixRegCntlOut     => kpixRegCntlOut,
       kpixRegCntlIn      => kpixRegCntlIn,
       triggerRegsIn      => triggerRegsIn,
@@ -160,16 +160,16 @@ begin
     generic map (
       DELAY_G => DELAY_G)
     port map (
-      sysClk          => sysClk,
-      sysRst          => sysRst,
-      ethCmdCntlOut   => ethCmdCntlOut,
-      kpixLocalSysOut => kpixLocalSysOut,
-      triggerRegsIn   => triggerRegsIn,
-      kpixConfigRegs  => kpixConfigRegs,
-      triggerExtIn    => triggerExtIn,
-      triggerOut      => triggerOut,
-      timestampIn     => timestampIn,
-      timestampOut    => timestampOut);
+      sysClk             => sysClk,
+      sysRst             => sysRst,
+      frontEndCmdCntlOut => frontEndCmdCntlOut,
+      kpixLocalSysOut    => kpixLocalSysOut,
+      triggerRegsIn      => triggerRegsIn,
+      kpixConfigRegs     => kpixConfigRegs,
+      triggerExtIn       => triggerExtIn,
+      triggerOut         => triggerOut,
+      timestampIn        => timestampIn,
+      timestampOut       => timestampOut);
 
   kpixTriggerOut <= triggerOut.trigger;
 
@@ -181,20 +181,20 @@ begin
       DELAY_G            => DELAY_G,
       NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
     port map (
-      sysClk          => sysClk,
-      sysRst          => sysRst,
-      triggerOut      => triggerOut,
-      timestampIn     => timestampIn,
-      timestampOut    => timestampOut,
-      kpixLocalSysOut => kpixLocalSysOut,
-      kpixDataRxOut   => kpixDataRxOut,
-      kpixDataRxIn    => kpixDataRxIn,
-      kpixClk         => kpixClk,
-      kpixConfigRegs  => kpixConfigRegs,
-      ebFifoIn        => ebFifoIn,
-      ebFifoOut       => ebFifoOut,
-      ethUsDataOut    => ethUsDataOut,
-      ethUsDataIn     => ethUsDataIn);
+      sysClk            => sysClk,
+      sysRst            => sysRst,
+      triggerOut        => triggerOut,
+      timestampIn       => timestampIn,
+      timestampOut      => timestampOut,
+      kpixLocalSysOut   => kpixLocalSysOut,
+      kpixDataRxOut     => kpixDataRxOut,
+      kpixDataRxIn      => kpixDataRxIn,
+      kpixClk           => kpixClk,
+      kpixConfigRegs    => kpixConfigRegs,
+      ebFifoIn          => ebFifoIn,
+      ebFifoOut         => ebFifoOut,
+      frontEndUsDataOut => frontEndUsDataOut,
+      frontEndUsDataIn  => frontEndUsDataIn);
 
 
   kpixSerTxOut                                  <= intKpixSerTxOut(NUM_KPIX_MODULES_G-1 downto 0);
@@ -202,7 +202,7 @@ begin
 
   --------------------------------------------------------------------------------------------------
   -- KPIX Register Controller
-  -- Handles reads and writes to KPIX registers through the Eth interface
+  -- Handles reads and writes to KPIX registers through the FrontEnd interface
   --------------------------------------------------------------------------------------------------
   KpixRegCntl_1 : entity work.KpixRegCntl
     generic map (
@@ -211,8 +211,8 @@ begin
     port map (
       sysClk           => sysClk,
       sysRst           => sysRst,
-      ethRegCntlOut    => kpixRegCntlIn,
-      ethRegCntlIn     => kpixRegCntlOut,
+      kpixRegCntlIn    => kpixRegCntlIn,
+      kpixRegCntlOut   => kpixRegCntlOut,
       triggerOut       => triggerOut,
       kpixAnalogState  => analogState,
       kpixReadoutState => readoutState,

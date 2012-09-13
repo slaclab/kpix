@@ -1,15 +1,15 @@
 -------------------------------------------------------------------------------
--- Title      : Ethernet Register Interface Decoder
+-- Title      : Front End Register Interface Decoder
 -------------------------------------------------------------------------------
--- File       : EthRegDecoder.vhd
+-- File       : FrontEndRegDecoder.vhd
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-07
--- Last update: 2012-07-03
+-- Last update: 2012-09-13
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
--- Description: Decodes register addresses from the Ethernet RegCntl interface.
+-- Description: Decodes register addresses from the Front End interface.
 -------------------------------------------------------------------------------
 -- Copyright (c) 2012 SLAC National Accelerator Laboratory
 -------------------------------------------------------------------------------
@@ -19,18 +19,15 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.StdRtlPkg.all;
 use work.Version.all;
-use work.EthFrontEndPkg.all;
+use work.FrontEndPkg.all;
 use work.KpixRegRxPkg.all;
---use work.KpixRegCntlPkg.all;
 use work.KpixPkg.all;
 use work.TriggerPkg.all;
---use work.TimestampPkg.all;
 use work.KpixClockGenPkg.all;
 use work.KpixLocalPkg.all;
 use work.KpixDataRxPkg.all;
 
-
-entity EthRegDecoder is
+entity FrontEndRegDecoder is
   
   generic (
     DELAY_G            : time    := 1 ns;
@@ -40,13 +37,13 @@ entity EthRegDecoder is
     sysClk : in sl;
     sysRst : in sl;
 
-    -- Interface to Ethernet core 
-    ethRegCntlOut : in  EthRegCntlOutType;
-    ethRegCntlIn  : out EthRegCntlInType;
+    -- Interface to front end
+    frontEndRegCntlOut : in  FrontEndRegCntlOutType;
+    frontEndRegCntlIn  : out FrontEndRegCntlInType;
 
-    -- Interface to KPIX reg controller (reuse EthRegCntl types)
-    kpixRegCntlOut : in  EthRegCntlInType;
-    kpixRegCntlIn  : out EthRegCntlOutType;
+    -- Interface to KPIX reg controller (reuse FrontEndRegCntl types)
+    kpixRegCntlOut : in  FrontEndRegCntlInType;
+    kpixRegCntlIn  : out FrontEndRegCntlOutType;
 
     -- Interface to local module registers
     triggerRegsIn      : out TriggerRegsInType;
@@ -56,12 +53,12 @@ entity EthRegDecoder is
     kpixDataRxRegsIn   : out KpixDataRxRegsInArray(NUM_KPIX_MODULES_G-1 downto 0);
     kpixDataRxRegsOut  : in  KpixDataRxRegsOutArray(NUM_KPIX_MODULES_G-1 downto 0));
 
-end entity EthRegDecoder;
+end entity FrontEndRegDecoder;
 
-architecture rtl of EthRegDecoder is
+architecture rtl of FrontEndRegDecoder is
 
-  constant ETH_REG_WRITE_C : sl := '1';
-  constant ETH_REG_READ_C  : sl := '0';
+  constant FRONT_END_REG_WRITE_C : sl := '1';
+  constant FRONT_END_REG_READ_C  : sl := '0';
 
   -- Define local registers addresses
   constant VERSION_REG_ADDR_C           : natural := 0;
@@ -89,10 +86,9 @@ architecture rtl of EthRegDecoder is
 
 
   type RegType is record
-    ethRegCntlIn       : EthRegCntlInType;
-    kpixRegCntlIn      : EthRegCntlOutType;
+    frontEndRegCntlIn  : FrontEndRegCntlInType;   -- Outputs to FrontEnd module
+    kpixRegCntlIn      : FrontEndRegCntlOutType;  -- Outputs to KpixRegCntl module
     triggerRegsIn      : TriggerRegsInType;
---    timestampRegsIn    : TimestampRegsInType;
     kpixConfigRegs     : KpixConfigRegsType;
     kpixClockGenRegsIn : KpixClockGenRegsInType;
     kpixLocalRegsIn    : KpixLocalRegsInType;
@@ -106,9 +102,9 @@ begin
   sync : process (sysClk, sysRst) is
   begin
     if (sysRst = '1') then
-      r.ethRegCntlIn.regAck    <= '0'             after DELAY_G;
-      r.ethRegCntlIn.regDataIn <= (others => '0') after DELAY_G;
-      r.ethRegCntlIn.regFail   <= '0'             after DELAY_G;
+      r.frontEndRegCntlIn.regAck    <= '0'             after DELAY_G;
+      r.frontEndRegCntlIn.regDataIn <= (others => '0') after DELAY_G;
+      r.frontEndRegCntlIn.regFail   <= '0'             after DELAY_G;
 
       r.kpixRegCntlIn.regInp     <= '0'             after DELAY_G;
       r.kpixRegCntlIn.regReq     <= '0'             after DELAY_G;
@@ -146,15 +142,15 @@ begin
     end if;
   end process sync;
 
-  comb : process (r, ethRegCntlOut, kpixDataRxRegsOut, kpixRegCntlOut) is
+  comb : process (r, frontEndRegCntlOut, kpixDataRxRegsOut, kpixRegCntlOut) is
     variable rVar         : RegType;
     variable addrIndexVar : integer;
   begin
     rVar := r;
 
-    rVar.ethRegCntlIn.regAck    := '0';
-    rVar.ethRegCntlIn.regDataIn := (others => '0');
-    rVar.ethRegCntlIn.regFail   := '0';
+    rVar.frontEndRegCntlIn.regAck    := '0';
+    rVar.frontEndRegCntlIn.regDataIn := (others => '0');
+    rVar.frontEndRegCntlIn.regFail   := '0';
 
     rVar.kpixRegCntlIn.regInp     := '0';
     rVar.kpixRegCntlIn.regReq     := '0';
@@ -173,101 +169,103 @@ begin
 
 
     -- Wait for an access request
-    if (ethRegCntlOut.regReq = '1') then
-      if (ethRegCntlOut.regAddr(ADDR_BLOCK_RANGE_C) = LOCAL_REGS_ADDR_C) then
+    if (frontEndRegCntlOut.regReq = '1') then
+      if (frontEndRegCntlOut.regAddr(ADDR_BLOCK_RANGE_C) = LOCAL_REGS_ADDR_C) then
         -- Local Regs being accessed
 
         -- Ack right away
-        rVar.ethRegCntlIn.regAck := '1';
+        rVar.frontEndRegCntlIn.regAck := '1';
 
         -- Error if addressing reg that doesnt exist
---        if (not isZero(ethRegCntlOut.regAddr(NOT_LOCAL_REGS_ADDR_RANGE_C))) then
---          rVar.ethRegCntlIn.regFail := '1';
+--        if (not isZero(frontEndRegCntlOut.regAddr(NOT_LOCAL_REGS_ADDR_RANGE_C))) then
+--          rVar.frontEndRegCntlIn.regFail := '1';
 --        end if;
 
         -- Peform register access
-        addrIndexVar := to_integer(unsigned(ethRegCntlOut.regAddr(LOCAL_REGS_ADDR_RANGE_C)));
+        addrIndexVar := to_integer(unsigned(frontEndRegCntlOut.regAddr(LOCAL_REGS_ADDR_RANGE_C)));
         case (addrIndexVar) is
 
           when VERSION_REG_ADDR_C =>
-            rVar.ethRegCntlIn.regDataIn := FPGA_VERSION_C;
+            rVar.frontEndRegCntlIn.regDataIn := FPGA_VERSION_C;
 
           when CLOCK_SELECT_A_REG_ADDR_C =>
-            rVar.ethRegCntlIn.regDataIn(31 downto 24) := r.kpixClockGenRegsIn.clkSelReadout;
-            rVar.ethRegCntlIn.regDataIn(23 downto 16) := r.kpixClockGenRegsIn.clkSelDigitize;
-            rVar.ethRegCntlIn.regDataIn(15 downto 8)  := r.kpixClockGenRegsIn.clkSelAcquire;
-            rVar.ethRegCntlIn.regDataIn(7 downto 0)   := r.kpixClockGenRegsIn.clkSelIdle;
-            if (ethRegCntlOut.regOp = ETH_REG_WRITE_C) then
-              rVar.kpixClockGenRegsIn.clkSelReadout  := ethRegCntlOut.regDataOut(31 downto 24);
-              rVar.kpixClockGenRegsIn.clkSelDigitize := ethRegCntlOut.regDataOut(23 downto 16);
-              rVar.kpixClockGenRegsIn.clkSelAcquire  := ethRegCntlOut.regDataOut(15 downto 8);
-              rVar.kpixClockGenRegsIn.clkSelIdle     := ethRegCntlOut.regDataOut(7 downto 0);
+            rVar.frontEndRegCntlIn.regDataIn(31 downto 24) := r.kpixClockGenRegsIn.clkSelReadout;
+            rVar.frontEndRegCntlIn.regDataIn(23 downto 16) := r.kpixClockGenRegsIn.clkSelDigitize;
+            rVar.frontEndRegCntlIn.regDataIn(15 downto 8)  := r.kpixClockGenRegsIn.clkSelAcquire;
+            rVar.frontEndRegCntlIn.regDataIn(7 downto 0)   := r.kpixClockGenRegsIn.clkSelIdle;
+            if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
+              rVar.kpixClockGenRegsIn.clkSelReadout  := frontEndRegCntlOut.regDataOut(31 downto 24);
+              rVar.kpixClockGenRegsIn.clkSelDigitize := frontEndRegCntlOut.regDataOut(23 downto 16);
+              rVar.kpixClockGenRegsIn.clkSelAcquire  := frontEndRegCntlOut.regDataOut(15 downto 8);
+              rVar.kpixClockGenRegsIn.clkSelIdle     := frontEndRegCntlOut.regDataOut(7 downto 0);
               rVar.kpixClockGenRegsIn.newValue       := '1';  -- Let ClockGen know to resync
             end if;
 
           when CLOCK_SELECT_B_REG_ADDR_C =>
-            rVar.ethRegCntlIn.regDataIn(7 downto 0) := r.kpixClockGenRegsIn.clkSelPrecharge;
-            if (ethRegCntlOut.regOp = ETH_REG_WRITE_C) then
-              rVar.kpixClockGenRegsIn.clkSelPrecharge := ethRegCntlOut.regDataOut(7 downto 0);
+            rVar.frontEndRegCntlIn.regDataIn(7 downto 0) := r.kpixClockGenRegsIn.clkSelPrecharge;
+            if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
+              rVar.kpixClockGenRegsIn.clkSelPrecharge := frontEndRegCntlOut.regDataOut(7 downto 0);
             end if;
 
           when DEBUG_SELECT_REG_ADDR_C =>
-            rVar.ethRegCntlIn.regDataIn(4 downto 0)  := r.kpixLocalRegsIn.debugASel;
-            rVar.ethRegCntlIn.regDataIn(12 downto 8) := r.kpixLocalRegsIn.debugBsel;
-            if (ethRegCntlOut.regOp = ETH_REG_WRITE_C) then
-              rVar.kpixLocalRegsIn.debugASel := ethRegCntlOut.regDataOut(4 downto 0);
-              rVar.kpixLocalRegsIn.debugBsel := ethRegCntlOut.regDataOut(12 downto 8);
+            rVar.frontEndRegCntlIn.regDataIn(4 downto 0)  := r.kpixLocalRegsIn.debugASel;
+            rVar.frontEndRegCntlIn.regDataIn(12 downto 8) := r.kpixLocalRegsIn.debugBsel;
+            if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
+              rVar.kpixLocalRegsIn.debugASel := frontEndRegCntlOut.regDataOut(4 downto 0);
+              rVar.kpixLocalRegsIn.debugBsel := frontEndRegCntlOut.regDataOut(12 downto 8);
             end if;
 
           when TRIGGER_CONTROL_REG_ADDR_C =>
-            rVar.ethRegCntlIn.regDataIn(2 downto 0) := r.triggerRegsIn.extTriggerSrc;
-            rVar.ethRegCntlIn.regDataIn(4)          := r.triggerRegsIn.calibrate;
-            if (ethRegCntlOut.regOp = ETH_REG_WRITE_C) then
-              rVar.triggerRegsIn.extTriggerSrc := ethRegCntlOut.regDataOut(2 downto 0);
-              rVar.triggerRegsIn.calibrate     := ethRegCntlOut.regDataOut(4);
+            rVar.frontEndRegCntlIn.regDataIn(2 downto 0) := r.triggerRegsIn.extTriggerSrc;
+            rVar.frontEndRegCntlIn.regDataIn(4)          := r.triggerRegsIn.calibrate;
+            if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
+              rVar.triggerRegsIn.extTriggerSrc := frontEndRegCntlOut.regDataOut(2 downto 0);
+              rVar.triggerRegsIn.calibrate     := frontEndRegCntlOut.regDataOut(4);
             end if;
 
           when KPIX_RESET_REG_ADDR_C =>
-            rVar.ethRegCntlIn.regDataIn(0) := r.kpixConfigRegs.kpixReset;
-            if (ethRegCntlOut.regOp = ETH_REG_WRITE_C) then
-              rVar.kpixConfigRegs.kpixReset := ethRegCntlOut.regDataOut(0);
+            rVar.frontEndRegCntlIn.regDataIn(0) := r.kpixConfigRegs.kpixReset;
+            if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
+              rVar.kpixConfigRegs.kpixReset := frontEndRegCntlOut.regDataOut(0);
+            else
+              rVar.kpixConfigRegs.kpixReset := '0';
             end if;
 
           when KPIX_CONFIG_REG_ADDR_C =>
-            rVar.ethRegCntlIn.regDataIn(0)           := r.kpixConfigRegs.inputEdge;
-            rVar.ethRegCntlIn.regDataIn(1)           := r.kpixConfigRegs.outputEdge;
-            rVar.ethRegCntlIn.regDataIn(4)           := r.kpixConfigRegs.rawDataMode;
-            rVar.ethRegCntlIn.regDataIn(12 downto 8) := r.kpixConfigRegs.numColumns;
-            rVar.ethRegCntlIn.regDataIn(16)          := r.kpixConfigRegs.autoReadDisable;
-            if (ethRegCntlOut.regOp = ETH_REG_WRITE_C) then
-              rVar.kpixConfigRegs.inputEdge       := ethRegCntlOut.regDataOut(0);
-              rVar.kpixConfigRegs.outputEdge      := ethRegCntlOut.regDataOut(1);
-              rVar.kpixConfigRegs.rawDataMode     := ethRegCntlOut.regDataOut(4);
-              rVar.kpixConfigRegs.numColumns      := ethRegCntlOut.regDataOut(12 downto 8);
-              rVar.kpixConfigRegs.autoReadDisable := ethRegCntlOut.regDataOut(16);
+            rVar.frontEndRegCntlIn.regDataIn(0)           := r.kpixConfigRegs.inputEdge;
+            rVar.frontEndRegCntlIn.regDataIn(1)           := r.kpixConfigRegs.outputEdge;
+            rVar.frontEndRegCntlIn.regDataIn(4)           := r.kpixConfigRegs.rawDataMode;
+            rVar.frontEndRegCntlIn.regDataIn(12 downto 8) := r.kpixConfigRegs.numColumns;
+            rVar.frontEndRegCntlIn.regDataIn(16)          := r.kpixConfigRegs.autoReadDisable;
+            if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
+              rVar.kpixConfigRegs.inputEdge       := frontEndRegCntlOut.regDataOut(0);
+              rVar.kpixConfigRegs.outputEdge      := frontEndRegCntlOut.regDataOut(1);
+              rVar.kpixConfigRegs.rawDataMode     := frontEndRegCntlOut.regDataOut(4);
+              rVar.kpixConfigRegs.numColumns      := frontEndRegCntlOut.regDataOut(12 downto 8);
+              rVar.kpixConfigRegs.autoReadDisable := frontEndRegCntlOut.regDataOut(16);
             end if;
 
           when TIMESTAMP_CONTROL_REG_ADDR_C =>
-            rVar.ethRegCntlIn.regDataIn(2 downto 0) := r.triggerRegsIn.extTimestampSrc;
-            if (ethRegCntlOut.regOp = ETH_REG_WRITE_C) then
-              rVar.triggerRegsIn.extTimestampSrc := ethRegCntlOut.regDataOut(2 downto 0);
+            rVar.frontEndRegCntlIn.regDataIn(2 downto 0) := r.triggerRegsIn.extTimestampSrc;
+            if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
+              rVar.triggerRegsIn.extTimestampSrc := frontEndRegCntlOut.regDataOut(2 downto 0);
             end if;
 
 
           when others =>
             for i in NUM_KPIX_MODULES_G-1 downto 0 loop
               if (addrIndexVar = KPIX_DATA_RX_MODE_REG_ADDR_C(i)) then
-                rVar.ethRegCntlIn.regDataIn(0) := r.kpixDataRxRegsIn(i).enabled;
-                if (ethRegCntlOut.regOp = ETH_REG_WRITE_C) then
-                  rVar.kpixDataRxRegsIn(i).enabled := ethRegCntlOut.regDataOut(0);
+                rVar.frontEndRegCntlIn.regDataIn(0) := r.kpixDataRxRegsIn(i).enabled;
+                if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
+                  rVar.kpixDataRxRegsIn(i).enabled := frontEndRegCntlOut.regDataOut(0);
                 end if;
               end if;
             end loop;
 
             for i in NUM_KPIX_MODULES_G-1 downto 0 loop
               if (addrIndexVar = KPIX_HEADER_PARITY_ERROR_COUNT_REG_ADDR_C(i)) then
-                rVar.ethRegCntlIn.regDataIn := kpixDataRxRegsOut(i).headerParityErrorCount;
-                if (ethRegCntlOut.regOp = ETH_REG_WRITE_C) then
+                rVar.frontEndRegCntlIn.regDataIn := kpixDataRxRegsOut(i).headerParityErrorCount;
+                if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
                   rVar.kpixDataRxRegsIn(i).resetHeaderParityErrorCount := '1';
                 end if;
               end if;
@@ -275,8 +273,8 @@ begin
 
             for i in NUM_KPIX_MODULES_G-1 downto 0 loop
               if (addrIndexVar = KPIX_DATA_PARITY_ERROR_COUNT_REG_ADDR_C(i)) then
-                rVar.ethRegCntlIn.regDataIn := kpixDataRxRegsOut(i).dataParityErrorCount;
-                if (ethRegCntlOut.regOp = ETH_REG_WRITE_C) then
+                rVar.frontEndRegCntlIn.regDataIn := kpixDataRxRegsOut(i).dataParityErrorCount;
+                if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
                   rVar.kpixDataRxRegsIn(i).resetDataParityErrorCount := '1';
                 end if;
               end if;
@@ -284,8 +282,8 @@ begin
 
             for i in NUM_KPIX_MODULES_G-1 downto 0 loop
               if (addrIndexVar = KPIX_MARKER_ERROR_COUNT_REG_ADDR_C(i)) then
-                rVar.ethRegCntlIn.regDataIn := kpixDataRxRegsOut(i).markerErrorCount;
-                if (ethRegCntlOut.regOp = ETH_REG_WRITE_C) then
+                rVar.frontEndRegCntlIn.regDataIn := kpixDataRxRegsOut(i).markerErrorCount;
+                if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
                   rVar.kpixDataRxRegsIn(i).resetMarkerErrorCount := '1';
                 end if;
               end if;
@@ -293,8 +291,8 @@ begin
 
             for i in NUM_KPIX_MODULES_G-1 downto 0 loop
               if (addrIndexVar = KPIX_OVERFLOW_ERROR_COUNT_REG_ADDR_C(i)) then
-                rVar.ethRegCntlIn.regDataIn := kpixDataRxRegsOut(i).overflowErrorCount;
-                if (ethRegCntlOut.regOp = ETH_REG_WRITE_C) then
+                rVar.frontEndRegCntlIn.regDataIn := kpixDataRxRegsOut(i).overflowErrorCount;
+                if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
                   rVar.kpixDataRxRegsIn(i).resetOverflowErrorCount := '1';
                 end if;
               end if;
@@ -303,27 +301,26 @@ begin
 
 
 
-      elsif (ethRegCntlOut.regAddr(ADDR_BLOCK_RANGE_C) = KPIX_REGS_ADDR_C) then
+      elsif (frontEndRegCntlOut.regAddr(ADDR_BLOCK_RANGE_C) = KPIX_REGS_ADDR_C) then
         -- KPIX regs being accessed
-        -- Pass EthCntl io right though
-        -- Will revert back when ethRegCntlOut.regReq falls
-        rVar.kpixRegCntlIn := ethRegCntlOut;
-        rVar.ethRegCntlIn  := kpixRegCntlOut;
+        -- Pass FrontEndCntl io right though
+        -- Will revert back when frontEndRegCntlOut.regReq falls
+        rVar.kpixRegCntlIn := frontEndRegCntlOut;
+        rVar.frontEndRegCntlIn  := kpixRegCntlOut;
 
       else
         -- Not valid address block
-        rVar.ethRegCntlIn.regFail := '1';
-        rVar.ethRegCntlIn.regAck  := '1';
+        rVar.frontEndRegCntlIn.regFail := '1';
+        rVar.frontEndRegCntlIn.regAck  := '1';
 
       end if;
     end if;
 
     rin <= rVar;
 
-    ethRegCntlIn       <= r.ethRegCntlIn;
+    frontEndRegCntlIn       <= r.frontEndRegCntlIn;
     kpixRegCntlIn      <= r.kpixRegCntlIn;
     triggerRegsIn      <= r.triggerRegsIn;
---    timestampRegsIn    <= r.timestampRegsIn;
     kpixConfigRegs     <= r.kpixConfigRegs;
     kpixClockGenRegsIn <= r.kpixClockGenRegsIn;
     kpixLocalRegsIn    <= r.kpixLocalRegsIn;
