@@ -155,6 +155,10 @@ utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilder
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo.asy
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type asy
+incr fcount
+
 utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo.ngc
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type ngc
 incr fcount

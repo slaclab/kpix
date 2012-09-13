@@ -1,7 +1,7 @@
 ##############################################################
 #
-# Xilinx Core Generator version 13.4
-# Date: Mon Jul  9 17:29:38 2012
+# Xilinx Core Generator version 14.2
+# Date: Thu Sep 13 17:16:00 2012
 #
 ##############################################################
 #
@@ -18,20 +18,20 @@
 #
 # BEGIN Project Options
 SET addpads = false
-SET asysymbol = false
+SET asysymbol = true
 SET busformat = BusFormatAngleBracketNotRipped
 SET createndf = false
 SET designentry = VHDL
-SET device = xc5vlx50t
+SET device = xc5vlx30t
 SET devicefamily = virtex5
 SET flowvendor = Other
 SET formalverification = false
 SET foundationsym = false
 SET implementationfiletype = Ngc
-SET package = ff1136
+SET package = ff323
 SET removerpms = false
-SET simulationfiles = Behavioral
-SET speedgrade = -1
+SET simulationfiles = Structural
+SET speedgrade = -2
 SET verilogsim = false
 SET vhdlsim = true
 # END Project Options
@@ -216,4 +216,4 @@ CSET wuser_width=1
 MISC pkg_timestamp=2011-10-22T06:08:52Z
 # END Extra information
 GENERATE
-# CRC: 2e7874e3
+# CRC: 32186e01
