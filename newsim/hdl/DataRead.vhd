@@ -41,33 +41,33 @@ begin
    -- Row/Col tracking
    process ( reg_clock, reset ) begin
       if ( reset = '1' or (reset_load = '1' and pwr_up_acq_dig = '1') ) then
-         rowCnt   <= (others=>'0') after tpd;
-         wordCnt  <= (others=>'0') after tpd;
-         shiftReg <= (others=>'0') after tpd;
+         rowCnt   <= (others=>'0');
+         wordCnt  <= (others=>'0');
+         shiftReg <= (others=>'0');
       elsif (rising_edge(reg_clock)) then
          if reg_sel0 = '1' and reg_sel1 = '1' then
 
            -- Load data and increment count
            if reset_load = '1' then
               if wordCnt = 8 then
-                 wordCnt <= (others=>'0') after tpd;
-                 rowCnt  <= rowCnt + 1    after tpd;
+                 wordCnt <= (others=>'0');
+                 rowCnt  <= rowCnt + 1;
               else
-                 wordCnt <= wordCnt + 1 after tpd;
+                 wordCnt <= wordCnt + 1;
               end if;
 
               shiftReg <= shiftData;
 
            -- Shift data
            else
-              shiftReg <= '0' & shiftData(414 downto 1);
+              shiftReg <= '0' & shiftData(415 downto 1);
            end if;
          end if;
       end if;
    end process;
 
    -- Each channel   
-   for i in 0 to 31 generate
+   GenData : for i in 0 to 31 generate
       process ( wordCnt, rowCnt ) begin
          case wordCnt is
 

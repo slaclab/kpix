@@ -46,7 +46,7 @@ begin
    -- Address register
    process ( reg_clock, reset ) begin
       if ( reset = '1' ) then
-         addrReg <= (others=>'0') after tpd;
+         addrReg <= (others=>'0');
       elsif (rising_edge(reg_clock)) then
          if reg_sel0 = '0' and reg_sel1 = '0' then
             addrReg <= reg_data & addrReg(5 downto 0);
@@ -55,7 +55,7 @@ begin
    end process;
 
    -- DAC registers
-   for i in 0 to 9 generate
+   GenDac : for i in 0 to 9 generate
 
       U_Dac : entity reg_rw_32 port map (
          sysclk      => reg_clock,
@@ -85,7 +85,7 @@ begin
    cntrlOut <= cntrlTmp when reg_sel0 = '1' and reg_sel1 = '0' and addrReg = 48 else '0';
 
    -- Mode Registers
-   for i in 0 to 63 generate
+   GenMode: for i in 0 to 63 generate
 
       U_Mode : entity reg_rw_32 port map (
          sysclk      => reg_clock,

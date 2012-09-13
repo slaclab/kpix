@@ -33,8 +33,8 @@ end entity Template;
 architecture rtl of Template is
 
    type RegType is record
-
-  end record;
+      temp : std_logic;
+   end record;
 
    signal r, rin : RegType;
 
@@ -44,12 +44,12 @@ begin
   begin
     if (rst = '1') then
 
-    elsif (rising_edge(sysClk)) then
+    elsif (rising_edge(clk)) then
       r <= rin;
     end if;
   end process sync;
 
-  comb: process (r, ) is
+  comb: process (r ) is
     variable rVar : RegType;
   begin
     rVar := r;
