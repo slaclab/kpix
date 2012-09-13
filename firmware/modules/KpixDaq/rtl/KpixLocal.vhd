@@ -153,13 +153,11 @@ architecture KpixLocal of KpixLocal is
   type RegType is record
     kpixClkSync        : SynchronizerType;
     regClkSync         : SynchronizerType;
---    regSel0Sync        : SynchronizerType;
---    regSel1Sync        : SynchronizerType;
     trigInhibitSync    : SynchronizerType;
     div                : sl;
-    analogStateSync    : SynchronizerArray(3 downto 0);
+    analogStateSync    : SynchronizerArray(2 downto 0);
     analogStateStable  : std_logic_vector(3 downto 0);
-    readoutStateSync   : SynchronizerArray(3 downto 0);
+    readoutStateSync   : SynchronizerArray(2 downto 0);
     readoutStateStable : std_logic_vector(3 downto 0);
     sysOut             : KpixLocalSysOutType;
   end record RegType;
