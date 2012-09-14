@@ -1,0 +1,66 @@
+;set_sim_eou sim=3.5 model=3.5
+
+report_node_dangle limit=2000
+
+print_node_l KpixTb.U_KpixC.XCORE.*
+
+print_node_l KpixTb.U_KpixC.CLK
+print_node_l KpixTb.U_KpixC.SYSCLK_P
+print_node_l KpixTb.U_KpixC.SYSCLK_M
+print_node_l KpixTb.U_KpixC.SYSCLK_C
+print_node_l KpixTb.U_KpixC.COMMAND_C
+print_node_l KpixTb.U_KpixC.RESET_C
+print_node_l KpixTb.U_KpixC.RDBACK_P
+print_node_l KpixTb.U_KpixC.DATA_OUT_C
+print_node_l KpixTb.U_KpixC.CAL_STROBE_C
+print_node_l KpixTb.U_KpixC.REG_CLOCK
+print_node_l KpixTb.U_KpixC.REG_DATA
+print_node_l KpixTb.U_KpixC.REG_SEL1
+print_node_l KpixTb.U_KpixC.REG_SEL0
+print_node_l KpixTb.U_KpixC.REG_WR_ENA
+print_node_l KpixTb.U_KpixC.SEL_CELL
+print_node_l KpixTb.U_KpixC.A116
+print_node_l KpixTb.U_KpixC.A115
+print_node_l KpixTb.U_KpixC.A114
+print_node_l KpixTb.U_KpixC.A113
+print_node_l KpixTb.U_KpixC.A112
+print_node_l KpixTb.U_KpixC.A111
+print_node_l KpixTb.U_KpixC.A110
+print_node_l KpixTb.U_KpixC.A109
+print_node_l KpixTb.U_KpixC.A108
+print_node_l KpixTb.U_KpixC.A107
+print_node_l KpixTb.U_KpixC.A106
+print_node_l KpixTb.U_KpixC.A105
+print_node_l KpixTb.U_KpixC.A104
+print_node_l KpixTb.U_KpixC.A103
+print_node_l KpixTb.U_KpixC.A102
+print_node_l KpixTb.U_KpixC.A101
+print_node_l KpixTb.U_KpixC.A14
+print_node_l KpixTb.U_KpixC.A13
+print_node_l KpixTb.U_KpixC.A12
+print_node_l KpixTb.U_KpixC.A11
+print_node_l KpixTb.U_KpixC.A10
+print_node_l KpixTb.U_KpixC.A9
+print_node_l KpixTb.U_KpixC.A8
+print_node_l KpixTb.U_KpixC.A6
+print_node_l KpixTb.U_KpixC.A5
+print_node_l KpixTb.U_KpixC.A4
+print_node_l KpixTb.U_KpixC.A3
+print_node_l KpixTb.U_KpixC.A2
+print_node_l KpixTb.U_KpixC.A1
+print_node_l KpixTb.U_KpixC.A0
+print_node_l KpixTb.U_KpixC.B16
+print_node_l KpixTb.U_KpixC.B13
+print_node_l KpixTb.U_KpixC.B12
+print_node_l KpixTb.U_KpixC.B11
+print_node_l KpixTb.U_KpixC.B10
+print_node_l KpixTb.U_KpixC.B9
+print_node_l KpixTb.U_KpixC.B8
+print_node_l KpixTb.U_KpixC.B7
+print_node_l KpixTb.U_KpixC.B6
+print_node_l KpixTb.U_KpixC.B5
+print_node_l KpixTb.U_KpixC.B3
+print_node_l KpixTb.U_KpixC.B2
+print_node_l KpixTb.U_KpixC.B1
+print_node_l KpixTb.U_KpixC.B0
+

@@ -13,18 +13,28 @@
 ## 04/16/2009: created
 ##-----------------------------------------------------------------------------
 
-# Set Top Level
-TOP=SmallTb
-
 # Set Default Output
-SIM_DIR=${PWD}/out
+SIM_DIR=/u1/rherbst/w_si/out
 
-# Set 64-bit mode
-EN64=-full64
+# Analog netlist
+ANA_NET = kpix_b_trunc2.cir
 
 # Shared memory id. Changed this if you need to run multiple instances
 # Resulting shared memory file is simlink_username_id
 SHM_ID=1
+
+# Set Top Level
+DIG_TOP=SmallTb
+ANA_TOP=AnalogTb
+
+# Set 64-bit mode
+EN64=-full64
+
+# NS Support files
+ANA_INC = $(PWD)/analog/olib_tsmc025.cir \
+          $(PWD)/analog/w_si_chip_driver.cir \
+          $(PWD)/analog/nanosim_cfg.txt \
+          $(PWD)/analog/resis_map.txt
 
 # HDL Source Files
 HDL_SRC= $(PWD)/../firmware/modules/StdLib/rtl/StdRtlPkg.vhd \
@@ -67,31 +77,56 @@ HDL_SRC= $(PWD)/../firmware/modules/StdLib/rtl/StdRtlPkg.vhd \
 	      $(PWD)/hdl/AsicSim.vhd \
 	      $(PWD)/hdl/SmallTb.vhd
 
-all: dir syn_setup rtl_src sysc_src sim_gen
+# Verilog Source Files
+VLOG = $(PWD)/hdl/AsicSimAnalog.v 
+
+# Targets
+all:    dir syn_setup rtl_src sysc_src sim_dig
+analog: dir syn_setup rtl_src sysc_src ana_files ana_partition sim_ana
 
 # Directory
 dir:
-	mkdir -p $(SIM_DIR)
+	@mkdir -p $(SIM_DIR)
 
 # RTL Files
 rtl_src:
-	cd $(SIM_DIR); vhdlan $(EN64) $(HDL_SRC)
+	@cd $(SIM_DIR); vhdlan $(EN64) $(HDL_SRC)
+	@cd $(SIM_DIR); vlogan +v2k $(EN64) $(VLOG)
 
 # System C Files
 sysc_src:
-	cd $(SIM_DIR); syscan $(EN64) -cpp g++ -cflags "-DSHM_ID=$(SHM_ID)" -port $(PWD)/sysc/SimLinkRx.map $(PWD)/sysc/SimLinkRx.cpp:SimLinkRx
-	cd $(SIM_DIR); syscan $(EN64) -cpp g++ -cflags "-DSHM_ID=$(SHM_ID)" -port $(PWD)/sysc/SimLinkTx.map $(PWD)/sysc/SimLinkTx.cpp:SimLinkTx
+	@cd $(SIM_DIR); syscan $(EN64) -cpp g++ -cflags "-DSHM_ID=$(SHM_ID)" -port $(PWD)/sysc/SimLinkRx.map $(PWD)/sysc/SimLinkRx.cpp:SimLinkRx
+	@cd $(SIM_DIR); syscan $(EN64) -cpp g++ -cflags "-DSHM_ID=$(SHM_ID)" -port $(PWD)/sysc/SimLinkTx.map $(PWD)/sysc/SimLinkTx.cpp:SimLinkTx
 
-sim_gen:
-	cd $(SIM_DIR); vcs $(EN64) -sysc $(TOP) -cpp g++ -cc gcc -lrt -debug -timescale=1ns/1ps 
+sim_dig:
+	@cd $(SIM_DIR); vcs $(EN64) -sysc $(DIG_TOP) -cpp g++ -cc gcc -lrt -debug -timescale=1ns/1ps 
+
+sim_ana:
+	@cd $(SIM_DIR); vcs $(EN64) -sysc $(ANA_TOP) -cpp g++ -cc gcc -lrt -debug -timescale=1ns/1ps -nc +ad=$(SIM_DIR)/partition.txt
 
 clean: 
-	rm -rf $(SIM_DIR)/*
-	rm -rf $(SIM_DIR)/.synopsys_vss.setup
+	@rm -rf $(SIM_DIR)/*
+	@rm -rf $(SIM_DIR)/.synopsys_vss.setup
 
 # Create Synopsis Setup File
 syn_setup:
-	rm -f $(SIM_DIR)/.synopsys_vss.setup
-	echo "UNISIM:$(XIL_SIMLIB)/unisim"                >  $(SIM_DIR)/.synopsys_vss.setup
-	echo "XILINXCORELIB:$(XIL_SIMLIB)/xilinxcorelib"  >> $(SIM_DIR)/.synopsys_vss.setup
-	echo "SIMPRIM:$(XIL_SIMLIB)/simprim"              >> $(SIM_DIR)/.synopsys_vss.setup
+	@rm -f $(SIM_DIR)/.synopsys_vss.setup
+	@echo "UNISIM:$(XIL_SIMLIB)/unisim"                >  $(SIM_DIR)/.synopsys_vss.setup
+	@echo "XILINXCORELIB:$(XIL_SIMLIB)/xilinxcorelib"  >> $(SIM_DIR)/.synopsys_vss.setup
+	@echo "SIMPRIM:$(XIL_SIMLIB)/simprim"              >> $(SIM_DIR)/.synopsys_vss.setup
+
+# Analog simulation files
+ana_files:
+	@rm -f $(SIM_DIR)/sim_src
+	@cp $(PWD)/../netlists/$(ANA_NET).gz  $(SIM_DIR)
+	@cp $(ANA_INC)                        $(SIM_DIR)
+	@gzip -df $(SIM_DIR)/*.gz
+
+# Analog partition file
+ana_partition:
+	@rm -f $(SIM_DIR)/partition.txt
+	@echo "partition -cell AsicSimAnalog;"                               >  $(SIM_DIR)/partition.txt
+	@echo "choose nanosim -A -n $(ANA_NET) -C nanosim_cfg.txt -out wdb;" >> $(SIM_DIR)/partition.txt
+	@echo "set bus_format %d;"                                           >> $(SIM_DIR)/partition.txt
+	@echo "set rmap resis_map.txt;"                                      >> $(SIM_DIR)/partition.txt
+
