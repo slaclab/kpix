@@ -19,7 +19,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.StdRtlPkg.all;
 use work.SynchronizePkg.all;
-use work.EthFrontEndPkg.all;
 use work.KpixPkg.all;
 use work.KpixRegRxPkg.all;
 

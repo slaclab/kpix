@@ -160,13 +160,13 @@ begin
 
     -- Pulse these for 1 cycle only when accessed
     rVar.kpixClockGenRegsIn.newValue := '0';
+    rVar.kpixConfigRegs.kpixReset := '0';
     for i in NUM_KPIX_MODULES_G-1 downto 0 loop
       rVar.kpixDataRxRegsIn(i).resetHeaderParityErrorCount := '0';
       rVar.kpixDataRxRegsIn(i).resetDataParityErrorCount   := '0';
       rVar.kpixDataRxRegsIn(i).resetMarkerErrorCount       := '0';
       rVar.kpixDataRxRegsIn(i).resetOverflowErrorCount     := '0';
     end loop;
-
 
     -- Wait for an access request
     if (frontEndRegCntlOut.regReq = '1') then
@@ -227,8 +227,6 @@ begin
             rVar.frontEndRegCntlIn.regDataIn(0) := r.kpixConfigRegs.kpixReset;
             if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
               rVar.kpixConfigRegs.kpixReset := frontEndRegCntlOut.regDataOut(0);
-            else
-              rVar.kpixConfigRegs.kpixReset := '0';
             end if;
 
           when KPIX_CONFIG_REG_ADDR_C =>

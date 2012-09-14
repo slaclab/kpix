@@ -142,7 +142,7 @@ begin
     end if;
   end process seq;
 
-  comb : process (r, kpixRegCntlIn, triggerOut, kpixRegRxOut) is
+  comb : process (r, kpixRegCntlIn, triggerOut, kpixRegRxOut, sysR) is
     variable rVar             : RegType;
     variable addressedKpixVar : natural;
   begin
@@ -322,7 +322,7 @@ begin
     end if;
   end process sysSync;
 
-  sysComb : process (sysR, r) is
+  sysComb : process (sysR, r, kpixConfigRegs) is
     variable rVar : SysRegType;
   begin
     rVar := sysR;

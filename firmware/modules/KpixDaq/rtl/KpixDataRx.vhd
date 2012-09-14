@@ -23,7 +23,6 @@ use work.SynchronizePkg.all;
 use work.KpixPkg.all;
 use work.KpixDataRxPkg.all;
 use work.KpixRegRxPkg.all;
-use work.EthFrontEndPkg.all;
 
 
 entity KpixDataRx is

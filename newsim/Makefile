@@ -26,9 +26,8 @@ EN64=-full64
 HDL_SRC= $(PWD)/../firmware/modules/StdLib/rtl/*.vhd \
 	      $(PWD)/../firmware/modules/KpixCore/rtl/*.vhd \
 	      $(PWD)/../firmware/modules/KpixDaq/xil_cores/*.vhd \
-	      $(PWD)/../firmware/modules/KpixDaq/rtl/EthFrontEndPkg.vhd \
-	      $(PWD)/../firmware/modules/KpixDaq/rtl/EthRegDecoder.vhd \
 	      $(PWD)/../firmware/modules/KpixDaq/rtl/Event*.vhd \
+	      $(PWD)/../firmware/modules/KpixDaq/rtl/Front*.vhd \
 	      $(PWD)/../firmware/modules/KpixDaq/rtl/Kpix*.vhd \
 	      $(PWD)/../firmware/modules/KpixDaq/rtl/Trigger*.vhd \
 	      $(PWD)/../firmware/modules/KpixDaq/rtl/UsBuff64.vhd \
