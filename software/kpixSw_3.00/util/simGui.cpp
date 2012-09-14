@@ -35,8 +35,15 @@ void sigTerm (int) {
 int main (int argc, char **argv) {
    ControlServer cntrlServer;
    string        defFile;
+   string        shmFile;
 
-   if ( argc > 1 ) defFile = argv[1];
+   if ( argc == 1 ) {
+      cout << "Usage: simLink shared_mem_file [default.xml]" << endl;
+      return(1);
+   }
+   shmFile = argv[1];
+
+   if ( argc > 2 ) defFile = argv[2];
    else defFile = "";
 
    // Catch signals
@@ -53,7 +60,7 @@ int main (int argc, char **argv) {
       // Create and setup PGP link
       simLink.setMaxRxTx(500000);
       simLink.setDebug(true);
-      simLink.open();
+      simLink.open(shmFile);
       usleep(100);
 
       // Setup control server

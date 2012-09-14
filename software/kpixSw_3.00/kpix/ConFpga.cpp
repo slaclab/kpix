@@ -247,8 +247,8 @@ void ConFpga::command ( string name, string arg) {
       REGISTER_LOCK
       getRegister("KpixReset")->set(0x1);
       writeRegister(getRegister("KpixReset"),true,true);
-      getRegister("KpixReset")->set(0x0);
-      writeRegister(getRegister("KpixReset"),true,true);
+      //getRegister("KpixReset")->set(0x0);
+      //writeRegister(getRegister("KpixReset"),true,true);
       REGISTER_UNLOCK
    }
    else if ( name == "CountReset" ) {
