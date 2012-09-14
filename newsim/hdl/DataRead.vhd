@@ -33,6 +33,13 @@ architecture DataRead of DataRead is
    signal shiftReg  : std_logic_vector(415 downto 0);
    signal shiftData : std_logic_vector(415 downto 0);
 
+   function to_gray ( src : std_logic_vector(12 downto 0) ) return std_logic_vector is
+      variable ret : std_logic_vector(12 downto 0);
+   begin
+      ret := ('0' & src(12 downto 1)) xor src;
+      return(ret);
+   end function;
+
 begin
 
    -- Control output data
@@ -41,7 +48,7 @@ begin
    -- Row/Col tracking
    process ( reg_clock, reset ) begin
       if ( reset = '1' or (reset_load = '1' and pwr_up_acq_dig = '1') ) then
-         rowCnt   <= (others=>'0');
+         rowCnt   <= (others=>'1');
          wordCnt  <= (others=>'0');
          shiftReg <= (others=>'0');
       elsif (rising_edge(reg_clock)) then
@@ -51,7 +58,7 @@ begin
            if reset_load = '1' then
               if wordCnt = 8 then
                  wordCnt <= (others=>'0');
-                 rowCnt  <= rowCnt + 1;
+                 rowCnt  <= rowCnt - 1;
               else
                  wordCnt <= wordCnt + 1;
               end if;
@@ -79,39 +86,30 @@ begin
                shiftData((i*13)+3  downto (i*13)+0 ) <= "0000"; -- Range bits = 0
 
             -- Bucket 0 Timestamp, pass bucket and channel #
-            when "0001" =>
-               shiftData((i*13)+12 downto (i*13)+0 ) <= "000" & conv_std_logic_vector((i*32)+conv_integer(31-rowCnt),10);
+            when "0001" => shiftData((i*13)+12 downto (i*13)+0 ) <= to_gray("000" & conv_std_logic_vector(i,5) & rowCnt);
 
             -- Bucket 0 Data, pass bucket and channel #
-            when "0010" =>
-               shiftData((i*13)+12 downto (i*13)+0 ) <= "000" & conv_std_logic_vector((i*32)+conv_integer(31-rowCnt),10);
+            when "0010" => shiftData((i*13)+12 downto (i*13)+0 ) <= to_gray("000" & conv_std_logic_vector(i,5) & rowCnt);
 
             -- Bucket 1 Timestamp, pass bucket and channel #
-            when "0011" =>
-               shiftData((i*13)+12 downto (i*13)+0 ) <= "001" & conv_std_logic_vector((i*32)+conv_integer(31-rowCnt),10);
+            when "0011" => shiftData((i*13)+12 downto (i*13)+0 ) <= to_gray("001" & conv_std_logic_vector(i,5) & rowCnt);
 
             -- Bucket 1 Data, pass bucket and channel #
-            when "0100" =>
-               shiftData((i*13)+12 downto (i*13)+0 ) <= "001" & conv_std_logic_vector((i*32)+conv_integer(31-rowCnt),10);
+            when "0100" => shiftData((i*13)+12 downto (i*13)+0 ) <= to_gray("001" & conv_std_logic_vector(i,5) & rowCnt);
 
             -- Bucket 2 Timestamp, pass bucket and channel #
-            when "0101" =>
-               shiftData((i*13)+12 downto (i*13)+0 ) <= "010" & conv_std_logic_vector((i*32)+conv_integer(31-rowCnt),10);
+            when "0101" => shiftData((i*13)+12 downto (i*13)+0 ) <= to_gray("010" & conv_std_logic_vector(i,5) & rowCnt);
 
             -- Bucket 2 Data, pass bucket and channel #
-            when "0110" =>
-               shiftData((i*13)+12 downto (i*13)+0 ) <= "010" & conv_std_logic_vector((i*32)+conv_integer(31-rowCnt),10);
+            when "0110" => shiftData((i*13)+12 downto (i*13)+0 ) <= to_gray("010" & conv_std_logic_vector(i,5) & rowCnt);
 
             -- Bucket 3 Timestamp, pass bucket and channel #
-            when "0111" =>
-               shiftData((i*13)+12 downto (i*13)+0 ) <= "011" & conv_std_logic_vector((i*32)+conv_integer(31-rowCnt),10);
+            when "0111" => shiftData((i*13)+12 downto (i*13)+0 ) <= to_gray("011" & conv_std_logic_vector(i,5) & rowCnt);
 
             -- Bucket 3 Data, pass bucket and channel #
-            when "1000" =>
-               shiftData((i*13)+12 downto (i*13)+0 ) <= "011" & conv_std_logic_vector((i*32)+conv_integer(31-rowCnt),10);
+            when "1000" => shiftData((i*13)+12 downto (i*13)+0 ) <= to_gray("011" & conv_std_logic_vector(i,5) & rowCnt);
 
-            when others =>
-               shiftData((i*13)+12 downto (i*13)+0 ) <= (others=>'0');
+            when others => shiftData((i*13)+12 downto (i*13)+0 ) <= (others=>'0');
          end case;
       end process;
    end generate;
