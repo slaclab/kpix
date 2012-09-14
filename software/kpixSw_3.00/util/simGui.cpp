@@ -36,9 +36,11 @@ int main (int argc, char **argv) {
    ControlServer cntrlServer;
    string        defFile;
    uint          shmId;
+   int           port;
+   stringstream  cmd;
 
    if ( argc == 1 ) {
-      cout << "Usage: simLink smem_id [default.xml]" << endl;
+      cout << "Usage: simGui smem_id [default.xml]" << endl;
       return(1);
    }
    shmId = atoi(argv[1]);
@@ -65,7 +67,7 @@ int main (int argc, char **argv) {
 
       // Setup control server
       cntrlServer.setDebug(true);
-      cntrlServer.startListen(8092);
+      port = cntrlServer.startListen(0);
       cntrlServer.setSystem(&kpix);
 
       // Fork and start gui
@@ -82,7 +84,9 @@ int main (int argc, char **argv) {
          case 0:
             usleep(100);
             cout << "Starting GUI" << endl;
-            system("cntrlGui");
+            cmd.str("");
+            cmd << "cntrlGui localhost " << dec << port;
+            system(cmd.str().c_str());
             cout << "GUI stopped" << endl;
             kill(getppid(),SIGINT);
             break;
@@ -91,8 +95,6 @@ int main (int argc, char **argv) {
          default:
             cout << "Starting server" << endl;
             while ( ! stop ) cntrlServer.receive(100);
-            cout << "Stopping GUI" << endl;
-            system("killall cntrlGui");
             sleep(1);
             cntrlServer.stopListen();
             cout << "Stopped server" << endl;
