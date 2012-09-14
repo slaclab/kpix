@@ -29,9 +29,6 @@ int main (int argc, char **argv) {
    KpixSample    *sample;
    KpixCalibRead calibRead;
    uint          x;
-   double        mean;
-   double        gain;
-   double        charge;
    uint          count;
    stringstream  tmp;
    string        serialList[32];
