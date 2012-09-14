@@ -57,8 +57,8 @@ void SimLinkTx::vcThread(void) {
            
             // VC0 is ready
             if ( vc0FrameTxValid.read() == 1 ) {
-               printf("SimLinkTx::vcThread -> Frame start. Vc=0\n");
-               if ( vc0FrameTxSOF.read() == 0 ) printf("SimLinkTx::vcThread -> SOF error in VC 0\n");
+               cout << "SimLinkTx::vcThread -> Frame Start. Vc=0" << ", Time=" << sc_time_stamp() << endl;
+               if ( vc0FrameTxSOF.read() == 0 ) cout << "SimLinkTx::vcThread -> SOF error in VC 0" << endl;
                vc0FrameTxReady.write(SC_LOGIC_1);
                txActive = 1;
                txVc     = 0;
@@ -66,8 +66,8 @@ void SimLinkTx::vcThread(void) {
 
             // VC1 is ready
             else if ( vc1FrameTxValid.read() == 1 ) {
-               printf("SimLinkTx::vcThread -> Frame start. Vc=1\n");
-               if ( vc1FrameTxSOF.read() == 0 ) printf("SimLinkTx::vcThread -> SOF error in VC 1\n");
+               cout << "SimLinkTx::vcThread -> Frame Start. Vc=1" << ", Time=" << sc_time_stamp() << endl;
+               if ( vc1FrameTxSOF.read() == 0 ) cout << "SimLinkTx::vcThread -> SOF error in VC 1" << endl;
                vc1FrameTxReady.write(SC_LOGIC_1);
                txActive = 1;
                txVc     = 1;
@@ -75,8 +75,8 @@ void SimLinkTx::vcThread(void) {
 
             // VC2 is ready
             else if ( vc2FrameTxValid.read() == 1 ) {
-               printf("SimLinkTx::vcThread -> Frame start. Vc=2\n");
-               if ( vc2FrameTxSOF.read() == 0 ) printf("SimLinkTx::vcThread -> SOF error in VC 2\n");
+               cout << "SimLinkTx::vcThread -> Frame Start. Vc=2" << ", Time=" << sc_time_stamp() << endl;
+               if ( vc2FrameTxSOF.read() == 0 ) cout << "SimLinkTx::vcThread -> SOF error in VC 2" << endl;
                vc2FrameTxReady.write(SC_LOGIC_1);
                txActive = 1;
                txVc     = 2;
@@ -84,8 +84,8 @@ void SimLinkTx::vcThread(void) {
 
             // VC3 is ready
             else if ( vc3FrameTxValid.read() == 1 ) {
-               printf("SimLinkTx::vcThread -> Frame start. Vc=3\n");
-               if ( vc3FrameTxSOF.read() == 0 ) printf("SimLinkTx::vcThread -> SOF error in VC 3\n");
+               cout << "SimLinkTx::vcThread -> Frame Start. Vc=3" << ", Time=" << sc_time_stamp() << endl;
+               if ( vc3FrameTxSOF.read() == 0 ) cout << "SimLinkTx::vcThread -> SOF error in VC 3" << endl;
                vc3FrameTxReady.write(SC_LOGIC_1);
                txActive = 1;
                txVc     = 3;
@@ -142,14 +142,17 @@ void SimLinkTx::vcThread(void) {
                   smem_->usSize = txCount/2;
                   smem_->usReqCount++;
 
-                  printf("SimLinkTx::vcThread -> Frame Done. Size=%i, Vc=%i\n",smem_->usSize,smem_->usVc);
+                  cout << "SimLinkTx::vcThread -> Frame Done."
+                       << " Size=" << dec << smem_->usSize 
+                       << ", Vc=" << smem_->usVc
+                       << ", Time=" << sc_time_stamp() << endl;
 
                   // Wait for other end
                   toCount  = 0;
                   while ( smem_->usReqCount != smem_->usAckCount ) {
                      usleep(100);
                      if ( ++toCount > 10000 ) {
-                        printf("SimLinkTx::vcThread -> Timeout waiting.\n");
+                        cout << "SimLinkTx::vcThread -> Timeout waiting." << endl;
                         break;
                      }
                   }

@@ -57,7 +57,10 @@ void SimLinkRx::vcThread(void) {
             
             // Data is ready in FIFO, start frame
             if ( smem_->dsReqCount != smem_->dsAckCount ) {
-               printf("SimLinkRx::vcThread -> Data ready. Size=%i, Vc=%i\n",smem_->dsSize,smem_->dsVc);
+               cout << "SimLinkRx::vcThread -> Frame Start."
+                    << " Size=" << dec << smem_->dsSize 
+                    << ", Vc=" << smem_->dsVc
+                    << ", Time=" << sc_time_stamp() << endl;
                vcFrameRxSOF.write(SC_LOGIC_1);
                vcFrameRxEOF.write(SC_LOGIC_0);
                vcFrameRxData.write(smem_->dsData[0] & 0xFFFF);
@@ -109,6 +112,10 @@ void SimLinkRx::vcThread(void) {
 
                // End of frame?
                if ( ++rxCount >= (smem_->dsSize*2) ) {
+                  cout << "SimLinkRx::vcThread -> Frame Done."
+                       << " Size=" << dec << smem_->dsSize 
+                       << ", Vc=" << smem_->dsVc
+                       << ", Time=" << sc_time_stamp() << endl;
                   smem_->dsAckCount = smem_->dsReqCount;
                   vcFrameRxEOF.write(SC_LOGIC_1);
                   rxCount = 0;

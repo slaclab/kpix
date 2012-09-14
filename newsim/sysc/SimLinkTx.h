@@ -25,7 +25,6 @@ using namespace std;
 
 // Constant
 #define SIM_LINK_TX_BUFF_SIZE 1000000
-#define SIM_LINK_TX_FILE      "/sim_link.shared"
 
 // Shared memory structure
 typedef struct {
@@ -88,6 +87,7 @@ SC_MODULE(SimLinkTx) {
    // Shared memory
    uint            smemFd_;
    SimLinkTxMemory *smem_;
+   string          smemFile_;
 
    // Constructor
    SC_CTOR(SimLinkTx):
@@ -120,10 +120,15 @@ SC_MODULE(SimLinkTx) {
       ethMode("ethMode")
    {
 
-      smem_ = NULL;
+      // Create filename
+      stringstream tmp;
+      tmp.str("");
+      tmp << "simlink_" << getlogin() << "_" << dec << SHM_ID;
+      smemFile_ = tmp.str();
 
       // Open shared memory
-      smemFd_ = shm_open(SIM_LINK_TX_FILE, (O_CREAT | O_RDWR), (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH));
+      smemFd_ = shm_open(smemFile_.c_str(), (O_CREAT | O_RDWR), (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH));
+      smem_ = NULL;
 
       // Failed to open shred memory
       if ( smemFd_ > 0 ) {
@@ -147,6 +152,9 @@ SC_MODULE(SimLinkTx) {
             smem_->usAckCount = 0;
          }
       }
+
+      if ( smem_ != NULL ) cout << "SimLinkTx::SimLinkTx -> Opened shared memory file: " << smemFile_ << endl;
+      else cout << "SimLinkTx::SimLinkTx -> Failed to open shared memory file: " << smemFile_ << endl;
 
       // Setup threads
       SC_CTHREAD(vcThread,txClk.pos());
