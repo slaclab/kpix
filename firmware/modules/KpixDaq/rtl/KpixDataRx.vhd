@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-09-12
+-- Last update: 2012-09-14
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -23,7 +23,6 @@ use work.SynchronizePkg.all;
 use work.KpixPkg.all;
 use work.KpixDataRxPkg.all;
 use work.KpixRegRxPkg.all;
-
 
 entity KpixDataRx is
   
