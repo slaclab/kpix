@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-09-14
+-- Last update: 2012-09-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -175,7 +175,7 @@ architecture rtl of KpixDataRx is
     retVar(63 downto 60) := TEMP_SAMPLE_C;
     retVar(59 downto 48) := slv(to_unsigned(KPIX_ID_G, 12));
     retVar(27 downto 16) := temp.tempCount;
-    retVar(7 downto 0)  := temp.temperature;
+    retVar(7 downto 0)   := temp.temperature;
     return retVar;
   end function formatTemperature;
 
@@ -188,9 +188,9 @@ begin
   rxFall : process (kpixClk, kpixClkRst) is
   begin
     if (kpixClkRst = '1') then
-      kpixSerRxInFall <= '0';
+      kpixSerRxInFall <= '0' after DELAY_G;
     elsif (falling_edge(kpixClk)) then
-      kpixSerRxInFall <= kpixSerRxIn;
+      kpixSerRxInFall <= kpixSerRxIn after DELAY_G;
     end if;
   end process rxFall;
 
@@ -201,26 +201,26 @@ begin
   rxSeq : process (kpixClk, kpixClkRst) is
   begin
     if (kpixClkRst = '1') then
-      rxRegs.rxShiftData       <= (others => '0');
-      rxRegs.rxShiftCount      <= (others => '0');
-      rxRegs.rxColumnCount     <= (others => '0');
-      rxRegs.rxRowId           <= (others => '0');
-      rxRegs.rxWordId          <= (others => '0');
-      rxRegs.rxState           <= RX_IDLE_S;
-      rxRegs.rxRamWrAddr       <= (others => '0');
-      rxRegs.rxRamWrData       <= (others => '0');
-      rxRegs.rxRamWrEn         <= '0';
-      rxRegs.rxRowBuffer       <= (others => '0');
-      rxRegs.rxRowReq          <= (others => '0');
-      rxRegs.rxRowAck          <= (others => SYNCHRONIZER_INIT_0_C);
-      rxRegs.rxBusy            <= '0';
-      rxRegs.markerError       <= '0';
-      rxRegs.headerParityError <= '0';
-      rxRegs.overflowError     <= '0';
+      rxRegs.rxShiftData       <= (others => '0')                   after DELAY_G;
+      rxRegs.rxShiftCount      <= (others => '0')                   after DELAY_G;
+      rxRegs.rxColumnCount     <= (others => '0')                   after DELAY_G;
+      rxRegs.rxRowId           <= (others => '0')                   after DELAY_G;
+      rxRegs.rxWordId          <= (others => '0')                   after DELAY_G;
+      rxRegs.rxState           <= RX_IDLE_S                         after DELAY_G;
+      rxRegs.rxRamWrAddr       <= (others => '0')                   after DELAY_G;
+      rxRegs.rxRamWrData       <= (others => '0')                   after DELAY_G;
+      rxRegs.rxRamWrEn         <= '0'                               after DELAY_G;
+      rxRegs.rxRowBuffer       <= (others => '0')                   after DELAY_G;
+      rxRegs.rxRowReq          <= (others => '0')                   after DELAY_G;
+      rxRegs.rxRowAck          <= (others => SYNCHRONIZER_INIT_0_C) after DELAY_G;
+      rxRegs.rxBusy            <= '0'                               after DELAY_G;
+      rxRegs.markerError       <= '0'                               after DELAY_G;
+      rxRegs.headerParityError <= '0'                               after DELAY_G;
+      rxRegs.overflowError     <= '0'                               after DELAY_G;
     elsif (rising_edge(kpixClk)) then
-      rxRegs <= rxRegsIn;
+      rxRegs <= rxRegsIn after DELAY_G;
       if (rxRegs.rxRamWrEn = '1') then
-        ram(to_integer(rxRegs.rxRamWrAddr)) <= rxRegs.rxRamWrData;
+        ram(to_integer(rxRegs.rxRamWrAddr)) <= rxRegs.rxRamWrData after DELAY_G;
       end if;
     end if;
   end process rxSeq;
@@ -365,46 +365,46 @@ begin
   txSeq : process (sysClk, sysRst) is
   begin
     if (sysRst = '1') then
-      txRegs.txRowBuffer                       <= (others => '0');
-      txRegs.txSample.emptyBit                 <= '0';
-      txRegs.txSample.badCountFlag             <= '0';
-      txRegs.txSample.rangeBit                 <= '0';
-      txRegs.txSample.triggerBit               <= '0';
-      txRegs.txSample.bucket                   <= (others => '0');
-      txRegs.txSample.row                      <= (others => '0');
-      txRegs.txSample.column                   <= (others => '0');
-      txRegs.txSample.timestamp                <= (others => '0');
-      txRegs.txSample.adc                      <= (others => '0');
-      txRegs.txState                           <= TX_CLEAR_S;
-      txRegs.txColumnCount                     <= (others => '0');
-      txRegs.txBucketCount                     <= (others => '0');
-      txRegs.txColumnOffset                    <= (others => '0');
-      txRegs.txTriggers                        <= (others => '0');
-      txRegs.txValidBuckets                    <= (others => '0');
-      txRegs.txRanges                          <= (others => '0');
-      txRegs.txRowReq                          <= (others => SYNCHRONIZER_INIT_0_C);
-      txRegs.txRowAck                          <= (others => '0');
-      txRegs.txRxBusySync                      <= SYNCHRONIZER_INIT_0_C;
-      txRegs.markerErrorSync                   <= SYNCHRONIZER_INIT_0_C;
-      txRegs.headerParityErrorSync             <= SYNCHRONIZER_INIT_0_C;
-      txRegs.overflowErrorSync                 <= SYNCHRONIZER_INIT_0_C;
-      txRegs.dataParityError                   <= '0';
-      txRegs.kpixDataRxOut.data                <= (others => '0');
-      txRegs.kpixDataRxOut.valid               <= '0';
-      txRegs.kpixDataRxOut.last                <= '0';
-      txRegs.kpixDataRxOut.busy                <= '0';
-      txRegs.extRegsOut.overflowErrorCount     <= (others => '0');
-      txRegs.extRegsOut.headerParityErrorCount <= (others => '0');
-      txRegs.extRegsOut.markerErrorCount       <= (others => '0');
-      txRegs.extRegsOut.dataParityErrorCount   <= (others => '0');
+      txRegs.txRowBuffer                       <= (others => '0')                   after DELAY_G;
+      txRegs.txSample.emptyBit                 <= '0'                               after DELAY_G;
+      txRegs.txSample.badCountFlag             <= '0'                               after DELAY_G;
+      txRegs.txSample.rangeBit                 <= '0'                               after DELAY_G;
+      txRegs.txSample.triggerBit               <= '0'                               after DELAY_G;
+      txRegs.txSample.bucket                   <= (others => '0')                   after DELAY_G;
+      txRegs.txSample.row                      <= (others => '0')                   after DELAY_G;
+      txRegs.txSample.column                   <= (others => '0')                   after DELAY_G;
+      txRegs.txSample.timestamp                <= (others => '0')                   after DELAY_G;
+      txRegs.txSample.adc                      <= (others => '0')                   after DELAY_G;
+      txRegs.txState                           <= TX_CLEAR_S                        after DELAY_G;
+      txRegs.txColumnCount                     <= (others => '0')                   after DELAY_G;
+      txRegs.txBucketCount                     <= (others => '0')                   after DELAY_G;
+      txRegs.txColumnOffset                    <= (others => '0')                   after DELAY_G;
+      txRegs.txTriggers                        <= (others => '0')                   after DELAY_G;
+      txRegs.txValidBuckets                    <= (others => '0')                   after DELAY_G;
+      txRegs.txRanges                          <= (others => '0')                   after DELAY_G;
+      txRegs.txRowReq                          <= (others => SYNCHRONIZER_INIT_0_C) after DELAY_G;
+      txRegs.txRowAck                          <= (others => '0')                   after DELAY_G;
+      txRegs.txRxBusySync                      <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
+      txRegs.markerErrorSync                   <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
+      txRegs.headerParityErrorSync             <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
+      txRegs.overflowErrorSync                 <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
+      txRegs.dataParityError                   <= '0'                               after DELAY_G;
+      txRegs.kpixDataRxOut.data                <= (others => '0')                   after DELAY_G;
+      txRegs.kpixDataRxOut.valid               <= '0'                               after DELAY_G;
+      txRegs.kpixDataRxOut.last                <= '0'                               after DELAY_G;
+      txRegs.kpixDataRxOut.busy                <= '0'                               after DELAY_G;
+      txRegs.extRegsOut.overflowErrorCount     <= (others => '0')                   after DELAY_G;
+      txRegs.extRegsOut.headerParityErrorCount <= (others => '0')                   after DELAY_G;
+      txRegs.extRegsOut.markerErrorCount       <= (others => '0')                   after DELAY_G;
+      txRegs.extRegsOut.dataParityErrorCount   <= (others => '0')                   after DELAY_G;
 
     elsif (rising_edge(sysClk)) then
       if (sysRst = '1') then
         -- Needs synchronous reset to infer block ram
-        txRamRdData <= (others => '0');
+        txRamRdData <= (others => '0') after DELAY_G;
       else
-        txRegs      <= txRegsIn;
-        txRamRdData <= ram(to_integer(txRegs.txRowBuffer & txRegs.txColumnCount & txRegs.txColumnOffset));  -- Might need it's own process      
+        txRegs      <= txRegsIn                                                                           after DELAY_G;
+        txRamRdData <= ram(to_integer(txRegs.txRowBuffer & txRegs.txColumnCount & txRegs.txColumnOffset)) after DELAY_G;  -- Might need it's own process      
       end if;
     end if;
   end process;

@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-07
--- Last update: 2012-09-13
+-- Last update: 2012-09-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -160,7 +160,7 @@ begin
 
     -- Pulse these for 1 cycle only when accessed
     rVar.kpixClockGenRegsIn.newValue := '0';
-    rVar.kpixConfigRegs.kpixReset := '0';
+    rVar.kpixConfigRegs.kpixReset    := '0';
     for i in NUM_KPIX_MODULES_G-1 downto 0 loop
       rVar.kpixDataRxRegsIn(i).resetHeaderParityErrorCount := '0';
       rVar.kpixDataRxRegsIn(i).resetDataParityErrorCount   := '0';
@@ -168,8 +168,15 @@ begin
       rVar.kpixDataRxRegsIn(i).resetOverflowErrorCount     := '0';
     end loop;
 
+    if (frontEndRegCntlOut.regAddr(ADDR_BLOCK_RANGE_C) = KPIX_REGS_ADDR_C) then
+      -- KPIX regs being accessed
+      -- Pass FrontEndCntl io right though
+      -- Will revert back when frontEndRegCntlOut.regReq falls
+      rVar.kpixRegCntlIn     := frontEndRegCntlOut;
+      rVar.frontEndRegCntlIn := kpixRegCntlOut;
+
     -- Wait for an access request
-    if (frontEndRegCntlOut.regReq = '1') then
+    elsif (frontEndRegCntlOut.regReq = '1') then
       if (frontEndRegCntlOut.regAddr(ADDR_BLOCK_RANGE_C) = LOCAL_REGS_ADDR_C) then
         -- Local Regs being accessed
 
@@ -296,15 +303,7 @@ begin
               end if;
             end loop;
         end case;
-
-
-
-      elsif (frontEndRegCntlOut.regAddr(ADDR_BLOCK_RANGE_C) = KPIX_REGS_ADDR_C) then
-        -- KPIX regs being accessed
-        -- Pass FrontEndCntl io right though
-        -- Will revert back when frontEndRegCntlOut.regReq falls
-        rVar.kpixRegCntlIn := frontEndRegCntlOut;
-        rVar.frontEndRegCntlIn  := kpixRegCntlOut;
+        
 
       else
         -- Not valid address block
@@ -316,7 +315,7 @@ begin
 
     rin <= rVar;
 
-    frontEndRegCntlIn       <= r.frontEndRegCntlIn;
+    frontEndRegCntlIn  <= r.frontEndRegCntlIn;
     kpixRegCntlIn      <= r.kpixRegCntlIn;
     triggerRegsIn      <= r.triggerRegsIn;
     kpixConfigRegs     <= r.kpixConfigRegs;

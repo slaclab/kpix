@@ -252,8 +252,6 @@ begin
     if (sysRst = '1') then
       r.kpixClkSync         <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
       r.regClkSync          <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
---      r.regSel0Sync         <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
---      r.regSel1Sync         <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
       r.div                 <= '0'                               after DELAY_G;
       r.analogStateSync     <= (others => SYNCHRONIZER_INIT_0_C) after DELAY_G;
       r.analogStateStable   <= (others => '0')                   after DELAY_G;

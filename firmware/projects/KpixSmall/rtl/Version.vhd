@@ -31,5 +31,6 @@ end Version;
 -- 07/13/2012 (0xC0000106): Trigger no longer sync'd to kpixClk.
 -- 08/08/2012 (0xC0000107): Fixed temperature readout at end of data acquisition
 -- 08/14/2012 (0xC0000108): Rebuilt with latest KpixCore (no actual changes)
+-- 09/17/2012 (0xC0000109): Fixed temperature readback bug, kpix register access bug.
 -------------------------------------------------------------------------------
 

@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-09-12
+-- Last update: 2012-09-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -96,27 +96,27 @@ begin
   sync : process (sysClk, sysRst) is
   begin
     if (sysRst = '1') then
-      r.timestampCount   <= (others => '0')            after DELAY_G;
-      r.timestamp        <= (others => '0')            after DELAY_G;
-      r.eventNumber      <= (others => '1')            after DELAY_G;  -- So first event is 0 (eventNumber + 1)
-      r.newAcquire       <= '0'                        after DELAY_G;
-      r.kpixClkSync      <= SYNCHRONIZER_INIT_0_C      after DELAY_G;
-      r.state            <= WAIT_ACQUIRE_S             after DELAY_G;
-      r.counter          <= (others => '0')            after DELAY_G;
-      r.activeModules    <= (others => '0')            after DELAY_G;
-      r.dataDone         <= (others => '0')            after DELAY_G;
-      r.kpixCounter      <= (others => '0')            after DELAY_G;
+      r.timestampCount   <= (others => '0')          after DELAY_G;
+      r.timestamp        <= (others => '0')          after DELAY_G;
+      r.eventNumber      <= (others => '1')          after DELAY_G;  -- So first event is 0 (eventNumber + 1)
+      r.newAcquire       <= '0'                      after DELAY_G;
+      r.kpixClkSync      <= SYNCHRONIZER_INIT_0_C    after DELAY_G;
+      r.state            <= WAIT_ACQUIRE_S           after DELAY_G;
+      r.counter          <= (others => '0')          after DELAY_G;
+      r.activeModules    <= (others => '0')          after DELAY_G;
+      r.dataDone         <= (others => '0')          after DELAY_G;
+      r.kpixCounter      <= (others => '0')          after DELAY_G;
       r.kpixDataRxIn     <= (others => (ack => '0')) after DELAY_G;
-      r.timestampIn.rdEn <= '0'                        after DELAY_G;
-      r.ebFifoIn.wrData  <= (others => '0')            after DELAY_G;
-      r.ebFifoIn.wrEn    <= '0'                        after DELAY_G;
+      r.timestampIn.rdEn <= '0'                      after DELAY_G;
+      r.ebFifoIn.wrData  <= (others => '0')          after DELAY_G;
+      r.ebFifoIn.wrEn    <= '0'                      after DELAY_G;
     elsif (rising_edge(sysClk)) then
       r <= rin after DELAY_G;
     end if;
   end process sync;
 
   comb : process (r, triggerOut, kpixDataRxOut, ebFifoOut, frontEndUsDataOut) is
-    variable rVar        : RegType;
+    variable rVar : RegType;
 
     -- Write data to the EventBuilder FIFO
     procedure writeFifo (

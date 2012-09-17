@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-09-14
+-- Last update: 2012-09-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -59,27 +59,26 @@ begin
   fall : process (kpixClk, kpixRst) is
   begin
     if (kpixRst = '1') then
-      kpixSerRxInFall <= '0';
+      kpixSerRxInFall <= '0' after DELAY_G;
     elsif (falling_edge(kpixClk)) then
-      kpixSerRxInFall <= kpixSerRxIn;
+      kpixSerRxInFall <= kpixSerRxIn after DELAY_G;
     end if;
   end process fall;
 
   seq : process (kpixClk, kpixRst) is
   begin
     if (kpixRst = '1') then
-      r.shiftReg                  <= (others => '0');
-      r.shiftCount                <= (others => '0');
-      r.state                     <= IDLE_S;
-      r.kpixRegRxOut.temperature  <= (others => '0');
-      r.kpixRegRxOut.tempCount    <= (others => '0');
-      r.kpixRegRxOut.regAddr      <= (others => '0');
-      r.kpixRegRxOut.regData      <= (others => '0');
-      r.kpixRegRxOut.regValid     <= '0';
-      r.kpixRegRxOut.regParityErr <= '0';
+      r.shiftReg                  <= (others => '0') after DELAY_G;
+      r.shiftCount                <= (others => '0') after DELAY_G;
+      r.state                     <= IDLE_S          after DELAY_G;
+      r.kpixRegRxOut.temperature  <= (others => '0') after DELAY_G;
+      r.kpixRegRxOut.tempCount    <= (others => '0') after DELAY_G;
+      r.kpixRegRxOut.regAddr      <= (others => '0') after DELAY_G;
+      r.kpixRegRxOut.regData      <= (others => '0') after DELAY_G;
+      r.kpixRegRxOut.regValid     <= '0'             after DELAY_G;
+      r.kpixRegRxOut.regParityErr <= '0'             after DELAY_G;
     elsif (rising_edge(kpixClk)) then
-      r <= rin;
-
+      r <= rin after DELAY_G;
     end if;
   end process seq;
 
@@ -145,16 +144,16 @@ begin
 --              r.shiftReg(KPIX_ACCESS_TYPE_INDEX_C) = KPIX_REG_ACCESS_C and
 --              r.shiftReg(KPIX_WRITE_INDEX_C) = KPIX_READ_C) then
 
-            if (bitReverse(r.shiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C)) = KPIX_TEMP_REG_ADDR_C and
-                rVar.kpixRegRxOut.regParityErr = '0') then
-              -- Output Temperature, temp is last 8 bits (reversed and gray encoded.)
-              rVar.kpixRegRxOut.temperature := bitReverse(r.shiftReg(39 to 46));  
-              rVar.kpixRegRxOut.temperature := grayDecode(rVar.kpixRegRxOut.temperature);
-              rVar.kpixRegRxOut.tempCount   := slv(unsigned(r.kpixRegRxOut.tempCount) + 1);
-            else
-              -- Valid register read response received
-              rVar.kpixRegRxOut.regValid := '1';
-            end if;
+          if (bitReverse(r.shiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C)) = KPIX_TEMP_REG_ADDR_C and
+              rVar.kpixRegRxOut.regParityErr = '0') then
+            -- Output Temperature, temp is last 8 bits (reversed and gray encoded.)
+            rVar.kpixRegRxOut.temperature := bitReverse(r.shiftReg(39 to 46));
+            rVar.kpixRegRxOut.temperature := grayDecode(rVar.kpixRegRxOut.temperature);
+            rVar.kpixRegRxOut.tempCount   := slv(unsigned(r.kpixRegRxOut.tempCount) + 1);
+          else
+            -- Valid register read response received
+            rVar.kpixRegRxOut.regValid := '1';
+          end if;
 --          end if;
         end if;
 

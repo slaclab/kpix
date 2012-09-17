@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-09-13
+-- Last update: 2012-09-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -313,12 +313,12 @@ begin
   sysSync : process (sysClk, sysRst) is
   begin
     if (sysRst = '1') then
-      sysR.kpixResetHold   <= '0';
-      sysR.kpixResetReSync <= SYNCHRONIZER_INIT_0_C;
-      sysR.regAckSync      <= SYNCHRONIZER_INIT_0_C;
-      sysR.regFailSync     <= SYNCHRONIZER_INIT_0_C;
+      sysR.kpixResetHold   <= '0'                   after DELAY_G;
+      sysR.kpixResetReSync <= SYNCHRONIZER_INIT_0_C after DELAY_G;
+      sysR.regAckSync      <= SYNCHRONIZER_INIT_0_C after DELAY_G;
+      sysR.regFailSync     <= SYNCHRONIZER_INIT_0_C after DELAY_G;
     elsif (rising_edge(sysClk)) then
-      sysR <= sysRin;
+      sysR <= sysRin after DELAY_G;
     end if;
   end process sysSync;
 
@@ -334,7 +334,7 @@ begin
     -- kpixResetHold goes to kpixClk logic where it is synced to kpixClk
     -- Resynchronize that back to sysClk and use that to reset kpixResetHold
     synchronize(r.kpixResetSync.sync, sysR.kpixResetReSync, rVar.kpixResetReSync);
-    if (sysR.kpixResetReSync.sync = '1') then
+    if (sysR.kpixResetReSync.sync = '1' and kpixConfigRegs.kpixReset = '0') then
       rVar.kpixResetHold := '0';
     end if;
 
@@ -352,9 +352,9 @@ begin
   fallingClk : process (kpixClk, kpixClkRst) is
   begin
     if (kpixClkRst = '1') then
-      kpixSerTxOutFall <= (others => '0');
+      kpixSerTxOutFall <= (others => '0') after DELAY_G;
     elsif (falling_edge(kpixClk)) then
-      kpixSerTxOutFall <= r.kpixSerTxOut;
+      kpixSerTxOutFall <= r.kpixSerTxOut after DELAY_G;
     end if;
   end process fallingClk;
 
