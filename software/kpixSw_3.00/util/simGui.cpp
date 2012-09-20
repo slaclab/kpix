@@ -1,18 +1,3 @@
-//-----------------------------------------------------------------------------
-// File          : cspadGui.cpp
-// Author        : Ryan Herbst  <rherbst@slac.stanford.edu>
-// Created       : 04/12/2011
-// Project       : CSPAD
-//-----------------------------------------------------------------------------
-// Description :
-// Server application for GUI
-//-----------------------------------------------------------------------------
-// Copyright (c) 2011 by SLAC. All rights reserved.
-// Proprietary and confidential to SLAC.
-//-----------------------------------------------------------------------------
-// Modification history :
-// 04/12/2011: created
-//----------------------------------------------------------------------------
 #include <SimLink.h>
 #include <KpixControl.h>
 #include <ControlServer.h>

@@ -104,10 +104,10 @@ vhpi_src:
 	@cd $(SIM_DIR); gcc -Wall -shared -o libSimSw_lib.so VhpiGeneric.o SimLinkRx.o SimLinkTx.o
 
 sim_dig:
-	@cd $(SIM_DIR); vcs $(EN64) $(DIG_TOP) -cpp g++ -cc gcc -lrt -debug -time "ns" -time_res "1ps"
+	@cd $(SIM_DIR); vcs $(EN64) $(DIG_TOP) -parallel -cpp g++ -cc gcc -lrt -debug -time "ns" -time_res "1ps"
 
 sim_ana:
-	@cd $(SIM_DIR); vcs $(EN64) $(ANA_TOP) -cpp g++ -cc gcc -lrt -debug -time "ns" -time_res "1ps" -nc +ad=$(SIM_DIR)/partition.txt -notice
+	@cd $(SIM_DIR); vcs $(EN64) $(ANA_TOP) -parallel -cpp g++ -cc gcc -lrt -debug -time "ns" -time_res "1ps" -nc +ad=$(SIM_DIR)/partition.txt -notice
 
 clean: 
 	@rm -rf $(SIM_DIR)/*

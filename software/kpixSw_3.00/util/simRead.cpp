@@ -81,24 +81,23 @@ int main (int argc, char **argv) {
          if ( sample->getKpixAddress() < 32 ) serial = serialList[sample->getKpixAddress()];
          else serial = "";
 
-         // Show sample data
-         cout << "Sample:index       = " << dec << x << endl;
-         cout << "Sample:eventNumber = " << dec << sample->getEventNum()    << endl;
-         cout << "Sample:address     = " << dec << sample->getKpixAddress() << endl;
-         cout << "Sample:serial      = " << dec << serial                   << endl;
-         cout << "Sample:channel     = " << dec << sample->getKpixChannel() << endl;
-         cout << "Sample:bucket      = " << dec << sample->getKpixBucket()  << endl;
-         cout << "Sample:time        = " << dec << sample->getSampleTime()  << endl;
-         cout << "Sample:value       = " << dec << sample->getSampleValue() << endl;
-         cout << "Sample:val_buck    = " << dec << ((sample->getSampleValue() >> 10) & 0x3) << endl;
-         cout << "Sample:val_col     = " << dec << ((sample->getSampleValue() >>  5) & 0x1F) << endl;
-         cout << "Sample:val_row     = " << dec << ((sample->getSampleValue()      ) & 0x1F) << endl;
-         cout << "Sample:range       = " << dec << sample->getSampleRange() << endl;
-         cout << "Sample:trigType    = " << dec << sample->getTrigType()    << endl;
-         cout << "Sample:empty       = " << dec << sample->getEmpty()       << endl;
-         cout << "Sample:badCount    = " << dec << sample->getBadCount()    << endl;
-         cout << "Sample:sampleType  = " << dec << sample->getSampleType()  << endl;
-         cout << endl;
+         if ( sample->getEmpty() == 0 ) {
+
+            // Show sample data
+            cout << "Sample:index       = " << dec << x << endl;
+            cout << "Sample:eventNumber = " << dec << sample->getEventNum()    << endl;
+            cout << "Sample:address     = " << dec << sample->getKpixAddress() << endl;
+            cout << "Sample:serial      = " << dec << serial                   << endl;
+            cout << "Sample:channel     = " << dec << sample->getKpixChannel() << endl;
+            cout << "Sample:bucket      = " << dec << sample->getKpixBucket()  << endl;
+            cout << "Sample:time        = " << dec << sample->getSampleTime()  << endl;
+            cout << "Sample:value       = " << dec << sample->getSampleValue() << endl;
+            cout << "Sample:range       = " << dec << sample->getSampleRange() << endl;
+            cout << "Sample:trigType    = " << dec << sample->getTrigType()    << endl;
+            cout << "Sample:badCount    = " << dec << sample->getBadCount()    << endl;
+            cout << "Sample:sampleType  = " << dec << sample->getSampleType()  << endl;
+            cout << endl;
+         }
       }
    }
    if ( dataRead.sawRunStop()  ) dataRead.dumpRunStop();
