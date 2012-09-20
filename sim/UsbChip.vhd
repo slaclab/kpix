@@ -21,7 +21,6 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
-
 entity UsbChip is port (
 
       -- System clock, reset & control
@@ -38,7 +37,6 @@ entity UsbChip is port (
       usbPwrEnL    : out   std_logic  -- 8
    );
 end UsbChip;
-
 
 -- Define architecture
 architecture UsbChip of UsbChip is

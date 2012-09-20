@@ -57,11 +57,12 @@ void SimLinkTxInit(vhpiHandleT compInst) {
    portData->stateUpdate = *SimLinkTxUpdate;
 
    // Init data structure
-   txData->currClk  = 0;
-   txData->txActive = 0;
-   txData->txCount  = 0;
-   txData->txVc     = 0;
-   txData->toCount  = 0;
+   txData->currClk   = 0;
+   txData->txActive  = 0;
+   txData->txCount   = 0;
+   txData->txVc      = 0;
+   txData->toCount   = 0;
+   txData->sampCount = 0;
 
    // Create shared memory filename
    sprintf(txData->smemFile,"simlink_%s_%i", getlogin(), SHM_ID);
@@ -103,6 +104,7 @@ void SimLinkTxInit(vhpiHandleT compInst) {
 
 // User function to update state based upon a signal change
 void SimLinkTxUpdate ( portDataT *portData ) {
+   int tsCount;
 
    SimLinkTxData *txData = (SimLinkTxData*)(portData->stateData);
 
@@ -128,7 +130,8 @@ void SimLinkTxUpdate ( portDataT *portData ) {
 
             // Receive is idle. check for new frame
             if ( txData->txActive == 0 ) {
-               txData->txCount = 0;
+               txData->txCount   = 0;
+               txData->sampCount = 0;
               
                // VC0 is ready
                if ( getInt(vc0FrameTxValid) == 1 ) {
@@ -233,6 +236,18 @@ void SimLinkTxUpdate ( portDataT *portData ) {
                      // Init
                      txData->txActive = 0;
                      txData->txCount  = 0;
+                  }
+                  else {
+
+                     if ( ((txData->txCount)/2) > 8 ) tsCount = (((txData->txCount)/2)-8) / 2;
+                     else tsCount = 0;
+                     
+                     if ( txData->sampCount != tsCount ) {
+                        txData->sampCount = tsCount;
+
+                        vhpi_printf("SimLinkTx: Frame In Progress. Size=%i, Vc=%i, Samples=%i, Time=%lld\n",
+                           ((txData->txCount)/2),txData->txVc,tsCount,portData->simTime);
+                     }
                   }
                }
             }

@@ -74,6 +74,7 @@ typedef struct {
    int txVc;
    int toCount;
    int txData; 
+   int sampCount;
 
 } SimLinkTxData;
 
