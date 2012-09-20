@@ -1,5 +1,5 @@
 // Edge Module Definition
-module AsicSimAnalog ( ext_clk, reset_c, trig, command_c, rdback_p );
+module Kpix ( ext_clk, reset_c, trig, command_c, rdback_p );
 
    // Master Reset and Clock Signals
    input  wire  ext_clk;

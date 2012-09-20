@@ -8,12 +8,12 @@ use work.KpixPkg.all;
 use work.EventBuilderFifoPkg.all;
 use work.TriggerPkg.all;
 
-entity SmallTb is end SmallTb;
+entity AnalogTb is end AnalogTb;
 
-architecture SmallTb of SmallTb is
+architecture AnalogTb of AnalogTb is
 
    -- Kpix simulation, analog
-   component AsicSimAnalog
+   component Kpix
       port (
          ext_clk        : in    std_logic;
          reset_c        : in    std_logic;
@@ -84,7 +84,7 @@ begin
    trigIn.cmosB <= '0';
 
    -- KPIX simulation
-   U_AsicSimAnalog : AsicSimAnalog port map ( 
+   U_Kpix : Kpix port map ( 
       ext_clk   => kpixClkOutP,
       reset_c   => kpixRstOut,
       trig      => '0',
@@ -96,5 +96,5 @@ begin
    kpixSerRxIn(2) <= '0';
    kpixSerRxIn(3) <= '0';
 
-end SmallTb;
+end AnalogTb;
 

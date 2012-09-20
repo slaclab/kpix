@@ -77,10 +77,11 @@ HDL_SRC= $(PWD)/../firmware/modules/StdLib/rtl/StdRtlPkg.vhd \
 	      $(PWD)/hdl/AsicSim.vhd \
 	      $(PWD)/hdl/SimLinkRx.vhd \
 	      $(PWD)/hdl/SimLinkTx.vhd \
+	      $(PWD)/hdl/AnalogTb.vhd \
 	      $(PWD)/hdl/SmallTb.vhd
 
 # Verilog Source Files
-VLOG = $(PWD)/hdl/AsicSimAnalog.v 
+VLOG = $(PWD)/hdl/Kpix.v 
 
 # Targets
 all:    dir env syn_setup rtl_src vhpi_src sim_dig
@@ -106,7 +107,7 @@ sim_dig:
 	@cd $(SIM_DIR); vcs $(EN64) $(DIG_TOP) -cpp g++ -cc gcc -lrt -debug -time "ns" -time_res "1ps"
 
 sim_ana:
-	@cd $(SIM_DIR); vcs $(EN64) $(ANA_TOP) -cpp g++ -cc gcc -lrt -debug -time "ns" -time_res "1ps" -nc +ad=$(SIM_DIR)/partition.txt
+	@cd $(SIM_DIR); vcs $(EN64) $(ANA_TOP) -cpp g++ -cc gcc -lrt -debug -time "ns" -time_res "1ps" -nc +ad=$(SIM_DIR)/partition.txt -notice
 
 clean: 
 	@rm -rf $(SIM_DIR)/*
@@ -129,7 +130,7 @@ ana_files:
 # Analog partition file
 ana_partition:
 	@rm -f $(SIM_DIR)/partition.txt
-	@echo "partition -cell AsicSimAnalog;"                               >  $(SIM_DIR)/partition.txt
+	@echo "partition -cell Kpix;"                                        >  $(SIM_DIR)/partition.txt
 	@echo "choose nanosim -A -n $(ANA_NET) -C nanosim_cfg.txt -out wdb;" >> $(SIM_DIR)/partition.txt
 	@echo "set bus_format %d;"                                           >> $(SIM_DIR)/partition.txt
 	@echo "set rmap resis_map.txt;"                                      >> $(SIM_DIR)/partition.txt
