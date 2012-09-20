@@ -75,14 +75,16 @@ HDL_SRC= $(PWD)/../firmware/modules/StdLib/rtl/StdRtlPkg.vhd \
 	      $(PWD)/hdl/AnalogReg.vhd \
 	      $(PWD)/hdl/DataRead.vhd \
 	      $(PWD)/hdl/AsicSim.vhd \
+	      $(PWD)/hdl/SimLinkRx.vhd \
+	      $(PWD)/hdl/SimLinkTx.vhd \
 	      $(PWD)/hdl/SmallTb.vhd
 
 # Verilog Source Files
 VLOG = $(PWD)/hdl/AsicSimAnalog.v 
 
 # Targets
-all:    dir syn_setup rtl_src sysc_src sim_dig
-analog: dir syn_setup rtl_src sysc_src ana_files ana_partition sim_ana
+all:    dir env syn_setup rtl_src vhpi_src sim_dig
+analog: dir env syn_setup rtl_src vhpi_src ana_files ana_partition sim_ana
 
 # Directory
 dir:
@@ -93,16 +95,18 @@ rtl_src:
 	@cd $(SIM_DIR); vhdlan $(EN64) $(HDL_SRC)
 	@cd $(SIM_DIR); vlogan +v2k $(EN64) $(VLOG)
 
-# System C Files
-sysc_src:
-	@cd $(SIM_DIR); syscan $(EN64) -cpp g++ -cflags "-DSHM_ID=$(SHM_ID)" -port $(PWD)/sysc/SimLinkRx.map $(PWD)/sysc/SimLinkRx.cpp:SimLinkRx
-	@cd $(SIM_DIR); syscan $(EN64) -cpp g++ -cflags "-DSHM_ID=$(SHM_ID)" -port $(PWD)/sysc/SimLinkTx.map $(PWD)/sysc/SimLinkTx.cpp:SimLinkTx
+# VHPI Library
+vhpi_src:
+	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -DSHM_ID=$(SHM_ID) -I$(VCS_HOME)/include/ $(PWD)/vhpi/VhpiGeneric.c
+	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -DSHM_ID=$(SHM_ID) -I$(VCS_HOME)/include/ $(PWD)/vhpi/SimLinkRx.c
+	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -DSHM_ID=$(SHM_ID) -I$(VCS_HOME)/include/ $(PWD)/vhpi/SimLinkTx.c
+	@cd $(SIM_DIR); gcc -Wall -shared -o libSimSw_lib.so VhpiGeneric.o SimLinkRx.o SimLinkTx.o
 
 sim_dig:
-	@cd $(SIM_DIR); vcs $(EN64) -sysc $(DIG_TOP) -cpp g++ -cc gcc -lrt -debug -timescale=1ns/1ps 
+	@cd $(SIM_DIR); vcs $(EN64) $(DIG_TOP) -cpp g++ -cc gcc -lrt -debug -time "ns" -time_res "1ps"
 
 sim_ana:
-	@cd $(SIM_DIR); vcs $(EN64) -sysc $(ANA_TOP) -cpp g++ -cc gcc -lrt -debug -timescale=1ns/1ps -nc +ad=$(SIM_DIR)/partition.txt
+	@cd $(SIM_DIR); vcs $(EN64) $(ANA_TOP) -cpp g++ -cc gcc -lrt -debug -time "ns" -time_res "1ps" -nc +ad=$(SIM_DIR)/partition.txt
 
 clean: 
 	@rm -rf $(SIM_DIR)/*
@@ -129,4 +133,10 @@ ana_partition:
 	@echo "choose nanosim -A -n $(ANA_NET) -C nanosim_cfg.txt -out wdb;" >> $(SIM_DIR)/partition.txt
 	@echo "set bus_format %d;"                                           >> $(SIM_DIR)/partition.txt
 	@echo "set rmap resis_map.txt;"                                      >> $(SIM_DIR)/partition.txt
+
+# Create setup env script
+env:
+	@rm -f $(SIM_DIR)/setup_env.csh
+	@echo "limit stacksize 60000"                                 >> $(SIM_DIR)/setup_env.csh
+	@echo "setenv LD_LIBRARY_PATH $(SIM_DIR):${LD_LIBRARY_PATH}"  >> $(SIM_DIR)/setup_env.csh
 
