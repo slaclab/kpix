@@ -17,7 +17,7 @@
 SIM_DIR=/u1/rherbst/w_si/out
 
 # Analog netlist
-ANA_NET = kpix_b_trunc2.cir
+ANA_NET = kpix_c.cir
 
 # Shared memory id. Changed this if you need to run multiple instances
 # Resulting shared memory file is simlink_username_id
