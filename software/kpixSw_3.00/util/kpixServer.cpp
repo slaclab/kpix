@@ -35,6 +35,7 @@ void sigTerm (int) {
 int main (int argc, char **argv) {
    ControlServer cntrlServer;
    string        defFile;
+   int           port;
 
    if ( argc > 1 ) defFile = argv[1];
    else defFile = "";
@@ -58,14 +59,13 @@ int main (int argc, char **argv) {
 
       // Setup control server
       //cntrlServer.setDebug(true);
-      cntrlServer.startListen(8092);
+      cntrlServer.enableShared(1);
+      port = cntrlServer.startListen(0);
       cntrlServer.setSystem(&kpix);
+      cout << "Control id = 1" << endl;
 
-      cout << "Starting server" << endl;
+      cout << "Starting server at port " << dec << port << endl;
       while ( ! stop ) cntrlServer.receive(100);
-      cout << "Stopping GUI" << endl;
-      system("killall cntrlGui");
-      sleep(1);
       cntrlServer.stopListen();
       cout << "Stopped server" << endl;
 

@@ -61,8 +61,10 @@ int main (int argc, char **argv) {
 
       // Setup control server
       //cntrlServer.setDebug(true);
+      cntrlServer.enableShared(1);
       port = cntrlServer.startListen(0);
       cntrlServer.setSystem(&kpix);
+      cout << "Control id = 1" << endl;
 
       // Fork and start gui
       stop = false;
@@ -87,9 +89,8 @@ int main (int argc, char **argv) {
 
          // Server
          default:
-            cout << "Starting server" << endl;
+            cout << "Starting server at port " << dec << port << endl;
             while ( ! stop ) cntrlServer.receive(100);
-            sleep(1);
             cntrlServer.stopListen();
             cout << "Stopped server" << endl;
             break;

@@ -22,6 +22,7 @@
 # daqGetUserStatus      
 # daqGetError           
 # daqSendXml            xml_string
+# daqDisableTimeout
 
 import pythonDaq
 import time
