@@ -47,11 +47,11 @@ int main (int argc, char **argv) {
       // Create and setup PGP link
       simLink.setMaxRxTx(500000);
       simLink.setDebug(true);
-      simLink.open(shmId);
+      simLink.open("kpix",shmId);
       usleep(100);
 
       // Setup control server
-      cntrlServer.enableShared(1);
+      cntrlServer.enableSharedMemory("kpix",1);
       cntrlServer.setDebug(true);
       port = cntrlServer.startListen(0);
       cntrlServer.setSystem(&kpix);

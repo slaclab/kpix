@@ -29,7 +29,7 @@ int main (int argc, char **argv) {
 
       simLink.setMaxRxTx(500000);
       simLink.setDebug(true);
-      simLink.open(shmId);
+      simLink.open("kpix",shmId);
       usleep(100);
 
       // Test FPGA Read

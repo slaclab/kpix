@@ -61,7 +61,7 @@ int main (int argc, char **argv) {
 
       // Setup control server
       //cntrlServer.setDebug(true);
-      cntrlServer.enableShared(1);
+      cntrlServer.enableSharedMemory("kpix",1);
       port = cntrlServer.startListen(0);
       cntrlServer.setSystem(&kpix);
       cout << "Control id = 1" << endl;
