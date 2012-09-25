@@ -393,7 +393,6 @@ void KpixControl::swRunThread() {
 
    getVariable("RunState")->set(swRunRetState_);
    swRunning_ = false;
-   pthread_exit(NULL);
 }
 
 // Method to process a command
