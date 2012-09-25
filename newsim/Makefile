@@ -22,6 +22,7 @@ ANA_NET = kpix_c.cir
 # Shared memory id. Changed this if you need to run multiple instances
 # Resulting shared memory file is simlink_username_id
 SHM_ID=1
+SHM_NAME="kpix"
 
 # Set Top Level
 DIG_TOP=SmallTb
@@ -98,9 +99,9 @@ rtl_src:
 
 # VHPI Library
 vhpi_src:
-	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -DSHM_ID=$(SHM_ID) -I$(VCS_HOME)/include/ $(PWD)/vhpi/VhpiGeneric.c
-	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -DSHM_ID=$(SHM_ID) -I$(VCS_HOME)/include/ $(PWD)/vhpi/SimLinkRx.c
-	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -DSHM_ID=$(SHM_ID) -I$(VCS_HOME)/include/ $(PWD)/vhpi/SimLinkTx.c
+	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -DSHM_ID=$(SHM_ID) -DSHM_NAME=\"$(SHM_NAME)\" -I$(VCS_HOME)/include/ $(PWD)/vhpi/VhpiGeneric.c
+	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -DSHM_ID=$(SHM_ID) -DSHM_NAME=\"$(SHM_NAME)\" -I$(VCS_HOME)/include/ $(PWD)/vhpi/SimLinkRx.c
+	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -DSHM_ID=$(SHM_ID) -DSHM_NAME=\"$(SHM_NAME)\" -I$(VCS_HOME)/include/ $(PWD)/vhpi/SimLinkTx.c
 	@cd $(SIM_DIR); gcc -Wall -shared -o libSimSw_lib.so VhpiGeneric.o SimLinkRx.o SimLinkTx.o
 
 sim_dig:

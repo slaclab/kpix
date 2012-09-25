@@ -48,7 +48,7 @@ void SimLinkRxInit(vhpiHandleT compInst) {
    rxData->currClk       = 0;
 
    // Create shared memory filename
-   sprintf(rxData->smemFile,"simlink_%s_%i", getlogin(), SHM_ID);
+   sprintf(rxData->smemFile,"simlink.%s.%s.%i", getlogin(), SHM_NAME, SHM_ID);
 
    // Open shared memory
    rxData->smemFd = shm_open(rxData->smemFile, (O_CREAT | O_RDWR), (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH));
