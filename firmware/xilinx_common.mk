@@ -96,7 +96,7 @@ TRANSLATE_INPUT = .ngc #Override with .ngo to use ChipScope core inserter output
 	$(call ACTION_HEADER,"Translate")
 	@cd $(OUT_DIR);	ngdbuild \
 	  -sd $(OUT_DIR) \
-	  $(foreach ARG,$(CORE_DIRS),-sd $(abspath $(PROJ_DIR)/$(ARG))) \
+	  $(foreach ARG,$(CORE_DIRS),-sd $(ARG)) \
 	  -f $(TRANSLATE_OPTIONS_FILE) \
 	  -dd $(OUT_DIR)/bld \
 	  -uc $(UCF_FILE) \
