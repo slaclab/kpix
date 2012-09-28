@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-09-17
+-- Last update: 2012-09-24
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -148,7 +148,7 @@ begin
               rVar.kpixRegRxOut.regParityErr = '0') then
             -- Output Temperature, temp is last 8 bits (reversed and gray encoded.)
             rVar.kpixRegRxOut.temperature := bitReverse(r.shiftReg(39 to 46));
-            rVar.kpixRegRxOut.temperature := grayDecode(rVar.kpixRegRxOut.temperature);
+--            rVar.kpixRegRxOut.temperature := grayDecode(rVar.kpixRegRxOut.temperature);
             rVar.kpixRegRxOut.tempCount   := slv(unsigned(r.kpixRegRxOut.tempCount) + 1);
           else
             -- Valid register read response received

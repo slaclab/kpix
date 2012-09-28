@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-17
--- Last update: 2012-09-12
+-- Last update: 2012-09-28
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -26,6 +26,7 @@ use work.KpixRegRxPkg.all;
 use work.TriggerPkg.all;
 use work.KpixLocalPkg.all;
 use work.KpixClockGenPkg.all;
+use work.EvrPkg.all;
 
 entity KpixDaqCore is
   
@@ -48,6 +49,10 @@ entity KpixDaqCore is
 
     -- Trigger interface
     triggerExtIn : in TriggerExtInType;
+
+    -- EVR Interface
+    evrOut : in  EvrOutType;
+    evrIn  : out EvrInType;
 
     -- Interface to (possibly) external EventBuilder FIFO
     ebFifoOut : in  EventBuilderFifoOutType;
@@ -130,6 +135,8 @@ begin
       frontEndRegCntlIn  => frontEndRegCntlIn,
       kpixRegCntlOut     => kpixRegCntlOut,
       kpixRegCntlIn      => kpixRegCntlIn,
+      evrIn              => evrIn,
+      evrOut             => evrOut,
       triggerRegsIn      => triggerRegsIn,
       kpixConfigRegs     => kpixConfigRegs,
       kpixClockGenRegsIn => kpixClockGenRegsIn,
@@ -163,6 +170,7 @@ begin
       sysClk             => sysClk,
       sysRst             => sysRst,
       frontEndCmdCntlOut => frontEndCmdCntlOut,
+      evrOut             => evrOut,
       kpixLocalSysOut    => kpixLocalSysOut,
       triggerRegsIn      => triggerRegsIn,
       kpixConfigRegs     => kpixConfigRegs,
@@ -186,11 +194,13 @@ begin
       triggerOut        => triggerOut,
       timestampIn       => timestampIn,
       timestampOut      => timestampOut,
+      evrOut            => evrOut,
       kpixLocalSysOut   => kpixLocalSysOut,
       kpixDataRxOut     => kpixDataRxOut,
       kpixDataRxIn      => kpixDataRxIn,
       kpixClk           => kpixClk,
       kpixConfigRegs    => kpixConfigRegs,
+      triggerRegsIn     => triggerRegsIn,
       ebFifoIn          => ebFifoIn,
       ebFifoOut         => ebFifoOut,
       frontEndUsDataOut => frontEndUsDataOut,

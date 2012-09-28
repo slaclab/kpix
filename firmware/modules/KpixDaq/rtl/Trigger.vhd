@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-09-12
+-- Last update: 2012-09-26
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -22,6 +22,7 @@ use work.SynchronizePkg.all;
 use work.FrontEndPkg.all;
 use work.KpixLocalPkg.all;
 use work.KpixPkg.all;
+use work.EvrPkg.all;
 use work.TriggerPkg.all;
 
 entity Trigger is
@@ -34,6 +35,7 @@ entity Trigger is
     sysClk             : in  sl;
     sysRst             : in  sl;
     frontEndCmdCntlOut : in  FrontEndCmdCntlOutType;
+    evrOut             : in  EvrOutType;
     kpixLocalSysOut    : in  KpixLocalSysOutType;
     triggerRegsIn      : in  TriggerRegsInType;
     kpixConfigRegs     : in  KpixConfigRegsType;
@@ -63,6 +65,20 @@ architecture rtl of Trigger is
 
   signal r, rin   : RegType;
   signal fifoFull : sl;
+
+  component timestamp_fifo
+    port (
+      clk   : in  std_logic;
+      rst   : in  std_logic;
+      din   : in  std_logic_vector(15 downto 0);
+      wr_en : in  std_logic;
+      rd_en : in  std_logic;
+      dout  : out std_logic_vector(15 downto 0);
+      full  : out std_logic;
+      empty : out std_logic;
+      valid : out std_logic
+      );
+  end component;
 
 begin
 
@@ -103,7 +119,7 @@ begin
     synchronize(triggerExtIn.cmosB, r.extTriggerSync(4), rVar.extTriggerSync(4));
     synchronize('0', r.extTriggerSync(5), rVar.extTriggerSync(0));
     synchronize('0', r.extTriggerSync(6), rVar.extTriggerSync(0));
-    synchronize('0', r.extTriggerSync(7), rVar.extTriggerSync(0));
+    synchronize(evrOut.trigger, r.extTriggerSync(7), rVar.extTriggerSync(0));
 
     ------------------------------------------------------------------------------------------------
     -- External Trigger
@@ -162,16 +178,23 @@ begin
 
     ------------------------------------------------------------------------------------------------
     -- Acquire Command
+    -- Source could be software (through FrontEndCmdCntl), EVR, or external input
+    -- Selected by Front End Register triggerRegsIn.acquisitionSrc
     ------------------------------------------------------------------------------------------------
-    if (frontEndCmdCntlOut.cmdEn = '1') then
-      if (frontEndCmdCntlOut.cmdOpCode = TRIGGER_OPCODE_C) then
-        rVar.triggerOut.startAcquire   := '1';
-        rVar.triggerOut.startCalibrate := triggerRegsIn.calibrate;
-        rVar.startCountEnable          := '1';
-        rVar.startCounter              := (others => '0');
-      end if;
+    if ((triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_SOFTWARE_C and
+         frontEndCmdCntlOut.cmdEn = '1' and frontEndCmdCntlOut.cmdOpCode = TRIGGER_OPCODE_C)
+        or
+        (triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_EVR_C and
+         detectRisingEdge(r.extTriggerSync(7)))   -- EVR trigger routed through extTriggerSync(7)
+        or
+        (triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_CMOSA_C and
+         detectRisingEdge(r.extTriggerSync(3))))  -- CMOS trigger is extTriggerSync(3)
+    then
+      rVar.triggerOut.startAcquire   := '1';
+      rVar.triggerOut.startCalibrate := triggerRegsIn.calibrate;
+      rVar.startCountEnable          := '1';
+      rVar.startCounter              := (others => '0');
     end if;
-
 
     if (r.startCountEnable = '1') then
       rVar.startCounter := r.startCounter + 1;
@@ -190,7 +213,7 @@ begin
 
 
 
-  timestamp_fifo_1 : entity work.timestamp_fifo
+  timestamp_fifo_1 : timestamp_fifo
     port map (
       clk               => sysClk,
       rst               => sysRst,

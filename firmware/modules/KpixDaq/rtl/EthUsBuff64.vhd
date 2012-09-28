@@ -58,6 +58,22 @@ architecture UsBuff of UsBuff is
   signal fifoFull  : std_logic;
   signal fifoValid : std_logic;
 
+  component fifo_72x512_18x2048_fwft
+    port (
+      rst         : in  std_logic;
+      wr_clk      : in  std_logic;
+      rd_clk      : in  std_logic;
+      din         : in  std_logic_vector(71 downto 0);
+      wr_en       : in  std_logic;
+      rd_en       : in  std_logic;
+      dout        : out std_logic_vector(17 downto 0);
+      full        : out std_logic;
+      almost_full : out std_logic;
+      empty       : out std_logic;
+      valid       : out std_logic
+      );
+  end component;
+
 
   -- Black Box Attributes
 --  attribute syn_black_box                             : boolean;
@@ -70,14 +86,14 @@ begin
   -- Data going into FIFO
   -- Variable width fifo reads out MS Word first
   -- We want LS Word first so swap words on input
-  fifoDin(71 downto 54) <= frameTxSOF & "0" & frameTxData(63 downto 48); --(15 downto 0);
-  fifoDin(53 downto 36) <= "0" & frameTxEOF & frameTxData(47 downto 32); --(31 downto 16);
-  fifoDin(35 downto 18) <= frameTxEOF & frameTxEOF & frameTxData(31 downto 16); --(47 downto 32);
-  fifoDin(17 downto 0)  <= frameTxEOF & frameTxEOF & frameTxData(15 downto 0); --(63 downto 48);
+  fifoDin(71 downto 54) <= frameTxSOF & "0" & frameTxData(63 downto 48);         --(15 downto 0);
+  fifoDin(53 downto 36) <= "0" & frameTxEOF & frameTxData(47 downto 32);         --(31 downto 16);
+  fifoDin(35 downto 18) <= frameTxEOF & frameTxEOF & frameTxData(31 downto 16);  --(47 downto 32);
+  fifoDin(17 downto 0)  <= frameTxEOF & frameTxEOF & frameTxData(15 downto 0);   --(63 downto 48);
 
 
   -- Fifo 72 bit write, 18 bit read
-  fifo_72x512_18x2048_fwft_1 : entity work.fifo_72x512_18x2048_fwft
+  fifo_72x512_18x2048_fwft_1 : fifo_72x512_18x2048_fwft
     port map (
       rst         => sysClkRst,
       wr_clk      => sysClk,

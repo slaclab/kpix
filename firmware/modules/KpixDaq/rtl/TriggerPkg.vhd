@@ -6,7 +6,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-14
--- Last update: 2012-07-10
+-- Last update: 2012-09-26
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -26,11 +26,14 @@ package TriggerPkg is
   constant TRIGGER_ACQUIRE_C   : sl := '0';
   constant TRIGGER_CALIBRATE_C : sl := '1';
 
-
+  constant TRIGGER_ACQ_SOFTWARE_C : slv(1 downto 0) := "00";
+  constant TRIGGER_ACQ_EVR_C      : slv(1 downto 0) := "01";
+  constant TRIGGER_ACQ_CMOSA_C    : slv(1 downto 0) := "10";
 
   type TriggerRegsInType is record
     extTriggerSrc   : slv(2 downto 0);
     extTimestampSrc : slv(2 downto 0);
+    acquisitionSrc  : slv(1 downto 0);
     calibrate       : sl;
   end record TriggerRegsInType;
 

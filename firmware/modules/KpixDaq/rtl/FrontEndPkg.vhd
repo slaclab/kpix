@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-09-12
+-- Last update: 2012-09-26
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -51,6 +51,7 @@ package FrontEndPkg is
     frameTxEnable : sl;
     frameTxSOF    : sl;
     frameTxEOF    : sl;
+    frameTxEOFE   : sl;
     frameTxData   : slv(63 downto 0);
   end record FrontEndUsDataInType;
 

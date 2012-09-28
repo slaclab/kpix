@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-09-17
+-- Last update: 2012-09-25
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -174,8 +174,9 @@ architecture rtl of KpixDataRx is
   begin
     retVar(63 downto 60) := TEMP_SAMPLE_C;
     retVar(59 downto 48) := slv(to_unsigned(KPIX_ID_G, 12));
-    retVar(27 downto 16) := temp.tempCount;
-    retVar(7 downto 0)   := temp.temperature;
+    retVar(31 downto 24) := temp.tempCount(7 downto 0);
+    retVar(23 downto 16) := temp.temperature;
+    retVar(7 downto 0)   := grayDecode(temp.temperature);
     return retVar;
   end function formatTemperature;
 

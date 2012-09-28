@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-09-17
+-- Last update: 2012-09-26
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -25,6 +25,7 @@ use work.FrontEndPkg.all;
 use work.EventBuilderFifoPkg.all;
 use work.TriggerPkg.all;
 use work.KpixLocalPkg.all;
+use work.EvrPkg.all;
 
 entity EventBuilder is
   
@@ -43,6 +44,11 @@ entity EventBuilder is
     timestampOut : in  TimestampOutType;
     timestampIn  : out TimestampInType;
 
+    -- EVR Interface
+    -- Not synchronous with sysClk but safe to read
+    -- after rising triggerOut.startAcquire
+    evrOut : in EvrOutType;
+
     -- Kpix Local Interface
     kpixLocalSysOut : in KpixLocalSysOutType;
 
@@ -53,6 +59,7 @@ entity EventBuilder is
 
     -- Front End Registers
     kpixConfigRegs : in KpixConfigRegsType;
+    triggerRegsIn  : in TriggerRegsInType;
 
     -- FIFO Interface
     ebFifoIn  : out EventBuilderFifoInType;
@@ -195,7 +202,12 @@ begin
       when WRITE_HEADER_S =>
         if (ebFifoOut.full = '0') then
           rVar.counter := r.counter + 1;
-          writeFifo(slvAll('0', 64));
+          -- Place EVR data in header if it  is the acqusition trigger source
+          if (triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_EVR_C and r.counter = 0) then
+            writeFifo(evrOut.offset & evrOut.seconds);
+          else
+            writeFifo(slvAll('0', 64));
+          end if;
           if (r.counter = 2) then
             rVar.state := WAIT_DIGITIZE_S;
           end if;
