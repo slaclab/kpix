@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2012-09-24
+-- Last update: 2012-09-27
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -21,6 +21,7 @@ use work.KpixPkg.all;
 use work.FrontEndPkg.all;
 use work.EventBuilderFifoPkg.all;
 use work.TriggerPkg.all;
+use work.EvrPkg.all;
 library unisim;
 use unisim.vcomponents.all;
 
@@ -28,26 +29,38 @@ entity KpixEmtb is
   
   generic (
     DELAY_G            : time    := 1 ns;
-    NUM_KPIX_MODULES_G : natural := 32);
+    NUM_KPIX_MODULES_G : natural := 30);
 
   port (
-    -- System clock, reset
-    fpgaRstL   : in std_logic;
-    gtpRefClkP : in std_logic;
-    gtpRefClkN : in std_logic;
+    -- System reset
+    fpgaRstL : in sl;
 
-    -- Ethernet Interface
-    udpTxP : out std_logic;
-    udpTxN : out std_logic;
-    udpRxP : in  std_logic;
-    udpRxN : in  std_logic;
+    -- PGP clock - 156.25 MHz
+    pgpRefClkP : in sl;
+    pgpRefClkN : in sl;
+
+    -- PGP Interface
+    pgpTxP : out sl;
+    pgpTxN : out sl;
+    pgpRxP : in  sl;
+    pgpRxN : in  sl;
+
+    -- Evr clock and interface
+    evrClkP : in  sl;
+    evrClkN : in  sl;
+--    evrTxP  : out sl;
+--    evrTxN  : out sl;
+    evrRxP  : in  sl;
+    evrRxN  : in  sl;
 
     -- Internal Kpix debug
     debugOutA : out sl;
     debugOutB : out sl;
 
-    -- External Trigger
-    triggerExtIn : in TriggerExtInType;
+    -- External Triggers
+    cmosIn : sl;
+    lemoIn : sl;
+
 
     -- Interface to KPiX modules
     kpixClkOutP     : out slv(2 downto 0);
@@ -64,15 +77,23 @@ architecture rtl of KpixEmtb is
 
 
 
-  signal fpgaRst       : sl;
-  signal gtpRefClk     : sl;
-  signal gtpRefClkOut  : sl;
-  signal gtpRefClkBufg : sl;
-  signal sysClk125     : sl;
-  signal sysRst125     : sl;
-  signal clk200        : sl;
-  signal rst200        : sl;
-  signal dcmLocked     : sl;
+  signal fpgaRst : sl;
+
+  signal pgpRefClk     : sl;
+  signal pgpRefClkOut  : sl;
+  signal pgpRefClkBufg : sl;
+  signal pgpClk        : sl;
+  signal pgpReset      : sl;
+  signal pgpClk2x      : sl;
+
+
+  signal sysClk125 : sl;
+  signal sysRst125 : sl;
+  signal clk200    : sl;
+  signal rst200    : sl;
+  signal dcmLocked : sl;
+
+  signal evrClk : sl;
 
   -- Front End Signals
   signal frontEndRegCntlIn  : FrontEndRegCntlInType;
@@ -80,6 +101,29 @@ architecture rtl of KpixEmtb is
   signal frontEndCmdCntlOut : FrontEndCmdCntlOutType;
   signal frontEndUsDataOut  : FrontEndUsDataOutType;
   signal frontEndUsDataIn   : FrontEndUsDataInType;
+
+  -- EVR Signals
+  signal evrIn     : EvrInType;
+  signal evrOut    : EvrOutType;        -- evrClk
+  signal evrRegIn  : EvrRegInType;      -- sysClk
+  signal evrRegOut : EvrRegOutType;     -- sysClk
+
+  signal EventStream   : slv(7 downto 0);
+  signal DataStream    : slv(7 downto 0);
+  signal evrTrigger    : sl;
+  signal evrRegDataOut : slv(31 downto 0);
+  signal evrRegWrEna   : sl;
+  signal evrRegDataIn  : slv(31 downto 0);
+  signal evrRegAddr    : slv(7 downto 0);
+  signal evrRegEna     : sl;
+  signal evrDebug      : slv(63 downto 0);
+  signal outSeconds    : slv(31 downto 0);
+  signal outOffset     : slv(31 downto 0);
+  signal evrErrors     : slv(15 downto 0);
+  signal countReset    : sl;
+
+  -- Front End Reg Cntl Ouputs from kpixDaq
+  signal frontEndRegCntlInKpix : FrontEndRegCntlInType;
 
   -- Event Builder FIFO signals
   -- Optionaly pass this through as IO to external FIFO
@@ -98,63 +142,129 @@ architecture rtl of KpixEmtb is
   -- Stupid XST forces component declarations for generated cores
   component main_dcm is
     port (
-      CLKIN_IN   : in  std_logic;
-      RST_IN     : in  std_logic;
-      CLKFX_OUT  : out std_logic;
-      CLK0_OUT   : out std_logic;
-      LOCKED_OUT : out std_logic);
+      CLKIN_IN   : in  sl;
+      RST_IN     : in  sl;
+      CLKFX_OUT  : out sl;
+      CLK0_OUT   : out sl;
+      LOCKED_OUT : out sl);
   end component main_dcm;
 
   component EventBuilderFifo
     port (
-      clk   : in  std_logic;
-      rst   : in  std_logic;
-      din   : in  std_logic_vector(71 downto 0);
-      wr_en : in  std_logic;
-      rd_en : in  std_logic;
-      dout  : out std_logic_vector(71 downto 0);
-      full  : out std_logic;
-      empty : out std_logic;
-      valid : out std_logic
+      clk   : in  sl;
+      rst   : in  sl;
+      din   : in  slv(71 downto 0);
+      wr_en : in  sl;
+      rd_en : in  sl;
+      dout  : out slv(71 downto 0);
+      full  : out sl;
+      empty : out sl;
+      valid : out sl
       );
   end component;
 
+  -- Component declaration needed for verilog modules too
+  component EventReceiverTop is
+    generic (
+      USE_CHIPSCOPE : integer);
+    port (
+      Reset           : in  std_logic;
+      m_Timing_MGTCLK : in  std_logic;
+      p_Timing_MGTCLK : in  std_logic;
+      RXN_IN          : in  std_logic;
+      RXP_IN          : in  std_logic;
+      EventStream     : out std_logic_vector(7 downto 0);
+      DataStream      : out std_logic_vector(7 downto 0);
+      evrTrigger      : out std_logic;
+      evrRegDataOut   : out std_logic_vector(31 downto 0);
+      evrRegWrEna     : in  std_logic;
+      evrRegDataIn    : in  std_logic_vector(31 downto 0);
+      evrRegAddr      : in  std_logic_vector(7 downto 0);
+      evrRegEna       : in  std_logic;
+      cxiClk          : in  std_logic;
+      cxiClkRst       : in  std_logic;
+      evrClk          : out std_logic;
+      evrDebug        : out std_logic_vector(63 downto 0);
+      outSeconds      : out std_logic_vector(31 downto 0);
+      outOffset       : out std_logic_vector(31 downto 0);
+      evrErrors       : out std_logic_vector(15 downto 0);
+      countReset      : in  std_logic);
+  end component EventReceiverTop;
+
+  component Pgp2FrontEnd64 is
+    port (
+      pgpRefClk     : in  std_logic;
+      pgpRefClkOut  : out std_logic;
+      pgpClk        : in  std_logic;
+      pgpClk2x      : in  std_logic;
+      pgpReset      : in  std_logic;
+      locClk        : in  std_logic;
+      locReset      : in  std_logic;
+      cmdEn         : out std_logic;
+      cmdOpCode     : out std_logic_vector(7 downto 0);
+      cmdCtxOut     : out std_logic_vector(23 downto 0);
+      regReq        : out std_logic;
+      regOp         : out std_logic;
+      regInp        : out std_logic;
+      regAck        : in  std_logic;
+      regFail       : in  std_logic;
+      regAddr       : out std_logic_vector(23 downto 0);
+      regDataOut    : out std_logic_vector(31 downto 0);
+      regDataIn     : in  std_logic_vector(31 downto 0);
+      frameTxEnable : in  std_logic;
+      frameTxSOF    : in  std_logic;
+      frameTxEOF    : in  std_logic;
+      frameTxEOFE   : in  std_logic;
+      frameTxData   : in  std_logic_vector(63 downto 0);
+      frameTxAFull  : out std_logic;
+      pgpRxN        : in  std_logic;
+      pgpRxP        : in  std_logic;
+      pgpTxN        : out std_logic;
+      pgpTxP        : out std_logic);
+  end component Pgp2FrontEnd64;
 
 begin
 
   fpgaRst <= not fpgaRstL;
 
   -- Input clock buffer
-  GtpRefClkIbufds : IBUFDS
+  PgpRefClkIbufds : IBUFDS
     port map (
-      I  => gtpRefClkP,
-      IB => gtpRefClkN,
-      O  => gtpRefClk);
+      I  => pgpRefClkP,
+      IB => pgpRefClkN,
+      O  => pgpRefClk);
 
-  GtpRefClkOutBufg : BUFG
+  -- Run input clock through BUFG before sending to Pgp2GtpClk DCM
+  PgpRefClkOutBufg : BUFG
     port map (
-      I => gtpRefClkOut,
-      O => gtpRefClkBufg);
+      I => pgpRefClkOut,
+      O => pgpRefClkBufg);
 
-  -- Generate clocks
+  -- Create pgpClk2x and sysClk125 from 156.25 MHz input clock
+  Pgp2GtpClk_1 : entity work.Pgp2GtpClk
+    generic map (
+      UserFxDiv  => 5,
+      UserFxMult => 4)                  -- 4/5 * 156.25 = 125 MHz
+    port map (
+      pgpRefClk => pgpRefClkBufg,
+      ponResetL => fpgaRstL,
+      locReset  => '0',
+      pgpClk    => pgpClk,
+      pgpReset  => pgpReset,
+      pgpClk2x  => pgpClk2x,
+      userClk   => sysClk125,
+      userReset => sysRst125,
+      pgpClkIn  => pgpClk,
+      userClkIn => sysClk125);
+
+  -- Generate 200 MHz clock
   main_dcm_1 : main_dcm
     port map (
-      CLKIN_IN   => gtpRefClkBufg,
-      RST_IN     => fpgaRst,
+      CLKIN_IN   => sysClk125,
+      RST_IN     => sysRst125,
       CLKFX_OUT  => clk200,
-      CLK0_OUT   => sysClk125,
+      CLK0_OUT   => open,
       LOCKED_OUT => dcmLocked);
-
-  -- Synchronize sysRst125
-  SysRstSyncInst : entity work.RstSync
-    generic map (
-      DELAY_G        => DELAY_G,
-      IN_POLARITY_G  => '0',
-      OUT_POLARITY_G => '1')
-    port map (
-      clk      => sysClk125,
-      asyncRst => dcmLocked,
-      syncRst  => sysRst125);
 
   -- Synchronize rst200
   Clk200RstSyncInst : entity work.RstSync
@@ -168,12 +278,15 @@ begin
       syncRst  => rst200);  
 
   -- Ethernet module
-  EthFrontEnd_1 : entity work.EthFrontEnd
+  PgpFrontEnd_1 : Pgp2FrontEnd64
     port map (
-      gtpClk        => sysClk125,
-      gtpClkRst     => sysRst125,
-      gtpRefClk     => gtpRefClk,
-      gtpRefClkOut  => gtpRefClkOut,
+      pgpRefClk     => pgpRefClk,       -- Direct input from pins
+      pgpRefClkOut  => pgpRefClkOut,    -- Send this to DCM
+      pgpClk        => pgpClk,
+      pgpClk2x      => pgpClk2x,
+      pgpReset      => pgpReset,
+      locClk        => sysClk125,
+      locReset      => sysRst125,
       cmdEn         => frontEndCmdCntlOut.cmdEn,
       cmdOpCode     => frontEndCmdCntlOut.cmdOpCode,
       cmdCtxOut     => frontEndCmdCntlOut.cmdCtxOut,
@@ -188,17 +301,48 @@ begin
       frameTxEnable => frontEndUsDataIn.frameTxEnable,
       frameTxSOF    => frontEndUsDataIn.frameTxSOF,
       frameTxEOF    => frontEndUsDataIn.frameTxEOF,
-      frameTxAfull  => frontEndUsDataOut.frameTxAfull,
+      frameTxEOFE   => frontEndUsDataIn.frameTxEOFE,
       frameTxData   => frontEndUsDataIn.frameTxData,
-      gtpRxN        => udpRxN,
-      gtpRxP        => udpRxP,
-      gtpTxN        => udpTxN,
-      gtpTxP        => udpTxP);
+      frameTxAFull  => frontEndUsDataOut.frameTxAFull,
+      pgpRxN        => pgpRxN,
+      pgpRxP        => pgpRxP,
+      pgpTxN        => pgpTxN,
+      pgpTxP        => pgpTxP);
 
-  intTriggerIn.nimA  <= not triggerExtIn.nimA;
-  intTriggerIn.nimB  <= not triggerExtIn.nimB;
-  intTriggerIn.cmosA <= not triggerExtIn.cmosA;
-  intTriggerIn.cmosB <= not triggerExtIn.cmosB;
+  -- Event Receiver
+  evrIn.countReset <= '0';
+  EventReceiverTop_1 : EventReceiverTop
+    generic map (
+      USE_CHIPSCOPE => 0)
+    port map (
+      Reset           => fpgaRst,
+      m_Timing_MGTCLK => evrClkN,
+      p_Timing_MGTCLK => evrClkP,
+      RXN_IN          => evrRxN,
+      RXP_IN          => evrRxP,
+      EventStream     => evrOut.eventStream,
+      DataStream      => evrOut.dataStream,
+      evrTrigger      => evrOut.trigger,
+      evrRegDataOut   => evrRegOut.dataOut,
+      evrRegWrEna     => evrRegIn.wrEna,
+      evrRegDataIn    => evrRegIn.dataIn,
+      evrRegAddr      => evrRegIn.addr,
+      evrRegEna       => evrRegIn.ena,
+      cxiClk          => sysClk125,
+      cxiClkRst       => sysRst125,
+      evrClk          => evrClk,
+      evrDebug        => evrOut.debug,
+      outSeconds      => evrOut.seconds,
+      outOffset       => evrOut.offset,
+      evrErrors       => evrOut.errors,
+      countReset      => evrIn.countReset);
+
+
+  -- Route triggers to their proper inputs
+  intTriggerIn.nimA  <= not lemoIn;
+  intTriggerIn.nimB  <= '0';
+  intTriggerIn.cmosA <= not cmosIn;
+  intTriggerIn.cmosB <= '0';
   --------------------------------------------------------------------------------------------------
   -- KPIX Core
   --------------------------------------------------------------------------------------------------
@@ -212,11 +356,12 @@ begin
       clk200             => clk200,
       rst200             => rst200,
       frontEndRegCntlOut => frontEndRegCntlOut,
-      frontEndRegCntlIn  => frontEndRegCntlIn,
+      frontEndRegCntlIn  => frontEndRegCntlInKpix,
       frontEndCmdCntlOut => frontEndCmdCntlOut,
       frontEndUsDataOut  => frontEndUsDataOut,
       frontEndUsDataIn   => frontEndUsDataIn,
       triggerExtIn       => intTriggerIn,
+      evrOut             => evrOut,
       ebFifoOut          => ebFifoOut,
       ebFifoIn           => ebFifoIn,
       debugOutA          => debugOutA,
@@ -230,8 +375,6 @@ begin
   --------------------------------------------------------------------------------------------------
   -- Event Builder FIFO
   --------------------------------------------------------------------------------------------------
---  attribute syn_black_box : boolean;
---  attribute syn_black_box of work.EventBuilderFifo : component is true;
   EventBuilderFifo_1 : EventBuilderFifo
     port map (
       clk   => sysClk125,
@@ -244,13 +387,37 @@ begin
       empty => ebFifoOut.empty,
       valid => ebFifoOut.valid);
 
+  --------------------------------------------------------------------------------------------------
+  -- Front End Reg Cntl Mux
+  --------------------------------------------------------------------------------------------------
+  regCntlMux : process (frontEndRegCntlOut, evrRegOut, frontEndRegCntlInKpix) is
+  begin
+    -- Create EVR register interface inputs from frontEndRegCntlOut signals
+    evrRegIn.ena    <= frontEndRegCntlOut.regReq and toSl(frontEndRegCntlOut.regAddr(23 downto 20) = "0010");
+    evrRegIn.wrEna  <= frontEndRegCntlOut.regOp;
+    evrRegIn.dataIn <= frontEndRegCntlOut.regDataOut;
+    evrRegIn.addr   <= frontEndRegCntlOut.regAddr(7 downto 0);
 
+    -- Mux EVR and KpixDaq register interface signals onto frontEndRegCntlIn
+    if (frontEndRegCntlOut.regAddr(23 downto 20) = "0010") then
+      frontEndRegCntlIn.regDataIn <= evrRegOut.dataOut;
+      frontEndRegCntlIn.regAck     <= frontEndRegCntlOut.regReq;
+      frontEndRegCntlIn.regFail    <= '0';
+    else
+      frontEndRegCntlIn <= frontEndRegCntlInKpix;
+    end if;
+  end process regCntlMux;
+
+
+  --------------------------------------------------------------------------------------------------
+  -- KPIX IO Buffers
+  --------------------------------------------------------------------------------------------------
   CLK_OBUF_GEN : for i in 2 downto 0 generate
-  OBUF_KPIX_CLK : OBUFDS
-    port map (
-      I  => kpixClk,
-      O  => kpixClkOutP(i),
-      OB => kpixClkOutN(i));
+    OBUF_KPIX_CLK : OBUFDS
+      port map (
+        I  => kpixClk,
+        O  => kpixClkOutP(i),
+        OB => kpixClkOutN(i));
   end generate;
 
   SER_TX_OBUF_GEN : for i in NUM_KPIX_MODULES_G-1 downto 0 generate
@@ -273,11 +440,11 @@ begin
       O => kpixRstOut);
 
   TRIG_OBUF_GEN : for i in 2 downto 0 generate
-  OBUF_TRIG : OBUFDS
-    port map (
-      I  => kpixTrigger,
-      O  => kpixTriggerOutP(i),
-      OB => kpixTriggerOutN(i));
+    OBUF_TRIG : OBUFDS
+      port map (
+        I  => kpixTrigger,
+        O  => kpixTriggerOutP(i),
+        OB => kpixTriggerOutN(i));
   end generate;
 
 

@@ -36,13 +36,21 @@ TIMEGRP TG_clk200_r = RISING clk200;
 TIMEGRP TG_kpixClk_f = FALLING kpixClk;
 
 # Constrain timing between clocks
-#TIMESPEC TS_sysClk125_kpixClk = FROM TG_sysClk125_r TO TG_kpixClk_r 10 ns;
-#TIMESPEC TS_kpixClk_sysClk125 = FROM TG_kpixClk_r TO TG_sysClk125_r 16 ns;
-#TIMESPEC TS_sysClk125_clk200 = FROM TG_sysClk125_r TO TG_clk200_r 10 ns;
-#TIMESPEC TS_kpixClk_clk200 = FROM TG_kpixClk_r TO TG_clk200_r 16 ns;
+#kpixClk-sysClk125
+TIMESPEC TS_sysClk125_kpixClk = FROM TG_sysClk125_r TO TG_kpixClk_r 10 ns;
+TIMESPEC TS_kpixClk_sysClk125 = FROM TG_kpixClk_r TO TG_sysClk125_r 16 ns;
 
+#clk200-sysClk
+TIMESPEC TS_sysClk125_clk200 = FROM TG_sysClk125_r TO TG_clk200_r 10 ns;
+TIMESPEC TS_clk200_sysClk125 = FROM TG_clk200_r TO TG_sysClk125_r 10 ns;
+
+#kpixClk-Clk200
+TIMESPEC TS_kpixClk_clk200 = FROM TG_kpixClk_r TO TG_clk200_r 16 ns;
+
+#Handle falling clock timing
 TIMESPEC TS_kpixClk_RF = FROM TG_kpixClk_r to TG_kpixClk_f 8 ns;
 TIMESPEC TS_kpixClk_FR = FROM TG_kpixClk_f to TG_kpixClk_r 8 ns;
+
 
 # Nets to ignore for timing
 NET "fpgaRstL"      TIG;

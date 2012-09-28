@@ -1,7 +1,7 @@
 run
 -ofn $PROJECT
 -top $PROJECT
--p xc5vlx50t-ff1136-1
+-p xc5vlx30t-ff323-2
 -ifn "$OUT_DIR/sources.txt"
 -ifmt mixed
 -ofmt NGC
@@ -13,7 +13,7 @@ run
 -rtlview Yes
 -glob_opt AllClockNets
 -read_cores YES
--sd {"$PROJ_DIR/xil_cores" "$PROJ_DIR/eth_client/xil_cores"}
+-sd $CORE_DIRS
 -write_timing_constraints YES
 -cross_clock_analysis YES
 -hierarchy_separator /

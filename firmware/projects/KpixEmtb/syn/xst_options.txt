@@ -13,7 +13,7 @@ run
 -rtlview Yes
 -glob_opt AllClockNets
 -read_cores YES
--sd {"$PROJ_DIR/xil_cores" "$PROJ_DIR/../../modules/eth_client/xil_cores" "$PROJ_DIR/../../modules/KpixDaq/xil_cores"}
+-sd $CORE_DIRS
 -write_timing_constraints YES
 -cross_clock_analysis YES
 -hierarchy_separator /

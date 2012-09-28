@@ -6,48 +6,7 @@
    <spirit:version>1.0</spirit:version>
    <spirit:componentInstances>
       <spirit:componentInstance>
-         <spirit:instanceName>main_dcm</spirit:instanceName>
-         <spirit:componentRef spirit:vendor="xilinx.com" spirit:library="ip" spirit:name="dcmadv" spirit:version="13.1" />
-         <spirit:configurableElementValues>
-            <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.COMPONENT_NAME">main_dcm</spirit:configurableElementValue>
-            <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.XAWFILENAME">/afs/slac.stanford.edu/u/re/bareese/projects/kpix/firmware/projects/KpixCon/xil_cores/main_dcm.xaw</spirit:configurableElementValue>
-         </spirit:configurableElementValues>
-         <spirit:vendorExtensions>
-            <xilinx:instanceProperties xmlns:xilinx="http://www.xilinx.com">
-               <xilinx:projectOptions>
-                  <xilinx:projectName>coregen</xilinx:projectName>
-                  <xilinx:outputDirectory>./</xilinx:outputDirectory>
-                  <xilinx:workingDirectory>./tmp/</xilinx:workingDirectory>
-                  <xilinx:subWorkingDirectory>./tmp/_cg/</xilinx:subWorkingDirectory>
-               </xilinx:projectOptions>
-               <xilinx:part>
-                  <xilinx:device>xc5vlx50t</xilinx:device>
-                  <xilinx:deviceFamily>virtex5</xilinx:deviceFamily>
-                  <xilinx:package>ff1136</xilinx:package>
-                  <xilinx:speedGrade>-1</xilinx:speedGrade>
-               </xilinx:part>
-               <xilinx:flowOptions>
-                  <xilinx:busFormat>BusFormatAngleBracketNotRipped</xilinx:busFormat>
-                  <xilinx:designEntry>VHDL</xilinx:designEntry>
-                  <xilinx:asySymbol>true</xilinx:asySymbol>
-                  <xilinx:flowVendor>Other</xilinx:flowVendor>
-                  <xilinx:addPads>false</xilinx:addPads>
-                  <xilinx:removeRPMs>false</xilinx:removeRPMs>
-                  <xilinx:createNDF>false</xilinx:createNDF>
-                  <xilinx:implementationFileType>Ngc</xilinx:implementationFileType>
-                  <xilinx:formalVerification>false</xilinx:formalVerification>
-               </xilinx:flowOptions>
-               <xilinx:simulationOptions>
-                  <xilinx:simulationModel>Behavioral</xilinx:simulationModel>
-                  <xilinx:simulationLanguage>VHDL</xilinx:simulationLanguage>
-                  <xilinx:foundationSym>false</xilinx:foundationSym>
-               </xilinx:simulationOptions>
-            </xilinx:instanceProperties>
-         </spirit:vendorExtensions>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
          <spirit:instanceName>EventBuilderFifo</spirit:instanceName>
-         <spirit:displayName>Fifo Generator</spirit:displayName>
          <spirit:componentRef spirit:vendor="xilinx.com" spirit:library="ip" spirit:name="fifo_generator" spirit:version="8.4" />
          <spirit:configurableElementValues>
             <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.COMPONENT_NAME">EventBuilderFifo</spirit:configurableElementValue>
@@ -400,7 +359,7 @@
             <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_REG_SLICE_MODE_AXIS">0</spirit:configurableElementValue>
          </spirit:configurableElementValues>
          <spirit:vendorExtensions>
-            <xilinx:instanceProperties>
+            <xilinx:instanceProperties xmlns:xilinx="http://www.xilinx.com">
                <xilinx:projectOptions>
                   <xilinx:projectName>coregen</xilinx:projectName>
                   <xilinx:outputDirectory>./</xilinx:outputDirectory>
@@ -416,7 +375,7 @@
                <xilinx:flowOptions>
                   <xilinx:busFormat>BusFormatAngleBracketNotRipped</xilinx:busFormat>
                   <xilinx:designEntry>VHDL</xilinx:designEntry>
-                  <xilinx:asySymbol>false</xilinx:asySymbol>
+                  <xilinx:asySymbol>true</xilinx:asySymbol>
                   <xilinx:flowVendor>Other</xilinx:flowVendor>
                   <xilinx:addPads>false</xilinx:addPads>
                   <xilinx:removeRPMs>false</xilinx:removeRPMs>
@@ -425,7 +384,7 @@
                   <xilinx:formalVerification>false</xilinx:formalVerification>
                </xilinx:flowOptions>
                <xilinx:simulationOptions>
-                  <xilinx:simulationModel>Behavioral</xilinx:simulationModel>
+                  <xilinx:simulationModel>Structural</xilinx:simulationModel>
                   <xilinx:simulationLanguage>VHDL</xilinx:simulationLanguage>
                   <xilinx:foundationSym>false</xilinx:foundationSym>
                </xilinx:simulationOptions>
@@ -435,7 +394,7 @@
             </xilinx:instanceProperties>
             <xilinx:generationHistory>
                <xilinx:fileSet>
-                  <xilinx:name>customization_generator</xilinx:name>
+                  <xilinx:name>apply_current_project_options_generator</xilinx:name>
                </xilinx:fileSet>
                <xilinx:fileSet>
                   <xilinx:name>model_parameter_resolution_generator</xilinx:name>
@@ -445,9 +404,9 @@
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo.xco</xilinx:name>
                      <xilinx:userFileType>xco</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:47 GMT 2012</xilinx:timeStamp>
-                     <xilinx:checkSum>0x5C964CB9</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:21 GMT 2012</xilinx:timeStamp>
+                     <xilinx:checkSum>0xAF9CA56C</xilinx:checkSum>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                </xilinx:fileSet>
                <xilinx:fileSet>
@@ -455,16 +414,16 @@
                   <xilinx:file>
                      <xilinx:name>./fifo_generator_ug175.pdf</xilinx:name>
                      <xilinx:userFileType>pdf</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Mar 22 06:30:47 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Sat Jul 21 06:07:29 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0xA50473DF</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./fifo_generator_v8_4_readme.txt</xilinx:name>
                      <xilinx:userFileType>txt</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Mar 22 06:30:47 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Sat Jul 21 06:07:29 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x85A4D50A</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                </xilinx:fileSet>
                <xilinx:fileSet>
@@ -473,241 +432,241 @@
                      <xilinx:name>./EventBuilderFifo/example_design/EventBuilderFifo_top.ucf</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>ucf</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:38 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x3C560FD9</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/example_design/EventBuilderFifo_top.vhd</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>vhdl</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:38 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x9CEAC1F1</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/example_design/EventBuilderFifo_top.xdc</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>xdc</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:41 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0xFA2BDC02</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/example_design/EventBuilderFifo_top_wrapper.vhd</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>vhdl</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:38 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0xAE64C9FB</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/implement/implement.bat</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:38 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x07647A44</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/implement/implement.sh</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:38 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x8F497306</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/implement/planAhead_rdn.bat</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:41 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x8BD2652B</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/implement/planAhead_rdn.sh</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:41 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x8E42A437</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/implement/planAhead_rdn.tcl</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>tcl</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:41 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x2A130188</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/implement/xst.prj</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:38 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0xA8D74ADD</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/implement/xst.scr</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:39 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0xA89829BC</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/fg_tb_dgen.vhd</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>vhdl</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:37 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x4F4DD29D</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/fg_tb_dverif.vhd</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>vhdl</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:37 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0xF05EB5BC</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/fg_tb_pctrl.vhd</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>vhdl</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:37 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0xFB0C4935</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/fg_tb_pkg.vhd</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>vhdl</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:38 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x10DC84EB</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/fg_tb_rng.vhd</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>vhdl</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:38 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0xABDDF7E0</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/fg_tb_synth.vhd</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>vhdl</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:38 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0xAD1BB421</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/fg_tb_top.vhd</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>vhdl</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:38 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0xE67E83AF</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/functional/simulate_isim.sh</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:39 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x11131940</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/functional/simulate_mti.do</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:39 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x7925CDE7</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/functional/simulate_ncsim.sh</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:40 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0xCD302F72</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/functional/wave_isim.tcl</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>tcl</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:40 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x2E83A90B</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/functional/wave_mti.do</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:39 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x0855D2D3</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/functional/wave_ncsim.sv</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:40 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x685274F8</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/timing/simulate_isim.sh</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:39 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x25A47DC9</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/timing/simulate_mti.do</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:39 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x4AD4A194</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/timing/simulate_ncsim.sh</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:40 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x7AD038D4</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/timing/wave_isim.tcl</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>tcl</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:40 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x2E83A90B</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/timing/wave_mti.do</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:39 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x0855D2D3</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo/simulation/timing/wave_ncsim.sv</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:16:48 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:56:40 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x685274F8</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                </xilinx:fileSet>
                <xilinx:fileSet>
@@ -715,9 +674,9 @@
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo.ngc</xilinx:name>
                      <xilinx:userFileType>ngc</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:18:25 GMT 2012</xilinx:timeStamp>
-                     <xilinx:checkSum>0x9CB58424</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:timeStamp>Fri Sep 28 22:58:56 GMT 2012</xilinx:timeStamp>
+                     <xilinx:checkSum>0xD65E8354</xilinx:checkSum>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                </xilinx:fileSet>
                <xilinx:fileSet>
@@ -731,9 +690,9 @@
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo.vho</xilinx:name>
                      <xilinx:userFileType>vho</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:18:26 GMT 2012</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Sep 28 22:58:57 GMT 2012</xilinx:timeStamp>
                      <xilinx:checkSum>0x995113B3</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                </xilinx:fileSet>
                <xilinx:fileSet>
@@ -741,13 +700,20 @@
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo.vhd</xilinx:name>
                      <xilinx:userFileType>vhdl</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:18:26 GMT 2012</xilinx:timeStamp>
-                     <xilinx:checkSum>0x184079C5</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:timeStamp>Fri Sep 28 22:59:04 GMT 2012</xilinx:timeStamp>
+                     <xilinx:checkSum>0xDBEFF4E1</xilinx:checkSum>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                </xilinx:fileSet>
                <xilinx:fileSet>
                   <xilinx:name>asy_generator</xilinx:name>
+                  <xilinx:file>
+                     <xilinx:name>./EventBuilderFifo.asy</xilinx:name>
+                     <xilinx:userFileType>asy</xilinx:userFileType>
+                     <xilinx:timeStamp>Fri Sep 28 22:59:08 GMT 2012</xilinx:timeStamp>
+                     <xilinx:checkSum>0xA29E4EF0</xilinx:checkSum>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
+                  </xilinx:file>
                </xilinx:fileSet>
                <xilinx:fileSet>
                   <xilinx:name>xmdf_generator</xilinx:name>
@@ -755,9 +721,9 @@
                      <xilinx:name>./EventBuilderFifo_xmdf.tcl</xilinx:name>
                      <xilinx:userFileType>tclXmdf</xilinx:userFileType>
                      <xilinx:userFileType>tcl</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:18:26 GMT 2012</xilinx:timeStamp>
-                     <xilinx:checkSum>0xB511307E</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:timeStamp>Fri Sep 28 22:59:08 GMT 2012</xilinx:timeStamp>
+                     <xilinx:checkSum>0xF08D0BBD</xilinx:checkSum>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                </xilinx:fileSet>
                <xilinx:fileSet>
@@ -766,17 +732,17 @@
                      <xilinx:name>./EventBuilderFifo.gise</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>gise</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:18:31 GMT 2012</xilinx:timeStamp>
-                     <xilinx:checkSum>0x25539B52</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:timeStamp>Fri Sep 28 23:00:15 GMT 2012</xilinx:timeStamp>
+                     <xilinx:checkSum>0x346E45C0</xilinx:checkSum>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./EventBuilderFifo.xise</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>xise</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:18:31 GMT 2012</xilinx:timeStamp>
-                     <xilinx:checkSum>0xB3DA36DF</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:timeStamp>Fri Sep 28 23:00:15 GMT 2012</xilinx:timeStamp>
+                     <xilinx:checkSum>0x3D681182</xilinx:checkSum>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                </xilinx:fileSet>
                <xilinx:fileSet>
@@ -789,13 +755,75 @@
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>txtFlist</xilinx:userFileType>
                      <xilinx:userFileType>txt</xilinx:userFileType>
-                     <xilinx:timeStamp>Mon Jul 09 18:18:31 GMT 2012</xilinx:timeStamp>
-                     <xilinx:checkSum>0x640137B2</xilinx:checkSum>
-                     <xilinx:generationId>generationid_1527534359</xilinx:generationId>
+                     <xilinx:timeStamp>Fri Sep 28 23:00:16 GMT 2012</xilinx:timeStamp>
+                     <xilinx:checkSum>0x94181E47</xilinx:checkSum>
+                     <xilinx:generationId>generationID_4013899584</xilinx:generationId>
                   </xilinx:file>
                </xilinx:fileSet>
+            </xilinx:generationHistory>
+         </spirit:vendorExtensions>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+         <spirit:instanceName>main_dcm</spirit:instanceName>
+         <spirit:componentRef spirit:vendor="xilinx.com" spirit:library="ip" spirit:name="dcmadv" spirit:version="13.1" />
+         <spirit:configurableElementValues>
+            <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.COMPONENT_NAME">main_dcm</spirit:configurableElementValue>
+            <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.XAWFILENAME">/afs/slac.stanford.edu/u/re/bareese/projects/kpix/kpix-trunk/firmware/projects/KpixCon/xil_cores/main_dcm.xaw</spirit:configurableElementValue>
+         </spirit:configurableElementValues>
+         <spirit:vendorExtensions>
+            <xilinx:instanceProperties xmlns:xilinx="http://www.xilinx.com">
+               <xilinx:projectOptions>
+                  <xilinx:projectName>coregen</xilinx:projectName>
+                  <xilinx:outputDirectory>./</xilinx:outputDirectory>
+                  <xilinx:workingDirectory>./tmp/</xilinx:workingDirectory>
+                  <xilinx:subWorkingDirectory>./tmp/_cg/</xilinx:subWorkingDirectory>
+               </xilinx:projectOptions>
+               <xilinx:part>
+                  <xilinx:device>xc5vlx50t</xilinx:device>
+                  <xilinx:deviceFamily>virtex5</xilinx:deviceFamily>
+                  <xilinx:package>ff1136</xilinx:package>
+                  <xilinx:speedGrade>-1</xilinx:speedGrade>
+               </xilinx:part>
+               <xilinx:flowOptions>
+                  <xilinx:busFormat>BusFormatAngleBracketNotRipped</xilinx:busFormat>
+                  <xilinx:designEntry>VHDL</xilinx:designEntry>
+                  <xilinx:asySymbol>true</xilinx:asySymbol>
+                  <xilinx:flowVendor>Other</xilinx:flowVendor>
+                  <xilinx:addPads>false</xilinx:addPads>
+                  <xilinx:removeRPMs>false</xilinx:removeRPMs>
+                  <xilinx:createNDF>false</xilinx:createNDF>
+                  <xilinx:implementationFileType>Ngc</xilinx:implementationFileType>
+                  <xilinx:formalVerification>false</xilinx:formalVerification>
+               </xilinx:flowOptions>
+               <xilinx:simulationOptions>
+                  <xilinx:simulationModel>Structural</xilinx:simulationModel>
+                  <xilinx:simulationLanguage>VHDL</xilinx:simulationLanguage>
+                  <xilinx:foundationSym>false</xilinx:foundationSym>
+               </xilinx:simulationOptions>
+               <xilinx:packageInfo>
+                  <xilinx:sourceCoreCreationDate>2012-07-10+03:51</xilinx:sourceCoreCreationDate>
+               </xilinx:packageInfo>
+            </xilinx:instanceProperties>
+            <xilinx:generationHistory>
                <xilinx:fileSet>
-                  <xilinx:name>view_readme_generator</xilinx:name>
+                  <xilinx:name>apply_current_project_options_generator</xilinx:name>
+               </xilinx:fileSet>
+               <xilinx:fileSet>
+                  <xilinx:name>model_parameter_resolution_generator</xilinx:name>
+               </xilinx:fileSet>
+               <xilinx:fileSet>
+                  <xilinx:name>asy_generator</xilinx:name>
+               </xilinx:fileSet>
+               <xilinx:fileSet>
+                  <xilinx:name>flist_generator</xilinx:name>
+                  <xilinx:file>
+                     <xilinx:name>./main_dcm_flist.txt</xilinx:name>
+                     <xilinx:userFileType>txtFlist</xilinx:userFileType>
+                     <xilinx:userFileType>txt</xilinx:userFileType>
+                     <xilinx:timeStamp>Fri Sep 28 23:01:50 GMT 2012</xilinx:timeStamp>
+                     <xilinx:checkSum>0xB3C65812</xilinx:checkSum>
+                     <xilinx:generationId>generationID_1879581046</xilinx:generationId>
+                  </xilinx:file>
                </xilinx:fileSet>
             </xilinx:generationHistory>
          </spirit:vendorExtensions>
@@ -827,7 +855,7 @@
             <xilinx:formalVerification>false</xilinx:formalVerification>
          </xilinx:flowOptions>
          <xilinx:simulationOptions>
-            <xilinx:simulationModel>Behavioral</xilinx:simulationModel>
+            <xilinx:simulationModel>Structural</xilinx:simulationModel>
             <xilinx:simulationLanguage>VHDL</xilinx:simulationLanguage>
             <xilinx:foundationSym>false</xilinx:foundationSym>
          </xilinx:simulationOptions>

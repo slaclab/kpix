@@ -31,6 +31,7 @@ EventBuilderFifo/simulation/timing/wave_mti.do
 EventBuilderFifo/simulation/timing/wave_ncsim.sv
 EventBuilderFifo.gise
 EventBuilderFifo.ngc
+EventBuilderFifo.vhd
 EventBuilderFifo.vho
 EventBuilderFifo.xco
 EventBuilderFifo.xise

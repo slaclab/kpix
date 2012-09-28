@@ -29,7 +29,6 @@ EventBuilderFifo/simulation/timing/simulate_ncsim.sh
 EventBuilderFifo/simulation/timing/wave_isim.tcl
 EventBuilderFifo/simulation/timing/wave_mti.do
 EventBuilderFifo/simulation/timing/wave_ncsim.sv
-EventBuilderFifo.asy
 EventBuilderFifo.gise
 EventBuilderFifo.ngc
 EventBuilderFifo.vhd
@@ -38,5 +37,6 @@ EventBuilderFifo.xco
 EventBuilderFifo.xise
 EventBuilderFifo_flist.txt
 EventBuilderFifo_xmdf.tcl
+_xmsgs/pn_parser.xmsgs
 fifo_generator_ug175.pdf
 fifo_generator_v8_4_readme.txt

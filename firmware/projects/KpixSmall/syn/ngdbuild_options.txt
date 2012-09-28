@@ -80,4 +80,4 @@
 #
 -nt on
 -intstyle ise
--quiet
+-verbose

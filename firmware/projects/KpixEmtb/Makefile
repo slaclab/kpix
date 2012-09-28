@@ -2,7 +2,8 @@
 export PROJECT = $(notdir $(PWD))
 
 # List of build core directories. Relative to current directory.
-CORE_DIRS = xil_cores ../../modules/KpixDaq/xil_cores ../../modules/eth_client/xil_cores
+export CORE_DIRS = $(abspath ../../projects/KpixEmtb/xil_cores \
+ ../../modules/KpixDaq/xil_cores ../../modules/Pgp2Core/xil_cores ../../modules/EvrCore/xil_cores)
 
 include ../../xilinx_common.mk
 

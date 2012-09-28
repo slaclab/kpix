@@ -15,32 +15,55 @@
 # Modification history
 # 05/30/2012: created.
 #-----------------------------------------------------------------------------
-CONFIG PART = XC5VLX30T-FF323-2;
+CONFIG PART = XC5VLX50T-FF665-1;
 
 #inst EthFrontEnd_1/U_EthClientGtp/U_GTP LOC=GTP_DUAL_X0Y4;
 
 # Define clocks
+NET pgpClk    TNM_NET = FFS pgpClk;
+#NET pgpClk2x  TNM_NET = FFS pgpClk2x;
+#NET evrClk    TNM_NET = FFS evrClk;
 NET sysClk125 TNM_NET = FFS sysClk125;
 NET clk200    TNM_NET = FFS clk200;
 NET kpixClk   TNM_NET = FFS kpixClk;
 
 # Define clock frequncies
+TIMESPEC TS_pgpClk = PERIOD pgpClk 156.25 Mhz HIGH 50%;
+#TIMESPEC TS_pgpClk2x = PERIOD pgpClk2x 312.5 Mhz HIGH 50%;
+#TIMESPEC TS_evrClk = PERIOD evrClk 238 HIGH 50%;
 TIMESPEC TS_sysClk125 = PERIOD sysClk125 125 Mhz HIGH 50%;
 TIMESPEC TS_clk200 = PERIOD clk200 200 Mhz HIGH 50%;
 TIMESPEC TS_kpixClk = PERIOD kpixClk 100 Mhz HIGH 50%;
 
 # Group clocks
+TIMEGRP TG_pgpClk_r = RISING pgpClk;
+#TIMEGRP TG_evrClk = RISING evrClk;
 TIMEGRP TG_sysClk125_r = RISING sysClk125;
 TIMEGRP TG_kpixClk_r = RISING kpixClk;
 TIMEGRP TG_clk200_r = RISING clk200;
 TIMEGRP TG_kpixClk_f = FALLING kpixClk;
 
 # Constrain timing between clocks
-#TIMESPEC TS_sysClk125_kpixClk = FROM TG_sysClk125_r TO TG_kpixClk_r 10 ns;
-#TIMESPEC TS_kpixClk_sysClk125 = FROM TG_kpixClk_r TO TG_sysClk125_r 16 ns;
-#TIMESPEC TS_sysClk125_clk200 = FROM TG_sysClk125_r TO TG_clk200_r 10 ns;
-#TIMESPEC TS_kpixClk_clk200 = FROM TG_kpixClk_r TO TG_clk200_r 16 ns;
+# pgpClk-sysClk125
+TIMESPEC TS_pgpClk_sysClk125 = FROM TG_pgpClk_r TO TG_sysClk125_r 10 ns;
+TIMESPEC TS_sysClk125_pgpClk = FROM TG_sysClk125_r TO TG_pgpClk_r 10 ns;
 
+#evrClk-sysClk125
+TIMESPEC TS_evrClk_sysClk125 = FROM TG_evrClk125_r TO TG_sysClk125_r 10 ns;
+TIMESPEC TS_sysClk125_evrClk = FROM TG_sysClk125_r TO TG_evrClk_r 10 ns;
+
+#kpixClk-sysClk125
+TIMESPEC TS_sysClk125_kpixClk = FROM TG_sysClk125_r TO TG_kpixClk_r 10 ns;
+TIMESPEC TS_kpixClk_sysClk125 = FROM TG_kpixClk_r TO TG_sysClk125_r 16 ns;
+
+#clk200-sysClk
+TIMESPEC TS_sysClk125_clk200 = FROM TG_sysClk125_r TO TG_clk200_r 10 ns;
+TIMESPEC TS_clk200_sysClk125 = FROM TG_clk200_r TO TG_sysClk125_r 10 ns;
+
+#kpixClk-Clk200
+TIMESPEC TS_kpixClk_clk200 = FROM TG_kpixClk_r TO TG_clk200_r 16 ns;
+
+#Handle falling clock timing
 TIMESPEC TS_kpixClk_RF = FROM TG_kpixClk_r to TG_kpixClk_f 8 ns;
 TIMESPEC TS_kpixClk_FR = FROM TG_kpixClk_f to TG_kpixClk_r 8 ns;
 
@@ -51,104 +74,111 @@ NET "fpgaRstL"      TIG;
 # Pin Assignments
 
 # Main clock and reset
-NET "fpgaRstL"           LOC = "V5" | IOSTANDARD = "LVCMOS33";
-NET "gtpRefClkP"         LOC = "C3";
-NET "gtpRefClkN"         LOC = "C4";
+NET "fpgaRstL"           LOC = "Y18" | IOSTANDARD = "LVCMOS33";
+NET "pgpRefClkP"         LOC = "K4";
+NET "pgpRefClkN"         LOC = "K3";
 
-# Ethernet Interface
-NET "udpTxP"             LOC = "A2";
-NET "udpTxN"             LOC = "B2";
-NET "udpRxP"             LOC = "B1";
-NET "udpRxN"             LOC = "C1";
+# PGP Interface
+NET "pgpTxP"             LOC = "H2";
+NET "pgpTxN"             LOC = "J2";
+NET "pgpRxP"             LOC = "J1";
+NET "pgpRxN"             LOC = "K1";
+
+# EVR Clock and Interface
+NET "evrClkP" LOC = "T4";
+NET "evrClkN" LOC = "T3";
+#NET "evrTxP"  LOC = "P2";
+#NET "evrTxN"  LOC = "R2";
+NET "evrRxP"  LOC = "R1";
+NET "evrRxN"  LOC = "T1";
 
 # Where to send debugOutA and B?
-NET "debugOutA" LOC = "V13" | IOSTANDARD = "LVCMOS33"; 
-NET "debugOutB" LOC = "V11" | IOSTANDARD = "LVCMOS33"; 
+NET "debugOutA" LOC = "AD24" | IOSTANDARD = "LVCMOS33"; 
+NET "debugOutB" LOC = "AE25" | IOSTANDARD = "LVCMOS33"; 
 
 #External Trigger - NimA
-NET "triggerExtIn_nimA" LOC = "V15" | IOSTANDARD = "LVCMOS33"; 
-NET "triggerExtIn_nimB" LOC = "U11" | IOSTANDARD = "LVCMOS33"; 
-NET "triggerExtIn_cmosA" LOC = "T12" | IOSTANDARD = "LVCMOS33"; 
-NET "triggerExtIn_cmosB" LOC = "T18" | IOSTANDARD = "LVCMOS33"; 
-
-NET "kpixClkOutP<0>" LOC = "H15";
-NET "kpixClkOutN<0>" LOC = "H16";
-NET "kpixClkOutP<1>" LOC = "L18";
-NET "kpixClkOutN<1>" LOC = "L17";
-NET "kpixClkOutP<2>" LOC = "N12";
-NET "kpixClkOutN<2>" LOC = "M11";
-
-NET "kpixRstOut" LOC = "H18" | IOSTANDARD = "LVCMOS25";
-
-NET "kpixTriggerOutP<0>" LOC = "H13";
-NET "kpixTriggerOutN<0>" LOC = "J14";
-NET "kpixTriggerOutP<1>" LOC = "H17";
-NET "kpixTriggerOutN<1>" LOC = "G18";
-NET "kpixTriggerOutP<2>" LOC = "J15";
-NET "kpixTriggerOutN<2>" LOC = "K15";
-
-NET "kpixSerTxOut<0>" LOC = "D13" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<1>" LOC = "D14" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<2>" LOC = "E15" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<3>" LOC = "D15" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<4>" LOC = "E14" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<5>" LOC = "F14" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<6>" LOC = "A11" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<7>" LOC = "A12" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<8>" LOC = "C12" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<9>" LOC = "C13" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<10>" LOC = "B13" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<11>" LOC = "A13" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<12>" LOC = "G14" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<13>" LOC = "G15" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<14>" LOC = "B14" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<15>" LOC = "A14" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<16>" LOC = "G13" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<17>" LOC = "F13" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<18>" LOC = "C15" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<19>" LOC = "B15" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<20>" LOC = "B16" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<21>" LOC = "A16" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<22>" LOC = "F16" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<23>" LOC = "G16" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<24>" LOC = "A18" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<25>" LOC = "A17" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<26>" LOC = "E17" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<27>" LOC = "E16" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<28>" LOC = "C17" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerTxOut<29>" LOC = "C16" | IOSTANDARD = "LVCMOS25";
+NET "lemoIn" LOC = "AC22" | IOSTANDARD = "LVCMOS33"; 
+NET "cmosIn" LOC = "AD26" | IOSTANDARD = "LVCMOS33"; 
 
 
-NET "kpixSerRxIn<0>" LOC = "N18" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<1>" LOC = "M18" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<2>" LOC = "M14" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<3>" LOC = "L13" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<4>" LOC = "P18" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<5>" LOC = "N17" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<6>" LOC = "L14" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<7>" LOC = "K14" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<8>" LOC = "R17" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<9>" LOC = "P17" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<10>" LOC = "N13" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<11>" LOC = "M13" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<12>" LOC = "R15" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<13>" LOC = "R16" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<14>" LOC = "P14" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<15>" LOC = "P15" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<16>" LOC = "N16" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<17>" LOC = "M16" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<18>" LOC = "N15" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<19>" LOC = "M15" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<20>" LOC = "D12" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<21>" LOC = "E12" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<22>" LOC = "C18" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<23>" LOC = "B18" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<24>" LOC = "F18" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<25>" LOC = "F17" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<26>" LOC = "D18" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<27>" LOC = "D17" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<28>" LOC = "B11" | IOSTANDARD = "LVCMOS25";
-NET "kpixSerRxIn<29>" LOC = "C11" | IOSTANDARD = "LVCMOS25";
+NET "kpixClkOutP<0>" LOC = "T24";
+NET "kpixClkOutN<0>" LOC = "T23";
+NET "kpixClkOutP<1>" LOC = "U24";
+NET "kpixClkOutN<1>" LOC = "V24";
+NET "kpixClkOutP<2>" LOC = "W26";
+NET "kpixClkOutN<2>" LOC = "W25";
+
+NET "kpixRstOut" LOC = "V26" | IOSTANDARD = "LVCMOS25";
+
+NET "kpixTriggerOutP<0>" LOC = "P26";
+NET "kpixTriggerOutN<0>" LOC = "R26";
+NET "kpixTriggerOutP<1>" LOC = "P25";
+NET "kpixTriggerOutN<1>" LOC = "R25";
+NET "kpixTriggerOutP<2>" LOC = "P24";
+NET "kpixTriggerOutN<2>" LOC = "P23";
+
+NET "kpixSerTxOut<0>" LOC = "Y6" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<1>" LOC = "Y5" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<2>" LOC = "G6" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<3>" LOC = "H6" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<4>" LOC = "Y4" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<5>" LOC = "W4" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<6>" LOC = "G5" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<7>" LOC = "F5" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<8>" LOC = "W5" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<9>" LOC = "W6" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<10>" LOC = "G4" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<11>" LOC = "H4" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<12>" LOC = "V6" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<13>" LOC = "V7" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<14>" LOC = "J5" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<15>" LOC = "J6" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<16>" LOC = "U7" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<17>" LOC = "T8" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<18>" LOC = "K5" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<19>" LOC = "L5" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<20>" LOC = "K6" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<21>" LOC = "K7" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<22>" LOC = "U6" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<23>" LOC = "U5" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<24>" LOC = "K8" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<25>" LOC = "L7" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<26>" LOC = "T5" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<27>" LOC = "R5" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<28>" LOC = "M7" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<29>" LOC = "L8" | IOSTANDARD = "LVCMOS25";
+
+
+NET "kpixSerRxIn<0>" LOC = "AA22" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<1>" LOC = "Y22" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<2>" LOC = "Y23" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<3>" LOC = "W23" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<4>" LOC = "Y26" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<5>" LOC = "Y25" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<6>" LOC = "AA25" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<7>" LOC = "AB26" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<8>" LOC = "AB25" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<9>" LOC = "AA24" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<10>" LOC = "AB24" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<11>" LOC = "AA23" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<12>" LOC = "P21" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<13>" LOC = "R21" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<14>" LOC = "T22" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<15>" LOC = "U22" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<16>" LOC = "U21" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<17>" LOC = "V22" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<18>" LOC = "V21" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<19>" LOC = "W21" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<20>" LOC = "R6" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<21>" LOC = "T7" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<22>" LOC = "P6" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<23>" LOC = "N6" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<24>" LOC = "M6" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<25>" LOC = "N7" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<26>" LOC = "N8" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<27>" LOC = "P8" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<28>" LOC = "R8" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<29>" LOC = "R7" | IOSTANDARD = "LVCMOS25";
 
 
 

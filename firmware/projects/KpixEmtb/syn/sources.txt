@@ -14,9 +14,13 @@ vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixDataRxPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegCntlPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegRxPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/TriggerPkg.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EvrPkg.vhd"
 
-## eth_client
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClientPackage.vhd"
+
+#PGP Core
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/core/Pgp2CorePackage.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/gtp/Pgp2GtpPackage.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/applications/Pgp2AppPackage.vhd"
 
 ## KpixEmtb
 vhdl work "_PROJ_DIR_/rtl/Version.vhd"
@@ -24,20 +28,7 @@ vhdl work "_PROJ_DIR_/rtl/Version.vhd"
 
 # Xilinx Cores
 
-## KpixDaq
-
-##vhdl work "_PROJ_DIR_/../../modules/KpixDaq/xil_cores/fifo_72x512_18x2048_fwft.vhd"
-##vhdl work "_PROJ_DIR_/../../modules/KpixDaq/xil_cores/timestamp_fifo.vhd"
-
-## eth_client
-vhdl work "_PROJ_DIR_/../../modules/eth_client/xil_cores/eth_v5_afifo_18x1023.vhd"
-##vhdl work "_PROJ_DIR_/../../modules/eth_client/xil_cores/eth_fifo_8x16k.vhd"
-##vhdl work "_PROJ_DIR_/../../modules/eth_client/xil_cores/eth_fifo_19x8k.vhd"
-##vhdl work "_PROJ_DIR_/../../modules/eth_client/xil_cores/eth_fifo_18x1k.vhd"
-##vhdl work "_PROJ_DIR_/../../modules/eth_client/xil_cores/eth_fifo_13x1k.vhd"
-
 ## KpixEmtb
-##vhdl work "_PROJ_DIR_/xil_cores/EventBuilderFifo.vhd
 vhdl work "_PROJ_DIR_/xil_cores/main_dcm.vhd"
 
 
@@ -47,7 +38,8 @@ vhdl work "_PROJ_DIR_/xil_cores/main_dcm.vhd"
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/RstSync.vhd"
 
 ## KpixDaq
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EthFrontEnd.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/Pgp2UsBuff64.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/Pgp2FrontEnd64.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/FrontEndRegDecoder.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EventBuilder.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixClockGen.vhd"
@@ -57,7 +49,6 @@ vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixLocal.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegCntl.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegRx.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/Trigger.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/UsBuff64.vhd"
 
 ## KpixCore
 vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/analog_control.vhd"
@@ -66,17 +57,34 @@ vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/memory_array_control.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/readout_control.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/reg_rw_32.vhd"
 
-## eth_client
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthArbiter.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClient.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClientArp.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClientGtp.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClientGtpRxRst.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClientGtpTxRst.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClientUdp.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthCmdSlave.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthRegSlave.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthUdpFrame.vhd"
+## Event Receiver
+verilog work "_PROJ_DIR_/../../modules/EvrCore/rtl/EventReceiverTop.v"
+verilog work "_PROJ_DIR_/../../modules/EvrCore/rtl/EventReceiverChannel.v"
+verilog work "_PROJ_DIR_/../../modules/EvrCore/rtl/evrReg.v"
+verilog work "_PROJ_DIR_/../../modules/EvrCore/rtl/serialReceiver2.v"
+verilog work "_PROJ_DIR_/../../modules/EvrCore/rtl/mgt_usrclk_source.v"
+
+
+verilog work "_PROJ_DIR_/../../modules/EvrCore/rtl/rx_sync.v"
+verilog work "_PROJ_DIR_/../../modules/EvrCore/rtl/timeofDayReceiver.v"
+verilog work "_PROJ_DIR_/../../modules/EvrCore/rtl/TsFIFO.v"
+
+## PGP Core
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/gtp/Pgp2GtpClk.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/gtp/Pgp2Gtp16.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/gtp/Pgp2GtpRxRst.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/gtp/Pgp2GtpTxRst.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/applications/Pgp2CmdSlave.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/applications/Pgp2RegSlave.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/core/Pgp2Rx.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/core/Pgp2RxCell.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/core/Pgp2RxPhy.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/core/Pgp2Tx.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/core/Pgp2TxCell.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/core/Pgp2TxPhy.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/core/Pgp2TxSched.vhd"
+
+
 
 ## KpixEmtb
 vhdl work "_PROJ_DIR_/rtl/KpixEmtb.vhd"

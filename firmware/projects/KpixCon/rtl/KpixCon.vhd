@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2012-09-17
+-- Last update: 2012-09-28
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -21,6 +21,7 @@ use work.KpixPkg.all;
 use work.FrontEndPkg.all;
 use work.EventBuilderFifoPkg.all;
 use work.TriggerPkg.all;
+use work.EvrPkg.all;
 library unisim;
 use unisim.vcomponents.all;
 
@@ -77,6 +78,9 @@ architecture rtl of KpixCon is
   signal frontEndUsDataOut  : FrontEndUsDataOutType;
   signal frontEndUsDataIn   : FrontEndUsDataInType;
 
+  -- No EVR interface, will be undriven
+  signal evrOut : EvrOutType;
+  
   signal intTriggerExtIn : TriggerExtInType;
 
   -- Event Builder FIFO signals
@@ -92,6 +96,30 @@ architecture rtl of KpixCon is
   signal intKpixSerRxIn  : slv(NUM_KPIX_MODULES_G-1 downto 0);
   signal kpixClk         : sl;
   signal kpixRst         : sl;
+
+    -- Stupid XST forces component declarations for generated cores
+  component main_dcm is
+    port (
+      CLKIN_IN   : in  std_logic;
+      RST_IN     : in  std_logic;
+      CLKFX_OUT  : out std_logic;
+      CLK0_OUT   : out std_logic;
+      LOCKED_OUT : out std_logic);
+  end component main_dcm;
+
+  component EventBuilderFifo
+    port (
+      clk   : in  std_logic;
+      rst   : in  std_logic;
+      din   : in  std_logic_vector(71 downto 0);
+      wr_en : in  std_logic;
+      rd_en : in  std_logic;
+      dout  : out std_logic_vector(71 downto 0);
+      full  : out std_logic;
+      empty : out std_logic;
+      valid : out std_logic
+      );
+  end component;
 
 
 begin
@@ -111,7 +139,7 @@ begin
 --      O => gtpRefClkBufg);
 
   -- Generate clocks
-  main_dcm_1 : entity work.main_dcm
+  main_dcm_1 : main_dcm
     port map (
       CLKIN_IN   => gtpRefClk,
       RST_IN     => fpgaRst,
@@ -192,6 +220,8 @@ begin
       frontEndUsDataOut  => frontEndUsDataOut,
       frontEndUsDataIn   => frontEndUsDataIn,
       triggerExtIn       => intTriggerExtIn,
+      evrOut             => evrOut,
+      evrIn              => open,       -- No EVR module
       ebFifoOut          => ebFifoOut,
       ebFifoIn           => ebFifoIn,
       debugOutA          => debugOutA,
@@ -205,7 +235,7 @@ begin
   --------------------------------------------------------------------------------------------------
   -- Event Builder FIFO
   --------------------------------------------------------------------------------------------------
-  EventBuilderFifo_1 : entity work.EventBuilderFifo
+  EventBuilderFifo_1 : EventBuilderFifo
     port map (
       clk   => sysClk125,
       rst   => sysRst125,
