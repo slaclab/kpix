@@ -186,6 +186,22 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
    getVariable("TimestampSource")->setDescription("Timestamp Trigger Source");
    getVariable("TimestampSource")->setEnums(trgSource);
 
+   //Acquisition Control Register
+   addRegister(new Register("AcquisitionConfig", 0x01000008));
+   addVariable(new Variable("AcquisitionTrigger", Variable::Configuration));
+   getVariable("AcquisitionTrigger")->setDescription("Acquisition Trigger Source");
+   vector<string> acqSrc;
+   acqSrc.resize(3);
+   acqSrc[0] = "Software";
+   acqSrc[1] = "Event Receiver";
+   acqSrc[2] = "CmosA";
+   getVariable("AcquisitionTrigger")->setEnums(acqSrc);
+
+   //EVR Error Count Register
+   addRegister(new Register("EvrErrorCount", 0x01000009));
+   addVariable(new Variable("EvrErrorCount", Variable::Status));
+   getVariable("EvrErrorCount")->setDescription("Event Receiver Error Count");
+
    // KPIX support registers
    for (uint i=0; i < (KpixCount-1); i++) {
 
@@ -217,6 +233,34 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
       addVariable(new Variable(tmp.str(),Variable::Status));
       getVariable(tmp.str())->setDescription("Kpix overflow error count.");
    }
+
+   // EVR Module Registers
+   uint evrBaseAddr = 0x01200000;
+   addRegister(new Register("EvrEnable", evrBaseAddr + 0x00000100));
+
+   addRegister(new Register("EvrDelay", evrBaseAddr + 0x00000101));
+   addVariable(new Variable("EvrDelay", Variable::Configuration));
+   getVariable("EvrDelay")->setDescription("EVR pulse delay");
+   getVariable("EvrDelay")->setComp(0,(1.0/119.0),0,"mS");
+   getVariable("EvrDelay")->setRange(0,999999999);
+
+   addRegister(new Register("EvrWidth", evrBaseAddr + 0x00000102));
+
+   addRegister(new Register("EvrOpCode", evrBaseAddr + 0x00000146));
+   addVariable(new Variable("EvrOpCode", Variable::Configuration));
+   getVariable("EvrOpCode")->setDescription("OpCode for internal EVR trigger");
+   vector<string> evrCodes;
+   evrCodes.resize(7);
+   evrCodes[0] = "120Hz";
+   evrCodes[1] = "60Hz";
+   evrCodes[2] = "30Hz";
+   evrCodes[3] = "10Hz";
+   evrCodes[4] = "5Hz";
+   evrCodes[5] = "1Hz";
+   evrCodes[6] = "1Hz_Alt";
+   getVariable("EvrOpCode")->setEnums(evrCodes);
+   getVariable("EvrOpCode")->setHidden(true);
+
 
    // Commands
    addCommand(new Command("KpixRun",0x0));
@@ -270,6 +314,8 @@ void ConFpga::command ( string name, string arg) {
          tmp.str("");
          tmp << "KpixRxOverflowError_" << setw(2) << setfill('0') << dec << i;
          writeRegister(getRegister(tmp.str()),true,true);
+
+         writeRegister(getRegister("EvrErrorCount"),true,true);
       }
 
       REGISTER_UNLOCK
@@ -308,6 +354,9 @@ void ConFpga::readStatus ( ) {
       getVariable(tmp.str())->setInt(getRegister(tmp.str())->get());
    }
 
+   readRegister(getRegister("EvrErrorCount"));
+   getVariable("EvrErrorCount")->setInt(getRegister("EvrErrorCount")->get());
+
    // Sub devices
    Device::readStatus();
    REGISTER_UNLOCK
@@ -344,6 +393,15 @@ void ConFpga::readConfig ( ) {
 
    readRegister(getRegister("TimestampConfig"));
    getVariable("TimestampSource")->setInt(getRegister("TimestampConfig")->get(0,0x7));
+
+   readRegister(getRegister("AcquisitionConfig"));
+   getVariable("AcquisitionTrigger")->setInt(getRegister("TimestampConfig")->get(0,0x3));
+
+   readRegister(getRegister("EvrDelay"));
+   getVariable("EvrDelay")->setInt(getRegister("EvrDelay")->get()); //Mask register maybe?
+
+   readRegister(getRegister("EvrOpCode"));
+   getVariable("EvrOpCode")->setInt(getRegister("EvrOpCode")->get(0,0x7));
 
    // Sub devices
    Device::readConfig();
@@ -385,6 +443,15 @@ void ConFpga::writeConfig ( bool force ) {
    getRegister("TimestampConfig")->set(getVariable("TimestampSource")->getInt(),0,0x7);
    writeRegister(getRegister("TimestampConfig"),force);
 
+   getRegister("AcquisitionConfig")->set(getVariable("AcquisitionTrigger")->getInt(),0,0x3);
+   writeRegister(getRegister("AcquisitionConfig"),force);
+
+   getRegister("EvrDelay")->set(getVariable("EvrDelay")->getInt());
+   writeRegister(getRegister("EvrDelay"),force);
+
+   getRegister("EvrOpCode")->set(getVariable("EvrOpCode")->getInt(),0,0x7);
+   writeRegister(getRegister("EvrOpCode"),force);
+
    // KPIX support registers
    for (uint i=0; i < (KpixCount-1); i++) {
 
@@ -419,6 +486,9 @@ void ConFpga::verifyConfig ( ) {
    verifyRegister(getRegister("TriggerControl"));
    verifyRegister(getRegister("KpixConfig"));
    verifyRegister(getRegister("TimestampConfig"));
+   verifyRegister(getRegister("AcquisitionConfig"));
+   verifyRegister(getRegister("EvrDelay"));
+   verifyRegister(getRegister("EvrOpCode"));
 
    // KPIX support registers
    for (uint i=0; i < (KpixCount-1); i++) {
