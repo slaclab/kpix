@@ -73,16 +73,15 @@ begin
    trigIn.cmosB <= '0';
 
    -- KPIX simulation
-   U_AsicSim : entity AsicSim port map ( 
-      sysclk    => kpixClkOutP,
-      reset     => kpixRstOut,
-      command   => kpixSerTxOut(0),
-      data_out  => kpixSerRxIn(0)
+   KpixSim: for i in 0 to 3 generate
+     U_AsicSim : entity AsicSim port map ( 
+       sysclk    => kpixClkOutP,
+       reset     => kpixRstOut,
+       command   => kpixSerTxOut(i),
+       data_out  => kpixSerRxIn(i)
    );
+   end generate KpixSim;
 
-   kpixSerRxIn(1) <= '0';
-   kpixSerRxIn(2) <= '0';
-   kpixSerRxIn(3) <= '0';
 
 end SmallTb;
 

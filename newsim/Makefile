@@ -41,19 +41,20 @@ ANA_INC = $(PWD)/analog/olib_tsmc025.cir \
 HDL_SRC= $(PWD)/../firmware/modules/StdLib/rtl/StdRtlPkg.vhd \
          $(PWD)/../firmware/modules/StdLib/rtl/SynchronizePkg.vhd \
          $(PWD)/../firmware/modules/StdLib/rtl/RstSync.vhd \
-	      $(PWD)/../firmware/projects/KpixSmall/rtl/Version.vhd \
+	 $(PWD)/../firmware/projects/KpixSmall/rtl/Version.vhd \
          $(PWD)/../firmware/modules/KpixDaq/rtl/KpixPkg.vhd \
-	      $(PWD)/../firmware/modules/KpixCore/rtl/reg_rw_32.vhd \
-	      $(PWD)/../firmware/modules/KpixCore/rtl/command_control.vhd \
-	      $(PWD)/../firmware/modules/KpixCore/rtl/analog_control.vhd \
-	      $(PWD)/../firmware/modules/KpixCore/rtl/readout_control.vhd \
-	      $(PWD)/../firmware/modules/KpixCore/rtl/memory_array_control.vhd \
-	      $(PWD)/../firmware/modules/eth_client/xil_cores/*.vhd \
-	      $(PWD)/../firmware/modules/eth_client/rtl/1g/EthRegSlave.vhd \
-	      $(PWD)/../firmware/modules/eth_client/rtl/1g/EthCmdSlave.vhd \
-	      $(PWD)/../firmware/modules/KpixDaq/xil_cores/*.vhd \
-         $(PWD)/../firmware/modules/KpixDaq/rtl/UsBuff64.vhd \
+	 $(PWD)/../firmware/modules/KpixCore/rtl/reg_rw_32.vhd \
+	 $(PWD)/../firmware/modules/KpixCore/rtl/command_control.vhd \
+	 $(PWD)/../firmware/modules/KpixCore/rtl/analog_control.vhd \
+	 $(PWD)/../firmware/modules/KpixCore/rtl/readout_control.vhd \
+	 $(PWD)/../firmware/modules/KpixCore/rtl/memory_array_control.vhd \
+	 $(PWD)/../firmware/modules/eth_client/xil_cores/*.vhd \
+	 $(PWD)/../firmware/modules/eth_client/rtl/1g/EthRegSlave.vhd \
+	 $(PWD)/../firmware/modules/eth_client/rtl/1g/EthCmdSlave.vhd \
+	 $(PWD)/../firmware/modules/KpixDaq/xil_cores/*.vhd \
+         $(PWD)/../firmware/modules/KpixDaq/rtl/EthUsBuff64.vhd \
          $(PWD)/hdl/EthFrontEndSim.vhd \
+         $(PWD)/../firmware/modules/KpixDaq/rtl/EvrPkg.vhd \
          $(PWD)/../firmware/modules/KpixDaq/rtl/KpixRegRxPkg.vhd \
          $(PWD)/../firmware/modules/KpixDaq/rtl/KpixRegRx.vhd \
          $(PWD)/../firmware/modules/KpixDaq/rtl/KpixDataRxPkg.vhd \
@@ -71,15 +72,15 @@ HDL_SRC= $(PWD)/../firmware/modules/StdLib/rtl/StdRtlPkg.vhd \
          $(PWD)/../firmware/modules/KpixDaq/rtl/KpixRegCntlPkg.vhd \
          $(PWD)/../firmware/modules/KpixDaq/rtl/KpixRegCntl.vhd \
          $(PWD)/../firmware/modules/KpixDaq/rtl/KpixDaqCore.vhd \
-	      $(PWD)/../firmware/projects/KpixSmall/xil_cores/*.vhd \
-	      $(PWD)/../firmware/projects/KpixSmall/rtl/KpixSmall.vhd \
-	      $(PWD)/hdl/AnalogReg.vhd \
-	      $(PWD)/hdl/DataRead.vhd \
-	      $(PWD)/hdl/AsicSim.vhd \
-	      $(PWD)/hdl/SimLinkRx.vhd \
-	      $(PWD)/hdl/SimLinkTx.vhd \
-	      $(PWD)/hdl/AnalogTb.vhd \
-	      $(PWD)/hdl/SmallTb.vhd
+	 $(PWD)/../firmware/projects/KpixSmall/xil_cores/*.vhd \
+	 $(PWD)/../firmware/projects/KpixSmall/rtl/KpixSmall.vhd \
+	 $(PWD)/hdl/AnalogReg.vhd \
+	 $(PWD)/hdl/DataRead.vhd \
+	 $(PWD)/hdl/AsicSim.vhd \
+	 $(PWD)/simlink/SimLinkRx.vhd \
+	 $(PWD)/simlink/SimLinkTx.vhd \
+	 $(PWD)/hdl/AnalogTb.vhd \
+	 $(PWD)/hdl/SmallTb.vhd
 
 # Verilog Source Files
 VLOG = $(PWD)/hdl/Kpix.v 
@@ -99,9 +100,9 @@ rtl_src:
 
 # VHPI Library
 vhpi_src:
-	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -DSHM_ID=$(SHM_ID) -DSHM_NAME=\"$(SHM_NAME)\" -I$(VCS_HOME)/include/ $(PWD)/vhpi/VhpiGeneric.c
-	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -DSHM_ID=$(SHM_ID) -DSHM_NAME=\"$(SHM_NAME)\" -I$(VCS_HOME)/include/ $(PWD)/vhpi/SimLinkRx.c
-	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -DSHM_ID=$(SHM_ID) -DSHM_NAME=\"$(SHM_NAME)\" -I$(VCS_HOME)/include/ $(PWD)/vhpi/SimLinkTx.c
+	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -DSHM_ID=$(SHM_ID) -DSHM_NAME=\"$(SHM_NAME)\" -I$(VCS_HOME)/include/ $(PWD)/simlink/VhpiGeneric.c
+	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -DSHM_ID=$(SHM_ID) -DSHM_NAME=\"$(SHM_NAME)\" -I$(VCS_HOME)/include/ $(PWD)/simlink/SimLinkRx.c
+	@cd $(SIM_DIR); gcc -Wall -c -fPIC -O -DSHM_ID=$(SHM_ID) -DSHM_NAME=\"$(SHM_NAME)\" -I$(VCS_HOME)/include/ $(PWD)/simlink/SimLinkTx.c
 	@cd $(SIM_DIR); gcc -Wall -shared -o libSimSw_lib.so VhpiGeneric.o SimLinkRx.o SimLinkTx.o
 
 sim_dig:
