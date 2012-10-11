@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-07
--- Last update: 2012-09-28
+-- Last update: 2012-10-04
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -325,7 +325,9 @@ begin
           end loop;
           
       end case;
-      
+    elsif (frontEndRegCntlOut.regReq = '1') then
+      -- Ack non existant registers too so they don't fail
+      rVar.frontEndRegCntlIn.regAck := '1';
     end if;
 
     rin <= rVar;

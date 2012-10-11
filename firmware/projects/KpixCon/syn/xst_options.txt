@@ -10,7 +10,7 @@ run
 -iuc YES
 -keep_hierarchy Yes
 -netlist_hierarchy As_Optimized
--rtlview Yes
+-rtlview No
 -glob_opt AllClockNets
 -read_cores YES
 -sd $CORE_DIRS
