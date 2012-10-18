@@ -430,7 +430,7 @@ int main ( int argc, char **argv ) {
                            if ( grCount > 0 ) {
                               grCalib = new TGraphErrors(grCount,grX,grY,grXErr,grYErr);
                               grCalib->Draw("Ap");
-                              grCalib->Fit("pol1","q","",fitMin[range],fitMax[range]);
+                              grCalib->Fit("pol1","eq","",fitMin[range],fitMax[range]);
                               grCalib->GetFunction("pol1")->SetLineWidth(1);
 
                               // Create name and write

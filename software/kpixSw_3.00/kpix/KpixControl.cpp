@@ -307,7 +307,10 @@ void KpixControl::swRunThread() {
 
          // Setup next calibration data point
          if ( getVariable("RunState")->get() == "Running Calibration" ) {
-            if ( gotEvent ) runTotal++;
+            if ( gotEvent ) {
+               runTotal++;
+               stepTotal++;
+            }
             getVariable("RunProgress")->setInt((uint)(((double)runTotal/(double)calTotal)*100.0));
 
             // running baseline
@@ -322,6 +325,7 @@ void KpixControl::swRunThread() {
                   getVariable("CalChannel")->setInt(calChan);
                   getVariable("CalDac")->setInt(calDac);
                   calibConfig(calChan,calDac);
+                  stepTotal = 0;
                }
             }
 
@@ -348,7 +352,6 @@ void KpixControl::swRunThread() {
                   calibConfig(calChan,calDac);
                   stepTotal = 0;
                }
-               else stepTotal++;
             }
          }
          else {
