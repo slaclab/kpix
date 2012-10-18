@@ -314,9 +314,8 @@ void ConFpga::command ( string name, string arg) {
          tmp.str("");
          tmp << "KpixRxOverflowError_" << setw(2) << setfill('0') << dec << i;
          writeRegister(getRegister(tmp.str()),true,true);
-
-         writeRegister(getRegister("EvrErrorCount"),true,true);
       }
+      //writeRegister(getRegister("EvrErrorCount"),true,true);
 
       REGISTER_UNLOCK
    }
@@ -354,8 +353,8 @@ void ConFpga::readStatus ( ) {
       getVariable(tmp.str())->setInt(getRegister(tmp.str())->get());
    }
 
-   readRegister(getRegister("EvrErrorCount"));
-   getVariable("EvrErrorCount")->setInt(getRegister("EvrErrorCount")->get());
+   //readRegister(getRegister("EvrErrorCount"));
+   //getVariable("EvrErrorCount")->setInt(getRegister("EvrErrorCount")->get());
 
    // Sub devices
    Device::readStatus();
@@ -397,11 +396,11 @@ void ConFpga::readConfig ( ) {
    readRegister(getRegister("AcquisitionConfig"));
    getVariable("AcquisitionTrigger")->setInt(getRegister("TimestampConfig")->get(0,0x3));
 
-   readRegister(getRegister("EvrDelay"));
-   getVariable("EvrDelay")->setInt(getRegister("EvrDelay")->get()); //Mask register maybe?
+   //readRegister(getRegister("EvrDelay"));
+   //getVariable("EvrDelay")->setInt(getRegister("EvrDelay")->get()); //Mask register maybe?
 
-   readRegister(getRegister("EvrOpCode"));
-   getVariable("EvrOpCode")->setInt(getRegister("EvrOpCode")->get(0,0x7));
+   //readRegister(getRegister("EvrOpCode"));
+   //getVariable("EvrOpCode")->setInt(getRegister("EvrOpCode")->get(0,0x7));
 
    // Sub devices
    Device::readConfig();
@@ -446,11 +445,11 @@ void ConFpga::writeConfig ( bool force ) {
    getRegister("AcquisitionConfig")->set(getVariable("AcquisitionTrigger")->getInt(),0,0x3);
    writeRegister(getRegister("AcquisitionConfig"),force);
 
-   getRegister("EvrDelay")->set(getVariable("EvrDelay")->getInt());
-   writeRegister(getRegister("EvrDelay"),force);
+   //getRegister("EvrDelay")->set(getVariable("EvrDelay")->getInt());
+   //writeRegister(getRegister("EvrDelay"),force);
 
-   getRegister("EvrOpCode")->set(getVariable("EvrOpCode")->getInt(),0,0x7);
-   writeRegister(getRegister("EvrOpCode"),force);
+   //getRegister("EvrOpCode")->set(getVariable("EvrOpCode")->getInt(),0,0x7);
+   //writeRegister(getRegister("EvrOpCode"),force);
 
    // KPIX support registers
    for (uint i=0; i < (KpixCount-1); i++) {
@@ -487,8 +486,8 @@ void ConFpga::verifyConfig ( ) {
    verifyRegister(getRegister("KpixConfig"));
    verifyRegister(getRegister("TimestampConfig"));
    verifyRegister(getRegister("AcquisitionConfig"));
-   verifyRegister(getRegister("EvrDelay"));
-   verifyRegister(getRegister("EvrOpCode"));
+   //verifyRegister(getRegister("EvrDelay"));
+   //verifyRegister(getRegister("EvrOpCode"));
 
    // KPIX support registers
    for (uint i=0; i < (KpixCount-1); i++) {
