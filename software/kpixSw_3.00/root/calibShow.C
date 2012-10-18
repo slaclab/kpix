@@ -9,11 +9,7 @@ void calibShow ( char * file, char * serial, int channel, int bucket, int range 
    TGraphErrors *g;
 
    f->GetObject(buffer,g);
-   //TF1 *func = g->GetFunction("pol1");
-   //g->Fit("pol1","","",0.1e-12,0.2e-12);
-
    g->Draw("Ap");
-   //func->Draw("LSAME");
 
 }
 
