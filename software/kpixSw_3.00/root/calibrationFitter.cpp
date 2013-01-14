@@ -46,28 +46,44 @@ class ChannelData {
       double       baseSum;
       double       baseRms;
 
+      // Baseline fit data
+      double       baseFitMean;
+      double       baseFitSigma;
+      double       baseFitMeanErr;
+      double       baseFitSigmaErr;
+
       // Calib Data
       double       calibCount[256];
       double       calibMean[256];
       double       calibSum[256];
       double       calibRms[256];
+      double       calibOtherValue[1024];
+      double       calibOtherDac[1024];
 
       ChannelData() {
          uint x;
 
          for (x=0; x < 8192; x++) baseData[x] = 0;
-         baseMin    = 8192;
-         baseMax    = 0;
-         baseCount  = 0;
-         baseMean   = 0;
-         baseSum    = 0;
-         baseRms    = 0;
+         baseMin         = 8192;
+         baseMax         = 0;
+         baseCount       = 0;
+         baseMean        = 0;
+         baseSum         = 0;
+         baseRms         = 0;
+         baseFitMean     = 0;
+         baseFitSigma    = 0;
+         baseFitMeanErr  = 0;
+         baseFitSigmaErr = 0;
 
          for (x=0; x < 256; x++) {
             calibCount[x]  = 0;
             calibMean[x]   = 0;
             calibSum[x]    = 0;
             calibRms[x]    = 0;
+         }
+         for (x=0; x < 1024; x++) {
+            calibOtherValue[x] = 0;
+            calibOtherDac[x] = 0;
          }
       }
 
@@ -92,6 +108,13 @@ class ChannelData {
 
          calibMean[x] += (value - tmpM) / calibCount[x];
          calibSum[x]  += (value - tmpM) * (value - calibMean[x]);
+      }
+
+      void addNeighborPoint(uint chan, uint x, uint y) {
+         if ( y > calibOtherValue[chan] ) {
+            calibOtherValue[chan] = y;
+            calibOtherDac[chan] = x;
+         }
       }
 
       void compute() {
@@ -132,6 +155,17 @@ void addDoubleToXml ( ofstream *xml, uint indent, string variable, Double_t valu
    }
 }
 
+void addStringToXml ( ofstream *xml, uint indent, string variable, string value ) {
+   uint x;
+
+   for (x=0; x < indent; x++) *xml << " ";
+   *xml << "<" << variable << ">";
+   *xml << value;
+   *xml << "</" << variable << ">";
+   *xml << endl;
+}
+
+
 // Process the data
 int main ( int argc, char **argv ) {
    DataRead               dataRead;
@@ -144,7 +178,7 @@ int main ( int argc, char **argv ) {
    uint                   calDac;
    uint                   lastPct;
    uint                   currPct;
-   bool                   chanFound[1024];
+   bool                   chanFound[32][1024];
    ChannelData            *chanData[32][1024][4][2];
    bool                   kpixFound[32];
    uint                   kpixMax;
@@ -162,6 +196,7 @@ int main ( int argc, char **argv ) {
    TH1F                   *hist;
    stringstream           tmp;
    ofstream               xml;
+   ofstream               csv;
    double                 grX[256];
    double                 grY[256];
    double                 grYErr[256];
@@ -174,6 +209,7 @@ int main ( int argc, char **argv ) {
    uint                   eventCount;
    string                 outRoot;
    string                 outXml;
+   string                 outCsv;
    TFile                  *rFile;
    TCanvas                *c1;
    double                 fitMin[2];
@@ -181,6 +217,9 @@ int main ( int argc, char **argv ) {
    char                   tstr[200];
    struct tm              *timeinfo;
    time_t                 tme;
+   uint                   crChan;
+   stringstream           crossString;
+   double                 crossDiff;
 
    // Init structure
    for (kpix=0; kpix < 32; kpix++) {
@@ -189,7 +228,7 @@ int main ( int argc, char **argv ) {
             chanData[kpix][channel][bucket][0] = NULL;
             chanData[kpix][channel][bucket][1] = NULL;
          }
-         chanFound[channel] = false;
+         chanFound[kpix][channel] = false;
       }
       kpixFound[kpix] = false;
    }
@@ -231,6 +270,9 @@ int main ( int argc, char **argv ) {
    tmp.str("");
    tmp << argv[1] << ".xml";
    outXml = tmp.str();
+   tmp.str("");
+   tmp << argv[1] << ".csv";
+   outCsv = tmp.str();
 
    //////////////////////////////////////////
    // Read Data
@@ -285,8 +327,9 @@ int main ( int argc, char **argv ) {
 
             // Create entry if it does not exist
             if ( chanData[kpix][channel][bucket][range] == NULL ) chanData[kpix][channel][bucket][range] = new ChannelData;
+            if ( chanData[kpix][calChannel][bucket][range] == NULL ) chanData[kpix][calChannel][bucket][range] = new ChannelData;
             kpixFound[kpix]    = true;
-            chanFound[channel] = true;
+            chanFound[kpix][channel] = true;
 
             // Filter for time
             if ( tstamp > injectTime[bucket] && tstamp < injectTime[bucket+1] ) {
@@ -295,8 +338,10 @@ int main ( int argc, char **argv ) {
                if ( calState == "Baseline" ) chanData[kpix][channel][bucket][range]->addBasePoint(value);
 
                // Injection
-               else if ( calState == "Inject" && channel == calChannel ) 
-                  chanData[kpix][channel][bucket][range]->addCalibPoint(calDac, value);
+               else if ( calState == "Inject" ) {
+                  if ( channel == calChannel ) chanData[kpix][channel][bucket][range]->addCalibPoint(calDac, value);
+                  else chanData[kpix][calChannel][bucket][range]->addNeighborPoint(channel, calDac, value);
+               }
             }
          }
       }
@@ -327,6 +372,11 @@ int main ( int argc, char **argv ) {
    xml.open(outXml.c_str(),ios::out | ios::trunc);
    xml << "<calibrationData>" << endl;
 
+   // Open csv file
+   csv.open(outCsv.c_str(),ios::out | ios::trunc);
+   csv << "Kpix,Channel,Bucket,Range,BaseMean,BaseRms,BaseFitMean,BaseFitSigma,BaseFitMeanErr,BaseFitSigmaErr";
+   csv << ",CalibGain,CalibIntercept,CalibGainErr,CalibInterceptErr,CalibGainRms,CalibCrossTalk" << endl;
+
    // Add notes
    xml << "   <sourceFile>" << argv[1] << "</sourceFile>" << endl;
    xml << "   <user>" <<  getlogin() << "</user>" << endl;
@@ -347,6 +397,77 @@ int main ( int argc, char **argv ) {
    // Kpix count;
    for (kpix=0; kpix<32; kpix++) if ( kpixFound[kpix] ) kpixMax=kpix;
 
+   //////////////////////////////////////////
+   // Process Baselines 
+   //////////////////////////////////////////
+
+   // Process each kpix device
+   for (kpix=0; kpix<32; kpix++) {
+      if ( kpixFound[kpix] ) {
+
+         // Get serial number
+         tmp.str("");
+         tmp << "cntrlFpga(0):kpixAsic(" << dec << kpix << "):SerialNumber";
+         serial = dataRead.getConfig(tmp.str());
+
+         // Process each channel
+         for (channel=minChan; channel <= maxChan; channel++) {
+
+            // Show progress
+            cout << "\rProcessing baseline kpix " << dec << kpix << " / " << dec << kpixMax
+                 << ", Channel " << channel << " / " << dec << maxChan
+                 << "                 " << flush;
+
+            // Channel is valid
+            if ( chanFound[kpix][channel] ) {
+
+               // Each bucket
+               for (bucket = 0; bucket < 4; bucket++) {
+               
+                  // Bucket is valid
+                  if ( chanData[kpix][channel][bucket][0] != NULL || chanData[kpix][channel][bucket][0] != NULL ) {
+
+                     // Each range
+                     for (range = 0; range < 2; range++) {
+ 
+                        // Range is valid
+                        if ( chanData[kpix][channel][bucket][range] != NULL ) {
+                           chanData[kpix][channel][bucket][range]->compute();
+
+                           // Create histogram
+                           tmp.str("");
+                           tmp << "hist_" << serial << "_c" << dec << setw(4) << setfill('0') << channel;
+                           tmp << "_b" << dec << bucket;
+                           tmp << "_r" << dec << range;
+                           hist = new TH1F(tmp.str().c_str(),tmp.str().c_str(),8192,0,8192);
+
+                           // Fill histogram
+                           for (x=0; x < 8192; x++) hist->SetBinContent(x+1,chanData[kpix][channel][bucket][range]->baseData[x]);
+                           hist->GetXaxis()->SetRangeUser(chanData[kpix][channel][bucket][range]->baseMin,
+                                                          chanData[kpix][channel][bucket][range]->baseMax);
+                           hist->Fit("gaus","q");
+                           hist->Write();
+
+                           if ( hist->GetFunction("gaus") ) {
+                              chanData[kpix][channel][bucket][range]->baseFitMean     = hist->GetFunction("gaus")->GetParameter(1);
+                              chanData[kpix][channel][bucket][range]->baseFitSigma    = hist->GetFunction("gaus")->GetParameter(2);
+                              chanData[kpix][channel][bucket][range]->baseFitMeanErr  = hist->GetFunction("gaus")->GetParError(1);
+                              chanData[kpix][channel][bucket][range]->baseFitSigmaErr = hist->GetFunction("gaus")->GetParError(2);
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
+   cout << endl;
+
+   //////////////////////////////////////////
+   // Process Calibration
+   //////////////////////////////////////////
+
    // Process each kpix device
    for (kpix=0; kpix<32; kpix++) {
       if ( kpixFound[kpix] ) {
@@ -361,12 +482,12 @@ int main ( int argc, char **argv ) {
          for (channel=minChan; channel <= maxChan; channel++) {
 
             // Show progress
-            cout << "\rProcessing kpix " << dec << kpix << " / " << dec << kpixMax
+            cout << "\rProcessing calibration kpix " << dec << kpix << " / " << dec << kpixMax
                  << ", Channel " << channel << " / " << dec << maxChan 
                  << "                 " << flush;
 
             // Channel is valid
-            if ( chanFound[channel] ) {
+            if ( chanFound[kpix][channel] ) {
 
                // Start channel marker
                xml << "      <Channel id=\"" << channel << "\">" << endl;
@@ -386,34 +507,29 @@ int main ( int argc, char **argv ) {
                         if ( chanData[kpix][channel][bucket][range] != NULL ) {
                            xml << "            <Range id=\"" << range << "\">" << endl;
                            chanData[kpix][channel][bucket][range]->compute();
+                           csv << serial << "," << dec << channel << "," << dec << bucket << "," << dec << range;
 
-                           // Create histogram
-                           tmp.str("");
-                           tmp << "hist_" << serial << "_c" << dec << setw(4) << setfill('0') << channel;
-                           tmp << "_b" << dec << bucket;
-                           tmp << "_r" << dec << range;
-                           hist = new TH1F(tmp.str().c_str(),tmp.str().c_str(),8192,0,8192);
-
-                           // Fill histogram
-                           for (x=0; x < 8192; x++) hist->SetBinContent(x+1,chanData[kpix][channel][bucket][range]->baseData[x]);
-                           hist->GetXaxis()->SetRangeUser(chanData[kpix][channel][bucket][range]->baseMin,
-                                                          chanData[kpix][channel][bucket][range]->baseMax);
-                           hist->Fit("gaus","q");
-                           hist->Write();
-
-                           // Add to xml
+                           // Add baseline data to xml
                            addDoubleToXml(&xml,15,"BaseMean",chanData[kpix][channel][bucket][range]->baseMean);
                            addDoubleToXml(&xml,15,"BaseRms",chanData[kpix][channel][bucket][range]->baseRms);
-
-                           if ( hist->GetFunction("gaus") ) {
-                              addDoubleToXml(&xml,15,"BaseFitMean",hist->GetFunction("gaus")->GetParameter(1));
-                              addDoubleToXml(&xml,15,"BaseFitSigma",hist->GetFunction("gaus")->GetParameter(2));
-                              addDoubleToXml(&xml,15,"BaseFitMeanErr",hist->GetFunction("gaus")->GetParError(1));
-                              addDoubleToXml(&xml,15,"BaseFitSigmaErr",hist->GetFunction("gaus")->GetParError(2));
+                           if ( chanData[kpix][channel][bucket][range]->baseFitMean != 0 ) {
+                              addDoubleToXml(&xml,15,"BaseFitMean",chanData[kpix][channel][bucket][range]->baseFitMean);
+                              addDoubleToXml(&xml,15,"BaseFitSigma",chanData[kpix][channel][bucket][range]->baseFitSigma);
+                              addDoubleToXml(&xml,15,"BaseFitMeanErr",chanData[kpix][channel][bucket][range]->baseFitMeanErr);
+                              addDoubleToXml(&xml,15,"BaseFitSigmaErr",chanData[kpix][channel][bucket][range]->baseFitSigmaErr);
                            }
+
+                           // Add baseline data to excel file
+                           csv << "," << chanData[kpix][channel][bucket][range]->baseMean;
+                           csv << "," << chanData[kpix][channel][bucket][range]->baseRms;
+                           csv << "," << chanData[kpix][channel][bucket][range]->baseFitMean;
+                           csv << "," << chanData[kpix][channel][bucket][range]->baseFitSigma;
+                           csv << "," << chanData[kpix][channel][bucket][range]->baseFitMeanErr;
+                           csv << "," << chanData[kpix][channel][bucket][range]->baseFitSigmaErr;
 
                            // Create calibration graph
                            grCount = 0;
+                           crossString.str("");
                            for (x=0; x < 256; x++) {
                            
                               // Calibration point is valid
@@ -423,6 +539,21 @@ int main ( int argc, char **argv ) {
                                  grYErr[grCount] = chanData[kpix][channel][bucket][range]->calibRms[x];
                                  grXErr[grCount] = 0;
                                  grCount++;
+
+                                 // Find crosstalk, value - base > 3 * sigma
+                                 for (crChan=0; crChan < 1024; crChan++ ) {
+
+                                    crossDiff = (chanData[kpix][channel][bucket][range]->calibOtherValue[crChan] - chanData[kpix][crChan][bucket][range]->baseMean);
+
+                                    if ( (chanData[kpix][channel][bucket][range]->calibOtherDac[crChan] == x)  && 
+                                         (crChan != channel) && 
+                                         (chanData[kpix][channel][bucket][range] != NULL ) &&
+                                         (crossDiff > (10. * chanData[kpix][crChan][bucket][range]->baseRms))) {
+
+                                       if ( crossString.str() != "" ) crossString << " ";
+                                       crossString << dec << crChan << ":" << dec << (uint)crossDiff;
+                                    }
+                                 }
                               }
                            }
 
@@ -447,8 +578,18 @@ int main ( int argc, char **argv ) {
                                  addDoubleToXml(&xml,15,"CalibIntercept",grCalib->GetFunction("pol1")->GetParameter(0));
                                  addDoubleToXml(&xml,15,"CalibGainErr",grCalib->GetFunction("pol1")->GetParError(1));
                                  addDoubleToXml(&xml,15,"CalibInterceptErr",grCalib->GetFunction("pol1")->GetParError(0));
+                                 csv << "," << grCalib->GetFunction("pol1")->GetParameter(1);
+                                 csv << "," << grCalib->GetFunction("pol1")->GetParameter(0);
+                                 csv << "," << grCalib->GetFunction("pol1")->GetParError(1);
+                                 csv << "," << grCalib->GetFunction("pol1")->GetParError(0);
                               }
+                              else csv << ",0,0,0,0";
+
                               addDoubleToXml(&xml,15,"CalibGainRms",grCalib->GetRMS(2));
+                              csv << "," << grCalib->GetRMS(2);
+
+                              if ( crossString.str() != "" ) addStringToXml(&xml,15,"CalibCrossTalk",crossString.str());
+                              csv << "," << crossString.str() << endl;
                            }
                            xml << "            </Range>" << endl;
                         }
@@ -465,6 +606,7 @@ int main ( int argc, char **argv ) {
    cout << endl;
    cout << "Wrote root plots to " << outRoot << endl;
    cout << "Wrote xml data to " << outXml << endl;
+   cout << "Wrote csv data to " << outCsv << endl;
 
    xml << "</calibrationData>" << endl;
    xml.close();
