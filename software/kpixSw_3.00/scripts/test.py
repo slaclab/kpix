@@ -27,6 +27,7 @@
 import pythonDaq
 import time
 
+pythonDaq.daqOpen("kpix",1);
 pythonDaq.daqHardReset();
 pythonDaq.daqSetDefaults();
 pythonDaq.daqResetCounters();

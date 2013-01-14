@@ -144,6 +144,7 @@ void KpixCalibRead::parseXmlLevel ( xmlNode *node, string kpix, uint channel, ui
                if ( topStr == "CalibGainErr" )      findKpix(kpix,channel,bucket,range,true)->calibGainErr      = value;
                if ( topStr == "CalibGainRms" )      findKpix(kpix,channel,bucket,range,true)->calibGainRms      = value;
                if ( topStr == "CalibInterceptErr" ) findKpix(kpix,channel,bucket,range,true)->calibInterceptErr = value;
+               if ( topStr == "CalibCrossTalk" )    findKpix(kpix,channel,bucket,range,true)->calibCrossTalk    = nodeValue;
                if ( topStr == "BadChannel"        ) findKpix(kpix,channel,0     ,0    ,true)->badChannel        = value;
             }
          }
@@ -265,6 +266,14 @@ double KpixCalibRead::calibInterceptErr ( string kpix, uint channel, uint bucket
 
    if ( (data = findKpix(kpix,channel,bucket,range,false)) == NULL ) return(0.0);
    return(data->calibInterceptErr);
+}
+
+// Get calibration crosstalk string
+string KpixCalibRead::calibCrossTalk ( string kpix, uint channel, uint bucket, uint range ) {
+   KpixCalibData *data;
+
+   if ( (data = findKpix(kpix,channel,bucket,range,false)) == NULL ) return("");
+   return(data->calibCrossTalk);
 }
 
 // Get bad channel
