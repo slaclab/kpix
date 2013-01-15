@@ -3,6 +3,8 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <time.h>
+#include <sys/types.h>
 using namespace std;
 
 // Process the data
