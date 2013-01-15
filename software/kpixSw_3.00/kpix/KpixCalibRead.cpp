@@ -139,11 +139,13 @@ void KpixCalibRead::parseXmlLevel ( xmlNode *node, string kpix, uint channel, ui
                if ( topStr == "BaseFitSigma" )      findKpix(kpix,channel,bucket,range,true)->baseFitSigma      = value;
                if ( topStr == "BaseFitMeanErr" )    findKpix(kpix,channel,bucket,range,true)->baseFitMeanErr    = value;
                if ( topStr == "BaseFitSigmaErr" )   findKpix(kpix,channel,bucket,range,true)->baseFitSigmaErr   = value;
+               if ( topStr == "BaseFitChisquare" )  findKpix(kpix,channel,bucket,range,true)->baseFitChisquare  = value;
                if ( topStr == "CalibGain" )         findKpix(kpix,channel,bucket,range,true)->calibGain         = value;
                if ( topStr == "CalibIntercept" )    findKpix(kpix,channel,bucket,range,true)->calibIntercept    = value;
                if ( topStr == "CalibGainErr" )      findKpix(kpix,channel,bucket,range,true)->calibGainErr      = value;
                if ( topStr == "CalibGainRms" )      findKpix(kpix,channel,bucket,range,true)->calibGainRms      = value;
                if ( topStr == "CalibInterceptErr" ) findKpix(kpix,channel,bucket,range,true)->calibInterceptErr = value;
+               if ( topStr == "CalibChisquare" )    findKpix(kpix,channel,bucket,range,true)->calibChisquare    = value;
                if ( topStr == "CalibCrossTalk" )    findKpix(kpix,channel,bucket,range,true)->calibCrossTalk    = nodeValue;
                if ( topStr == "BadChannel"        ) findKpix(kpix,channel,0     ,0    ,true)->badChannel        = value;
             }
@@ -228,6 +230,14 @@ double KpixCalibRead::baseFitSigmaErr ( string kpix, uint channel, uint bucket, 
    return(data->baseFitSigmaErr);
 }
 
+// Get baseline guassian fit chisquare   
+double KpixCalibRead::baseFitChisquare ( string kpix, uint channel, uint bucket, uint range ) {
+   KpixCalibData *data;
+
+   if ( (data = findKpix(kpix,channel,bucket,range,false)) == NULL ) return(0.0);
+   return(data->baseFitChisquare);
+}
+
 // Get calibration gain
 double KpixCalibRead::calibGain ( string kpix, uint channel, uint bucket, uint range ) {
    KpixCalibData *data;
@@ -266,6 +276,14 @@ double KpixCalibRead::calibInterceptErr ( string kpix, uint channel, uint bucket
 
    if ( (data = findKpix(kpix,channel,bucket,range,false)) == NULL ) return(0.0);
    return(data->calibInterceptErr);
+}
+
+// Get calibration chisquare
+double KpixCalibRead::calibChisquare ( string kpix, uint channel, uint bucket, uint range ) {
+   KpixCalibData *data;
+
+   if ( (data = findKpix(kpix,channel,bucket,range,false)) == NULL ) return(0.0);
+   return(data->calibChisquare);
 }
 
 // Get calibration crosstalk string

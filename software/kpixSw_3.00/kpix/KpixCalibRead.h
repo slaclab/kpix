@@ -40,10 +40,12 @@ class KpixCalibRead {
             double baseFitSigma;
             double baseFitMeanErr;
             double baseFitSigmaErr;
+            double baseFitChisquare;
             double calibGain;
             double calibIntercept;
             double calibGainErr;
             double calibInterceptErr;
+            double calibChisquare;
             double calibGainRms;
             string calibCrossTalk;
             bool   badChannel;
@@ -56,11 +58,13 @@ class KpixCalibRead {
                baseFitSigma      = 0;
                baseFitMeanErr    = 0;
                baseFitSigmaErr   = 0;
+               baseFitChisquare  = 0;
                calibGain         = 0;
                calibIntercept    = 0;
                calibGainErr      = 0;
                calibGainRms      = 0;
                calibInterceptErr = 0;
+               calibChisquare    = 0;
                calibCrossTalk    = "";
                badChannel        = false;
             }
@@ -127,6 +131,9 @@ class KpixCalibRead {
       //! Get baseline guassian fit sigma error
       double baseFitSigmaErr ( string kpix, uint channel, uint bucket, uint range );
 
+      //! Get baseline guassian fit chisquare
+      double baseFitChisquare ( string kpix, uint channel, uint bucket, uint range );
+
       //! Get calibration gain
       double calibGain ( string kpix, uint channel, uint bucket, uint range );
 
@@ -141,6 +148,9 @@ class KpixCalibRead {
 
       //! Get calibration intercept error
       double calibInterceptErr ( string kpix, uint channel, uint bucket, uint range );
+
+      //! Get calibration chisquare
+      double calibChisquare ( string kpix, uint channel, uint bucket, uint range );
 
       //! Get crosstalk string
       string calibCrossTalk ( string kpix, uint channel, uint bucket, uint range );
