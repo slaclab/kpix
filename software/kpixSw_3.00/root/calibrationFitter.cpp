@@ -51,6 +51,7 @@ class ChannelData {
       double       baseFitSigma;
       double       baseFitMeanErr;
       double       baseFitSigmaErr;
+      double       baseFitChisquare;
 
       // Calib Data
       double       calibCount[256];
@@ -64,16 +65,17 @@ class ChannelData {
          uint x;
 
          for (x=0; x < 8192; x++) baseData[x] = 0;
-         baseMin         = 8192;
-         baseMax         = 0;
-         baseCount       = 0;
-         baseMean        = 0;
-         baseSum         = 0;
-         baseRms         = 0;
-         baseFitMean     = 0;
-         baseFitSigma    = 0;
-         baseFitMeanErr  = 0;
-         baseFitSigmaErr = 0;
+         baseMin          = 8192;
+         baseMax          = 0;
+         baseCount        = 0;
+         baseMean         = 0;
+         baseSum          = 0;
+         baseRms          = 0;
+         baseFitMean      = 0;
+         baseFitSigma     = 0;
+         baseFitMeanErr   = 0;
+         baseFitSigmaErr  = 0;
+         baseFitChisquare = 0;
 
          for (x=0; x < 256; x++) {
             calibCount[x]  = 0;
@@ -182,6 +184,7 @@ int main ( int argc, char **argv ) {
    ChannelData            *chanData[32][1024][4][2];
    bool                   kpixFound[32];
    uint                   kpixMax;
+   uint                   minDac;
    uint                   minChan;
    uint                   maxChan;
    uint                   x;
@@ -201,8 +204,10 @@ int main ( int argc, char **argv ) {
    double                 grY[256];
    double                 grYErr[256];
    double                 grXErr[256];
+   double                 grRes[256];
    uint                   grCount;
    TGraphErrors           *grCalib;
+   TGraph                 *grResid;
    bool                   positive;
    bool                   b0CalibHigh;
    uint                   injectTime[5];
@@ -219,6 +224,7 @@ int main ( int argc, char **argv ) {
    time_t                 tme;
    uint                   crChan;
    stringstream           crossString;
+   stringstream           crossStringCsv;
    double                 crossDiff;
 
    // Init structure
@@ -300,6 +306,7 @@ int main ( int argc, char **argv ) {
 
       // Get injection times
       if ( eventCount == 0 ) {
+         minDac        = dataRead.getConfigInt("CalDacMin");
          minChan       = dataRead.getConfigInt("CalChanMin");
          maxChan       = dataRead.getConfigInt("CalChanMax");
          injectTime[0] = dataRead.getConfigInt("cntrlFpga:kpixAsic:Cal0Delay");
@@ -338,7 +345,7 @@ int main ( int argc, char **argv ) {
                if ( calState == "Baseline" ) chanData[kpix][channel][bucket][range]->addBasePoint(value);
 
                // Injection
-               else if ( calState == "Inject" ) {
+               else if ( calState == "Inject" && calDac != minDac ) {
                   if ( channel == calChannel ) chanData[kpix][channel][bucket][range]->addCalibPoint(calDac, value);
                   else chanData[kpix][calChannel][bucket][range]->addNeighborPoint(channel, calDac, value);
                }
@@ -374,8 +381,18 @@ int main ( int argc, char **argv ) {
 
    // Open csv file
    csv.open(outCsv.c_str(),ios::out | ios::trunc);
-   csv << "Kpix,Channel,Bucket,Range,BaseMean,BaseRms,BaseFitMean,BaseFitSigma,BaseFitMeanErr,BaseFitSigmaErr";
-   csv << ",CalibGain,CalibIntercept,CalibGainErr,CalibInterceptErr,CalibGainRms,CalibCrossTalk" << endl;
+   csv << "Kpix,Channel,Bucket,Range,BaseMean,BaseRms,BaseFitMean,BaseFitSigma,BaseFitMeanErr,BaseFitSigmaErr,BaseFitChisquare";
+   csv << ",CalibGain,CalibIntercept,CalibGainErr,CalibInterceptErr,CalibChisquare,CalibGainRms,CrossTalkChan0,CrossTalkAmp0";
+   csv << ",CrossTalkChan1,CrossTalkAmp1";
+   csv << ",CrossTalkChan2,CrossTalkAmp2";
+   csv << ",CrossTalkChan3,CrossTalkAmp3";
+   csv << ",CrossTalkChan4,CrossTalkAmp4";
+   csv << ",CrossTalkChan5,CrossTalkAmp5";
+   csv << ",CrossTalkChan6,CrossTalkAmp6";
+   csv << ",CrossTalkChan7,CrossTalkAmp7";
+   csv << ",CrossTalkChan8,CrossTalkAmp8";
+   csv << ",CrossTalkChan9,CrossTalkAmp9";
+   csv << endl;
 
    // Add notes
    xml << "   <sourceFile>" << argv[1] << "</sourceFile>" << endl;
@@ -449,10 +466,11 @@ int main ( int argc, char **argv ) {
                            hist->Write();
 
                            if ( hist->GetFunction("gaus") ) {
-                              chanData[kpix][channel][bucket][range]->baseFitMean     = hist->GetFunction("gaus")->GetParameter(1);
-                              chanData[kpix][channel][bucket][range]->baseFitSigma    = hist->GetFunction("gaus")->GetParameter(2);
-                              chanData[kpix][channel][bucket][range]->baseFitMeanErr  = hist->GetFunction("gaus")->GetParError(1);
-                              chanData[kpix][channel][bucket][range]->baseFitSigmaErr = hist->GetFunction("gaus")->GetParError(2);
+                              chanData[kpix][channel][bucket][range]->baseFitMean      = hist->GetFunction("gaus")->GetParameter(1);
+                              chanData[kpix][channel][bucket][range]->baseFitSigma     = hist->GetFunction("gaus")->GetParameter(2);
+                              chanData[kpix][channel][bucket][range]->baseFitMeanErr   = hist->GetFunction("gaus")->GetParError(1);
+                              chanData[kpix][channel][bucket][range]->baseFitSigmaErr  = hist->GetFunction("gaus")->GetParError(2);
+                              chanData[kpix][channel][bucket][range]->baseFitChisquare = hist->GetFunction("gaus")->GetChisquare();
                            }
                         }
                      }
@@ -517,6 +535,7 @@ int main ( int argc, char **argv ) {
                               addDoubleToXml(&xml,15,"BaseFitSigma",chanData[kpix][channel][bucket][range]->baseFitSigma);
                               addDoubleToXml(&xml,15,"BaseFitMeanErr",chanData[kpix][channel][bucket][range]->baseFitMeanErr);
                               addDoubleToXml(&xml,15,"BaseFitSigmaErr",chanData[kpix][channel][bucket][range]->baseFitSigmaErr);
+                              addDoubleToXml(&xml,15,"BaseFitChisquare",chanData[kpix][channel][bucket][range]->baseFitChisquare);
                            }
 
                            // Add baseline data to excel file
@@ -526,10 +545,12 @@ int main ( int argc, char **argv ) {
                            csv << "," << chanData[kpix][channel][bucket][range]->baseFitSigma;
                            csv << "," << chanData[kpix][channel][bucket][range]->baseFitMeanErr;
                            csv << "," << chanData[kpix][channel][bucket][range]->baseFitSigmaErr;
+                           csv << "," << chanData[kpix][channel][bucket][range]->baseFitChisquare;
 
                            // Create calibration graph
                            grCount = 0;
                            crossString.str("");
+                           crossStringCsv.str("");
                            for (x=0; x < 256; x++) {
                            
                               // Calibration point is valid
@@ -543,15 +564,17 @@ int main ( int argc, char **argv ) {
                                  // Find crosstalk, value - base > 3 * sigma
                                  for (crChan=0; crChan < 1024; crChan++ ) {
 
-                                    crossDiff = (chanData[kpix][channel][bucket][range]->calibOtherValue[crChan] - chanData[kpix][crChan][bucket][range]->baseMean);
+                                    crossDiff = chanData[kpix][channel][bucket][range]->calibOtherValue[crChan] - 
+                                                chanData[kpix][crChan][bucket][range]->baseMean;
 
                                     if ( (chanData[kpix][channel][bucket][range]->calibOtherDac[crChan] == x)  && 
                                          (crChan != channel) && 
                                          (chanData[kpix][channel][bucket][range] != NULL ) &&
-                                         (crossDiff > (10. * chanData[kpix][crChan][bucket][range]->baseRms))) {
+                                         (crossDiff > (10.0 * chanData[kpix][crChan][bucket][range]->baseRms))) {
 
                                        if ( crossString.str() != "" ) crossString << " ";
                                        crossString << dec << crChan << ":" << dec << (uint)crossDiff;
+                                       crossStringCsv << "," << dec << crChan << "," << dec << (uint)crossDiff;
                                     }
                                  }
                               }
@@ -572,25 +595,41 @@ int main ( int argc, char **argv ) {
                               grCalib->SetTitle(tmp.str().c_str());
                               grCalib->Write(tmp.str().c_str());
 
+                              // Create and store residual plot
+                              for (x=0; x < grCount; x++) grRes[x] = (grY[x] - grCalib->GetFunction("pol1")->Eval(grX[x]));
+                              grResid = new TGraph(grCount,grX,grRes);
+                              grResid->Draw("Ap");
+
+                              // Create name and write
+                              tmp.str("");
+                              tmp << "resid_" << serial << "_c" << dec << setw(4) << setfill('0') << channel;
+                              tmp << "_b" << dec << bucket;
+                              tmp << "_r" << dec << range;
+                              grResid->SetTitle(tmp.str().c_str());
+                              grResid->Write(tmp.str().c_str());
+
                               // Add to xml
                               if ( grCalib->GetFunction("pol1") ) {
                                  addDoubleToXml(&xml,15,"CalibGain",grCalib->GetFunction("pol1")->GetParameter(1));
                                  addDoubleToXml(&xml,15,"CalibIntercept",grCalib->GetFunction("pol1")->GetParameter(0));
                                  addDoubleToXml(&xml,15,"CalibGainErr",grCalib->GetFunction("pol1")->GetParError(1));
                                  addDoubleToXml(&xml,15,"CalibInterceptErr",grCalib->GetFunction("pol1")->GetParError(0));
+                                 addDoubleToXml(&xml,15,"CalibChisquare",grCalib->GetFunction("pol1")->GetChisquare());
                                  csv << "," << grCalib->GetFunction("pol1")->GetParameter(1);
                                  csv << "," << grCalib->GetFunction("pol1")->GetParameter(0);
                                  csv << "," << grCalib->GetFunction("pol1")->GetParError(1);
                                  csv << "," << grCalib->GetFunction("pol1")->GetParError(0);
+                                 csv << "," << grCalib->GetFunction("pol1")->GetChisquare();
                               }
-                              else csv << ",0,0,0,0";
+                              else csv << ",0,0,0,0,0";
 
                               addDoubleToXml(&xml,15,"CalibGainRms",grCalib->GetRMS(2));
                               csv << "," << grCalib->GetRMS(2);
 
                               if ( crossString.str() != "" ) addStringToXml(&xml,15,"CalibCrossTalk",crossString.str());
-                              csv << "," << crossString.str() << endl;
+                              csv << crossStringCsv.str();
                            }
+                           csv << endl; 
                            xml << "            </Range>" << endl;
                         }
                      }
