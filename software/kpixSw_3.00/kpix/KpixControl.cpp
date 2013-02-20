@@ -514,7 +514,7 @@ void KpixControl::hardReset ( ) {
 
    System::hardReset();
 
-   //device("cntrlFpga",0)->command("MasterReset","");
+   device("cntrlFpga",0)->command("FirmwareReset","");
    do {
       sleep(1);
       try { 
@@ -531,6 +531,6 @@ void KpixControl::hardReset ( ) {
          }
       }
    } while ( !gotVer );
-   device("cntrlFpga",0)->command("KpixHardReset","");
+   //device("cntrlFpga",0)->command("KpixHardReset","");
 }
 
