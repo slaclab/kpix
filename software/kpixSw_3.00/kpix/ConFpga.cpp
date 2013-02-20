@@ -202,6 +202,10 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
    addVariable(new Variable("EvrErrorCount", Variable::Status));
    getVariable("EvrErrorCount")->setDescription("Event Receiver Error Count");
 
+   //Allows firmware to be fully reset
+   addRegister(new Register("SoftwareReset", 0x0100000A));
+
+   
    // KPIX support registers
    for (uint i=0; i < (KpixCount-1); i++) {
 
@@ -272,6 +276,9 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
    addCommand(new Command("CountReset"));
    getCommand("CountReset")->setDescription("Reset counters");
 
+   addCommand(new Command("FirmwareReset"));
+   getCommand("FirmwareReset")->setDescription("Reset the firmware");
+
    // Add sub-devices
    for (uint i=0; i < KpixCount; i++) 
       addDevice(new KpixAsic(destination,(0x01100000 | ((i<<8) & 0xff00)),i,(i==(KpixCount-1)),this));
@@ -317,6 +324,12 @@ void ConFpga::command ( string name, string arg) {
       }
       //writeRegister(getRegister("EvrErrorCount"),true,true);
 
+      REGISTER_UNLOCK
+   }
+   else if (name == "FirmwareReset") {
+      REGISTER_LOCK
+      getRegister("SoftwareReset")->set(0x1);
+      writeRegister(getRegister("SoftwareReset"), true, false);
       REGISTER_UNLOCK
    }
    else Device::command(name, arg);
@@ -478,7 +491,7 @@ void ConFpga::verifyConfig ( ) {
    stringstream tmp;
 
    REGISTER_LOCK
-
+   
    verifyRegister(getRegister("ClockSelectA"));
    verifyRegister(getRegister("ClockSelectB"));
    verifyRegister(getRegister("DebugSelect"));
