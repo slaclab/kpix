@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-07-05
+-- Last update: 2013-02-20
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -37,7 +37,7 @@ entity KpixClockGen is
     readoutState : in  slv(2 downto 0);
     prechargeBus : in  sl;
     kpixClk      : out sl;
-    kpixRst      : out sl);
+    kpixClkRst      : out sl);
 
 end entity KpixClockGen;
 
@@ -115,7 +115,7 @@ begin
     rin <= rVar;
   end process comb;
 
-  -- Synchronize rst200 to KpixClk to create kpixRst
+  -- Synchronize rst200 to KpixClk to create kpixClkRst
   RstSync_1 : entity work.RstSync
     generic map (
       DELAY_G        => DELAY_G,
@@ -124,7 +124,7 @@ begin
     port map (
       clk      => r.clkDiv,
       asyncRst => rst200,
-      syncRst  => kpixRst);
+      syncRst  => kpixClkRst);
 
   -- Use BUFG for output
   KPIX_CLK_BUFG : BUFG

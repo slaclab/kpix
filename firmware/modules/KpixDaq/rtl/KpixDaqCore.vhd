@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-17
--- Last update: 2012-09-28
+-- Last update: 2013-02-20
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -46,6 +46,8 @@ entity KpixDaqCore is
     frontEndCmdCntlOut : in  FrontEndCmdCntlOutType;
     frontEndUsDataOut  : in  FrontEndUsDataOutType;
     frontEndUsDataIn   : out FrontEndUsDataInType;
+
+    softwareReset : out sl;
 
     -- Trigger interface
     triggerExtIn : in TriggerExtInType;
@@ -133,6 +135,7 @@ begin
       sysRst             => sysRst,
       frontEndRegCntlOut => frontEndRegCntlOut,
       frontEndRegCntlIn  => frontEndRegCntlIn,
+      softwareReset      => softwareReset,
       kpixRegCntlOut     => kpixRegCntlOut,
       kpixRegCntlIn      => kpixRegCntlIn,
       evrIn              => evrIn,
@@ -158,7 +161,7 @@ begin
       readoutState => readoutState,
       prechargeBus => prechargeBus,
       kpixClk      => kpixClk,
-      kpixRst      => kpixClkRst);
+      kpixClkRst   => kpixClkRst);
 
   --------------------------------------------------------------------------------------------------
   -- Trigger generator
@@ -249,7 +252,7 @@ begin
         KPIX_ID_G => i)
       port map (
         kpixClk        => kpixClk,
-        kpixRst        => kpixClkRst,
+        kpixClkRst     => kpixClkRst,
         kpixConfigRegs => kpixConfigRegs,
         kpixSerRxIn    => intKpixSerRxIn(i),
         kpixRegRxOut   => kpixRegRxOut(i));

@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2013-02-15
+-- Last update: 2013-02-20
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -128,7 +128,7 @@ begin
       r.startCalibrateSync       <= SYNCHRONIZER_INIT_0_C after DELAY_G;
       r.startReadoutSync         <= SYNCHRONIZER_INIT_0_C after DELAY_G;
       r.triggerSync              <= SYNCHRONIZER_INIT_0_C after DELAY_G;
-      r.kpixResetSync            <= SYNCHRONIZER_INIT_0_C after DELAY_G;
+      r.kpixResetSync            <= SYNCHRONIZER_INIT_1_C after DELAY_G;  
       r.state                    <= IDLE_S                after DELAY_G;
       r.txShiftReg               <= (others => '0')       after DELAY_G;
       r.txShiftCount             <= (others => '0')       after DELAY_G;

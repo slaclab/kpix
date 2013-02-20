@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-07
--- Last update: 2012-10-04
+-- Last update: 2013-02-20
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -42,6 +42,9 @@ entity FrontEndRegDecoder is
     frontEndRegCntlOut : in  FrontEndRegCntlOutType;
     frontEndRegCntlIn  : out FrontEndRegCntlInType;
 
+    -- Allows firmware to be reset through FrontEnd
+    softwareReset : out sl;
+
     -- Interface to KPIX reg controller (reuse FrontEndRegCntl types)
     kpixRegCntlOut : in  FrontEndRegCntlInType;
     kpixRegCntlIn  : out FrontEndRegCntlOutType;
@@ -76,6 +79,7 @@ architecture rtl of FrontEndRegDecoder is
   constant TIMESTAMP_CONTROL_REG_ADDR_C   : natural := 7;
   constant ACQUISITION_CONTROL_REG_ADDR_C : natural := 8;
   constant EVR_ERROR_COUNT_REG_ADDR_C     : natural := 9;
+  constant SOFTWARE_RESET_REG_ADDR_C      : natural := 10;
 
   constant KPIX_DATA_RX_MODE_REG_ADDR_C              : IntegerArray := list(256, NUM_KPIX_MODULES_G, 5);  --
   constant KPIX_HEADER_PARITY_ERROR_COUNT_REG_ADDR_C : IntegerArray := list(257, NUM_KPIX_MODULES_G, 5);
@@ -94,6 +98,7 @@ architecture rtl of FrontEndRegDecoder is
 
   type RegType is record
     frontEndRegCntlIn  : FrontEndRegCntlInType;   -- Outputs to FrontEnd module
+    softwareReset      : sl;
     evrIn              : EvrInType;
     kpixRegCntlIn      : FrontEndRegCntlOutType;  -- Outputs to KpixRegCntl module
     triggerRegsIn      : TriggerRegsInType;
@@ -113,6 +118,8 @@ begin
       r.frontEndRegCntlIn.regAck    <= '0'             after DELAY_G;
       r.frontEndRegCntlIn.regDataIn <= (others => '0') after DELAY_G;
       r.frontEndRegCntlIn.regFail   <= '0'             after DELAY_G;
+
+      r.softwareReset <= '0' after DELAY_G;
 
       r.kpixRegCntlIn.regInp     <= '0'             after DELAY_G;
       r.kpixRegCntlIn.regReq     <= '0'             after DELAY_G;
@@ -277,6 +284,12 @@ begin
             rVar.evrIn.countReset := '1';
           end if;
 
+        when SOFTWARE_RESET_REG_ADDR_C =>
+          rVar.frontEndRegCntlIn.regDataIn(0) := r.softwareReset;
+          if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
+            rVar.softwareReset := frontEndRegCntlOut.regDataOut(0);
+          end if;
+
 
         when others =>
           for i in NUM_KPIX_MODULES_G-1 downto 0 loop
@@ -333,6 +346,7 @@ begin
     rin <= rVar;
 
     frontEndRegCntlIn  <= r.frontEndRegCntlIn;
+    softwareReset      <= r.softwareReset;
     kpixRegCntlIn      <= r.kpixRegCntlIn;
     triggerRegsIn      <= r.triggerRegsIn;
     kpixConfigRegs     <= r.kpixConfigRegs;

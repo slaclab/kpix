@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-09-24
+-- Last update: 2013-02-20
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ entity KpixRegRx is
     KPIX_ID_G : natural := 0);
   port (
     kpixClk : in sl;
-    kpixRst : in sl;
+    kpixClkRst : in sl;
 
     kpixConfigRegs : in KpixConfigRegsType;
     kpixSerRxIn    : in sl;             -- Serial Data from KPIX
@@ -56,18 +56,18 @@ architecture rtl of KpixRegRx is
 begin
 
   -- Clock serial input on the falling edge to assure clean signal
-  fall : process (kpixClk, kpixRst) is
+  fall : process (kpixClk, kpixClkRst) is
   begin
-    if (kpixRst = '1') then
+    if (kpixClkRst = '1') then
       kpixSerRxInFall <= '0' after DELAY_G;
     elsif (falling_edge(kpixClk)) then
       kpixSerRxInFall <= kpixSerRxIn after DELAY_G;
     end if;
   end process fall;
 
-  seq : process (kpixClk, kpixRst) is
+  seq : process (kpixClk, kpixClkRst) is
   begin
-    if (kpixRst = '1') then
+    if (kpixClkRst = '1') then
       r.shiftReg                  <= (others => '0') after DELAY_G;
       r.shiftCount                <= (others => '0') after DELAY_G;
       r.state                     <= IDLE_S          after DELAY_G;
