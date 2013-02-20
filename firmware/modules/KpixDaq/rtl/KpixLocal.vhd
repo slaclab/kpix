@@ -298,14 +298,14 @@ begin
     -- Sync analogState to sysClk
     synchronize(v8_analog_state, r.analogStateSync, rVar.analogStateSync);
     rVar.analogStateStable := r.analogStateStable(2 downto 0) & toSl(detectEdge(r.analogStateSync));
-    if (isZero(rVar.analogStateStable)) then
+    if (uOr(rVar.analogStateStable) = '0') then
       rVar.sysOut.analogState := toSlvSync(r.analogStateSync);
     end if;
 
     -- Sync readoutState to sysClk
     synchronize(v8_read_state, r.readoutStateSync, rVar.readoutStateSync);
     rVar.readoutStateStable := r.readoutStateStable(2 downto 0) & toSl(detectEdge(r.readoutStateSync));
-    if (isZero(rVar.readoutStateStable)) then
+    if (uOr(rVar.readoutStateStable) = '0') then
       rVar.sysOut.readoutState := toSlvSync(r.readoutStateSync);
     end if;
 

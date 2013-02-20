@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-09-26
+-- Last update: 2013-02-15
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -169,7 +169,7 @@ begin
 
     if (r.readoutCountEnable = '1') then
       rVar.readoutCounter := r.readoutCounter + 1;
-      if (isAll(r.readoutCounter, '1')) then
+      if (uAnd(slv(r.readoutCounter)) = '1') then
         rVar.readoutCounter          := (others => '0');
         rVar.readoutCountEnable      := '0';
         rVar.triggerOut.startReadout := '0';
@@ -198,7 +198,7 @@ begin
 
     if (r.startCountEnable = '1') then
       rVar.startCounter := r.startCounter + 1;
-      if (isAll(r.startCounter, '1')) then
+      if (uAnd(slv(r.startCounter)) = '1') then
         rVar.startCounter              := (others => '0');
         rVar.startCountEnable          := '0';
         rVar.triggerOut.startAcquire   := '0';

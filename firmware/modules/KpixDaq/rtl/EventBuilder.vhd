@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2012-09-26
+-- Last update: 2013-02-15
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -206,7 +206,7 @@ begin
           if (triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_EVR_C and r.counter = 0) then
             writeFifo(evrOut.offset & evrOut.seconds);
           else
-            writeFifo(slvAll('0', 64));
+            writeFifo(slvZero(64));
           end if;
           if (r.counter = 2) then
             rVar.state := WAIT_DIGITIZE_S;
@@ -220,7 +220,7 @@ begin
         if (kpixLocalSysOut.analogState = KPIX_ANALOG_DIG_STATE_C) then
           if (kpixConfigRegs.autoReadDisable = '1' and timestampOut.valid = '0') then
             -- No data, Close frame
-            writeFifo(slvAll('0', 64), EOF_C);
+            writeFifo(slvZero(64), EOF_C);
             rVar.state := WAIT_ACQUIRE_S;
           else
             rVar.state := READ_TIMESTAMPS_S;
@@ -284,7 +284,7 @@ begin
 
           -- Check if done
           if (r.dataDone = r.activeModules) then
-            writeFifo(slvAll('0', 64), EOF_C);  -- Write tail
+            writeFifo(slvZero(64), EOF_C);  -- Write tail
             rVar.state := WAIT_ACQUIRE_S;
           end if;
         end if;

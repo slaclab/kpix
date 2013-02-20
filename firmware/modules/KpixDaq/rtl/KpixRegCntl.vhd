@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-09-17
+-- Last update: 2013-02-15
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -165,7 +165,7 @@ begin
         -- Only start new reg access or data acquisition cycle if previous data acq cycle is done
         -- (indicated by all KpixDataRx modules being not busy
         -- if (isZero(toSlvSync(r.kpixDataRxBusySync))) then
-        if (r.regReqSync.sync = '1' and isZero(kpixRegCntlIn.regAddr(INVALID_KPIX_ADDR_RANGE_C))) then
+        if (r.regReqSync.sync = '1' and uOr(kpixRegCntlIn.regAddr(INVALID_KPIX_ADDR_RANGE_C)) = '0') then
           -- Register access, format output word
           rVar.txShiftReg                               := (others => '0');  -- Simplifies parity calc
           rVar.txShiftReg(KPIX_MARKER_RANGE_C)          := KPIX_MARKER_C;
@@ -236,7 +236,7 @@ begin
         end loop;
         if (r.txShiftCount = KPIX_NUM_TX_BITS_C) then  -- Check this
           rVar.txShiftCount := (others => '0');
-          if (isAll(r.txEnable, '1')) then
+          if (uAnd(r.txEnable) = '1') then
             -- All txEnable bits set indicates an acquire cmd being transmitted
             -- Don't need to wait for req to fall on CMD requests
             rVar.state := DATA_WAIT_S;

@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2012-09-25
+-- Last update: 2013-02-19
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -143,10 +143,7 @@ architecture rtl of KpixDataRx is
   -- Functions
   -----------------------------------------------------------------------------
   -- Format a data sample into a 64 bit slv for transmission
-  function formatSample (
-    sample : SampleType)
-    return slv
-  is
+  function formatSample (sample : SampleType) return slv is
     variable retVar : slv(63 downto 0);
   begin
     retVar(63 downto 60) := DATA_SAMPLE_C;  -- Type Field
@@ -166,10 +163,7 @@ architecture rtl of KpixDataRx is
   end function formatSample;
 
   -- Format a temperature sample into a 64 bit slv for transmission.
-  function formatTemperature (
-    temp : KpixRegRxOutType)
-    return slv
-  is
+  function formatTemperature (temp : KpixRegRxOutType) return slv is
     variable retVar : slv(63 downto 0) := (others => '0');
   begin
     retVar(63 downto 60) := TEMP_SAMPLE_C;
