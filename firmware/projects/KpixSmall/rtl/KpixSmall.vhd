@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2012-09-28
+-- Last update: 2013-02-20
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -63,8 +63,6 @@ end entity KpixSmall;
 
 architecture rtl of KpixSmall is
 
-
-
   signal fpgaRst       : sl;
   signal gtpRefClk     : sl;
   signal gtpRefClkOut  : sl;
@@ -81,7 +79,9 @@ architecture rtl of KpixSmall is
   signal frontEndCmdCntlOut : FrontEndCmdCntlOutType;
   signal frontEndUsDataOut  : FrontEndUsDataOutType;
   signal frontEndUsDataIn   : FrontEndUsDataInType;
-  
+
+  signal softwareReset : sl;
+
   -- No EVR interface, will be undriven
   signal evrOut : EvrOutType;
 
@@ -126,9 +126,7 @@ architecture rtl of KpixSmall is
 
 begin
 
-
-
-  fpgaRst <= not fpgaRstL;
+  fpgaRst <= not fpgaRstL or softwareReset;
 
   -- Input clock buffer
   GtpRefClkIbufds : IBUFDS
@@ -222,6 +220,7 @@ begin
       frontEndCmdCntlOut => frontEndCmdCntlOut,
       frontEndUsDataOut  => frontEndUsDataOut,
       frontEndUsDataIn   => frontEndUsDataIn,
+      softwareReset => softwareReset,
       triggerExtIn       => intTriggerIn,
       evrOut             => evrOut,     -- No EVR module in KpixSmall
       evrIn              => open,
@@ -251,11 +250,11 @@ begin
       valid => ebFifoOut.valid);
 
 
-  OBUF_KPIX_CLK : OBUFDS
+  OBUF_KPIX_CLK : entity work.V5ClkOutBuf
     port map (
-      I  => kpixClk,
-      O  => kpixClkOutP,
-      OB => kpixClkOutN);
+      clkIn   => kpixClk,
+      clkOutP => kpixClkOutP,
+      clkOutN => kpixClkOutN);
 
   SER_TX_OBUF_GEN : for i in NUM_KPIX_MODULES_G-1 downto 0 generate
     OBUF_TX : OBUF

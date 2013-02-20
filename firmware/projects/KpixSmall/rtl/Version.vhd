@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 -- Title         : Version Constant File
--- Project       : W-SI
+-- Project       : 
 -------------------------------------------------------------------------------
--- File          : KpixConVersion.vhd
+-- File          : Version.vhd
 -- Author        : Ryan Herbst, rherbst@slac.stanford.edu
 -- Created       : 07/07/2010
 -------------------------------------------------------------------------------
@@ -19,7 +19,7 @@ use ieee.std_logic_1164.all;
 
 package Version is
 
-  constant FPGA_VERSION_C : std_logic_vector(31 downto 0) := x"C000010A";  -- MAKE_VERSION
+  constant FPGA_VERSION_C : std_logic_vector(31 downto 0) := x"C000010C";  -- MAKE_VERSION
 
 end Version;
 
@@ -32,6 +32,8 @@ end Version;
 -- 08/08/2012 (0xC0000107): Fixed temperature readout at end of data acquisition
 -- 08/14/2012 (0xC0000108): Rebuilt with latest KpixCore (no actual changes)
 -- 09/17/2012 (0xC0000109): Fixed temperature readback bug, kpix register access bug.
--- 10A - Removed grey decode for temperature
+-- 10/11/2012 (0xC000010A): Removed grey decode for temperature
+-- 02/12/2013 (0xC000010B): Added chipscope on EthFrontEnd
+-- 02/20/2013 (0xC000010C): Added Software Reset function.
 -------------------------------------------------------------------------------
 
