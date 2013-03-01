@@ -1,0 +1,139 @@
+<system>
+   <config>
+      <CalChanMax>1023</CalChanMax>
+      <CalChanMin>0</CalChanMin>
+      <CalDacCount>16</CalDacCount>
+      <CalDacMax>255</CalDacMax>
+      <CalDacMin>0</CalDacMin>
+      <CalDacStep>32</CalDacStep>
+      <CalMeanCount>4000</CalMeanCount>
+      <DataAuto>True</DataAuto>
+      <DataBase>/u1/kpix/data/</DataBase>
+      <DataFile>/u1/kpix/data/</DataFile>
+      <DebugCmdTime>True</DebugCmdTime>
+      <DebugEnable>False</DebugEnable>
+      <RunCount>1000</RunCount>
+      <RunRate>No Limit</RunRate>
+      <cntrlFpga>
+         <BncSourceA>RegClock</BncSourceA>
+         <BncSourceB>RegClock</BncSourceB>
+         <ClkPeriodAcq>320nS</ClkPeriodAcq>
+         <ClkPeriodDig>50nS</ClkPeriodDig>
+         <ClkPeriodIdle>100nS</ClkPeriodIdle>
+         <ClkPeriodPrecharge>50nS</ClkPeriodPrecharge>
+         <ClkPeriodRead>100nS</ClkPeriodRead>
+         <KpixRxRaw>False</KpixRxRaw>
+         <RunMode>Acquire</RunMode>
+         <KpixInputEdge>Rising Edge</KpixInputEdge>
+         <KpixOutputEdge>Rising Edge</KpixOutputEdge>
+         <TrigSource>None</TrigSource>
+	      <TimestampSource>None</TimestampSource>
+         <kpixAsic>
+            <BunchClockCount>8191</BunchClockCount>
+            <Cal0Delay>1000</Cal0Delay>
+            <Cal1Delay>1000</Cal1Delay>
+            <Cal2Delay>1000</Cal2Delay>
+            <Cal3Delay>1000</Cal3Delay>
+            <CalCount>4</CalCount>
+            <CfgAutoReadDisable>False</CfgAutoReadDisable>
+            <CfgAutoStatusReadEn>True</CfgAutoStatusReadEn>
+            <CfgForceTemp>False</CfgForceTemp>
+            <CfgDisableTemp>False</CfgDisableTemp>
+            <CntrlDisPerReset>True</CntrlDisPerReset>             <!-- 0-->
+            <CntrlEnDcReset>True</CntrlEnDcReset>                 <!-- 1-->
+            <CntrlHighGain>False</CntrlHighGain>                  <!-- 2-->
+            <CntrlNearNeighbor>False</CntrlNearNeighbor>          <!-- 3-->
+            <CntrlForceTrigSource>Internal</CntrlForceTrigSource> <!-- 4-->
+            <CntrlCalSource>Internal</CntrlCalSource>              <!-- 6-->
+            <CntrlHoldTime>16x</CntrlHoldTime>                    <!-- 8-10-->
+            <CntrlCalibHigh>False</CntrlCalibHigh>                <!--11-->
+            <CntrlShortIntEn>False</CntrlShortIntEn>              <!--12-->
+            <CntrlForceLowGain>False</CntrlForceLowGain>          <!--13-->
+            <CntrlLeakNullDisable>True</CntrlLeakNullDisable>     <!--14-->
+            <CntrlPolarity>Positive</CntrlPolarity>               <!--15-->
+            <CntrlDisPwrCycle>False</CntrlDisPwrCycle>            <!--24-->
+            <CntrlFeCurr>31uA</CntrlFeCurr>                       <!--25-27-->
+            <CfgTestDataEn>False</CfgTestDataEn>                  <!-- ?-->
+            <CntrlDiffTime>Normal</CntrlDiffTime>                 <!-- ?-->
+            <CntrlMonSource>None</CntrlMonSource>                 <!-- ?-->
+            <CntrlTrigDisable>True</CntrlTrigDisable>             <!-- ?-->
+            <Chan_0000_0031>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0000_0031>
+            <Chan_0032_0063>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0032_0063>
+            <Chan_0064_0095>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0064_0095>
+            <Chan_0096_0127>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0096_0127>
+            <Chan_0128_0159>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0128_0159>
+            <Chan_0160_0191>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0160_0191>
+            <Chan_0192_0223>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0192_0223>
+            <Chan_0224_0255>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0224_0255>
+            <Chan_0256_0287>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0256_0287>
+            <Chan_0288_0319>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0288_0319>
+            <Chan_0320_0351>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0320_0351>
+            <Chan_0352_0383>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0352_0383>
+            <Chan_0384_0415>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0384_0415>
+            <Chan_0416_0447>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0416_0447>
+            <Chan_0448_0479>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0448_0479>
+            <Chan_0480_0511>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0480_0511>
+            <Chan_0512_0543>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0512_0543>
+            <Chan_0544_0575>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0544_0575>
+            <Chan_0576_0607>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0576_0607>
+            <Chan_0608_0639>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0608_0639>
+            <Chan_0640_0671>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0640_0671>
+            <Chan_0672_0703>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0672_0703>
+            <Chan_0704_0735>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0704_0735>
+            <Chan_0736_0767>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0736_0767>
+            <Chan_0768_0799>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0768_0799>
+            <Chan_0800_0831>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0800_0831>
+            <Chan_0832_0863>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0832_0863>
+            <Chan_0864_0895>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0864_0895>
+            <Chan_0896_0927>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0896_0927>
+            <Chan_0928_0959>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0928_0959>
+            <Chan_0960_0991>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0960_0991>
+            <Chan_0992_1023>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0992_1023>
+            <DacCalibration>0</DacCalibration>
+            <DacDefaultAnalog>189</DacDefaultAnalog>
+            <DacEventThreshold>80</DacEventThreshold>
+            <DacRampThresh>240</DacRampThresh>
+            <DacRangeThreshold>0</DacRangeThreshold>
+            <DacShaperBias>120</DacShaperBias>
+            <DacThresholdA>240</DacThresholdA>
+            <DacThresholdB>0</DacThresholdB>
+            <Enabled>False</Enabled>
+            <TimeLeakageNullOff>1</TimeLeakageNullOff>
+            <TimeResetOn>3</TimeResetOn>
+            <TimePowerUpOn>3</TimePowerUpOn>
+            <TimeOffsetNullOff>2437</TimeOffsetNullOff>
+            <TimeThreshOff>2468</TimeThreshOff>
+            <TimeResetOff>2500</TimeResetOff>
+            <TimeBunchClkDelay>3126</TimeBunchClkDelay>
+            <TimeDeselDelay>0x89</TimeDeselDelay>
+            <TimeDigitizeDelay>0xc7</TimeDigitizeDelay>
+            <TrigInhibitOff>500</TrigInhibitOff>
+            <Version>0xa</Version>
+         </kpixAsic>
+      </cntrlFpga>
+      <Enabled>True</Enabled>
+      <cntrlFpga index="0">
+         <Enabled>True</Enabled>
+         <kpixAsic index="0">
+            <Enabled>True</Enabled>
+            <SerialNumber>1011</SerialNumber>
+         </kpixAsic>
+         <kpixAsic index="1">
+            <Enabled>False</Enabled>
+            <SerialNumber>802</SerialNumber>
+         </kpixAsic>
+         <kpixAsic index="2">
+            <Enabled>False</Enabled>
+            <SerialNumber>0</SerialNumber>
+         </kpixAsic>
+         <kpixAsic index="3">
+            <Enabled>False</Enabled>
+            <SerialNumber>0</SerialNumber>
+         </kpixAsic>
+         <kpixAsic index="4">
+            <Enabled>True</Enabled>
+            <SerialNumber>0</SerialNumber>
+         </kpixAsic>
+      </cntrlFpga>
+   </config>
+</system>
