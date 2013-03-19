@@ -25,7 +25,7 @@ using namespace std;
 
 int main (int argc, char **argv) {
    UdpLink     udpLink; 
-   KpixControl kpix(&udpLink,"");
+   KpixControl kpix(&udpLink,"",5);
 
    try {
 

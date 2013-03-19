@@ -1,19 +1,4 @@
-//-----------------------------------------------------------------------------
-// File          : cspadGui.cpp
-// Author        : Ryan Herbst  <rherbst@slac.stanford.edu>
-// Created       : 04/12/2011
-// Project       : CSPAD
-//-----------------------------------------------------------------------------
-// Description :
-// Server application for GUI
-//-----------------------------------------------------------------------------
-// Copyright (c) 2011 by SLAC. All rights reserved.
-// Proprietary and confidential to SLAC.
-//-----------------------------------------------------------------------------
-// Modification history :
-// 04/12/2011: created
-//----------------------------------------------------------------------------
-#include <UdpLink.h>
+#include <SimLink.h>
 #include <KpixControl.h>
 #include <ControlServer.h>
 #include <Device.h>
@@ -27,40 +12,47 @@ using namespace std;
 bool stop;
 
 // Function to catch cntrl-c
-void sigTerm (int) {
+void sigTerm (int) { 
    cout << "Got Signal!" << endl;
-   stop = true;
+   stop = true; 
 }
 
 int main (int argc, char **argv) {
    ControlServer cntrlServer;
    string        defFile;
+   uint          shmId;
    int           port;
    stringstream  cmd;
 
-   if ( argc > 1 ) defFile = argv[1];
+   if ( argc == 1 ) {
+      cout << "Usage: simGui smem_id [default.xml]" << endl;
+      return(1);
+   }
+   shmId = atoi(argv[1]);
+
+   if ( argc > 2 ) defFile = argv[2];
    else defFile = "";
 
    // Catch signals
    signal (SIGINT,&sigTerm);
 
    try {
-      CommLink      comLink; 
-      KpixControl   kpix(&comLink,defFile,5);
+      SimLink       simLink; 
+      KpixControl   kpix(&simLink,defFile,32);
       int           pid;
 
       // Setup top level device
       kpix.setDebug(true);
 
       // Create and setup PGP link
-      comLink.setMaxRxTx(500000);
-      comLink.setDebug(true);
-      comLink.open();
+      simLink.setMaxRxTx(500000);
+      simLink.setDebug(true);
+      simLink.open("kpix",shmId);
       usleep(100);
 
       // Setup control server
-      //cntrlServer.setDebug(true);
       cntrlServer.enableSharedMemory("kpix",1);
+      cntrlServer.setDebug(true);
       port = cntrlServer.startListen(0);
       cntrlServer.setSystem(&kpix);
       cout << "Control id = 1" << endl;
@@ -88,7 +80,7 @@ int main (int argc, char **argv) {
 
          // Server
          default:
-            cout << "Starting server at port " << dec << port << endl;
+            cout << "Starting server at port" << dec << port << endl;
             while ( ! stop ) cntrlServer.receive(100);
             cntrlServer.stopListen();
             cout << "Stopped server" << endl;

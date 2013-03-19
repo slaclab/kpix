@@ -45,7 +45,7 @@ int main (int argc, char **argv) {
 
    try {
       UdpLink       udpLink; 
-      KpixControl   kpix(&udpLink,defFile);
+      KpixControl   kpix(&udpLink,defFile,5);
 
       // Setup top level device
       kpix.setDebug(true);

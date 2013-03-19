@@ -27,7 +27,7 @@
 using namespace std;
 
 // Constructor
-KpixControl::KpixControl ( CommLink *commLink, string defFile ) : System("KpixControl",commLink) {
+KpixControl::KpixControl ( CommLink *commLink, string defFile, uint kpixCount ) : System("KpixControl",commLink) {
 
    // Description
    desc_ = "Kpix Control";
@@ -139,7 +139,7 @@ KpixControl::KpixControl ( CommLink *commLink, string defFile ) : System("KpixCo
    getVariable("UserDataD")->setDescription("User defined data field");
 
    // Add sub-devices
-   addDevice(new ConFpga(0, 0, this));
+   addDevice(new ConFpga(0, 0, kpixCount, this));
 }
 
 // Deconstructor

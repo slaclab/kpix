@@ -23,7 +23,7 @@ using namespace std;
 class ConFpga : public Device {
 
       // Number of kpix devices
-      static const unsigned int KpixCount = 5;
+      unsigned int kpixCount;
 
    public:
 
@@ -33,7 +33,7 @@ class ConFpga : public Device {
        * \param index       Device index
        * \param parent      Parent Device
       */
-      ConFpga ( uint destination, uint index, Device *parent );
+      ConFpga ( uint destination, uint index, uint kpixCount, Device *parent );
 
       //! Deconstructor
       ~ConFpga ( );

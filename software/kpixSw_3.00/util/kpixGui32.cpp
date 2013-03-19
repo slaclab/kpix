@@ -27,9 +27,9 @@ using namespace std;
 bool stop;
 
 // Function to catch cntrl-c
-void sigTerm (int) {
+void sigTerm (int) { 
    cout << "Got Signal!" << endl;
-   stop = true;
+   stop = true; 
 }
 
 int main (int argc, char **argv) {
@@ -45,17 +45,18 @@ int main (int argc, char **argv) {
    signal (SIGINT,&sigTerm);
 
    try {
-      CommLink      comLink; 
-      KpixControl   kpix(&comLink,defFile,5);
+      UdpLink       udpLink; 
+      KpixControl   kpix(&udpLink,defFile,32);
       int           pid;
 
       // Setup top level device
       kpix.setDebug(true);
 
       // Create and setup PGP link
-      comLink.setMaxRxTx(500000);
-      comLink.setDebug(true);
-      comLink.open();
+      udpLink.setMaxRxTx(500000);
+      udpLink.setDebug(true);
+      udpLink.open(8192,1,"192.168.1.16");
+      udpLink.openDataNet("127.0.0.1",8099);
       usleep(100);
 
       // Setup control server

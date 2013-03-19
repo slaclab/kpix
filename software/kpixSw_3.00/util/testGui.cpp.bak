@@ -35,8 +35,6 @@ void sigTerm (int) {
 int main (int argc, char **argv) {
    ControlServer cntrlServer;
    string        defFile;
-   int           port;
-   stringstream  cmd;
 
    if ( argc > 1 ) defFile = argv[1];
    else defFile = "";
@@ -46,7 +44,7 @@ int main (int argc, char **argv) {
 
    try {
       CommLink      comLink; 
-      KpixControl   kpix(&comLink,defFile,5);
+      KpixControl   kpix(&comLink,defFile);
       int           pid;
 
       // Setup top level device
@@ -60,10 +58,11 @@ int main (int argc, char **argv) {
 
       // Setup control server
       //cntrlServer.setDebug(true);
-      cntrlServer.enableSharedMemory("kpix",1);
-      port = cntrlServer.startListen(0);
+      cntrlServer.startListen(8092);
       cntrlServer.setSystem(&kpix);
-      cout << "Control id = 1" << endl;
+
+      kpix.command("WriteStatusXml","status.xml");
+      kpix.command("WriteStructureXml","structure.xml");
 
       // Fork and start gui
       stop = false;
@@ -77,21 +76,19 @@ int main (int argc, char **argv) {
 
          // Child
          case 0:
-            usleep(100);
             cout << "Starting GUI" << endl;
-            cmd.str("");
-            cmd << "cntrlGui localhost " << dec << port;
-            system(cmd.str().c_str());
-            cout << "GUI stopped" << endl;
+            system("cntrlGui");
+            cout << "Gui stopped" << endl;
             kill(getppid(),SIGINT);
             break;
 
          // Server
          default:
-            cout << "Starting server at port " << dec << port << endl;
             while ( ! stop ) cntrlServer.receive(100);
+            kill(pid,SIGINT);
+            sleep(1);
             cntrlServer.stopListen();
-            cout << "Stopped server" << endl;
+            cout << "Stopped gui server" << endl;
             break;
       }
 

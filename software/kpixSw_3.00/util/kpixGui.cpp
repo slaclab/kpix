@@ -46,7 +46,7 @@ int main (int argc, char **argv) {
 
    try {
       UdpLink       udpLink; 
-      KpixControl   kpix(&udpLink,defFile);
+      KpixControl   kpix(&udpLink,defFile,5);
       int           pid;
 
       // Setup top level device

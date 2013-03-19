@@ -38,7 +38,7 @@ int main (int argc, char **argv) {
 
    try {
       SimLink       simLink; 
-      KpixControl   kpix(&simLink,defFile);
+      KpixControl   kpix(&simLink,defFile,5);
       int           pid;
 
       // Setup top level device

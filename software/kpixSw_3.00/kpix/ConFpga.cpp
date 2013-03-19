@@ -25,9 +25,11 @@
 using namespace std;
 
 // Constructor
-ConFpga::ConFpga ( uint destination, uint index, Device *parent ) : 
+ConFpga::ConFpga ( uint destination, uint index, uint kpixCount, Device *parent ) : 
                    Device(destination,0,"cntrlFpga",index,parent) {
    stringstream tmp;
+
+   this->kpixCount = kpixCount;
 
    // Description
    desc_ = "KPIX Con FPGA Object.";
@@ -207,7 +209,7 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
 
    
    // KPIX support registers
-   for (uint i=0; i < (KpixCount-1); i++) {
+   for (uint i=0; i < (kpixCount-1); i++) {
 
       tmp.str("");
       tmp << "KpixRxMode_" << setw(2) << setfill('0') << dec << i;
@@ -280,8 +282,8 @@ ConFpga::ConFpga ( uint destination, uint index, Device *parent ) :
    getCommand("FirmwareReset")->setDescription("Reset the firmware");
 
    // Add sub-devices
-   for (uint i=0; i < KpixCount; i++) 
-      addDevice(new KpixAsic(destination,(0x01100000 | ((i<<8) & 0xff00)),i,(i==(KpixCount-1)),this));
+   for (uint i=0; i < kpixCount; i++) 
+      addDevice(new KpixAsic(destination,(0x01100000 | ((i<<8) & 0xff00)),i,(i==(kpixCount-1)),this));
 
    getVariable("Enabled")->setHidden(true);
 }
@@ -305,7 +307,7 @@ void ConFpga::command ( string name, string arg) {
    else if ( name == "CountReset" ) {
       REGISTER_LOCK
 
-      for (uint i=0; i < (KpixCount-1); i++) {
+      for (uint i=0; i < (kpixCount-1); i++) {
          tmp.str("");
          tmp << "KpixRxHeaderPerr_" << setw(2) << setfill('0') << dec << i;
          writeRegister(getRegister(tmp.str()),true,true);
@@ -344,7 +346,7 @@ void ConFpga::readStatus ( ) {
    readRegister(getRegister("Version"));
    getVariable("Version")->setInt(getRegister("Version")->get());
 
-   for (uint i=0; i < (KpixCount-1); i++) {
+   for (uint i=0; i < (kpixCount-1); i++) {
       tmp.str("");
       tmp << "KpixRxHeaderPerr_" << setw(2) << setfill('0') << dec << i;
       readRegister(getRegister(tmp.str()));
@@ -465,7 +467,7 @@ void ConFpga::writeConfig ( bool force ) {
    //writeRegister(getRegister("EvrOpCode"),force);
 
    // KPIX support registers
-   for (uint i=0; i < (KpixCount-1); i++) {
+   for (uint i=0; i < (kpixCount-1); i++) {
 
       tmpA.str("");
       tmpA << "KpixRxMode_" << setw(2) << setfill('0') << dec << i;
@@ -503,7 +505,7 @@ void ConFpga::verifyConfig ( ) {
    //verifyRegister(getRegister("EvrOpCode"));
 
    // KPIX support registers
-   for (uint i=0; i < (KpixCount-1); i++) {
+   for (uint i=0; i < (kpixCount-1); i++) {
 
       tmp.str("");
       tmp << "KpixRxMode_" << setw(2) << setfill('0') << dec << i;

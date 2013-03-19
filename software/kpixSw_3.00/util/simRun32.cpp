@@ -25,7 +25,7 @@ int main (int argc, char **argv) {
    try {
 
       SimLink     simLink; 
-      KpixControl kpix(&simLink,defFile,5);
+      KpixControl kpix(&simLink,defFile,32);
 
       simLink.setMaxRxTx(500000);
       simLink.setDebug(true);
