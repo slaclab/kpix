@@ -36,6 +36,7 @@ vhdl work "_PROJ_DIR_/xil_cores/main_dcm.vhd"
 
 ## StdLib
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/RstSync.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/V5ClkOutBuf.vhd"
 
 ## KpixDaq
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/Pgp2UsBuff64.vhd"

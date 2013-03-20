@@ -20,24 +20,24 @@ CONFIG PART = XC5VLX50T-FF665-1;
 #inst EthFrontEnd_1/U_EthClientGtp/U_GTP LOC=GTP_DUAL_X0Y4;
 
 # Define clocks
-NET pgpClk    TNM_NET = FFS pgpClk;
-#NET pgpClk2x  TNM_NET = FFS pgpClk2x;
-#NET evrClk    TNM_NET = FFS evrClk;
-NET sysClk125 TNM_NET = FFS sysClk125;
-NET clk200    TNM_NET = FFS clk200;
-NET kpixClk   TNM_NET = FFS kpixClk;
+NET pgpClk    TNM_NET = "pgpClk";
+NET pgpClk2x  TNM_NET = "pgpClk2x";
+NET "EventReceiverTop_1/evrClk"  TNM_NET = "evrClk";
+NET sysClk125 TNM_NET = "sysClk125";
+NET clk200    TNM_NET = "clk200";
+NET kpixClk   TNM_NET = "kpixClk";
 
 # Define clock frequncies
 TIMESPEC TS_pgpClk = PERIOD pgpClk 156.25 Mhz HIGH 50%;
-#TIMESPEC TS_pgpClk2x = PERIOD pgpClk2x 312.5 Mhz HIGH 50%;
-#TIMESPEC TS_evrClk = PERIOD evrClk 238 HIGH 50%;
+TIMESPEC TS_pgpClk2x = PERIOD pgpClk2x 312.5 Mhz HIGH 50%;
+TIMESPEC TS_evrClk = PERIOD evrClk 238 Mhz HIGH 50%;
 TIMESPEC TS_sysClk125 = PERIOD sysClk125 125 Mhz HIGH 50%;
 TIMESPEC TS_clk200 = PERIOD clk200 200 Mhz HIGH 50%;
 TIMESPEC TS_kpixClk = PERIOD kpixClk 100 Mhz HIGH 50%;
 
 # Group clocks
 TIMEGRP TG_pgpClk_r = RISING pgpClk;
-#TIMEGRP TG_evrClk = RISING evrClk;
+#TIMEGRP TG_evrClk_r = RISING evrClk;
 TIMEGRP TG_sysClk125_r = RISING sysClk125;
 TIMEGRP TG_kpixClk_r = RISING kpixClk;
 TIMEGRP TG_clk200_r = RISING clk200;
@@ -45,27 +45,27 @@ TIMEGRP TG_kpixClk_f = FALLING kpixClk;
 
 # Constrain timing between clocks
 # pgpClk-sysClk125
-TIMESPEC TS_pgpClk_sysClk125 = FROM TG_pgpClk_r TO TG_sysClk125_r 10 ns;
-TIMESPEC TS_sysClk125_pgpClk = FROM TG_sysClk125_r TO TG_pgpClk_r 10 ns;
+TIMESPEC TS_pgpClk_sysClk125 = FROM TG_pgpClk_r TO TG_sysClk125_r 10 ns DATAPATHONLY;
+TIMESPEC TS_sysClk125_pgpClk = FROM TG_sysClk125_r TO TG_pgpClk_r 10 ns DATAPATHONLY;
 
 #evrClk-sysClk125
-TIMESPEC TS_evrClk_sysClk125 = FROM TG_evrClk125_r TO TG_sysClk125_r 10 ns;
-TIMESPEC TS_sysClk125_evrClk = FROM TG_sysClk125_r TO TG_evrClk_r 10 ns;
+#TIMESPEC TS_evrClk_sysClk125 = FROM TG_evrClk125_r TO TG_sysClk125_r 10 ns;
+#TIMESPEC TS_sysClk125_evrClk = FROM TG_sysClk125_r TO TG_evrClk_r 10 ns;
 
 #kpixClk-sysClk125
-TIMESPEC TS_sysClk125_kpixClk = FROM TG_sysClk125_r TO TG_kpixClk_r 10 ns;
-TIMESPEC TS_kpixClk_sysClk125 = FROM TG_kpixClk_r TO TG_sysClk125_r 16 ns;
+TIMESPEC TS_sysClk125_kpixClk = FROM TG_sysClk125_r TO TG_kpixClk_r 10 ns DATAPATHONLY;
+TIMESPEC TS_kpixClk_sysClk125 = FROM TG_kpixClk_r TO TG_sysClk125_r 16 ns DATAPATHONLY;
 
 #clk200-sysClk
-TIMESPEC TS_sysClk125_clk200 = FROM TG_sysClk125_r TO TG_clk200_r 10 ns;
-TIMESPEC TS_clk200_sysClk125 = FROM TG_clk200_r TO TG_sysClk125_r 10 ns;
+TIMESPEC TS_sysClk125_clk200 = FROM TG_sysClk125_r TO TG_clk200_r 10 ns DATAPATHONLY;
+TIMESPEC TS_clk200_sysClk125 = FROM TG_clk200_r TO TG_sysClk125_r 10 ns DATAPATHONLY;
 
 #kpixClk-Clk200
-TIMESPEC TS_kpixClk_clk200 = FROM TG_kpixClk_r TO TG_clk200_r 16 ns;
+TIMESPEC TS_kpixClk_clk200 = FROM TG_kpixClk_r TO TG_clk200_r 16 ns DATAPATHONLY;
 
 #Handle falling clock timing
-TIMESPEC TS_kpixClk_RF = FROM TG_kpixClk_r to TG_kpixClk_f 8 ns;
-TIMESPEC TS_kpixClk_FR = FROM TG_kpixClk_f to TG_kpixClk_r 8 ns;
+TIMESPEC TS_kpixClk_RF = FROM TG_kpixClk_r to TG_kpixClk_f 8 ns DATAPATHONLY;
+TIMESPEC TS_kpixClk_FR = FROM TG_kpixClk_f to TG_kpixClk_r 8 ns DATAPATHONLY;
 
 # Nets to ignore for timing
 NET "fpgaRstL"      TIG;
@@ -107,6 +107,8 @@ NET "kpixClkOutP<1>" LOC = "U24";
 NET "kpixClkOutN<1>" LOC = "V24";
 NET "kpixClkOutP<2>" LOC = "W26";
 NET "kpixClkOutN<2>" LOC = "W25";
+NET "kpixClkOutP<3>" LOC = "W24";
+NET "kpixClkOutN<3>" LOC = "V23";
 
 NET "kpixRstOut" LOC = "V26" | IOSTANDARD = "LVCMOS25";
 
@@ -116,6 +118,8 @@ NET "kpixTriggerOutP<1>" LOC = "P25";
 NET "kpixTriggerOutN<1>" LOC = "R25";
 NET "kpixTriggerOutP<2>" LOC = "P24";
 NET "kpixTriggerOutN<2>" LOC = "P23";
+NET "kpixTriggerOutP<3>" LOC = "R23";
+NET "kpixTriggerOutN<3>" LOC = "R22";
 
 NET "kpixSerTxOut<0>" LOC = "Y6" | IOSTANDARD = "LVCMOS25";
 NET "kpixSerTxOut<1>" LOC = "Y5" | IOSTANDARD = "LVCMOS25";
@@ -147,6 +151,7 @@ NET "kpixSerTxOut<26>" LOC = "T5" | IOSTANDARD = "LVCMOS25";
 NET "kpixSerTxOut<27>" LOC = "R5" | IOSTANDARD = "LVCMOS25";
 NET "kpixSerTxOut<28>" LOC = "M7" | IOSTANDARD = "LVCMOS25";
 NET "kpixSerTxOut<29>" LOC = "L8" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerTxOut<30>" LOC = "T25" | IOSTANDARD = "LVCMOS25";
 
 
 NET "kpixSerRxIn<0>" LOC = "AA22" | IOSTANDARD = "LVCMOS25";
@@ -179,6 +184,7 @@ NET "kpixSerRxIn<26>" LOC = "N8" | IOSTANDARD = "LVCMOS25";
 NET "kpixSerRxIn<27>" LOC = "P8" | IOSTANDARD = "LVCMOS25";
 NET "kpixSerRxIn<28>" LOC = "R8" | IOSTANDARD = "LVCMOS25";
 NET "kpixSerRxIn<29>" LOC = "R7" | IOSTANDARD = "LVCMOS25";
+NET "kpixSerRxIn<30>" LOC = "U25" | IOSTANDARD = "LVCMOS25";
 
 
 

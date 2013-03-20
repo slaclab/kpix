@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2013-02-15
+-- Last update: 2013-03-20
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -202,7 +202,7 @@ begin
       when WRITE_HEADER_S =>
         if (ebFifoOut.full = '0') then
           rVar.counter := r.counter + 1;
-          -- Place EVR data in header if it  is the acqusition trigger source
+          -- Place EVR data in header if it is the acqusition trigger source
           if (triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_EVR_C and r.counter = 0) then
             writeFifo(evrOut.offset & evrOut.seconds);
           else

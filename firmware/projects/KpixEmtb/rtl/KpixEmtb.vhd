@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2012-09-27
+-- Last update: 2013-03-20
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ entity KpixEmtb is
   
   generic (
     DELAY_G            : time    := 1 ns;
-    NUM_KPIX_MODULES_G : natural := 30);
+    NUM_KPIX_MODULES_G : natural := 31);
 
   port (
     -- System reset
@@ -46,12 +46,12 @@ entity KpixEmtb is
     pgpRxN : in  sl;
 
     -- Evr clock and interface
-    evrClkP : in  sl;
-    evrClkN : in  sl;
+    evrClkP : in sl;
+    evrClkN : in sl;
 --    evrTxP  : out sl;
 --    evrTxN  : out sl;
-    evrRxP  : in  sl;
-    evrRxN  : in  sl;
+    evrRxP  : in sl;
+    evrRxN  : in sl;
 
     -- Internal Kpix debug
     debugOutA : out sl;
@@ -63,11 +63,11 @@ entity KpixEmtb is
 
 
     -- Interface to KPiX modules
-    kpixClkOutP     : out slv(2 downto 0);
-    kpixClkOutN     : out slv(2 downto 0);
+    kpixClkOutP     : out slv(3 downto 0);
+    kpixClkOutN     : out slv(3 downto 0);
     kpixRstOut      : out sl;
-    kpixTriggerOutP : out slv(2 downto 0);
-    kpixTriggerOutN : out slv(2 downto 0);
+    kpixTriggerOutP : out slv(3 downto 0);
+    kpixTriggerOutN : out slv(3 downto 0);
     kpixSerTxOut    : out slv(NUM_KPIX_MODULES_G-1 downto 0);
     kpixSerRxIn     : in  slv(NUM_KPIX_MODULES_G-1 downto 0));
 
@@ -102,25 +102,14 @@ architecture rtl of KpixEmtb is
   signal frontEndUsDataOut  : FrontEndUsDataOutType;
   signal frontEndUsDataIn   : FrontEndUsDataInType;
 
+  signal softwareReset : sl;
+  signal ponResetL : sl;
+
   -- EVR Signals
   signal evrIn     : EvrInType;
   signal evrOut    : EvrOutType;        -- evrClk
   signal evrRegIn  : EvrRegInType;      -- sysClk
   signal evrRegOut : EvrRegOutType;     -- sysClk
-
-  signal EventStream   : slv(7 downto 0);
-  signal DataStream    : slv(7 downto 0);
-  signal evrTrigger    : sl;
-  signal evrRegDataOut : slv(31 downto 0);
-  signal evrRegWrEna   : sl;
-  signal evrRegDataIn  : slv(31 downto 0);
-  signal evrRegAddr    : slv(7 downto 0);
-  signal evrRegEna     : sl;
-  signal evrDebug      : slv(63 downto 0);
-  signal outSeconds    : slv(31 downto 0);
-  signal outOffset     : slv(31 downto 0);
-  signal evrErrors     : slv(15 downto 0);
-  signal countReset    : sl;
 
   -- Front End Reg Cntl Ouputs from kpixDaq
   signal frontEndRegCntlInKpix : FrontEndRegCntlInType;
@@ -225,7 +214,8 @@ architecture rtl of KpixEmtb is
 
 begin
 
-  fpgaRst <= not fpgaRstL;
+  fpgaRst <= not fpgaRstL or softwareReset;
+  ponResetL <= not fpgaRst;          -- Pgp2GtpClk needs active low for ponReset
 
   -- Input clock buffer
   PgpRefClkIbufds : IBUFDS
@@ -235,10 +225,10 @@ begin
       O  => pgpRefClk);
 
   -- Run input clock through BUFG before sending to Pgp2GtpClk DCM
-  PgpRefClkOutBufg : BUFG
-    port map (
-      I => pgpRefClkOut,
-      O => pgpRefClkBufg);
+--  PgpRefClkOutBufg : BUFG
+--    port map (
+--      I => pgpRefClkOut,
+--      O => pgpRefClkBufg);
 
   -- Create pgpClk2x and sysClk125 from 156.25 MHz input clock
   Pgp2GtpClk_1 : entity work.Pgp2GtpClk
@@ -246,8 +236,8 @@ begin
       UserFxDiv  => 5,
       UserFxMult => 4)                  -- 4/5 * 156.25 = 125 MHz
     port map (
-      pgpRefClk => pgpRefClkBufg,
-      ponResetL => fpgaRstL,
+      pgpRefClk => pgpRefClkOut,
+      ponResetL => ponResetL,
       locReset  => '0',
       pgpClk    => pgpClk,
       pgpReset  => pgpReset,
@@ -277,7 +267,7 @@ begin
       asyncRst => dcmLocked,
       syncRst  => rst200);  
 
-  -- Ethernet module
+  -- PGP module
   PgpFrontEnd_1 : Pgp2FrontEnd64
     port map (
       pgpRefClk     => pgpRefClk,       -- Direct input from pins
@@ -310,7 +300,6 @@ begin
       pgpTxP        => pgpTxP);
 
   -- Event Receiver
-  evrIn.countReset <= '0';
   EventReceiverTop_1 : EventReceiverTop
     generic map (
       USE_CHIPSCOPE => 0)
@@ -360,8 +349,10 @@ begin
       frontEndCmdCntlOut => frontEndCmdCntlOut,
       frontEndUsDataOut  => frontEndUsDataOut,
       frontEndUsDataIn   => frontEndUsDataIn,
+      softwareReset => softwareReset,
       triggerExtIn       => intTriggerIn,
       evrOut             => evrOut,
+      evrIn              => evrIn,
       ebFifoOut          => ebFifoOut,
       ebFifoIn           => ebFifoIn,
       debugOutA          => debugOutA,
@@ -401,8 +392,8 @@ begin
     -- Mux EVR and KpixDaq register interface signals onto frontEndRegCntlIn
     if (frontEndRegCntlOut.regAddr(23 downto 20) = "0010") then
       frontEndRegCntlIn.regDataIn <= evrRegOut.dataOut;
-      frontEndRegCntlIn.regAck     <= frontEndRegCntlOut.regReq;
-      frontEndRegCntlIn.regFail    <= '0';
+      frontEndRegCntlIn.regAck    <= frontEndRegCntlOut.regReq;
+      frontEndRegCntlIn.regFail   <= '0';
     else
       frontEndRegCntlIn <= frontEndRegCntlInKpix;
     end if;
@@ -412,40 +403,37 @@ begin
   --------------------------------------------------------------------------------------------------
   -- KPIX IO Buffers
   --------------------------------------------------------------------------------------------------
-  CLK_OBUF_GEN : for i in 2 downto 0 generate
-    OBUF_KPIX_CLK : OBUFDS
+  CLK_TRIG_OBUF_GEN : for i in 3 downto 0 generate
+
+    OBUF_KPIX_CLK : entity work.V5ClkOutBuf
       port map (
-        I  => kpixClk,
-        O  => kpixClkOutP(i),
-        OB => kpixClkOutN(i));
-  end generate;
+        clkIn   => kpixClk,
+        clkOutP => kpixClkOutP(i),
+        clkOutN => kpixClkOutN(i));
 
-  SER_TX_OBUF_GEN : for i in NUM_KPIX_MODULES_G-1 downto 0 generate
-    OBUF_TX : OBUF
-      port map (
-        I => intKpixSerTxOut(i),
-        O => kpixSerTxOut(i));
-  end generate;
-
-  SER_RX_IBUF_GEN : for i in NUM_KPIX_MODULES_G-1 downto 0 generate
-    IBUF_RX : IBUF
-      port map (
-        I => kpixSerRxIn(i),
-        O => intKpixSerRxIn(i));
-  end generate;
-
-  OBUF_RST : OBUF
-    port map (
-      I => kpixRst,
-      O => kpixRstOut);
-
-  TRIG_OBUF_GEN : for i in 2 downto 0 generate
-    OBUF_TRIG : OBUFDS
+    OBUF_KPIX_TRIG : OBUFDS
       port map (
         I  => kpixTrigger,
         O  => kpixTriggerOutP(i),
         OB => kpixTriggerOutN(i));
   end generate;
 
+  SER_TX_RX_OBUF_GEN : for i in NUM_KPIX_MODULES_G-1 downto 0 generate
+
+    OBUF_KPIX_TX : OBUF
+      port map (
+        I => intKpixSerTxOut(i),
+        O => kpixSerTxOut(i));
+
+    IBUF_KPIX_RX : IBUF
+      port map (
+        I => kpixSerRxIn(i),
+        O => intKpixSerRxIn(i));
+  end generate;
+
+  OBUF_KPIX_RST : OBUF
+    port map (
+      I => kpixRst,
+      O => kpixRstOut);
 
 end architecture rtl;

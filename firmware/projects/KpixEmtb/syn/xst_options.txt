@@ -1,16 +1,16 @@
 run
 -ofn $PROJECT
 -top $PROJECT
--p xc5vlx50t-ff1136-1
+-p xc5vlx50t-ff665-1
 -ifn "$OUT_DIR/sources.txt"
 -ifmt mixed
 -ofmt NGC
 -opt_mode Speed
 -opt_level 1
 -iuc YES
--keep_hierarchy Yes
+-keep_hierarchy Soft
 -netlist_hierarchy As_Optimized
--rtlview Yes
+-rtlview No
 -glob_opt AllClockNets
 -read_cores YES
 -sd $CORE_DIRS

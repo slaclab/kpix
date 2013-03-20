@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-07
--- Last update: 2013-02-20
+-- Last update: 2013-03-20
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -278,7 +278,7 @@ begin
           end if;
 
         when EVR_ERROR_COUNT_REG_ADDR_C =>
-          -- Need to sychronize this!!!
+          -- Might need to sychronize this.
           rVar.frontEndRegCntlIn.regDataIn(15 downto 0) := evrOut.errors;
           if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
             rVar.evrIn.countReset := '1';
@@ -353,6 +353,7 @@ begin
     kpixClockGenRegsIn <= r.kpixClockGenRegsIn;
     kpixLocalRegsIn    <= r.kpixLocalRegsIn;
     kpixDataRxRegsIn   <= r.kpixDataRxRegsIn;
+    evrIn              <= r.evrIn;
     
   end process comb;
 

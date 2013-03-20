@@ -199,6 +199,7 @@ begin
       gtpTxN        => udpTxN,
       gtpTxP        => udpTxP);
 
+  -- Route triggers to their proper inputs
   intTriggerIn.nimA  <= not triggerExtIn.nimA;
   intTriggerIn.nimB  <= not triggerExtIn.nimB;
   intTriggerIn.cmosA <= not triggerExtIn.cmosA;

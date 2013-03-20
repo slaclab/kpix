@@ -202,7 +202,7 @@ begin
          vc3FrameRxValid   => vc03FrameRxValid,
          vc3RemBuffAFull   => vc03RemBuffAFull,
          vc3RemBuffFull    => vc03RemBuffFull,
-			gtpLoopback       => '0',
+         gtpLoopback       => '0',
          gtpClkIn          => pgpRefClk,
          gtpRefClkOut      => pgpRefClkOut,
          gtpRxRecClk       => open,
