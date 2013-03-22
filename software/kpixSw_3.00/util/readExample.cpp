@@ -68,11 +68,16 @@ int main (int argc, char **argv) {
 
       if ( dataRead.sawRunStop()  ) dataRead.dumpRunStop();
       if ( dataRead.sawRunStart() ) dataRead.dumpRunStart();
+      if ( dataRead.sawRunTime()  ) dataRead.dumpRunTime();
+
+#if 1
 
       // Dump header values
       cout << "Header:eventNumber = " << dec << event.eventNumber() << endl;
       cout << "Header:timeStamp   = " << dec << event.timestamp() << endl;
       cout << endl;
+
+#endif
 
       // Iterate through samples
       for (x=0; x < event.count(); x++) {
@@ -83,6 +88,8 @@ int main (int argc, char **argv) {
          // Get serial number
          if ( sample->getKpixAddress() < 32 ) serial = serialList[sample->getKpixAddress()];
          else serial = "";
+
+#if 1
 
          // Show sample data
          cout << "Sample:index       = " << dec << x << endl;
@@ -122,8 +129,13 @@ int main (int argc, char **argv) {
             cout << "Sample:CalDac      = " << dataRead.getConfigInt("conFpga:kpixAsic:DacCalibration") << endl;
          }
          cout << endl;
+
+#endif
+
       }
    }
+
+   if ( dataRead.sawRunStop()  ) dataRead.dumpRunStop();
 
    // Dump config
    dataRead.dumpConfig();
