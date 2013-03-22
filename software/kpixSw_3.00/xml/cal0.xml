@@ -15,6 +15,7 @@
       <RunCount>1010</RunCount>
       <RunRate>No Limit</RunRate>
       <cntrlFpga>
+         <AcquisitionTrigger>Software</AcquisitionTrigger>
          <BncSourceA>RegClock</BncSourceA>
          <BncSourceB>RegClock</BncSourceB>
          <ClkPeriodAcq>50nS</ClkPeriodAcq>

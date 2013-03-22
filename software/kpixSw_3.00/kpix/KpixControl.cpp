@@ -207,7 +207,6 @@ void KpixControl::swRunThread() {
    bool            gotEvent;
    stringstream    oldConfig;
    stringstream    xml;
-   uint            runNumber;
 
    oldConfig.str("");
 
@@ -228,19 +227,6 @@ void KpixControl::swRunThread() {
            << ", RunCount=" << dec << swRunCount_
            << ", RunPeriod=" << dec << swRunPeriod_ << endl;
    }
-
-   // Increment run number
-   runNumber = getVariable("RunNumber")->getInt() + 1;
-   getVariable("RunNumber")->setInt(runNumber);
-
-   // Add record to data file
-   xml.str("");
-   xml << "<runStart>" << endl;
-   xml << "<runNumber>" << runNumber << "</runNumber>" << endl;
-   xml << "<timestamp>" << genTime(time(0)) << "</timestamp>" << endl;
-   xml << "<user>" << getlogin() << "</user>" << endl;
-   xml << "</runStart>" << endl;
-   commLink_->addRunStart(xml.str());
 
    try {
 
@@ -385,15 +371,6 @@ void KpixControl::swRunThread() {
    // Cleanup
    sleep(1);
 
-   // Add record to data file
-   xml.str("");
-   xml << "<runStop>" << endl;
-   xml << "<runNumber>" << runNumber << "</runNumber>" << endl;
-   xml << "<timestamp>" << genTime(time(0)) << "</timestamp>" << endl;
-   xml << "<user>" << getlogin() << "</user>" << endl;
-   xml << "</runStop>" << endl;
-   commLink_->addRunStop(xml.str());
-
    getVariable("RunState")->set(swRunRetState_);
    swRunning_ = false;
 }
@@ -427,19 +404,36 @@ void KpixControl::command ( string name, string arg ) {
 void KpixControl::setRunState ( string state ) {
    stringstream err;
    uint         toCount;
+   uint         runNumber;
 
    // Stopped state is requested
-   if ( state == "Stopped" ) swRunEnable_ = false;
+   if ( state == "Stopped" ) {
+
+      if ( swRunEnable_ ) {
+         swRunEnable_ = false;
+         pthread_join(swRunThread_,NULL);
+      }
+
+      allStatusReq_ = true;
+      addRunStop();
+   }
+
 
    // Running state is requested
    else if ( !swRunning_ && ( state == "Running"    ||
                               state == "Running Calibration" ) ) {
-      swRunRetState_ = "Stopped";
-      swRunEnable_   = true;
-      getVariable("RunState")->set(state);
 
       // Set run command 
       device("cntrlFpga",0)->setRunCommand("KpixRun");
+
+      // Increment run number
+      runNumber = getVariable("RunNumber")->getInt() + 1;
+      getVariable("RunNumber")->setInt(runNumber);
+      addRunStart();
+
+      swRunRetState_ = "Stopped";
+      swRunEnable_   = true;
+      getVariable("RunState")->set(state);
 
       // Setup run parameters
       swRunCount_ = getInt("RunCount");

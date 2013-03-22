@@ -24,18 +24,18 @@
          <ClkPeriodPrecharge>50nS</ClkPeriodPrecharge>
          <ClkPeriodRead>100nS</ClkPeriodRead>
          <KpixRxRaw>False</KpixRxRaw>
-         <RunMode>Calibrate</RunMode>
+         <RunMode>Acquire</RunMode>
          <KpixInputEdge>Rising Edge</KpixInputEdge>
          <KpixOutputEdge>Rising Edge</KpixOutputEdge>
          <TrigSource>None</TrigSource>
-         <TimestampSource>NimA</TimestampSource>
+	      <TimestampSource>NimA</TimestampSource>
          <kpixAsic>
             <BunchClockCount>8191</BunchClockCount>
-            <Cal0Delay>520</Cal0Delay>
-            <Cal1Delay>200</Cal1Delay>
-            <Cal2Delay>200</Cal2Delay>
-            <Cal3Delay>200</Cal3Delay>
-            <CalCount>1</CalCount>
+            <Cal0Delay>0xc8</Cal0Delay>
+            <Cal1Delay>0xc8</Cal1Delay>
+            <Cal2Delay>0xc8</Cal2Delay>
+            <Cal3Delay>0xc8</Cal3Delay>
+            <CalCount>0x4</CalCount>
             <CfgAutoReadDisable>False</CfgAutoReadDisable>
             <CfgForceTemp>False</CfgForceTemp>
             <CfgDisableTemp>False</CfgDisableTemp>
@@ -47,7 +47,7 @@
             <CntrlHighGain>False</CntrlHighGain>                    <!-- bit  2 -->
             <CntrlNearNeighbor>False</CntrlNearNeighbor>            <!-- bit  3 -->
             <CntrlForceTrigSource>Disable</CntrlForceTrigSource>   <!-- bit  4 -->
-            <CntrlCalSource>Internal</CntrlCalSource>                <!-- bit  6 -->
+            <CntrlCalSource>Disable</CntrlCalSource>                <!-- bit  6 -->
             <CntrlHoldTime>16x</CntrlHoldTime>                      <!-- bit  8-10 -->
             <CntrlCalibHigh>False</CntrlCalibHigh>                  <!-- bit 11 -->
             <CntrlShortIntEn>False</CntrlShortIntEn>                <!-- bit 12 -->
@@ -103,10 +103,9 @@
             <DacRangeThresholdVolt>0 V</DacRangeThresholdVolt>
             <DacShaperBias>0x78</DacShaperBias>
             <DacShaperBiasVolt>1.2 V</DacShaperBiasVolt>
-            <DacPreThresholdA>0</DacPreThresholdA>
-            <DacPreThresholdB>0</DacPreThresholdB>
             <DacThresholdA>230</DacThresholdA>
-            <DacThresholdB>0</DacThresholdB>
+            <DacThresholdB>0x0</DacThresholdB>
+            <DacThresholdBVolt>0 V</DacThresholdBVolt>
             <Enabled>False</Enabled>
             <SerialNumber>0</SerialNumber>
             <TimeResetOn>0x3</TimeResetOn>
@@ -125,99 +124,21 @@
       <Enabled>True</Enabled>
       <cntrlFpga index="0">
          <Enabled>True</Enabled>
-
          <kpixAsic index="0">
             <Enabled>True</Enabled>
-            <SerialNumber>1015</SerialNumber>
-
-            <Chan_0000_0031>AAAAAAAA AAAAADDD AAAAAAAA AAAAAAAA</Chan_0000_0031>
-            <Chan_0032_0063>AAAAAAAA AAAAAAAA AAAAAADD AAAAAAAA</Chan_0032_0063>
-            <Chan_0064_0095>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0064_0095>
-            <Chan_0096_0127>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0096_0127>
-            <Chan_0128_0159>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0128_0159>
-            <Chan_0160_0191>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0160_0191>
-            <Chan_0192_0223>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0192_0223>
-            <Chan_0224_0255>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0224_0255>
-            <Chan_0256_0287>DDDDAAAA ADDDDAAA AAAAAAAA AAAADDDD</Chan_0256_0287>
-            <Chan_0288_0319>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0288_0319>
-            <Chan_0320_0351>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0320_0351>
-            <Chan_0352_0383>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0352_0383>
-            <Chan_0384_0415>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0384_0415>
-            <Chan_0416_0447>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0416_0447>
-            <Chan_0448_0479>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0448_0479>
-            <Chan_0480_0511>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0480_0511>
-            <Chan_0512_0543>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0512_0543>
-            <Chan_0544_0575>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0544_0575>
-            <Chan_0576_0607>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0576_0607>
-            <Chan_0608_0639>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0608_0639>
-            <Chan_0640_0671>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0640_0671>
-            <Chan_0672_0703>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0672_0703>
-            <Chan_0704_0735>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0704_0735>
-            <Chan_0736_0767>DDDDAAAA ADDDDAAA AAAAAAAA AAAADDDD</Chan_0736_0767>
-            <Chan_0768_0799>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0768_0799>
-            <Chan_0800_0831>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0800_0831>
-            <Chan_0832_0863>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0832_0863>
-            <Chan_0864_0895>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0864_0895>
-            <Chan_0896_0927>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0896_0927>
-            <Chan_0928_0959>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0928_0959>
-            <Chan_0960_0991>AAAAAAAA AAAAAAAA AAAAAADD AAAAAAAA</Chan_0960_0991>
-            <Chan_0992_1023>AAAAAAAA AAAAADDD AAAAAAAA AAAAAAAA</Chan_0992_1023>
-
-            <DacPreThresholdA>0</DacPreThresholdA>
-            <DacPreThresholdB>0</DacPreThresholdB>
-            <DacThresholdA>230</DacThresholdA>
-            <DacThresholdB>0</DacThresholdB>
+            <SerialNumber>1016</SerialNumber>
          </kpixAsic>
-
          <kpixAsic index="1">
-            <Enabled>True</Enabled>
-            <SerialNumber>1002</SerialNumber>
-
-            <Chan_0000_0031>CCCCAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0000_0031>
-            <Chan_0032_0063>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0032_0063>
-            <Chan_0064_0095>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0064_0095>
-            <Chan_0096_0127>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0096_0127>
-            <Chan_0128_0159>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0128_0159>
-            <Chan_0160_0191>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0160_0191>
-            <Chan_0192_0223>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0192_0223>
-            <Chan_0224_0255>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0224_0255>
-            <Chan_0256_0287>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0256_0287>
-            <Chan_0288_0319>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0288_0319>
-            <Chan_0320_0351>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0320_0351>
-            <Chan_0352_0383>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0352_0383>
-            <Chan_0384_0415>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0384_0415>
-            <Chan_0416_0447>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0416_0447>
-            <Chan_0448_0479>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0448_0479>
-            <Chan_0480_0511>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0480_0511>
-            <Chan_0512_0543>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0512_0543>
-            <Chan_0544_0575>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0544_0575>
-            <Chan_0576_0607>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0576_0607>
-            <Chan_0608_0639>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0608_0639>
-            <Chan_0640_0671>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0640_0671>
-            <Chan_0672_0703>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0672_0703>
-            <Chan_0704_0735>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0704_0735>
-            <Chan_0736_0767>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0736_0767>
-            <Chan_0768_0799>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0768_0799>
-            <Chan_0800_0831>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0800_0831>
-            <Chan_0832_0863>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0832_0863>
-            <Chan_0864_0895>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0864_0895>
-            <Chan_0896_0927>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0896_0927>
-            <Chan_0928_0959>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0928_0959>
-            <Chan_0960_0991>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0960_0991>
-            <Chan_0992_1023>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0992_1023>
-            <DacPreThresholdA>0</DacPreThresholdA>
-            <DacPreThresholdB>0</DacPreThresholdB>
-            <DacThresholdA>230</DacThresholdA>
-            <DacThresholdB>0</DacThresholdB>
+            <Enabled>False</Enabled>
+            <SerialNumber>1013</SerialNumber>
          </kpixAsic>
-
          <kpixAsic index="2">
             <Enabled>False</Enabled>
-            <SerialNumber>0</SerialNumber>
+            <SerialNumber>1012</SerialNumber>
          </kpixAsic>
          <kpixAsic index="3">
             <Enabled>False</Enabled>
-            <SerialNumber>0</SerialNumber>
+            <SerialNumber>1015</SerialNumber>
          </kpixAsic>
          <kpixAsic index="4">
             <Enabled>True</Enabled>
