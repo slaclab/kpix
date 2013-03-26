@@ -158,6 +158,9 @@ class KpixCalibRead {
       //! Get bad channel flag
       bool badChannel ( string kpix, uint channel );
 
+      //! Get calibration value by name
+      double calibByName ( string kpix, uint channel, uint bucket, uint range, string name );
+
 };
 
 #endif

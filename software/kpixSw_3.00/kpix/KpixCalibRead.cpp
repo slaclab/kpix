@@ -302,3 +302,21 @@ bool KpixCalibRead::badChannel ( string kpix, uint channel ) {
    return(data->badChannel);
 }
 
+//! Get calibration value by name
+double KpixCalibRead::calibByName ( string kpix, uint channel, uint bucket, uint range, string name ) {
+   if      ( name == "baseMean"          ) return( baseMean ( kpix, channel, bucket, range ));
+   else if ( name == "baseRms"           ) return( baseRms ( kpix, channel, bucket, range ));
+   else if ( name == "baseFitMean"       ) return( baseFitMean ( kpix, channel, bucket, range ));
+   else if ( name == "baseFitSigma"      ) return( baseFitSigma ( kpix, channel, bucket, range ));
+   else if ( name == "baseFitMeanErr"    ) return( baseFitMeanErr ( kpix, channel, bucket, range ));
+   else if ( name == "baseFitSigmaErr"   ) return( baseFitSigmaErr ( kpix, channel, bucket, range ));
+   else if ( name == "baseFitChisquare"  ) return( baseFitChisquare ( kpix, channel, bucket, range ));
+   else if ( name == "calibGain"         ) return( calibGain ( kpix, channel, bucket, range ));
+   else if ( name == "calibIntercept"    ) return( calibIntercept ( kpix, channel, bucket, range ));
+   else if ( name == "calibGainErr"      ) return( calibGainErr ( kpix, channel, bucket, range ));
+   else if ( name == "calibGainRms"      ) return( calibGainRms ( kpix, channel, bucket, range ));
+   else if ( name == "calibInterceptErr" ) return( calibInterceptErr ( kpix, channel, bucket, range ));
+   else if ( name == "calibChisquare"    ) return( calibChisquare ( kpix, channel, bucket, range ));
+   else return(0.0);
+}
+
