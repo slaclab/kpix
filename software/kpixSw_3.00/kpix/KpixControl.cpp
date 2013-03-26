@@ -94,7 +94,7 @@ KpixControl::KpixControl ( CommLink *commLink, string defFile, uint kpixCount ) 
 
    addVariable(new Variable("CalDacCount",Variable::Configuration));
    getVariable("CalDacCount")->setDescription("Number of iterations to take at each dac value");
-   getVariable("CalDacCount")->setRange(1,255);
+   getVariable("CalDacCount")->setRange(0,255);
    getVariable("CalDacCount")->setInt(1);
 
    addVariable(new Variable("CalChanMin",Variable::Configuration));
@@ -304,14 +304,21 @@ void KpixControl::swRunThread() {
 
                // Mean run is done
                if ( runTotal >= calMeanCount ) {
-                  usleep(100000);
-                  getVariable("CalState")->set("Inject");
-                  calChan = calChanMin;
-                  calDac  = calDacMin;
-                  getVariable("CalChannel")->setInt(calChan);
-                  getVariable("CalDac")->setInt(calDac);
-                  calibConfig(calChan,calDac);
-                  stepTotal = 0;
+
+                  // Cal count value is zero
+                  if ( calDacCount == 0 ) break;
+
+                  // Setup calibration
+                  else {
+                     usleep(100000);
+                     getVariable("CalState")->set("Inject");
+                     calChan = calChanMin;
+                     calDac  = calDacMin;
+                     getVariable("CalChannel")->setInt(calChan);
+                     getVariable("CalDac")->setInt(calDac);
+                     calibConfig(calChan,calDac);
+                     stepTotal = 0;
+                  }
                }
             }
 
