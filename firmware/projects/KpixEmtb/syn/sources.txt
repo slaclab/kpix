@@ -40,7 +40,7 @@ vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/V5ClkOutBuf.vhd"
 
 ## KpixDaq
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/Pgp2UsBuff64.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/Pgp2FrontEnd64.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/Pgp2FrontEnd.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/FrontEndRegDecoder.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EventBuilder.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixClockGen.vhd"

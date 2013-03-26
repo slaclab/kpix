@@ -20,24 +20,16 @@ CONFIG PART = XC5VLX50T-FF665-1;
 #inst EthFrontEnd_1/U_EthClientGtp/U_GTP LOC=GTP_DUAL_X0Y4;
 
 # Define clocks
-NET pgpClk    TNM_NET = "pgpClk";
-NET pgpClk2x  TNM_NET = "pgpClk2x";
-#NET "EventReceiverTop_1/evrClk"  TNM_NET = "evrClk";
 NET sysClk125 TNM_NET = "sysClk125";
 NET clk200    TNM_NET = "clk200";
 NET kpixClk   TNM_NET = "kpixClk";
 
 # Define clock frequncies
-TIMESPEC TS_pgpClk = PERIOD pgpClk 156.25 Mhz HIGH 50%;
-TIMESPEC TS_pgpClk2x = PERIOD pgpClk2x 312.5 Mhz HIGH 50%;
-#TIMESPEC TS_evrClk = PERIOD evrClk 238 Mhz HIGH 50%;
 TIMESPEC TS_sysClk125 = PERIOD sysClk125 125 Mhz HIGH 50%;
 TIMESPEC TS_clk200 = PERIOD clk200 200 Mhz HIGH 50%;
 TIMESPEC TS_kpixClk = PERIOD kpixClk 100 Mhz HIGH 50%;
 
 # Group clocks
-TIMEGRP TG_pgpClk_r = RISING pgpClk;
-#TIMEGRP TG_evrClk_r = RISING evrClk;
 TIMEGRP TG_sysClk125_r = RISING sysClk125;
 TIMEGRP TG_kpixClk_r = RISING kpixClk;
 TIMEGRP TG_clk200_r = RISING clk200;
@@ -75,14 +67,14 @@ NET "fpgaRstL"      TIG;
 
 # Main clock and reset
 NET "fpgaRstL"           LOC = "Y18" | IOSTANDARD = "LVCMOS33";
-NET "pgpRefClkP"         LOC = "K4";
-NET "pgpRefClkN"         LOC = "K3";
+NET "gtpRefClkP"         LOC = "K4";
+NET "gtpRefClkN"         LOC = "K3";
 
 # PGP Interface
-NET "pgpTxP"             LOC = "H2";
-NET "pgpTxN"             LOC = "J2";
-NET "pgpRxP"             LOC = "J1";
-NET "pgpRxN"             LOC = "K1";
+NET "udpTxP"             LOC = "H2";
+NET "udpTxN"             LOC = "J2";
+NET "udpRxP"             LOC = "J1";
+NET "udpRxN"             LOC = "K1";
 
 # EVR Clock and Interface
 #NET "evrClkP" LOC = "T4";

@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2013-03-20
+-- Last update: 2013-03-25
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -29,7 +29,8 @@ entity KpixEmtb is
   
   generic (
     DELAY_G            : time    := 1 ns;
-    NUM_KPIX_MODULES_G : natural := 31);
+    NUM_KPIX_MODULES_G : natural := 31;
+    FRONT_END_G : string := "PGP");     -- "PGP" or "ETH"
 
   port (
     -- System reset
@@ -58,8 +59,8 @@ entity KpixEmtb is
     debugOutB : out sl;
 
     -- External Triggers
-    cmosIn : sl;
-    lemoIn : sl;
+    cmosIn : in sl;
+    lemoIn : in sl;
 
 
     -- Interface to KPiX modules
@@ -103,7 +104,7 @@ architecture rtl of KpixEmtb is
   signal frontEndUsDataIn   : FrontEndUsDataInType;
 
   signal softwareReset : sl;
-  signal ponResetL : sl;
+  signal ponResetL     : sl;
 
   -- EVR Signals
   signal evrIn     : EvrInType;
@@ -180,7 +181,7 @@ architecture rtl of KpixEmtb is
       countReset      : in  std_logic);
   end component EventReceiverTop;
 
-  component Pgp2FrontEnd64 is
+  component Pgp2FrontEnd is
     port (
       pgpRefClk     : in  std_logic;
       pgpRefClkOut  : out std_logic;
@@ -210,12 +211,12 @@ architecture rtl of KpixEmtb is
       pgpRxP        : in  std_logic;
       pgpTxN        : out std_logic;
       pgpTxP        : out std_logic);
-  end component Pgp2FrontEnd64;
+  end component Pgp2FrontEnd;
 
 begin
 
-  fpgaRst <= not fpgaRstL or softwareReset;
-  ponResetL <= not fpgaRst;          -- Pgp2GtpClk needs active low for ponReset
+  fpgaRst   <= not fpgaRstL or softwareReset;
+  ponResetL <= not fpgaRst;             -- Pgp2GtpClk needs active low for ponReset
 
   -- Input clock buffer
   PgpRefClkIbufds : IBUFDS
@@ -268,7 +269,7 @@ begin
       syncRst  => rst200);  
 
   -- PGP module
-  PgpFrontEnd_1 : Pgp2FrontEnd64
+  PgpFrontEnd_1 : Pgp2FrontEnd
     port map (
       pgpRefClk     => pgpRefClk,       -- Direct input from pins
       pgpRefClkOut  => pgpRefClkOut,    -- Send this to DCM
@@ -300,32 +301,40 @@ begin
       pgpTxP        => pgpTxP);
 
   -- Event Receiver
-  EventReceiverTop_1 : EventReceiverTop
-    generic map (
-      USE_CHIPSCOPE => 0)
-    port map (
-      Reset           => fpgaRst,
-      m_Timing_MGTCLK => evrClkN,
-      p_Timing_MGTCLK => evrClkP,
-      RXN_IN          => evrRxN,
-      RXP_IN          => evrRxP,
-      EventStream     => evrOut.eventStream,
-      DataStream      => evrOut.dataStream,
-      evrTrigger      => evrOut.trigger,
-      evrRegDataOut   => evrRegOut.dataOut,
-      evrRegWrEna     => evrRegIn.wrEna,
-      evrRegDataIn    => evrRegIn.dataIn,
-      evrRegAddr      => evrRegIn.addr,
-      evrRegEna       => evrRegIn.ena,
-      cxiClk          => sysClk125,
-      cxiClkRst       => sysRst125,
-      evrClk          => evrClk,
-      evrDebug        => evrOut.debug,
-      outSeconds      => evrOut.seconds,
-      outOffset       => evrOut.offset,
-      evrErrors       => evrOut.errors,
-      countReset      => evrIn.countReset);
+--  EventReceiverTop_1 : EventReceiverTop
+--    generic map (
+--      USE_CHIPSCOPE => 0)
+--    port map (
+--      Reset           => fpgaRst,
+--      m_Timing_MGTCLK => evrClkN,
+--      p_Timing_MGTCLK => evrClkP,
+--      RXN_IN          => evrRxN,
+--      RXP_IN          => evrRxP,
+--      EventStream     => evrOut.eventStream,
+--      DataStream      => evrOut.dataStream,
+--      evrTrigger      => evrOut.trigger,
+--      evrRegDataOut   => evrRegOut.dataOut,
+--      evrRegWrEna     => evrRegIn.wrEna,
+--      evrRegDataIn    => evrRegIn.dataIn,
+--      evrRegAddr      => evrRegIn.addr,
+--      evrRegEna       => evrRegIn.ena,
+--      cxiClk          => sysClk125,
+--      cxiClkRst       => sysRst125,
+--      evrClk          => evrClk,
+--      evrDebug        => evrOut.debug,
+--      outSeconds      => evrOut.seconds,
+--      outOffset       => evrOut.offset,
+--      evrErrors       => evrOut.errors,
+--      countReset      => evrIn.countReset);
 
+  evrOut.eventStream <= (others => '0');
+  evrOut.dataStream  <= (others => '0');
+  evrOut.trigger     <= '0';
+  evrRegOut.dataOut  <= (others => '0');
+  evrOut.debug       <= (others => '0');
+  evrOut.seconds     <= (others => '0');
+  evrOut.offset      <= (others => '0');
+  evrOut.errors      <= (others => '0');
 
   -- Route triggers to their proper inputs
   intTriggerIn.nimA  <= not lemoIn;
@@ -349,7 +358,7 @@ begin
       frontEndCmdCntlOut => frontEndCmdCntlOut,
       frontEndUsDataOut  => frontEndUsDataOut,
       frontEndUsDataIn   => frontEndUsDataIn,
-      softwareReset => softwareReset,
+      softwareReset      => softwareReset,
       triggerExtIn       => intTriggerIn,
       evrOut             => evrOut,
       evrIn              => evrIn,
