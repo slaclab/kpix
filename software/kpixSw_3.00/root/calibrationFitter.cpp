@@ -679,13 +679,13 @@ int main ( int argc, char **argv ) {
 
                // Determine if the channel is bad
                badValue = 0;
-               if ( badGain[kpix][channel] ) {
-                  badValue |= 0x1;
-                  badGainCnt++;
-               }
                if ( badMean[kpix][channel] ) {
-                  badValue |= 0x2;
+                  badValue |= 0x1;
                   badMeanCnt++;
+               }
+               if ( badGain[kpix][channel] ) {
+                  badValue |= 0x2;
+                  badGainCnt++;
                }
 
                xml << "         <BadChannel>" << dec << badValue << "</BadChannel>" << endl;

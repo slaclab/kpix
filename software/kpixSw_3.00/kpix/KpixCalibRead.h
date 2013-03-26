@@ -48,7 +48,7 @@ class KpixCalibRead {
             double calibChisquare;
             double calibGainRms;
             string calibCrossTalk;
-            bool   badChannel;
+            uint   badChannel;
 
             // Init
             KpixCalibData () {
@@ -66,7 +66,7 @@ class KpixCalibRead {
                calibInterceptErr = 0;
                calibChisquare    = 0;
                calibCrossTalk    = "";
-               badChannel        = false;
+               badChannel        = 0;
             }
       };
 
@@ -156,7 +156,7 @@ class KpixCalibRead {
       string calibCrossTalk ( string kpix, uint channel, uint bucket, uint range );
 
       //! Get bad channel flag
-      bool badChannel ( string kpix, uint channel );
+      uint badChannel ( string kpix, uint channel );
 
       //! Get calibration value by name
       double calibByName ( string kpix, uint channel, uint bucket, uint range, string name );
