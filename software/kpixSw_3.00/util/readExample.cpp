@@ -127,6 +127,7 @@ int main (int argc, char **argv) {
 
             // Get a config variable associated with event
             cout << "Sample:CalDac      = " << dataRead.getConfigInt("conFpga:kpixAsic:DacCalibration") << endl;
+            cout << "Sample:CalState    = " << dataRead.getStatus("CalState") << endl;
          }
          cout << endl;
 
