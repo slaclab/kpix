@@ -66,7 +66,7 @@ NET "fpgaRstL"      TIG;
 # Pin Assignments
 
 # Main clock and reset
-NET "fpgaRstL"           LOC = "Y18" | IOSTANDARD = "LVCMOS33";
+NET "fpgaRstL"           LOC = "Y18" | IOSTANDARD = "LVCMOS33" | PULLUP;
 NET "gtpRefClkP"         LOC = "K4";
 NET "gtpRefClkN"         LOC = "K3";
 
