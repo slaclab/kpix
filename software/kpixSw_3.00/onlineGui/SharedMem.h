@@ -1,11 +1,11 @@
 //-----------------------------------------------------------------------------
-// File          : UdpServer.h
+// File          : SharedMem.h
 // Author        : Ryan Herbst  <rherbst@slac.stanford.edu>
 // Created       : 10/04/2011
 // Project       : General Purpose
 //-----------------------------------------------------------------------------
 // Description :
-// UDP server for data
+// Shared memory interface for data
 //-----------------------------------------------------------------------------
 // Copyright (c) 2011 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
@@ -13,53 +13,49 @@
 // Modification history :
 // 10/04/2011: created
 //-----------------------------------------------------------------------------
-#ifndef __UDP_SERVER_H__
-#define __UDP_SERVER_H__
+#ifndef __SHARED_MEM_H__
+#define __SHARED_MEM_H__
 
-#include <QUdpSocket>
-#include <QObject>
-#include <QTimer>
-#include <QDomDocument>
+#include <QThread>
+#include "../generic/DataSharedMem.h"
+#include "../generic/DataRead.h"
+#include "../kpix/KpixEvent.h"
 using namespace std;
 
-class UdpServer : public QObject {
+class SharedMem : public QThread {
    
    Q_OBJECT
 
-      // Network
-      QUdpSocket  *udpSocket_;
+      // Event counters
+      uint eventCount;
+      uint ackCount;
 
-      // Debug
-      bool debug_;
+      // Data reader
+      DataRead  *dread_;  
+      KpixEvent *event_;
 
-      // Last size value received
-      uint lastSize_;
+      // Run enable
+      bool runEnable;
 
    public:
 
       // Creation Class
-      UdpServer (int port);
+      SharedMem (DataRead *dataRead, KpixEvent *event);
 
       // Delete
-      ~UdpServer ( );
+      ~SharedMem ();
 
-      // Set debug
-      void setDebug(bool debug);
+      // Main thread
+      void run ();
 
    public slots:
-
-      void sockReady();
+      
+      void ack();
 
    signals:
 
-      // XML Status received
-      void xmlStatus (QDomNode node);
-
-      // XML Config received
-      void xmlConfig (QDomNode node);
-
       // Data
-      void rxData (uint size, uint *data);
+      void event ();
 };
 
 #endif

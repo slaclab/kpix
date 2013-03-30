@@ -26,16 +26,16 @@
 #include <TimeWindow.h>
 #include <HitWindow.h>
 #include <CalibWindow.h>
+#include "../generic/DataRead.h"
+#include "../kpix/KpixEvent.h"
 using namespace std;
 
 class MainWindow : public QWidget {
   
    Q_OBJECT
 
-      QMap <QString, QString> config_;
-      QMap <QString, QString> status_;
-
-      KpixEvent   event_;
+      DataRead    *dread_;
+      KpixEvent   *event_;
       HistWindow  *hist_;
       CalibWindow *calib_;
       TimeWindow  *time_;
@@ -58,12 +58,10 @@ class MainWindow : public QWidget {
       bool  kpixPol_;
       bool  kpixCalHigh_;
 
-      void xmlLevel (QDomNode node, QString level, bool config);
-
    public:
 
       // Window
-      MainWindow ( QWidget *parent = NULL );
+      MainWindow ( DataRead *dread, KpixEvent *event, QWidget *parent = NULL );
 
       // Delete
       ~MainWindow ( );
@@ -72,9 +70,11 @@ class MainWindow : public QWidget {
 
       void selChanged();
       void resetPressed();
-      void xmlStatus (QDomNode node);
-      void xmlConfig (QDomNode node);
-      void rxData (uint size, uint *data);
+      void event ();
+
+   signals:
+
+      void ack ();
 };
 
 #endif

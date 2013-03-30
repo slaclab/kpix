@@ -27,9 +27,12 @@
 using namespace std;
 
 // Constructor
-MainWindow::MainWindow ( QWidget *parent ) : QWidget (parent) {
+MainWindow::MainWindow ( DataRead *dread, KpixEvent *event, QWidget *parent ) : QWidget (parent) {
    setWindowTitle("KPIX Live Display");
-  
+ 
+   dread_ = dread;
+   event_ = event;
+ 
    QVBoxLayout *top = new QVBoxLayout; 
    this->setLayout(top);
 
@@ -93,110 +96,35 @@ MainWindow::MainWindow ( QWidget *parent ) : QWidget (parent) {
    kpixCalHigh_ = false;
 
    for(uint x=0; x < 32; x++) tempValues_[x] = 0;
-
-   status_.clear();
-   config_.clear();
 }
 
 // Delete
-MainWindow::~MainWindow ( ) { 
-   status_.clear();
-   config_.clear();
-}
+MainWindow::~MainWindow ( ) { }
 
-void MainWindow::xmlLevel (QDomNode node, QString level, bool config) {
-   QString      local;
-   QString      index;
-   QString      value;
-   QString      temp;
-
-   while ( ! node.isNull() ) {
-
-      // Process element
-      if ( node.isElement() ) {
-         local = level;
-
-         // Append node name to id
-         if ( local != "" ) local.append(":");
-         local.append(node.nodeName());
-
-         // Node has index
-         if ( node.hasAttributes() ) {
-            index = node.attributes().namedItem("index").nodeValue();
-            local.append("(");
-            local.append(index);
-            local.append(")");
-         }
-
-         // Process child
-         xmlLevel(node.firstChild(),local,config);
-      }
-
-      // Process text
-      else if ( node.isText() ) {
-         local = level;
-         value = node.nodeValue();
-         temp = value;
-
-         // Strip all spaces and newlines
-         temp.remove(QChar(' '));
-         temp.remove(QChar('\n'));
-
-         // Resulting string is non-blank
-         if ( temp != "" ) {
-
-            // Config
-            if ( config ) config_[local] = value;
-
-            // Status
-            else status_[local] = value;
-         }
-      }
-
-      // Next node
-      node = node.nextSibling();
-   }
-}
-
-void MainWindow::xmlStatus (QDomNode node) {
-   bool ok;
-
-   xmlLevel(node,"",false);
-
-   calInject_  = (status_["CalState"] == "Inject");
-   calChannel_ = status_["CalChannel"].toUInt(&ok,0);
-   calDac_     = status_["CalDac"].toUInt(&ok,0);
-
-   if ( follow_->isChecked() && calInject_ && ((uint)chan_->value() != calChannel_ ) ) 
-      chan_->setValue(calChannel_);
-}
-
-void MainWindow::xmlConfig (QDomNode node) {
-   xmlLevel(node,"",true);
-
-   kpixCalHigh_ = ( config_["kpixFpga:kpixAsic:CntrlCalibHigh"] == "True" );
-
-   if ( config_["kpixFpga:kpixAsic:CntrlPolarity"] == "Negative" ) kpixPol_ = false;
-   else kpixPol_ = true;
-
-}
-
-void MainWindow::rxData (uint size, uint *data) {
+void MainWindow::event () {
    KpixSample *sample;
    uint       x;
    uint       kpix;
    uint       type;
    uint       value;
 
-   event_.copy(data,size);
-   if ( calInject_ ) calib_->rxData (&event_, calChannel_, calDac_, kpixPol_, kpixCalHigh_);
-   else hist_->rxData(&event_);
-   time_->rxData(&event_);
-   hits_->rxData(&event_);
+   calInject_  = (dread_->getStatus("CalState") == "Inject");
+   calChannel_ = dread_->getStatusInt("CalChannel");
+   calDac_     = dread_->getStatusInt("CalDac");
+
+   kpixCalHigh_ = ( dread_->getConfig("kpixFpga:kpixAsic:CntrlCalibHigh") == "True" );
+
+   if ( dread_->getConfig("kpixFpga:kpixAsic:CntrlPolarity") == "Negative" ) kpixPol_ = false;
+   else kpixPol_ = true;
+
+   if ( calInject_ ) calib_->rxData (event_, calChannel_, calDac_, kpixPol_, kpixCalHigh_);
+   else hist_->rxData(event_);
+   time_->rxData(event_);
+   hits_->rxData(event_);
 
    // Extract temperatures
-   for (x=0; x < event_.count(); x++) {
-      sample  = event_.sample(x);
+   for (x=0; x < event_->count(); x++) {
+      sample  = event_->sample(x);
       kpix    = sample->getKpixAddress();
       type    = sample->getSampleType();
       value   = sample->getSampleValue();
@@ -204,6 +132,11 @@ void MainWindow::rxData (uint size, uint *data) {
       if ( type == 1 ) tempValues_[kpix] = value;
    }
    dCount_++;
+
+   if ( follow_->isChecked() && calInject_ && ((uint)chan_->value() != calChannel_ ) ) 
+      chan_->setValue(calChannel_);
+
+   ack();
 }
 
 void MainWindow::selChanged() {
@@ -263,7 +196,4 @@ void MainWindow::resetPressed() {
    dCount_ = 0;
    selChanged();
 }
-
-
-
 

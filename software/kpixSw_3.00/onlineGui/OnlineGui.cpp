@@ -22,39 +22,31 @@
 #include <QApplication>
 #include <QErrorMessage>
 #include <QObject>
-#include "UdpServer.h"
+#include "../generic/DataRead.h"
+#include "../kpix/KpixEvent.h"
 #include "MainWindow.h"
+#include "SharedMem.h"
 using namespace std;
 
 // Main Function
 int main ( int argc, char **argv ) {
-   int     port;
+   DataRead  *data  = new DataRead;
+   KpixEvent *event = new KpixEvent;
 
-   // No args, use default
-   if ( argc < 2 ) port = 8092;
-
-   // Proper args
-   else if ( argc == 2 ) port = atoi(argv[1]);
-
-   // Show usage
-   else {
-      cout << "Usage: onlineGUi [port]" << endl;
-      exit(-1);
-   }
+   data->openShared("kpix",1);
 
    // Start application
    QApplication a( argc, argv );
 
-   UdpServer udpServer(8099);
-   udpServer.setDebug(true);
+   // Shared memory
+   SharedMem smem(data,event);
 
-   MainWindow mainWin;
+   MainWindow mainWin(data,event);
    mainWin.show();
 
    // Udp signals
-   QObject::connect(&udpServer,SIGNAL(xmlStatus(QDomNode)),&mainWin,SLOT(xmlStatus(QDomNode)));
-   QObject::connect(&udpServer,SIGNAL(xmlConfig(QDomNode)),&mainWin,SLOT(xmlConfig(QDomNode)));
-   QObject::connect(&udpServer,SIGNAL(rxData(uint,uint *)),&mainWin,SLOT(rxData(uint, uint*)));
+   QObject::connect(&smem,SIGNAL(event()),&mainWin,SLOT(event()));
+   QObject::connect(&mainWin,SIGNAL(ack()),&smem,SLOT(ack()));
 
    // Exit on window close
    QObject::connect(&a,SIGNAL(lastWindowClosed()), &a, SLOT(quit())); 

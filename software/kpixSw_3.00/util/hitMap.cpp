@@ -1,18 +1,3 @@
-//-----------------------------------------------------------------------------
-// File          : readExample.cpp
-// Author        : Ryan Herbst  <rherbst@slac.stanford.edu>
-// Created       : 12/02/2011
-// Project       : Kpix DAQ
-//-----------------------------------------------------------------------------
-// Description :
-// Read data example
-//-----------------------------------------------------------------------------
-// Copyright (c) 2011 by SLAC. All rights reserved.
-// Proprietary and confidential to SLAC.
-//-----------------------------------------------------------------------------
-// Modification history :
-// 12/02/2011: created
-//----------------------------------------------------------------------------
 #include <KpixEvent.h>
 #include <KpixSample.h>
 #include <KpixCalibRead.h>
@@ -27,13 +12,20 @@ int main (int argc, char **argv) {
    DataRead      dataRead;
    KpixEvent     event;
    KpixSample    *sample;
+   KpixCalibRead calibRead;
    uint          x;
+   double        mean;
+   double        gain;
+   double        charge;
    uint          count;
    stringstream  tmp;
-   uint          hits[1024];
+   string        serialList[32];
+   string        serial;
+   uint          hitCount[32][1024][4];
+   uint          kpix, chan, buck;
 
    // Check args
-   if ( argc < 2 ) {
+   if ( argc != 2 ) {
       cout << "Usage: hitMap datafile.bin" << endl;
       return(1);
    }
@@ -44,7 +36,14 @@ int main (int argc, char **argv) {
       return(2);
    }
 
-   for (x=0; x < 1024; x++) hits[x] = 0;
+   for ( kpix = 0; kpix < 32; kpix++ ) {
+      for ( chan = 0; chan < 1024; chan++ ) {
+         for ( buck = 0; buck < 4; buck++ ) {
+            hitCount[kpix][chan][buck] = 0;
+         }
+      }
+   }
+
 
    // Process each event
    count = 0;
@@ -56,16 +55,22 @@ int main (int argc, char **argv) {
          // Get sample
          sample = event.sample(x);
 
-         // Do something if this is a data sample
-         if ( sample->getSampleType() == KpixSample::Data ) {
-
-            if ( sample->getKpixBucket() ) hits[sample->getKpixChannel()]++;
-         }
+         hitCount[sample->getKpixAddress()][sample->getKpixChannel()][sample->getKpixBucket()]++;
       }
    }
 
-   for (x=0; x < 1024; x++) 
-      cout << "Channel " << setw(4) << setfill(' ') << x << " = " << hits[x] << endl;
+   for ( kpix = 0; kpix < 32; kpix++ ) {
+      for ( chan = 0; chan < 1024; chan++ ) {
+         for ( buck = 0; buck < 4; buck++ ) {
+            cout << "Kpix=" << dec << kpix << ", Channel=" << dec << chan;
+            cout << " b0=" << dec << hitCount[kpix][chan][0];
+            cout << " b1=" << dec << hitCount[kpix][chan][1];
+            cout << " b2=" << dec << hitCount[kpix][chan][2];
+            cout << " b3=" << dec << hitCount[kpix][chan][3];
+            cout << endl;
+         }
+      }
+   }
 
    return(0);
 }

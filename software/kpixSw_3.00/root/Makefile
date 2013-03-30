@@ -1,6 +1,6 @@
 # Variables
 CFLAGS  := -Wall `xml2-config --cflags` `root-config --cflags` -I$(PWD)/../kpix -I$(PWD)/../generic
-LFLAGS  := `xml2-config --libs` `root-config --libs` -lMinuit
+LFLAGS  := `xml2-config --libs` `root-config --libs` -lMinuit -lrt
 CC      := g++
 BIN     := $(PWD)/../bin
 OBJ     := $(PWD)/.obj

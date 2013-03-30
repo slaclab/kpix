@@ -129,15 +129,15 @@
             <SerialNumber>1016</SerialNumber>
          </kpixAsic>
          <kpixAsic index="1">
-            <Enabled>False</Enabled>
+            <Enabled>True</Enabled>
             <SerialNumber>1013</SerialNumber>
          </kpixAsic>
          <kpixAsic index="2">
-            <Enabled>False</Enabled>
+            <Enabled>True</Enabled>
             <SerialNumber>1012</SerialNumber>
          </kpixAsic>
          <kpixAsic index="3">
-            <Enabled>False</Enabled>
+            <Enabled>True</Enabled>
             <SerialNumber>1015</SerialNumber>
          </kpixAsic>
          <kpixAsic index="4">

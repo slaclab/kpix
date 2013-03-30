@@ -56,7 +56,8 @@ int main (int argc, char **argv) {
       udpLink.setMaxRxTx(500000);
       udpLink.setDebug(true);
       udpLink.open(8192,1,"192.168.1.16");
-      udpLink.openDataNet("127.0.0.1",8099);
+      //udpLink.openDataNet("127.0.0.1",8099);
+      udpLink.enableSharedMemory("kpix",1);
       usleep(100);
 
       // Setup control server
