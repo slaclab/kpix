@@ -77,5 +77,4 @@
 
 -ol high
 -xe n
--mt 4
 

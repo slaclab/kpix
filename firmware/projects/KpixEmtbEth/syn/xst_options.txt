@@ -8,7 +8,7 @@ run
 -opt_mode Speed
 -opt_level 1
 -iuc YES
--keep_hierarchy Yes
+-keep_hierarchy Soft
 -netlist_hierarchy As_Optimized
 -rtlview No
 -glob_opt AllClockNets
@@ -45,7 +45,7 @@ run
 -register_duplication YES
 -register_balancing No
 -slice_packing YES
--optimize_primitives NO
+-optimize_primitives No
 -use_clock_enable Auto
 -use_sync_set Auto
 -use_sync_reset Auto

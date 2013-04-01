@@ -24,7 +24,7 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
-entity Pgp2FrontEnd64 is 
+entity Pgp2FrontEnd is 
    port ( 
       
       -- Reference Clock, PGP Clock & Reset Signals
@@ -67,11 +67,11 @@ entity Pgp2FrontEnd64 is
       pgpTxN          : out std_logic;
       pgpTxP          : out std_logic
    );
-end Pgp2FrontEnd64;
+end Pgp2FrontEnd;
 
 
 -- Define architecture
-architecture PgpFrontEnd of Pgp2FrontEnd64 is
+architecture PgpFrontEnd of Pgp2FrontEnd is
 
    -- Local Signals
    signal vc00FrameTxValid   : std_logic;

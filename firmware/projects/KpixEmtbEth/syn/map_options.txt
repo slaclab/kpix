@@ -134,16 +134,7 @@
 #                       cannot be met.  'n' means try additional algorithms to 
 #                       meet timing.
 
--logic_opt on
 -ol high
-#-global_opt speed
-#-equivalent_register_removal on
--mt 2
--cm area
--ir off
--ignore_keep_hierarchy
--pr b
--lc off
--power off
+-xe n
 -t 1
 -detail

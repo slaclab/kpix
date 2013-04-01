@@ -6,7 +6,7 @@ use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 use unisim.vcomponents.all;
 
-entity Pgp2FrontEnd64 is 
+entity Pgp2FrontEnd is 
    port ( 
       
       -- Reference Clock, PGP Clock & Reset Signals
@@ -49,11 +49,11 @@ entity Pgp2FrontEnd64 is
       pgpTxN          : out std_logic;
       pgpTxP          : out std_logic
    );
-end Pgp2FrontEnd64;
+end Pgp2FrontEnd;
 
 
 -- Define architecture
-architecture PgpFrontEnd of Pgp2FrontEnd64 is
+architecture PgpFrontEnd of Pgp2FrontEnd is
    -- Receiver
    component SimLinkRx port ( 
       rxClk            : in    std_logic;
@@ -104,6 +104,27 @@ architecture PgpFrontEnd of Pgp2FrontEnd64 is
       ethMode          : in    std_logic
    ); end component;
 
+   -- Buffer
+   component UsBuff 
+      port ( 
+         sysClk           : in  std_logic;
+         sysClkRst        : in  std_logic;
+         frameTxValid     : in  std_logic;
+         frameTxSOF       : in  std_logic;
+         frameTxEOF       : in  std_logic;
+         frameTxEOFE      : in  std_logic;
+         frameTxData      : in  std_logic_vector(63 downto 0);
+         frameTxAFull     : out std_logic;
+         vcFrameTxValid   : out std_logic;
+         vcFrameTxReady   : in  std_logic;
+         vcFrameTxSOF     : out std_logic;
+         vcFrameTxEOF     : out std_logic;
+         vcFrameTxEOFE    : out std_logic;
+         vcFrameTxData    : out std_logic_vector(15 downto 0);
+         vcRemBuffAFull   : in  std_logic;
+         vcRemBuffFull    : in  std_logic
+      );
+   end component;
    -- Local Signals
    signal vc00FrameTxValid   : std_logic;
    signal vc00FrameTxReady   : std_logic;
@@ -144,7 +165,7 @@ begin
    -- Receiver
    U_SimLinkRx: SimLinkRx port map ( 
       rxClk            => pgpClk,
-      rxReset          => pgpClkRst,
+      rxReset          => pgpReset,
       vcFrameRxSOF     => vc0FrameRxSOF,
       vcFrameRxEOF     => vc0FrameRxEOF,
       vcFrameRxEOFE    => vc0FrameRxEOFE,
@@ -163,7 +184,7 @@ begin
    -- Transmitter
    U_SimLinkTx: SimLinkTx port map ( 
       txClk            => pgpClk,
-      txReset          => pgpClkRst,
+      txReset          => pgpReset,
       vc0FrameTxValid  => vc00FrameTxValid,
       vc0FrameTxReady  => vc00FrameTxReady,
       vc0FrameTxSOF    => vc00FrameTxSOF,
@@ -204,7 +225,7 @@ begin
          vcFrameRxValid => vc00FrameRxValid, vcFrameRxSOF   => vc0FrameRxSOF,
          vcFrameRxEOF   => vc0FrameRxEOF,    vcFrameRxEOFE  => vc0FrameRxEOFE,
          vcFrameRxData  => vc0FrameRxData,   vcLocBuffAFull => vc00LocBuffAFull,
-         vcLocBuffFull  => vc00LocBuffFull,  cmdEn          => cmdEn,
+         vcLocBuffFull  => open,             cmdEn          => cmdEn,
          cmdOpCode      => cmdOpCode,        cmdCtxOut      => cmdCtxOut
       );
 
@@ -219,17 +240,17 @@ begin
       frameTxValid     => frameTxEnable,
       frameTxSOF       => frameTxSOF,
       frameTxEOF       => frameTxEOF,
-      frameTxEOFE      => frameTxEOFE,
+      frameTxEOFE      => '0',
       frameTxData      => frameTxData,
       frameTxAFull     => frameTxAFull,
       vcFrameTxValid   => vc00FrameTxValid,
       vcFrameTxReady   => vc00FrameTxReady,
       vcFrameTxSOF     => vc00FrameTxSOF,
       vcFrameTxEOF     => vc00FrameTxEOF,
-      vcFrameTxEOFE    => vc00FrameTxEOFE,
+      vcFrameTxEOFE    => open,
       vcFrameTxData    => vc00FrameTxData,
-      vcRemBuffAFull   => vc00RemBuffAFull,
-      vcRemBuffFull    => vc00RemBuffFull
+      vcRemBuffAFull   => '0',
+      vcRemBuffFull    => '0'
    );
 
 
@@ -241,11 +262,11 @@ begin
       vcFrameRxValid  => vc01FrameRxValid, vcFrameRxSOF    => vc0FrameRxSOF,
       vcFrameRxEOF    => vc0FrameRxEOF,    vcFrameRxEOFE   => vc0FrameRxEOFE,
       vcFrameRxData   => vc0FrameRxData,   vcLocBuffAFull  => vc01LocBuffAFull,
-      vcLocBuffFull   => vc01LocBuffFull,  vcFrameTxValid  => vc01FrameTxValid,
+      vcLocBuffFull   => open,             vcFrameTxValid  => vc01FrameTxValid,
       vcFrameTxReady  => vc01FrameTxReady, vcFrameTxSOF    => vc01FrameTxSOF,
-      vcFrameTxEOF    => vc01FrameTxEOF,   vcFrameTxEOFE   => vc01FrameTxEOFE,
-      vcFrameTxData   => vc01FrameTxData,  vcRemBuffAFull  => vc01RemBuffAFull,
-      vcRemBuffFull   => vc01RemBuffFull,  regInp          => regInp,
+      vcFrameTxEOF    => vc01FrameTxEOF,   vcFrameTxEOFE   => open,
+      vcFrameTxData   => vc01FrameTxData,  vcRemBuffAFull  => '0',
+      vcRemBuffFull   => '0',              regInp          => regInp,
       regReq          => regReq,           regOp           => regOp,
       regAck          => regAck,           regFail         => regFail,
       regAddr         => regAddr,          regDataOut      => regDataOut,

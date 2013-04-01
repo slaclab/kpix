@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-17
--- Last update: 2013-02-20
+-- Last update: 2013-03-28
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -230,6 +230,7 @@ begin
       kpixAnalogState  => analogState,
       kpixReadoutState => readoutState,
       kpixConfigRegs   => kpixConfigRegs,
+      kpixDataRxRegsIn => kpixDataRxRegsIn,
       kpixClk          => kpixClk,
       kpixClkRst       => kpixClkRst,
       kpixRegRxOut     => kpixRegRxOut,

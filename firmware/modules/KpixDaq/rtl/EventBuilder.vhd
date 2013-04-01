@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2013-03-20
+-- Last update: 2013-03-28
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -311,6 +311,6 @@ begin
   frontEndUsDataIn.frameTxData   <= ebFifoOut.rdData(63 downto 0);
   frontEndUsDataIn.frameTxSOF    <= ebFifoOut.rdData(SOF_BIT_C);
   frontEndUsDataIn.frameTxEOF    <= ebFifoOut.rdData(EOF_BIT_C);
-  
+  frontEndUsDataIn.frameTxEOFE   <= '0';
 
 end architecture rtl;

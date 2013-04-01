@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2013-02-20
+-- Last update: 2013-03-28
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -49,7 +49,8 @@ entity KpixRegCntl is
     kpixReadoutState : in slv(2 downto 0);
 
     -- Interface with internal registers
-    kpixConfigRegs : in KpixConfigRegsType;
+    kpixConfigRegs   : in KpixConfigRegsType;
+    kpixDataRxRegsIn : in KpixDataRxRegsInArray(NUM_KPIX_MODULES_G-1 downto 0);
 
     ----------------------------------
     kpixClk    : in sl;
@@ -128,7 +129,7 @@ begin
       r.startCalibrateSync       <= SYNCHRONIZER_INIT_0_C after DELAY_G;
       r.startReadoutSync         <= SYNCHRONIZER_INIT_0_C after DELAY_G;
       r.triggerSync              <= SYNCHRONIZER_INIT_0_C after DELAY_G;
-      r.kpixResetSync            <= SYNCHRONIZER_INIT_1_C after DELAY_G;  
+      r.kpixResetSync            <= SYNCHRONIZER_INIT_1_C after DELAY_G;
       r.state                    <= IDLE_S                after DELAY_G;
       r.txShiftReg               <= (others => '0')       after DELAY_G;
       r.txShiftCount             <= (others => '0')       after DELAY_G;
@@ -197,8 +198,13 @@ begin
           rVar.txShiftReg(KPIX_HEADER_PARITY_INDEX_C)   := '0';
           rVar.txShiftReg(KPIX_DATA_PARITY_INDEX_C)     := '0';
           rVar.txShiftCount                             := (others => '0');
-          rVar.txEnable                                 := (others => '1');  -- Enable all
           rVar.state                                    := PARITY_S;
+          rVar.txEnable(NUM_KPIX_MODULES_G)             := '1';  -- Always enable internal kpix
+          for i in NUM_KPIX_MODULES_G-1 downto 0 loop
+            -- Send acquire only to enabled kpix asics.
+            rVar.txEnable(i) := kpixDataRxRegsIn(i).enabled;
+          end loop;
+
 
         elsif (r.startAcquireSync.sync = '1') then
           -- Start an acquisition
@@ -212,8 +218,12 @@ begin
           rVar.txShiftReg(KPIX_HEADER_PARITY_INDEX_C)   := '0';
           rVar.txShiftReg(KPIX_DATA_PARITY_INDEX_C)     := '0';
           rVar.txShiftCount                             := (others => '0');
-          rVar.txEnable                                 := (others => '1');  -- Enable all
           rVar.state                                    := PARITY_S;
+          rVar.txEnable(NUM_KPIX_MODULES_G)             := '1';  -- Always enable internal kpix
+          for i in NUM_KPIX_MODULES_G-1 downto 0 loop
+            -- Send acquire only to enabled kpix asics.
+            rVar.txEnable(i) := kpixDataRxRegsIn(i).enabled;
+          end loop;
           if (triggerOut.startCalibrate = '1') then
             rVar.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := KPIX_CALIBRATE_CMD_ID_REV_C;
           end if;
