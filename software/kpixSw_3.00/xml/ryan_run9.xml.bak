@@ -12,7 +12,7 @@
       <DataFile>/u1/kpix/data/</DataFile>
       <DebugCmdTime>True</DebugCmdTime>
       <DebugEnable>False</DebugEnable>
-      <RunCount>1000</RunCount>
+      <RunCount>1010</RunCount>
       <RunRate>No Limit</RunRate>
       <cntrlFpga>
          <AcquisitionTrigger>Software</AcquisitionTrigger>
@@ -37,11 +37,9 @@
             <Cal3Delay>0xc8</Cal3Delay>
             <CalCount>0x4</CalCount>
             <CfgAutoReadDisable>False</CfgAutoReadDisable>
+            <CfgAutoStatusReadEn>True</CfgAutoStatusReadEn>
             <CfgForceTemp>False</CfgForceTemp>
             <CfgDisableTemp>False</CfgDisableTemp>
-            <CfgAutoStatusReadEn>True</CfgAutoStatusReadEn>
-            <CfgTestDataEn>False</CfgTestDataEn>
-            <CntrlDiffTime>Normal</CntrlDiffTime>
             <CntrlDisPerReset>True</CntrlDisPerReset>               <!-- bit  0 -->
             <CntrlEnDcReset>True</CntrlEnDcReset>                   <!-- bit  1 -->
             <CntrlHighGain>False</CntrlHighGain>                    <!-- bit  2 -->
@@ -56,10 +54,12 @@
             <CntrlPolarity>Positive</CntrlPolarity>                 <!-- bit 15 -->
             <CntrlDisPwrCycle>False</CntrlDisPwrCycle>              <!-- bit 24 -->
             <CntrlFeCurr>31uA</CntrlFeCurr>                         <!-- bit 25-27 -->
+            <CfgTestDataEn>False</CfgTestDataEn>
+            <CntrlDiffTime>Half</CntrlDiffTime>
             <CntrlMonSource>None</CntrlMonSource>                   <!-- bit ? -->
             <CntrlTrigDisable>False</CntrlTrigDisable>              <!-- bit ? -->
             <Chan_0000_0031>AAAAAAAA AAAAADDD AAAAAAAA AAAAAAAA</Chan_0000_0031>
-            <Chan_0032_0063>AAAAAAAA AAAAAAAA AAAAAADD AAAAAAAA</Chan_0032_0063>
+            <Chan_0032_0063>AAAAAAAA ADAAAAAA AAAAAADD AAAAAAAA</Chan_0032_0063>
             <Chan_0064_0095>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0064_0095>
             <Chan_0096_0127>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0096_0127>
             <Chan_0128_0159>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0128_0159>
@@ -96,20 +96,20 @@
             <DacRampThresh>224</DacRampThresh>
             <DacRangeThreshold>0</DacRangeThreshold>
             <DacShaperBias>120</DacShaperBias>
-            <DacThresholdA>230</DacThresholdA>
+            <DacThresholdA>240</DacThresholdA>
             <DacThresholdB>0</DacThresholdB>
             <Enabled>False</Enabled>
             <SerialNumber>0</SerialNumber>
             <TimeLeakageNullOff>1</TimeLeakageNullOff>
             <TimeResetOn>3</TimeResetOn>
             <TimePowerUpOn>3</TimePowerUpOn>
-            <TimeResetOff>2500</TimeResetOff>
             <TimeOffsetNullOff>2437</TimeOffsetNullOff>
             <TimeThreshOff>2468</TimeThreshOff>
-            <TrigInhibitOff>500</TrigInhibitOff>
-            <TimeDeselDelay>20</TimeDeselDelay>
+            <TimeResetOff>2500</TimeResetOff>
             <TimeBunchClkDelay>3126</TimeBunchClkDelay>
+            <TimeDeselDelay>128</TimeDeselDelay>
            <TimeDigitizeDelay>31</TimeDigitizeDelay>
+           <TrigInhibitOff>500</TrigInhibitOff>
             <Version>0xa</Version>
          </kpixAsic>
       </cntrlFpga>
@@ -118,6 +118,7 @@
          <Enabled>True</Enabled>
          <kpixAsic index="0">
             <Enabled>True</Enabled>
+            <Chan_0032_0063>AAAAAAAA ADAAAAAD AAAAAADD AADAADAA</Chan_0032_0063>
             <SerialNumber>1015</SerialNumber>
          </kpixAsic>
          <kpixAsic index="1">
@@ -126,6 +127,7 @@
          </kpixAsic>
          <kpixAsic index="2">
             <Enabled>True</Enabled>
+            <Chan_0992_1023>AAAAAAAA AAAAADDD ADAAAAAA AAAAAAAA</Chan_0992_1023>
             <SerialNumber>1013</SerialNumber>
          </kpixAsic>
          <kpixAsic index="3">

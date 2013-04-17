@@ -12,7 +12,7 @@
       <DataFile>/u1/kpix/data/</DataFile>
       <DebugCmdTime>True</DebugCmdTime>
       <DebugEnable>False</DebugEnable>
-      <RunCount>1000</RunCount>
+      <RunCount>10000000</RunCount>
       <RunRate>No Limit</RunRate>
       <cntrlFpga>
          <AcquisitionTrigger>Software</AcquisitionTrigger>
@@ -41,7 +41,7 @@
             <CfgDisableTemp>False</CfgDisableTemp>
             <CfgAutoStatusReadEn>True</CfgAutoStatusReadEn>
             <CfgTestDataEn>False</CfgTestDataEn>
-            <CntrlDiffTime>Normal</CntrlDiffTime>
+            <CntrlDiffTime>Quarter</CntrlDiffTime>
             <CntrlDisPerReset>True</CntrlDisPerReset>               <!-- bit  0 -->
             <CntrlEnDcReset>True</CntrlEnDcReset>                   <!-- bit  1 -->
             <CntrlHighGain>False</CntrlHighGain>                    <!-- bit  2 -->
@@ -55,7 +55,7 @@
             <CntrlLeakNullDisable>True</CntrlLeakNullDisable>       <!-- bit 14 -->
             <CntrlPolarity>Positive</CntrlPolarity>                 <!-- bit 15 -->
             <CntrlDisPwrCycle>False</CntrlDisPwrCycle>              <!-- bit 24 -->
-            <CntrlFeCurr>31uA</CntrlFeCurr>                         <!-- bit 25-27 -->
+            <CntrlFeCurr>121uA</CntrlFeCurr>                         <!-- bit 25-27 -->
             <CntrlMonSource>None</CntrlMonSource>                   <!-- bit ? -->
             <CntrlTrigDisable>False</CntrlTrigDisable>              <!-- bit ? -->
             <Chan_0000_0031>AAAAAAAA AAAAADDD AAAAAAAA AAAAAAAA</Chan_0000_0031>
@@ -90,26 +90,35 @@
             <Chan_0928_0959>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0928_0959>
             <Chan_0960_0991>AAAAAAAA AAAAAAAA AAAAAADD AAAAAAAA</Chan_0960_0991>
             <Chan_0992_1023>AAAAAAAA AAAAADDD AAAAAAAA AAAAAAAA</Chan_0992_1023>
-            <DacCalibration>0</DacCalibration>
-            <DacDefaultAnalog>189</DacDefaultAnalog>
-            <DacEventThreshold>80</DacEventThreshold>
-            <DacRampThresh>224</DacRampThresh>
+            <DacCalibration>0x0</DacCalibration>
+            <DacCalibrationCharge>5e-13 / 1.1e-11</DacCalibrationCharge>
+            <DacCalibrationVolt>0 V</DacCalibrationVolt>
+            <DacDefaultAnalog>0xbd</DacDefaultAnalog>
+            <DacDefaultAnalogVolt>1.89 V</DacDefaultAnalogVolt>
+            <DacEventThreshold>0x50</DacEventThreshold>
+            <DacEventThresholdVoltage>0.8 V</DacEventThresholdVoltage>
+            <DacRampThresh>240</DacRampThresh>
+            <DacRampThreshVolt>2.24 V</DacRampThreshVolt>
             <DacRangeThreshold>0</DacRangeThreshold>
-            <DacShaperBias>120</DacShaperBias>
-            <DacThresholdA>230</DacThresholdA>
-            <DacThresholdB>0</DacThresholdB>
+            <DacRangeThresholdVolt>0 V</DacRangeThresholdVolt>
+            <DacShaperBias>0x78</DacShaperBias>
+            <DacShaperBiasVolt>1.2 V</DacShaperBiasVolt>
+            <DacThresholdA>250</DacThresholdA>
+            <!-- <DacThresholdA>230</DacThresholdA> -->
+            <DacThresholdB>0x0</DacThresholdB>
+            <DacThresholdBVolt>0 V</DacThresholdBVolt>
             <Enabled>False</Enabled>
             <SerialNumber>0</SerialNumber>
-            <TimeLeakageNullOff>1</TimeLeakageNullOff>
-            <TimeResetOn>3</TimeResetOn>
-            <TimePowerUpOn>3</TimePowerUpOn>
+            <TimeResetOn>0x3</TimeResetOn>
             <TimeResetOff>2500</TimeResetOff>
+            <TimeLeakageNullOff>0x1</TimeLeakageNullOff>
             <TimeOffsetNullOff>2437</TimeOffsetNullOff>
             <TimeThreshOff>2468</TimeThreshOff>
             <TrigInhibitOff>500</TrigInhibitOff>
-            <TimeDeselDelay>20</TimeDeselDelay>
+            <TimePowerUpOn>0x3</TimePowerUpOn>
+            <TimeDeselDelay>0x89</TimeDeselDelay>
             <TimeBunchClkDelay>3126</TimeBunchClkDelay>
-           <TimeDigitizeDelay>31</TimeDigitizeDelay>
+            <TimeDigitizeDelay>0x1f</TimeDigitizeDelay>
             <Version>0xa</Version>
          </kpixAsic>
       </cntrlFpga>
@@ -118,41 +127,21 @@
          <Enabled>True</Enabled>
          <kpixAsic index="0">
             <Enabled>True</Enabled>
-            <SerialNumber>1015</SerialNumber>
+            <SerialNumber>1016</SerialNumber>
          </kpixAsic>
          <kpixAsic index="1">
             <Enabled>True</Enabled>
-            <SerialNumber>1012</SerialNumber>
+            <SerialNumber>1013</SerialNumber>
          </kpixAsic>
          <kpixAsic index="2">
             <Enabled>True</Enabled>
-            <SerialNumber>1013</SerialNumber>
+            <SerialNumber>1012</SerialNumber>
          </kpixAsic>
          <kpixAsic index="3">
             <Enabled>True</Enabled>
-            <SerialNumber>1011</SerialNumber>
+            <SerialNumber>1015</SerialNumber>
          </kpixAsic>
          <kpixAsic index="4">
-            <Enabled>True</Enabled>
-            <SerialNumber>1016</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="5">
-            <Enabled>True</Enabled>
-            <SerialNumber>1017</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="6">
-            <Enabled>True</Enabled>
-            <SerialNumber>1018</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="7">
-            <Enabled>True</Enabled>
-            <SerialNumber>1019</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="8">
-            <Enabled>True</Enabled>
-            <SerialNumber>1022</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="31">
             <Enabled>True</Enabled>
             <SerialNumber>0</SerialNumber>
          </kpixAsic>

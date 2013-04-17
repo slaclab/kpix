@@ -2,11 +2,11 @@
    <config>
       <CalChanMax>1023</CalChanMax>
       <CalChanMin>0</CalChanMin>
-      <CalDacCount>16</CalDacCount>
+      <CalDacCount>3</CalDacCount>
       <CalDacMax>255</CalDacMax>
       <CalDacMin>0</CalDacMin>
-      <CalDacStep>32</CalDacStep>
-      <CalMeanCount>4000</CalMeanCount>
+      <CalDacStep>64</CalDacStep>
+      <CalMeanCount>2000</CalMeanCount>
       <DataAuto>True</DataAuto>
       <DataBase>/u1/kpix/data/</DataBase>
       <DataFile>/u1/kpix/data/</DataFile>
@@ -90,68 +90,40 @@
             <Chan_0928_0959>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0928_0959>
             <Chan_0960_0991>AAAAAAAA AAAAAAAA AAAAAADD AAAAAAAA</Chan_0960_0991>
             <Chan_0992_1023>AAAAAAAA AAAAADDD AAAAAAAA AAAAAAAA</Chan_0992_1023>
-            <DacCalibration>0</DacCalibration>
-            <DacDefaultAnalog>189</DacDefaultAnalog>
-            <DacEventThreshold>80</DacEventThreshold>
-            <DacRampThresh>224</DacRampThresh>
+            <DacCalibration>0x0</DacCalibration>
+            <DacCalibrationCharge>5e-13 / 1.1e-11</DacCalibrationCharge>
+            <DacCalibrationVolt>0 V</DacCalibrationVolt>
+            <DacDefaultAnalog>0xbd</DacDefaultAnalog>
+            <DacDefaultAnalogVolt>1.89 V</DacDefaultAnalogVolt>
+            <DacEventThreshold>0x50</DacEventThreshold>
+            <DacEventThresholdVoltage>0.8 V</DacEventThresholdVoltage>
+            <DacRampThresh>240</DacRampThresh>
+            <DacRampThreshVolt>2.24 V</DacRampThreshVolt>
             <DacRangeThreshold>0</DacRangeThreshold>
-            <DacShaperBias>120</DacShaperBias>
+            <DacRangeThresholdVolt>0 V</DacRangeThresholdVolt>
+            <DacShaperBias>0x78</DacShaperBias>
+            <DacShaperBiasVolt>1.2 V</DacShaperBiasVolt>
             <DacThresholdA>230</DacThresholdA>
-            <DacThresholdB>0</DacThresholdB>
+            <DacThresholdB>0x0</DacThresholdB>
+            <DacThresholdBVolt>0 V</DacThresholdBVolt>
             <Enabled>False</Enabled>
             <SerialNumber>0</SerialNumber>
-            <TimeLeakageNullOff>1</TimeLeakageNullOff>
-            <TimeResetOn>3</TimeResetOn>
-            <TimePowerUpOn>3</TimePowerUpOn>
+            <TimeResetOn>0x3</TimeResetOn>
             <TimeResetOff>2500</TimeResetOff>
+            <TimeLeakageNullOff>0x1</TimeLeakageNullOff>
             <TimeOffsetNullOff>2437</TimeOffsetNullOff>
             <TimeThreshOff>2468</TimeThreshOff>
             <TrigInhibitOff>500</TrigInhibitOff>
-            <TimeDeselDelay>20</TimeDeselDelay>
+            <TimePowerUpOn>0x3</TimePowerUpOn>
+            <TimeDeselDelay>0x89</TimeDeselDelay>
             <TimeBunchClkDelay>3126</TimeBunchClkDelay>
-           <TimeDigitizeDelay>31</TimeDigitizeDelay>
+            <TimeDigitizeDelay>0x1f</TimeDigitizeDelay>
             <Version>0xa</Version>
          </kpixAsic>
       </cntrlFpga>
       <Enabled>True</Enabled>
       <cntrlFpga index="0">
          <Enabled>True</Enabled>
-         <kpixAsic index="0">
-            <Enabled>True</Enabled>
-            <SerialNumber>1015</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="1">
-            <Enabled>True</Enabled>
-            <SerialNumber>1012</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="2">
-            <Enabled>True</Enabled>
-            <SerialNumber>1013</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="3">
-            <Enabled>True</Enabled>
-            <SerialNumber>1011</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="4">
-            <Enabled>True</Enabled>
-            <SerialNumber>1016</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="5">
-            <Enabled>True</Enabled>
-            <SerialNumber>1017</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="6">
-            <Enabled>True</Enabled>
-            <SerialNumber>1018</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="7">
-            <Enabled>True</Enabled>
-            <SerialNumber>1019</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="8">
-            <Enabled>True</Enabled>
-            <SerialNumber>1022</SerialNumber>
-         </kpixAsic>
          <kpixAsic index="31">
             <Enabled>True</Enabled>
             <SerialNumber>0</SerialNumber>

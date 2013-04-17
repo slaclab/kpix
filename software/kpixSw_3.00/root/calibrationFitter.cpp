@@ -239,13 +239,13 @@ int main ( int argc, char **argv ) {
    // Range = 0 acceptable values
    meanMin[0] = 100;
    meanMax[0] = 300;
-   gainMin[0] = 3e15;
+   gainMin[0] = 2e15;
    gainMax[0] = 7e15;
 
    // Range = 1 acceptable values
    meanMin[1] = 100;
    meanMax[1] = 300;
-   gainMin[1] = 3e15;
+   gainMin[1] = 2e15;
    gainMax[1] = 7e15;
 
    // Init structure
@@ -495,7 +495,8 @@ int main ( int argc, char **argv ) {
                               chanData[kpix][channel][bucket][range]->baseFitSigma     = hist->GetFunction("gaus")->GetParameter(2);
                               chanData[kpix][channel][bucket][range]->baseFitMeanErr   = hist->GetFunction("gaus")->GetParError(1);
                               chanData[kpix][channel][bucket][range]->baseFitSigmaErr  = hist->GetFunction("gaus")->GetParError(2);
-                              chanData[kpix][channel][bucket][range]->baseFitChisquare = hist->GetFunction("gaus")->GetChisquare();
+                              chanData[kpix][channel][bucket][range]->baseFitChisquare = 
+                                 (hist->GetFunction("gaus")->GetChisquare() / hist->GetFunction("gaus")->GetNDF() );
 
                               // Determine bad channel from fitted mean
                               if ( chanData[kpix][channel][bucket][range]->baseFitMean > meanMax[range] ) badMean[kpix][channel] = true;
@@ -647,12 +648,12 @@ int main ( int argc, char **argv ) {
                                  addDoubleToXml(&xml,15,"CalibIntercept",grCalib->GetFunction("pol1")->GetParameter(0));
                                  addDoubleToXml(&xml,15,"CalibGainErr",grCalib->GetFunction("pol1")->GetParError(1));
                                  addDoubleToXml(&xml,15,"CalibInterceptErr",grCalib->GetFunction("pol1")->GetParError(0));
-                                 addDoubleToXml(&xml,15,"CalibChisquare",grCalib->GetFunction("pol1")->GetChisquare());
+                                 addDoubleToXml(&xml,15,"CalibChisquare",(grCalib->GetFunction("pol1")->GetChisquare() / grCalib->GetFunction("pol1")->GetNDF()));
                                  csv << "," << grCalib->GetFunction("pol1")->GetParameter(1);
                                  csv << "," << grCalib->GetFunction("pol1")->GetParameter(0);
                                  csv << "," << grCalib->GetFunction("pol1")->GetParError(1);
                                  csv << "," << grCalib->GetFunction("pol1")->GetParError(0);
-                                 csv << "," << grCalib->GetFunction("pol1")->GetChisquare();
+                                 csv << "," << (grCalib->GetFunction("pol1")->GetChisquare() / grCalib->GetFunction("pol1")->GetNDF);
 
                                  // Determine bad channel from fitted gain
                                  if ( grCalib->GetFunction("pol1")->GetParameter(1) > gainMax[range] ) badGain[kpix][channel] = true;

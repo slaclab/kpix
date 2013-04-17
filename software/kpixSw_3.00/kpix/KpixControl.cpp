@@ -89,7 +89,7 @@ KpixControl::KpixControl ( CommLink *commLink, string defFile, uint kpixCount ) 
 
    addVariable(new Variable("CalDacStep",Variable::Configuration));
    getVariable("CalDacStep")->setDescription("DAC increment value for calibration");
-   getVariable("CalDacStep")->setRange(0,255);
+   getVariable("CalDacStep")->setRange(1,255);
    getVariable("CalDacStep")->setInt(0);
 
    addVariable(new Variable("CalDacCount",Variable::Configuration));
