@@ -1,24 +1,24 @@
 <system>
    <config>
       <CalChanMax>1023</CalChanMax>
-      <CalChanMin>0</CalChanMin>
-      <CalDacCount>4</CalDacCount>
-      <CalDacMax>127</CalDacMax>
-      <CalDacMin>0</CalDacMin>
-      <CalDacStep>4</CalDacStep>
-      <CalMeanCount>4000</CalMeanCount>
+      <CalChanMin>1</CalChanMin>
+      <CalDacCount>1</CalDacCount>
+      <CalDacMax>200</CalDacMax>
+      <CalDacMin>150</CalDacMin>
+      <CalDacStep>1</CalDacStep>
+      <CalMeanCount>1000</CalMeanCount>
       <DataAuto>True</DataAuto>
       <DataBase>/u1/kpix/data/</DataBase>
       <DataFile>/u1/kpix/data/</DataFile>
       <DebugCmdTime>True</DebugCmdTime>
       <DebugEnable>False</DebugEnable>
-      <RunCount>1000</RunCount>
+      <RunCount>1010</RunCount>
       <RunRate>No Limit</RunRate>
       <cntrlFpga>
          <AcquisitionTrigger>Software</AcquisitionTrigger>
          <BncSourceA>RegClock</BncSourceA>
          <BncSourceB>RegClock</BncSourceB>
-         <ClkPeriodAcq>50nS</ClkPeriodAcq>
+         <ClkPeriodAcq>320nS</ClkPeriodAcq>
          <ClkPeriodDig>50nS</ClkPeriodDig>
          <ClkPeriodIdle>100nS</ClkPeriodIdle>
          <ClkPeriodPrecharge>50nS</ClkPeriodPrecharge>
@@ -35,7 +35,7 @@
             <Cal1Delay>200</Cal1Delay>
             <Cal2Delay>200</Cal2Delay>
             <Cal3Delay>200</Cal3Delay>
-            <CalCount>4</CalCount>
+            <CalCount>1</CalCount>
             <CfgAutoReadDisable>False</CfgAutoReadDisable>
             <CfgAutoStatusReadEn>True</CfgAutoStatusReadEn>
             <CfgForceTemp>False</CfgForceTemp>
@@ -55,7 +55,7 @@
             <CntrlDisPwrCycle>False</CntrlDisPwrCycle>            <!--24-->
             <CntrlFeCurr>31uA</CntrlFeCurr>                       <!--25-27-->
             <CfgTestDataEn>False</CfgTestDataEn>                  <!-- ?-->
-            <CntrlDiffTime>Half</CntrlDiffTime>                 <!-- ?-->
+            <CntrlDiffTime>Normal</CntrlDiffTime>                 <!-- ?-->
             <CntrlMonSource>None</CntrlMonSource>                 <!-- ?-->
             <CntrlTrigDisable>True</CntrlTrigDisable>             <!-- ?-->
             <Chan_0000_0031>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0000_0031>
@@ -99,7 +99,6 @@
             <DacThresholdA>240</DacThresholdA>
             <DacThresholdB>0</DacThresholdB>
             <Enabled>False</Enabled>
-            <SerialNumber>0</SerialNumber>
             <TimeLeakageNullOff>1</TimeLeakageNullOff>
             <TimeResetOn>3</TimeResetOn>
             <TimePowerUpOn>3</TimePowerUpOn>
@@ -107,7 +106,7 @@
             <TimeThreshOff>2468</TimeThreshOff>
             <TimeResetOff>2500</TimeResetOff>
             <TimeBunchClkDelay>3126</TimeBunchClkDelay>
-            <TimeDeselDelay>20</TimeDeselDelay>
+            <TimeDeselDelay>128</TimeDeselDelay>
             <TimeDigitizeDelay>31</TimeDigitizeDelay>
             <TrigInhibitOff>500</TrigInhibitOff>
             <Version>0xa</Version>
@@ -143,14 +142,6 @@
          <kpixAsic index="6">
             <Enabled>True</Enabled>
             <SerialNumber>1018</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="7">
-            <Enabled>True</Enabled>
-            <SerialNumber>1019</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="8">
-            <Enabled>True</Enabled>
-            <SerialNumber>1022</SerialNumber>
          </kpixAsic>
          <kpixAsic index="31">
             <Enabled>True</Enabled>

@@ -2,23 +2,23 @@
    <config>
       <CalChanMax>1023</CalChanMax>
       <CalChanMin>0</CalChanMin>
-      <CalDacCount>4</CalDacCount>
-      <CalDacMax>127</CalDacMax>
+      <CalDacCount>16</CalDacCount>
+      <CalDacMax>255</CalDacMax>
       <CalDacMin>0</CalDacMin>
-      <CalDacStep>4</CalDacStep>
-      <CalMeanCount>4000</CalMeanCount>
+      <CalDacStep>32</CalDacStep>
+      <CalMeanCount>200</CalMeanCount>
       <DataAuto>True</DataAuto>
       <DataBase>/u1/kpix/data/</DataBase>
       <DataFile>/u1/kpix/data/</DataFile>
       <DebugCmdTime>True</DebugCmdTime>
       <DebugEnable>False</DebugEnable>
-      <RunCount>1000</RunCount>
+      <RunCount>1010</RunCount>
       <RunRate>No Limit</RunRate>
       <cntrlFpga>
          <AcquisitionTrigger>Software</AcquisitionTrigger>
          <BncSourceA>RegClock</BncSourceA>
          <BncSourceB>RegClock</BncSourceB>
-         <ClkPeriodAcq>50nS</ClkPeriodAcq>
+         <ClkPeriodAcq>320nS</ClkPeriodAcq>
          <ClkPeriodDig>50nS</ClkPeriodDig>
          <ClkPeriodIdle>100nS</ClkPeriodIdle>
          <ClkPeriodPrecharge>50nS</ClkPeriodPrecharge>
@@ -27,37 +27,37 @@
          <RunMode>Calibrate</RunMode>
          <KpixInputEdge>Falling Edge</KpixInputEdge>
          <KpixOutputEdge>Rising Edge</KpixOutputEdge>
-         <TrigSource>None</TrigSource>
+         <TrigSource>NimA</TrigSource>
 	      <TimestampSource>None</TimestampSource>
          <kpixAsic>
             <BunchClockCount>8191</BunchClockCount>
-            <Cal0Delay>2000</Cal0Delay>
+            <Cal0Delay>520</Cal0Delay>
             <Cal1Delay>200</Cal1Delay>
             <Cal2Delay>200</Cal2Delay>
             <Cal3Delay>200</Cal3Delay>
-            <CalCount>4</CalCount>
+            <CalCount>1</CalCount>
             <CfgAutoReadDisable>False</CfgAutoReadDisable>
-            <CfgAutoStatusReadEn>True</CfgAutoStatusReadEn>
-            <CfgForceTemp>False</CfgForceTemp>
+            <CfgForceTemp>True</CfgForceTemp>
             <CfgDisableTemp>False</CfgDisableTemp>
-            <CntrlDisPerReset>True</CntrlDisPerReset>             <!-- 0-->
-            <CntrlEnDcReset>True</CntrlEnDcReset>                 <!-- 1-->
-            <CntrlHighGain>False</CntrlHighGain>                  <!-- 2-->
-            <CntrlNearNeighbor>False</CntrlNearNeighbor>          <!-- 3-->
-            <CntrlForceTrigSource>Internal</CntrlForceTrigSource> <!-- 4-->
-            <CntrlCalSource>Internal</CntrlCalSource>              <!-- 6-->
-            <CntrlHoldTime>16x</CntrlHoldTime>                    <!-- 8-10-->
-            <CntrlCalibHigh>False</CntrlCalibHigh>                <!--11-->
-            <CntrlShortIntEn>False</CntrlShortIntEn>              <!--12-->
-            <CntrlForceLowGain>False</CntrlForceLowGain>          <!--13-->
-            <CntrlLeakNullDisable>True</CntrlLeakNullDisable>     <!--14-->
-            <CntrlPolarity>Positive</CntrlPolarity>               <!--15-->
-            <CntrlDisPwrCycle>False</CntrlDisPwrCycle>            <!--24-->
-            <CntrlFeCurr>31uA</CntrlFeCurr>                       <!--25-27-->
-            <CfgTestDataEn>False</CfgTestDataEn>                  <!-- ?-->
-            <CntrlDiffTime>Half</CntrlDiffTime>                 <!-- ?-->
-            <CntrlMonSource>None</CntrlMonSource>                 <!-- ?-->
-            <CntrlTrigDisable>True</CntrlTrigDisable>             <!-- ?-->
+            <CfgAutoStatusReadEn>True</CfgAutoStatusReadEn>
+            <CfgTestDataEn>False</CfgTestDataEn>
+            <CntrlDiffTime>Normal</CntrlDiffTime>
+            <CntrlDisPerReset>True</CntrlDisPerReset>               <!-- bit  0 -->
+            <CntrlEnDcReset>True</CntrlEnDcReset>                   <!-- bit  1 -->
+            <CntrlHighGain>False</CntrlHighGain>                    <!-- bit  2 -->
+            <CntrlNearNeighbor>False</CntrlNearNeighbor>            <!-- bit  3 -->
+            <CntrlForceTrigSource>Internal</CntrlForceTrigSource>   <!-- bit  4 -->
+            <CntrlCalSource>Internal</CntrlCalSource>                <!-- bit  6 -->
+            <CntrlHoldTime>16x</CntrlHoldTime>                      <!-- bit  8-10 -->
+            <CntrlCalibHigh>False</CntrlCalibHigh>                  <!-- bit 11 -->
+            <CntrlShortIntEn>False</CntrlShortIntEn>                <!-- bit 12 -->
+            <CntrlForceLowGain>False</CntrlForceLowGain>            <!-- bit 13 -->
+            <CntrlLeakNullDisable>True</CntrlLeakNullDisable>       <!-- bit 14 -->
+            <CntrlPolarity>Positive</CntrlPolarity>                 <!-- bit 15 -->
+            <CntrlDisPwrCycle>False</CntrlDisPwrCycle>              <!-- bit 24 -->
+            <CntrlFeCurr>31uA</CntrlFeCurr>                         <!-- bit 25-27 -->
+            <CntrlMonSource>None</CntrlMonSource>                   <!-- bit ? -->
+            <CntrlTrigDisable>True</CntrlTrigDisable>              <!-- bit ? -->
             <Chan_0000_0031>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0000_0031>
             <Chan_0032_0063>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0032_0063>
             <Chan_0064_0095>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0064_0095>
@@ -92,24 +92,26 @@
             <Chan_0992_1023>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0992_1023>
             <DacCalibration>0</DacCalibration>
             <DacDefaultAnalog>189</DacDefaultAnalog>
+            <DacDefaultAnalogVolt>1.89 V</DacDefaultAnalogVolt>
             <DacEventThreshold>80</DacEventThreshold>
-            <DacRampThresh>240</DacRampThresh>
+            <DacRampThresh>224</DacRampThresh>
             <DacRangeThreshold>0</DacRangeThreshold>
             <DacShaperBias>120</DacShaperBias>
-            <DacThresholdA>240</DacThresholdA>
+            <DacThresholdA>150</DacThresholdA>
             <DacThresholdB>0</DacThresholdB>
+            <DacThresholdBVolt>0 V</DacThresholdBVolt>
             <Enabled>False</Enabled>
             <SerialNumber>0</SerialNumber>
             <TimeLeakageNullOff>1</TimeLeakageNullOff>
             <TimeResetOn>3</TimeResetOn>
             <TimePowerUpOn>3</TimePowerUpOn>
+            <TimeResetOff>2500</TimeResetOff>
             <TimeOffsetNullOff>2437</TimeOffsetNullOff>
             <TimeThreshOff>2468</TimeThreshOff>
-            <TimeResetOff>2500</TimeResetOff>
-            <TimeBunchClkDelay>3126</TimeBunchClkDelay>
-            <TimeDeselDelay>20</TimeDeselDelay>
-            <TimeDigitizeDelay>31</TimeDigitizeDelay>
             <TrigInhibitOff>500</TrigInhibitOff>
+            <TimeDeselDelay>20</TimeDeselDelay>
+            <TimeBunchClkDelay>3126</TimeBunchClkDelay>
+           <TimeDigitizeDelay>31</TimeDigitizeDelay>
             <Version>0xa</Version>
          </kpixAsic>
       </cntrlFpga>
@@ -143,14 +145,6 @@
          <kpixAsic index="6">
             <Enabled>True</Enabled>
             <SerialNumber>1018</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="7">
-            <Enabled>True</Enabled>
-            <SerialNumber>1019</SerialNumber>
-         </kpixAsic>
-         <kpixAsic index="8">
-            <Enabled>True</Enabled>
-            <SerialNumber>1022</SerialNumber>
          </kpixAsic>
          <kpixAsic index="31">
             <Enabled>True</Enabled>

@@ -31,6 +31,7 @@
 #include <DataRead.h>
 #include <math.h>
 #include <fstream>
+#include <XmlVariables.h>
 using namespace std;
 
 // Channel data
@@ -219,8 +220,6 @@ int main ( int argc, char **argv ) {
    string                 outCsv;
    TFile                  *rFile;
    TCanvas                *c1;
-   double                 fitMin[2];
-   double                 fitMax[2];
    char                   tstr[200];
    struct tm              *timeinfo;
    time_t                 tme;
@@ -228,25 +227,24 @@ int main ( int argc, char **argv ) {
    stringstream           crossString;
    stringstream           crossStringCsv;
    double                 crossDiff;
-   double                 meanMin[2];
-   double                 meanMax[2];
-   double                 gainMin[2];
-   double                 gainMax[2];
    uint                   badGainCnt;
    uint                   badMeanCnt;
    uint                   badValue;
-
-   // Range = 0 acceptable values
-   meanMin[0] = 100;
-   meanMax[0] = 300;
-   gainMin[0] = 2e15;
-   gainMax[0] = 7e15;
-
-   // Range = 1 acceptable values
-   meanMin[1] = 100;
-   meanMax[1] = 300;
-   gainMin[1] = 2e15;
-   gainMax[1] = 7e15;
+   XmlVariables           config;
+   bool                   findBadMeanHist;
+   bool                   findBadMeanFit;
+   bool                   findBadMeanChisq;
+   bool                   findBadGainFit;
+   bool                   findBadGainChisq;
+   double                 meanMin[2];
+   double                 meanMax[2];
+   double                 meanChisq;
+   double                 gainMin[2];
+   double                 gainMax[2];
+   double                 gainChisq;
+   double                 fitMin[2];
+   double                 fitMax[2];
+   double                 chisqNdf;
 
    // Init structure
    for (kpix=0; kpix < 32; kpix++) {
@@ -265,50 +263,59 @@ int main ( int argc, char **argv ) {
    badMeanCnt = 0;
 
    // Data file is the first and only arg
-   if ( (argc != 2) && (argc != 4) && (argc != 6) ) {
-      cout << "Usage: calibrationFitter data_file [r0MinFit r0MaxFit] [r1MinFit r1MaxFit]\n";
+   if ( argc != 3 ) {
+      cout << "Usage: calibrationFitter config_file data_file\n";
       return(1);
    }
+
+   // Read configuration
+   if ( ! config.parseFile("config",argv[1]) ) {
+      cout << "Failed to read configuration from " << argv[1] << endl;
+      return(1);
+   }
+
+   // Extract configuration values
+   findBadMeanHist  = config.getInt("FindBadMeanHist");
+   findBadMeanFit   = config.getInt("FindBadMeanFit");
+   meanMin[0]       = config.getDouble("GoodMeanMinR0");
+   meanMax[0]       = config.getDouble("GoodMeanMaxR0");
+   meanMin[1]       = config.getDouble("GoodMeanMinR1");
+   meanMax[1]       = config.getDouble("GoodMeanMaxR1");
+   findBadMeanChisq = config.getInt("FindBadMeanChisq");
+   meanChisq        = config.getInt("GoodMeanChisqMax");
+   findBadGainFit   = config.getInt("FindBadGainFit");
+   gainMin[0]       = config.getDouble("GoodGainMinR0");
+   gainMax[0]       = config.getDouble("GoodGainMaxR0");
+   gainMin[1]       = config.getDouble("GoodGainMinR1");
+   gainMax[1]       = config.getDouble("GoodGainMaxR1");
+   findBadGainChisq = config.getInt("FindBadGainChisq");
+   gainChisq        = config.getInt("GoodGainChisqMax");
+   fitMin[0]        = config.getDouble("GainFitMinR0");
+   fitMax[0]        = config.getDouble("GainFitMaxR0");
+   fitMin[1]        = config.getDouble("GainFitMinR1");
+   fitMax[1]        = config.getDouble("GainFitMaxR1");
 
    // Open data file
-   if ( ! dataRead.open(argv[1]) ) {
-      cout << "Error opening data file " << argv[1] << endl;
+   if ( ! dataRead.open(argv[2]) ) {
+      cout << "Error opening data file " << argv[2] << endl;
       return(1);
-   }
-
-   // Normal range fit min/max
-   if ( argc >= 4 ) {
-      fitMin[0] = atof(argv[2]);
-      fitMax[0] = atof(argv[3]);
-   } else {
-      fitMin[0] = 0.0;
-      fitMax[0] = 0.0;
-   }
-      
-   // Low range fit min/max
-   if ( argc == 6 ) {
-      fitMin[1] = atof(argv[4]);
-      fitMax[1] = atof(argv[5]);
-   } else {
-      fitMin[1] = 0.0;
-      fitMax[1] = 0.0;
    }
 
    // Create output names
    tmp.str("");
-   tmp << argv[1] << ".root";
+   tmp << argv[2] << ".root";
    outRoot = tmp.str();
    tmp.str("");
-   tmp << argv[1] << ".xml";
+   tmp << argv[2] << ".xml";
    outXml = tmp.str();
    tmp.str("");
-   tmp << argv[1] << ".csv";
+   tmp << argv[2] << ".csv";
    outCsv = tmp.str();
 
    //////////////////////////////////////////
    // Read Data
    //////////////////////////////////////////
-   cout << "Opened data file: " << argv[1] << endl;
+   cout << "Opened data file: " << argv[2] << endl;
    fileSize = dataRead.size();
    filePos  = dataRead.pos();
 
@@ -420,17 +427,16 @@ int main ( int argc, char **argv ) {
    csv << endl;
 
    // Add notes
-   xml << "   <sourceFile>" << argv[1] << "</sourceFile>" << endl;
+   xml << "   <sourceFile>" << argv[2] << "</sourceFile>" << endl;
    xml << "   <user>" <<  getlogin() << "</user>" << endl;
-   xml << "   <r0MinFit>" <<  fitMin[0] << "</r0MinFit>" << endl;
-   xml << "   <r0MaxFit>" <<  fitMax[0] << "</r0MaxFit>" << endl;
-   xml << "   <r1MinFit>" <<  fitMin[1] << "</r1MinFit>" << endl;
-   xml << "   <r1MaxFit>" <<  fitMax[1] << "</r1MaxFit>" << endl;
 
    time(&tme);
    timeinfo = localtime(&tme);
    strftime(tstr,200,"%Y_%m_%d_%H_%M_%S",timeinfo);
    xml << "   <timestamp>" << tstr << "</timestamp>" << endl;
+   xml << "   <config>"<< endl;
+   xml << config.getXml();
+   xml << "   </config>"<< endl;
 
    // get calibration mode variables for charge computation
    positive    = (dataRead.getConfig("cntrlFpga:kpixAsic:CntrlPolarity") == "Positive");
@@ -498,15 +504,23 @@ int main ( int argc, char **argv ) {
                               chanData[kpix][channel][bucket][range]->baseFitChisquare = 
                                  (hist->GetFunction("gaus")->GetChisquare() / hist->GetFunction("gaus")->GetNDF() );
 
+                              // Determine bad channel from fitted chisq
+                              if ( findBadMeanChisq && (chanData[kpix][channel][bucket][range]->baseFitChisquare >  meanChisq) ) 
+                                 badMean[kpix][channel] = true;
+
                               // Determine bad channel from fitted mean
-                              if ( chanData[kpix][channel][bucket][range]->baseFitMean > meanMax[range] ) badMean[kpix][channel] = true;
-                              else if ( chanData[kpix][channel][bucket][range]->baseFitMean < meanMin[range] ) badMean[kpix][channel] = true;
+                              if ( findBadMeanFit ) {
+                                 if ( chanData[kpix][channel][bucket][range]->baseFitMean > meanMax[range] ) badMean[kpix][channel] = true;
+                                 else if ( chanData[kpix][channel][bucket][range]->baseFitMean < meanMin[range] ) badMean[kpix][channel] = true;
+                              }
                            }
-                           else badMean[kpix][channel] = true;
+                           else if ( findBadMeanFit || findBadMeanChisq ) badMean[kpix][channel] = true;
 
                            // Determine bad channel from histogram mean
-                           if ( chanData[kpix][channel][bucket][range]->baseMean > meanMax[range] ) badMean[kpix][channel] = true;
-                           else if ( chanData[kpix][channel][bucket][range]->baseMean < meanMin[range] ) badMean[kpix][channel] = true;
+                           if ( findBadMeanHist ) {
+                              if ( chanData[kpix][channel][bucket][range]->baseMean > meanMax[range] ) badMean[kpix][channel] = true;
+                              else if ( chanData[kpix][channel][bucket][range]->baseMean < meanMin[range] ) badMean[kpix][channel] = true;
+                           }
                         }
                      }
                   }
@@ -644,24 +658,31 @@ int main ( int argc, char **argv ) {
 
                               // Add to xml
                               if ( grCalib->GetFunction("pol1") ) {
+                                 chisqNdf = (grCalib->GetFunction("pol1")->GetChisquare() / grCalib->GetFunction("pol1")->GetNDF());
+
                                  addDoubleToXml(&xml,15,"CalibGain",grCalib->GetFunction("pol1")->GetParameter(1));
                                  addDoubleToXml(&xml,15,"CalibIntercept",grCalib->GetFunction("pol1")->GetParameter(0));
                                  addDoubleToXml(&xml,15,"CalibGainErr",grCalib->GetFunction("pol1")->GetParError(1));
                                  addDoubleToXml(&xml,15,"CalibInterceptErr",grCalib->GetFunction("pol1")->GetParError(0));
-                                 addDoubleToXml(&xml,15,"CalibChisquare",(grCalib->GetFunction("pol1")->GetChisquare() / grCalib->GetFunction("pol1")->GetNDF()));
+                                 addDoubleToXml(&xml,15,"CalibChisquare",chisqNdf);
                                  csv << "," << grCalib->GetFunction("pol1")->GetParameter(1);
                                  csv << "," << grCalib->GetFunction("pol1")->GetParameter(0);
                                  csv << "," << grCalib->GetFunction("pol1")->GetParError(1);
                                  csv << "," << grCalib->GetFunction("pol1")->GetParError(0);
-                                 csv << "," << (grCalib->GetFunction("pol1")->GetChisquare() / grCalib->GetFunction("pol1")->GetNDF);
+                                 csv << "," << chisqNdf;
 
                                  // Determine bad channel from fitted gain
-                                 if ( grCalib->GetFunction("pol1")->GetParameter(1) > gainMax[range] ) badGain[kpix][channel] = true;
-                                 else if ( grCalib->GetFunction("pol1")->GetParameter(1) < gainMin[range] ) badGain[kpix][channel] = true;
+                                 if ( findBadGainFit ) {
+                                    if ( grCalib->GetFunction("pol1")->GetParameter(1) > gainMax[range] ) badGain[kpix][channel] = true;
+                                    else if ( grCalib->GetFunction("pol1")->GetParameter(1) < gainMin[range] ) badGain[kpix][channel] = true;
+                                 }
+
+                                 // Determine bad channel from fitted chisq
+                                 if ( findBadGainChisq && (chisqNdf >  gainChisq) ) badGain[kpix][channel] = true;
                               }
                               else {
                                  csv << ",0,0,0,0,0";
-                                 badGain[kpix][channel] = true;
+                                 if ( findBadGainFit || findBadGainChisq ) badGain[kpix][channel] = true;
                               }
 
                               addDoubleToXml(&xml,15,"CalibGainRms",grCalib->GetRMS(2));
