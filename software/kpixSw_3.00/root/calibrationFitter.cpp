@@ -227,8 +227,6 @@ int main ( int argc, char **argv ) {
    stringstream           crossString;
    stringstream           crossStringCsv;
    double                 crossDiff;
-   uint                   badGainCnt;
-   uint                   badMeanCnt;
    uint                   badValue;
    XmlVariables           config;
    bool                   findBadMeanHist;
@@ -245,6 +243,16 @@ int main ( int argc, char **argv ) {
    double                 fitMin[2];
    double                 fitMax[2];
    double                 chisqNdf;
+   ofstream               debug;
+   uint                   badTimes;
+   uint                   badMeanFitCnt;
+   uint                   badMeanHistCnt;
+   uint                   badMeanChisqCnt;
+   uint                   badGainFitCnt;
+   uint                   badGainChisqCnt;
+   uint                   failedGainFit;
+   uint                   failedMeanFit;
+   uint                   badChannelCnt;
 
    // Init structure
    for (kpix=0; kpix < 32; kpix++) {
@@ -259,14 +267,14 @@ int main ( int argc, char **argv ) {
       }
       kpixFound[kpix] = false;
    }
-   badGainCnt = 0;
-   badMeanCnt = 0;
 
    // Data file is the first and only arg
-   if ( argc != 3 ) {
-      cout << "Usage: calibrationFitter config_file data_file\n";
+   if ( argc != 3 && argc != 4 ) {
+      cout << "Usage: calibrationFitter config_file data_file [debug_file]\n";
       return(1);
    }
+
+   if ( argc == 4 ) debug.open(argv[3],ios::out | ios::trunc);
 
    // Read configuration
    if ( ! config.parseFile("config",argv[1]) ) {
@@ -320,11 +328,20 @@ int main ( int argc, char **argv ) {
    filePos  = dataRead.pos();
 
    // Init
-   currPct    = 0;
-   lastPct    = 100;
-   eventCount = 0;
-   minChan    = 0;
-   maxChan    = 0;
+   currPct          = 0;
+   lastPct          = 100;
+   eventCount       = 0;
+   minChan          = 0;
+   maxChan          = 0;
+   badTimes         = 0;
+   badMeanFitCnt    = 0;
+   badMeanHistCnt   = 0;
+   badMeanChisqCnt  = 0;
+   badGainFitCnt    = 0;
+   badGainChisqCnt  = 0;
+   failedGainFit    = 0;
+   failedMeanFit    = 0;
+   badChannelCnt    = 0;
 
    cout << "\rReading File: 0 %" << flush;
 
@@ -365,10 +382,12 @@ int main ( int argc, char **argv ) {
          if ( type == KpixSample::Data ) {
 
             // Create entry if it does not exist
-            if ( chanData[kpix][channel][bucket][range] == NULL ) chanData[kpix][channel][bucket][range] = new ChannelData;
-            if ( chanData[kpix][calChannel][bucket][range] == NULL ) chanData[kpix][calChannel][bucket][range] = new ChannelData;
-            kpixFound[kpix]    = true;
+            kpixFound[kpix]          = true;
             chanFound[kpix][channel] = true;
+            if ( chanData[kpix][channel][bucket][range] == NULL ) 
+               chanData[kpix][channel][bucket][range] = new ChannelData;
+            if ( chanData[kpix][calChannel][bucket][range] == NULL ) 
+               chanData[kpix][calChannel][bucket][range] = new ChannelData;
 
             // Filter for time
             if ( tstamp > injectTime[bucket] && tstamp < injectTime[bucket+1] ) {
@@ -378,10 +397,13 @@ int main ( int argc, char **argv ) {
 
                // Injection
                else if ( calState == "Inject" && calDac != minDac ) {
-                  if ( channel == calChannel ) chanData[kpix][channel][bucket][range]->addCalibPoint(calDac, value);
-                  else chanData[kpix][calChannel][bucket][range]->addNeighborPoint(channel, calDac, value);
+                  if ( channel == calChannel ) 
+                     chanData[kpix][channel][bucket][range]->addCalibPoint(calDac, value);
+                  else 
+                     chanData[kpix][calChannel][bucket][range]->addNeighborPoint(channel, calDac, value);
                }
             }
+            else badTimes++;
          }
       }
 
@@ -413,8 +435,10 @@ int main ( int argc, char **argv ) {
 
    // Open csv file
    csv.open(outCsv.c_str(),ios::out | ios::trunc);
-   csv << "Kpix,Channel,Bucket,Range,BaseMean,BaseRms,BaseFitMean,BaseFitSigma,BaseFitMeanErr,BaseFitSigmaErr,BaseFitChisquare";
-   csv << ",CalibGain,CalibIntercept,CalibGainErr,CalibInterceptErr,CalibChisquare,CalibGainRms,CrossTalkChan0,CrossTalkAmp0";
+   csv << "Kpix,Channel,Bucket,Range,BaseMean,BaseRms,BaseFitMean,BaseFitSigma";
+   csv << ",BaseFitMeanErr,BaseFitSigmaErr,BaseFitChisquare";
+   csv << ",CalibGain,CalibIntercept,CalibGainErr,CalibInterceptErr,CalibChisquare";
+   csv << ",CalibGainRms,CrossTalkChan0,CrossTalkAmp0";
    csv << ",CrossTalkChan1,CrossTalkAmp1";
    csv << ",CrossTalkChan2,CrossTalkAmp2";
    csv << ",CrossTalkChan3,CrossTalkAmp3";
@@ -505,21 +529,42 @@ int main ( int argc, char **argv ) {
                                  (hist->GetFunction("gaus")->GetChisquare() / hist->GetFunction("gaus")->GetNDF() );
 
                               // Determine bad channel from fitted chisq
-                              if ( findBadMeanChisq && (chanData[kpix][channel][bucket][range]->baseFitChisquare >  meanChisq) ) 
+                              if ( findBadMeanChisq && (chanData[kpix][channel][bucket][range]->baseFitChisquare >  meanChisq) ) {
+                                 debug << "Kpix=" << dec << kpix << " Channel=" << dec << channel << " Bucket=" << dec << bucket
+                                       << " Range=" << dec << range 
+                                       << " Bad fit mean chisq=" << chanData[kpix][channel][bucket][range]->baseFitChisquare << endl;
                                  badMean[kpix][channel] = true;
+                                 badMeanChisqCnt++;
+                              }
 
                               // Determine bad channel from fitted mean
-                              if ( findBadMeanFit ) {
-                                 if ( chanData[kpix][channel][bucket][range]->baseFitMean > meanMax[range] ) badMean[kpix][channel] = true;
-                                 else if ( chanData[kpix][channel][bucket][range]->baseFitMean < meanMin[range] ) badMean[kpix][channel] = true;
+                              if ( findBadMeanFit &&
+                                    ( (chanData[kpix][channel][bucket][range]->baseFitMean > meanMax[range]) ||  
+                                      (chanData[kpix][channel][bucket][range]->baseFitMean < meanMin[range]) ) ) {
+                                 debug << "Kpix=" << dec << kpix << " Channel=" << dec << channel << " Bucket=" << dec << bucket
+                                       << " Range=" << dec << range 
+                                       << " Bad fit mean value=" << chanData[kpix][channel][bucket][range]->baseFitMean << endl;
+                                 badMean[kpix][channel] = true;
+                                 badMeanFitCnt++;
                               }
                            }
-                           else if ( findBadMeanFit || findBadMeanChisq ) badMean[kpix][channel] = true;
+                           else if ( findBadMeanFit || findBadMeanChisq ) {
+                              debug << "Kpix=" << dec << kpix << " Channel=" << dec << channel 
+                                    << " Bucket=" << dec << bucket << " Range=" << dec << range
+                                    << " Failed to fit mean" << endl;
+                              badMean[kpix][channel] = true;
+                              failedMeanFit++;
+                           }
 
                            // Determine bad channel from histogram mean
-                           if ( findBadMeanHist ) {
-                              if ( chanData[kpix][channel][bucket][range]->baseMean > meanMax[range] ) badMean[kpix][channel] = true;
-                              else if ( chanData[kpix][channel][bucket][range]->baseMean < meanMin[range] ) badMean[kpix][channel] = true;
+                           if ( findBadMeanHist && 
+                                 ( (chanData[kpix][channel][bucket][range]->baseMean > meanMax[range]) ||
+                                   (chanData[kpix][channel][bucket][range]->baseMean < meanMin[range]) ) ) {
+                              debug << "Kpix=" << dec << kpix << " Channel=" << dec << channel << " Bucket=" << dec << bucket
+                                    << " Range=" << dec << range
+                                    << " Bad hist mean value=" << chanData[kpix][channel][bucket][range]->baseMean << endl;
+                              badMeanHistCnt++;
+                              badMean[kpix][channel] = true;
                            }
                         }
                      }
@@ -672,17 +717,34 @@ int main ( int argc, char **argv ) {
                                  csv << "," << chisqNdf;
 
                                  // Determine bad channel from fitted gain
-                                 if ( findBadGainFit ) {
-                                    if ( grCalib->GetFunction("pol1")->GetParameter(1) > gainMax[range] ) badGain[kpix][channel] = true;
-                                    else if ( grCalib->GetFunction("pol1")->GetParameter(1) < gainMin[range] ) badGain[kpix][channel] = true;
+                                 if ( findBadGainFit && 
+                                       ( (grCalib->GetFunction("pol1")->GetParameter(1) > gainMax[range]) ||
+                                         (grCalib->GetFunction("pol1")->GetParameter(1) < gainMin[range]) ) ) {
+                                    debug << "Kpix=" << dec << kpix << " Channel=" << dec << channel << " Bucket=" << dec << bucket
+                                          << " Range=" << dec << range
+                                          << " Bad gain value=" << grCalib->GetFunction("pol1")->GetParameter(1) << endl;
+                                    badGain[kpix][channel] = true;
+                                    badGainFitCnt++;
                                  }
 
                                  // Determine bad channel from fitted chisq
-                                 if ( findBadGainChisq && (chisqNdf >  gainChisq) ) badGain[kpix][channel] = true;
+                                 if ( findBadGainChisq && (chisqNdf >  gainChisq) ) {
+                                    debug << "Kpix=" << dec << kpix << " Channel=" << dec << channel << " Bucket=" << dec << bucket
+                                          << " Range=" << dec << range
+                                          << " Bad gain chisq=" << gainChisq << endl;
+                                    badGain[kpix][channel] = true;
+                                    badGainChisqCnt++;
+                                 }
                               }
                               else {
                                  csv << ",0,0,0,0,0";
-                                 if ( findBadGainFit || findBadGainChisq ) badGain[kpix][channel] = true;
+                                 if ( findBadGainFit || findBadGainChisq ) {
+                                    debug << "Kpix=" << dec << kpix << " Channel=" << dec << channel << " Bucket=" << dec << bucket
+                                          << " Range=" << dec << range
+                                          << " Failed to fit gain" << endl;
+                                    badGain[kpix][channel] = true;
+                                    failedGainFit++;
+                                 }
                               }
 
                               addDoubleToXml(&xml,15,"CalibGainRms",grCalib->GetRMS(2));
@@ -700,14 +762,15 @@ int main ( int argc, char **argv ) {
                }
 
                // Determine if the channel is bad
+
                badValue = 0;
-               if ( badMean[kpix][channel] ) {
-                  badValue |= 0x1;
-                  badMeanCnt++;
-               }
-               if ( badGain[kpix][channel] ) {
-                  badValue |= 0x2;
-                  badGainCnt++;
+               if ( badMean[kpix][channel] ) badValue |= 0x1;
+               if ( badGain[kpix][channel] ) badValue |= 0x2;
+
+               if ( badValue != 0 ) {
+                  debug << "Kpix=" << dec << kpix << " Channel=" << dec << channel
+                        << " Marking channel bad." << endl;
+                  badChannelCnt++;
                }
 
                xml << "         <BadChannel>" << dec << badValue << "</BadChannel>" << endl;
@@ -722,8 +785,16 @@ int main ( int argc, char **argv ) {
    cout << "Wrote xml data to " << outXml << endl;
    cout << "Wrote csv data to " << outCsv << endl;
    cout << endl;
-   cout << "Marked " << dec << badMeanCnt << " channels as bad due to mean value" << endl;
-   cout << "Marked " << dec << badGainCnt << " channels as bad due to gain value" << endl;
+
+   cout << "Found " << dec << setw(10) << setfill(' ') << badTimes        << " events with bad times" << endl;
+   cout << "Found " << dec << setw(10) << setfill(' ') << badMeanFitCnt   << " bad mean fit values" << endl;
+   cout << "Found " << dec << setw(10) << setfill(' ') << badMeanChisqCnt << " bad mean fit chisq"  << endl;
+   cout << "Found " << dec << setw(10) << setfill(' ') << badMeanHistCnt  << " bad mean hist values" << endl;
+   cout << "Found " << dec << setw(10) << setfill(' ') << failedMeanFit   << " failed mean fits" << endl;
+   cout << "Found " << dec << setw(10) << setfill(' ') << badGainFitCnt   << " bad gain fit values" << endl;
+   cout << "Found " << dec << setw(10) << setfill(' ') << badGainChisqCnt << " bad gain fit chisq" << endl;
+   cout << "Found " << dec << setw(10) << setfill(' ') << failedGainFit   << " failed gain fits" << endl;
+   cout << "Found " << dec << setw(10) << setfill(' ') << badChannelCnt   << " bad channels" << endl;
 
    xml << "</calibrationData>" << endl;
    xml.close();

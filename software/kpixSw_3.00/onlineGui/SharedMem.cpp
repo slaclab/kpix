@@ -48,7 +48,7 @@ void SharedMem::ack() {
 void SharedMem::run () {
    while (runEnable) {
 
-      if ( ackCount == eventCount ) {
+      if ( ackCount >= eventCount ) {
          if ( dread_->next(event_)) {
             event();
             eventCount++;

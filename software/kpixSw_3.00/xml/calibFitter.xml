@@ -3,18 +3,18 @@
    <FindBadMeanHist>1</FindBadMeanHist>
    <FindBadMeanFit>1</FindBadMeanFit>
    <GoodMeanMinR0>100</GoodMeanMinR0>
-   <GoodMeanMaxR0>300</GoodMeanMaxR0>
+   <GoodMeanMaxR0>400</GoodMeanMaxR0>
    <GoodMeanMinR1>100</GoodMeanMinR1>
-   <GoodMeanMaxR1>300</GoodMeanMaxR1>
+   <GoodMeanMaxR1>400</GoodMeanMaxR1>
 
    <FindBadMeanChisq>0</FindBadMeanChisq>
    <GoodMeanChisqMax>0</GoodMeanChisqMax>
 
    <FindBadGainFit>1</FindBadGainFit>
-   <GoodGainMinR0>2e15</GoodGainMinR0>
-   <GoodGainMaxR0>7e15</GoodGainMaxR0>
-   <GoodGainMinR1>2e15</GoodGainMinR1>
-   <GoodGainMaxR1>7e15</GoodGainMaxR1>
+   <GoodGainMinR0>2.0e15</GoodGainMinR0>
+   <GoodGainMaxR0>7.0e15</GoodGainMaxR0>
+   <GoodGainMinR1>2.0e15</GoodGainMinR1>
+   <GoodGainMaxR1>7.0e15</GoodGainMaxR1>
 
    <FindBadGainChisq>0</FindBadGainChisq>
    <GoodGainChisqMax>0</GoodGainChisqMax>
