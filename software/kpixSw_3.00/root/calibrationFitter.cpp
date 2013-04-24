@@ -59,6 +59,7 @@ class ChannelData {
       double       calibMean[256];
       double       calibSum[256];
       double       calibRms[256];
+      double       calibError[256];
       double       calibOtherValue[1024];
       double       calibOtherDac[1024];
 
@@ -83,6 +84,7 @@ class ChannelData {
             calibMean[x]   = 0;
             calibSum[x]    = 0;
             calibRms[x]    = 0;
+            calibError[x]  = 0;
          }
          for (x=0; x < 1024; x++) {
             calibOtherValue[x] = 0;
@@ -120,12 +122,20 @@ class ChannelData {
          }
       }
 
-      void compute() {
-         uint x;
-
+      void computeBase () {
          if ( baseCount > 0 ) baseRms = sqrt(baseSum / baseCount);
+      }
+
+      void computeCalib(double chargeError) {
+         uint   x;
+         double tmp;
+
          for (x=0; x < 256; x++) {
-            if ( calibCount[x] > 0 ) calibRms[x] = sqrt(calibSum[x] / calibCount[x]);
+            if ( calibCount[x] > 0 ) {
+               calibRms[x] = sqrt(calibSum[x] / calibCount[x]);
+               tmp = calibRms[x] / sqrt(calibCount[x]);
+               calibError[x] = sqrt((tmp * tmp) + (chargeError * chargeError));
+            }
          }
       }
 };
@@ -239,6 +249,7 @@ int main ( int argc, char **argv ) {
    double                 meanChisq;
    double                 gainMin[2];
    double                 gainMax[2];
+   double                 chargeError[2];
    double                 gainChisq;
    double                 fitMin[2];
    double                 fitMax[2];
@@ -302,6 +313,8 @@ int main ( int argc, char **argv ) {
    fitMax[0]        = config.getDouble("GainFitMaxR0");
    fitMin[1]        = config.getDouble("GainFitMinR1");
    fitMax[1]        = config.getDouble("GainFitMaxR1");
+   chargeError[0]   = config.getDouble("GainChargeErrorR0");
+   chargeError[1]   = config.getDouble("GainChargeErrorR1");
 
    // Open data file
    if ( ! dataRead.open(argv[2]) ) {
@@ -504,7 +517,7 @@ int main ( int argc, char **argv ) {
  
                         // Range is valid
                         if ( chanData[kpix][channel][bucket][range] != NULL ) {
-                           chanData[kpix][channel][bucket][range]->compute();
+                           chanData[kpix][channel][bucket][range]->computeBase();
 
                            // Create histogram
                            tmp.str("");
@@ -617,7 +630,7 @@ int main ( int argc, char **argv ) {
                         // Range is valid
                         if ( chanData[kpix][channel][bucket][range] != NULL ) {
                            xml << "            <Range id=\"" << range << "\">" << endl;
-                           chanData[kpix][channel][bucket][range]->compute();
+                           chanData[kpix][channel][bucket][range]->computeCalib(chargeError[range]);
                            csv << serial << "," << dec << channel << "," << dec << bucket << "," << dec << range;
 
                            // Add baseline data to xml
@@ -650,8 +663,16 @@ int main ( int argc, char **argv ) {
                               if ( chanData[kpix][channel][bucket][range]->calibCount[x] > 0 ) {
                                  grX[grCount]    = calibCharge ( x, positive, ((bucket==0)?b0CalibHigh:false));
                                  grY[grCount]    = chanData[kpix][channel][bucket][range]->calibMean[x];
-                                 grYErr[grCount] = chanData[kpix][channel][bucket][range]->calibRms[x];
+                                 grYErr[grCount] = chanData[kpix][channel][bucket][range]->calibError[x];
                                  grXErr[grCount] = 0;
+
+#if 1
+                                 debug << "Kpix=" << dec << kpix << " Channel=" << dec << channel << " Bucket=" << dec << bucket
+                                       << " Range=" << dec << range
+                                       << " Adding point x=" << grX[grCount] 
+                                       << " Rms=" << chanData[kpix][channel][bucket][range]->calibRms[x]
+                                       << " Error=" << chanData[kpix][channel][bucket][range]->calibError[x] << endl;
+#endif
                                  grCount++;
 
                                  // Find crosstalk, value - base > 3 * sigma

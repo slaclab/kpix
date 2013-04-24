@@ -19,9 +19,12 @@
    <FindBadGainChisq>0</FindBadGainChisq>
    <GoodGainChisqMax>0</GoodGainChisqMax>
 
-   <GainFitMinR0>0.0</GainFitMinR0>
-   <GainFitMaxR0>0.0</GainFitMaxR0>
+   <GainFitMinR0>100e-15</GainFitMinR0>
+   <GainFitMaxR0>450e-15</GainFitMaxR0>
    <GainFitMinR1>0.0</GainFitMinR1>
    <GainFitMaxR1>0.0</GainFitMaxR1>
+   
+   <GainChargeErrorR0>4.0</GainChargeErrorR0>
+   <GainChargeErrorR1>4.0</GainChargeErrorR1>
 
 </config>
