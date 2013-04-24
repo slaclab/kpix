@@ -666,7 +666,7 @@ int main ( int argc, char **argv ) {
                                  grYErr[grCount] = chanData[kpix][channel][bucket][range]->calibError[x];
                                  grXErr[grCount] = 0;
 
-#if 1
+#if 0
                                  debug << "Kpix=" << dec << kpix << " Channel=" << dec << channel << " Bucket=" << dec << bucket
                                        << " Range=" << dec << range
                                        << " Adding point x=" << grX[grCount] 
