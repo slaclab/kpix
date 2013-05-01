@@ -21,7 +21,7 @@
          <ClkPeriodAcq>50nS</ClkPeriodAcq>
          <ClkPeriodDig>50nS</ClkPeriodDig>
          <ClkPeriodIdle>100nS</ClkPeriodIdle>
-         <ClkPeriodPrecharge>50nS</ClkPeriodPrecharge>
+         <ClkPeriodPrecharge>320nS</ClkPeriodPrecharge>
          <ClkPeriodRead>100nS</ClkPeriodRead>
          <KpixRxRaw>False</KpixRxRaw>
          <RunMode>Calibrate</RunMode>
@@ -46,7 +46,7 @@
             <CntrlNearNeighbor>False</CntrlNearNeighbor>          <!-- 3-->
             <CntrlForceTrigSource>Internal</CntrlForceTrigSource> <!-- 4-->
             <CntrlCalSource>Internal</CntrlCalSource>              <!-- 6-->
-            <CntrlHoldTime>16x</CntrlHoldTime>                    <!-- 8-10-->
+            <CntrlHoldTime>64x</CntrlHoldTime>                    <!-- 8-10-->
             <CntrlCalibHigh>False</CntrlCalibHigh>                <!--11-->
             <CntrlShortIntEn>False</CntrlShortIntEn>              <!--12-->
             <CntrlForceLowGain>False</CntrlForceLowGain>          <!--13-->

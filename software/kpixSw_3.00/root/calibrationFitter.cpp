@@ -538,8 +538,13 @@ int main ( int argc, char **argv ) {
                               chanData[kpix][channel][bucket][range]->baseFitSigma     = hist->GetFunction("gaus")->GetParameter(2);
                               chanData[kpix][channel][bucket][range]->baseFitMeanErr   = hist->GetFunction("gaus")->GetParError(1);
                               chanData[kpix][channel][bucket][range]->baseFitSigmaErr  = hist->GetFunction("gaus")->GetParError(2);
-                              chanData[kpix][channel][bucket][range]->baseFitChisquare = 
-                                 (hist->GetFunction("gaus")->GetChisquare() / hist->GetFunction("gaus")->GetNDF() );
+
+                              if ( hist->GetFunction("gaus")->GetNDF() == 0 ) {
+                                 chanData[kpix][channel][bucket][range]->baseFitChisquare = 0;
+                              } else {
+                                 chanData[kpix][channel][bucket][range]->baseFitChisquare = 
+                                    (hist->GetFunction("gaus")->GetChisquare() / hist->GetFunction("gaus")->GetNDF() );
+                              }
 
                               // Determine bad channel from fitted chisq
                               if ( findBadMeanChisq && (chanData[kpix][channel][bucket][range]->baseFitChisquare >  meanChisq) ) {
