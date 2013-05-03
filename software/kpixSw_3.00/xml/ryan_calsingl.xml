@@ -21,7 +21,7 @@
          <ClkPeriodAcq>50nS</ClkPeriodAcq>
          <ClkPeriodDig>50nS</ClkPeriodDig>
          <ClkPeriodIdle>100nS</ClkPeriodIdle>
-         <ClkPeriodPrecharge>320nS</ClkPeriodPrecharge>
+         <ClkPeriodPrecharge>2560nS</ClkPeriodPrecharge>
          <ClkPeriodRead>100nS</ClkPeriodRead>
          <KpixRxRaw>False</KpixRxRaw>
          <RunMode>Calibrate</RunMode>

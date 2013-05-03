@@ -28,6 +28,7 @@ using namespace std;
 ConFpga::ConFpga ( uint destination, uint index, uint kpixCount, Device *parent ) : 
                    Device(destination,0,"cntrlFpga",index,parent) {
    stringstream tmp;
+   uint         x;
 
    this->kpixCount = kpixCount;
 
@@ -44,39 +45,12 @@ ConFpga::ConFpga ( uint destination, uint index, uint kpixCount, Device *parent 
    addRegister(new Register("ClockSelectA", 0x01000001));
    addRegister(new Register("ClockSelectB", 0x01000002));
    vector<string> clkPeriod;
-   clkPeriod.resize(32);
-   clkPeriod[0]   = "10nS";
-   clkPeriod[1]   = "20nS";
-   clkPeriod[2]   = "30nS";
-   clkPeriod[3]   = "40nS";
-   clkPeriod[4]   = "50nS";
-   clkPeriod[5]   = "60nS";
-   clkPeriod[6]   = "70nS";
-   clkPeriod[7]   = "80nS";
-   clkPeriod[8]   = "90nS";
-   clkPeriod[9]   = "100nS";
-   clkPeriod[10]  = "110nS";
-   clkPeriod[11]  = "120nS";
-   clkPeriod[12]  = "130nS";
-   clkPeriod[13]  = "140nS";
-   clkPeriod[14]  = "150nS";
-   clkPeriod[15]  = "160nS";
-   clkPeriod[16]  = "170nS";
-   clkPeriod[17]  = "180nS";
-   clkPeriod[18]  = "190nS";
-   clkPeriod[19]  = "200nS";
-   clkPeriod[20]  = "210nS";
-   clkPeriod[21]  = "220nS";
-   clkPeriod[22]  = "230nS";
-   clkPeriod[23]  = "240nS";
-   clkPeriod[24]  = "250nS";
-   clkPeriod[25]  = "260nS";
-   clkPeriod[26]  = "270nS";
-   clkPeriod[27]  = "280nS";
-   clkPeriod[28]  = "290nS";
-   clkPeriod[29]  = "300nS";
-   clkPeriod[30]  = "310nS";
-   clkPeriod[31]  = "320nS";
+   clkPeriod.resize(256);
+   for (int x=0; x < 256; x++) {
+      tmp.str("");
+      tmp << dec << ((x+1)*10) << "nS";
+      clkPeriod[x] = tmp.str();
+   }
 
    addVariable(new Variable("ClkPeriodIdle", Variable::Configuration));
    getVariable("ClkPeriodIdle")->setDescription("Idle clock period");
