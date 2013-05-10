@@ -19,7 +19,7 @@ use ieee.std_logic_1164.all;
 
 package Version is
 
-  constant FPGA_VERSION_C : std_logic_vector(31 downto 0) := x"C000010D";  -- MAKE_VERSION
+  constant FPGA_VERSION_C : std_logic_vector(31 downto 0) := x"C000010F";  -- MAKE_VERSION
 
 end Version;
 
@@ -35,5 +35,6 @@ end Version;
 -- 10/11/2012 (0xC000010A): Removed grey decode for temperature
 -- 02/12/2013 (0xC000010B): Added chipscope on EthFrontEnd
 -- 02/20/2013 (0xC000010C): Added Software Reset function.
+-- 05/10/2013 (0xC000010F): Extended precharge clock period register to 12 bits
 -------------------------------------------------------------------------------
 
