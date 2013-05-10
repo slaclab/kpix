@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-07
--- Last update: 2013-03-20
+-- Last update: 2013-05-10
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -139,11 +139,11 @@ begin
       r.kpixConfigRegs.rawDataMode         <= '0'             after DELAY_G;
       r.kpixConfigRegs.numColumns          <= "11111"         after DELAY_G;  -- 32 columns
       r.kpixConfigRegs.autoReadDisable     <= '0'             after DELAY_G;
-      r.kpixClockGenRegsIn.clkSelReadout   <= "00001001"      after DELAY_G;  -- 100 ns
-      r.kpixClockGenRegsIn.clkSelDigitize  <= "00000100"      after DELAY_G;  -- 50 ns
-      r.kpixClockGenRegsIn.clkSelAcquire   <= "00000100"      after DELAY_G;  -- 50 ns
-      r.kpixClockGenRegsIn.clkSelIdle      <= "00001001"      after DELAY_G;  -- 100 ns
-      r.kpixClockGenRegsIn.clkSelPrecharge <= "00000100"      after DELAY_G;  -- 50 ns
+      r.kpixClockGenRegsIn.clkSelReadout   <= "000000001001"  after DELAY_G;  -- 100 ns
+      r.kpixClockGenRegsIn.clkSelDigitize  <= "000000000100"  after DELAY_G;  -- 50 ns
+      r.kpixClockGenRegsIn.clkSelAcquire   <= "000000000100"  after DELAY_G;  -- 50 ns
+      r.kpixClockGenRegsIn.clkSelIdle      <= "000000001001"  after DELAY_G;  -- 100 ns
+      r.kpixClockGenRegsIn.clkSelPrecharge <= "000000000100"  after DELAY_G;  -- 50 ns
       r.kpixClockGenRegsIn.newValue        <= '0'             after DELAY_G;
 
       r.kpixLocalRegsIn.debugASel <= (others => '0') after DELAY_G;
@@ -211,22 +211,24 @@ begin
           rVar.frontEndRegCntlIn.regDataIn := FPGA_VERSION_C;
 
         when CLOCK_SELECT_A_REG_ADDR_C =>
-          rVar.frontEndRegCntlIn.regDataIn(31 downto 24) := r.kpixClockGenRegsIn.clkSelReadout;
-          rVar.frontEndRegCntlIn.regDataIn(23 downto 16) := r.kpixClockGenRegsIn.clkSelDigitize;
-          rVar.frontEndRegCntlIn.regDataIn(15 downto 8)  := r.kpixClockGenRegsIn.clkSelAcquire;
-          rVar.frontEndRegCntlIn.regDataIn(7 downto 0)   := r.kpixClockGenRegsIn.clkSelIdle;
+           -- Only use 8 bits of these registers for legacy purposes
+          rVar.frontEndRegCntlIn.regDataIn(31 downto 24) := r.kpixClockGenRegsIn.clkSelReadout(7 downto 0);
+          rVar.frontEndRegCntlIn.regDataIn(23 downto 16) := r.kpixClockGenRegsIn.clkSelDigitize(7 downto 0);
+          rVar.frontEndRegCntlIn.regDataIn(15 downto 8)  := r.kpixClockGenRegsIn.clkSelAcquire(7 downto 0);
+          rVar.frontEndRegCntlIn.regDataIn(7 downto 0)   := r.kpixClockGenRegsIn.clkSelIdle(7 downto 0);
           if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
-            rVar.kpixClockGenRegsIn.clkSelReadout  := frontEndRegCntlOut.regDataOut(31 downto 24);
-            rVar.kpixClockGenRegsIn.clkSelDigitize := frontEndRegCntlOut.regDataOut(23 downto 16);
-            rVar.kpixClockGenRegsIn.clkSelAcquire  := frontEndRegCntlOut.regDataOut(15 downto 8);
-            rVar.kpixClockGenRegsIn.clkSelIdle     := frontEndRegCntlOut.regDataOut(7 downto 0);
+            rVar.kpixClockGenRegsIn.clkSelReadout(7 downto 0)  := frontEndRegCntlOut.regDataOut(31 downto 24);
+            rVar.kpixClockGenRegsIn.clkSelDigitize(7 downto 0) := frontEndRegCntlOut.regDataOut(23 downto 16);
+            rVar.kpixClockGenRegsIn.clkSelAcquire(7 downto 0)  := frontEndRegCntlOut.regDataOut(15 downto 8);
+            rVar.kpixClockGenRegsIn.clkSelIdle(7 downto 0)     := frontEndRegCntlOut.regDataOut(7 downto 0);
             rVar.kpixClockGenRegsIn.newValue       := '1';  -- Let ClockGen know to resync
           end if;
 
         when CLOCK_SELECT_B_REG_ADDR_C =>
-          rVar.frontEndRegCntlIn.regDataIn(7 downto 0) := r.kpixClockGenRegsIn.clkSelPrecharge;
+           -- Precharge is the only 12 bit clock register, others are 8.
+          rVar.frontEndRegCntlIn.regDataIn(11 downto 0) := r.kpixClockGenRegsIn.clkSelPrecharge;
           if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
-            rVar.kpixClockGenRegsIn.clkSelPrecharge := frontEndRegCntlOut.regDataOut(7 downto 0);
+            rVar.kpixClockGenRegsIn.clkSelPrecharge := frontEndRegCntlOut.regDataOut(11 downto 0);
           end if;
 
         when DEBUG_SELECT_REG_ADDR_C =>

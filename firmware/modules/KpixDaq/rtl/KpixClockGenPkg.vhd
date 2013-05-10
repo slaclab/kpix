@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-22
--- Last update: 2012-06-13
+-- Last update: 2013-05-10
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -23,11 +23,11 @@ package KpixClockGenPkg is
 
   type KpixClockGenRegsInType is record
     newValue        : sl;
-    clkSelReadout   : slv(7 downto 0);
-    clkSelDigitize  : slv(7 downto 0);
-    clkSelAcquire   : slv(7 downto 0);
-    clkSelIdle      : slv(7 downto 0);
-    clkSelPrecharge : slv(7 downto 0);
+    clkSelReadout   : slv(11 downto 0);
+    clkSelDigitize  : slv(11 downto 0);
+    clkSelAcquire   : slv(11 downto 0);
+    clkSelIdle      : slv(11 downto 0);
+    clkSelPrecharge : slv(11 downto 0);
   end record KpixClockGenRegsInType;
 
 end package KpixClockGenPkg;

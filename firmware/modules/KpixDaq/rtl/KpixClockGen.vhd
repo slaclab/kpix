@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2013-02-20
+-- Last update: 2013-05-10
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -37,7 +37,7 @@ entity KpixClockGen is
     readoutState : in  slv(2 downto 0);
     prechargeBus : in  sl;
     kpixClk      : out sl;
-    kpixClkRst      : out sl);
+    kpixClkRst   : out sl);
 
 end entity KpixClockGen;
 
@@ -47,12 +47,13 @@ architecture rtl of KpixClockGen is
   type RegType is record
     newValueSync : SynchronizerType;
     extRegsSync  : KpixClockGenRegsInType;
-    divCount     : unsigned(7 downto 0);
-    clkSel       : unsigned(7 downto 0);
+    divCount     : unsigned(11 downto 0);
+    clkSel       : unsigned(11 downto 0);
     clkDiv       : sl;
   end record RegType;
 
   signal r, rin : RegType;
+  signal kpixClkInt : sl;
 
 begin
 
@@ -122,7 +123,7 @@ begin
       IN_POLARITY_G  => '1',
       OUT_POLARITY_G => '1')            -- Active high reset
     port map (
-      clk      => r.clkDiv,
+      clk      => kpixClkInt,
       asyncRst => rst200,
       syncRst  => kpixClkRst);
 
@@ -130,6 +131,8 @@ begin
   KPIX_CLK_BUFG : BUFG
     port map (
       I => r.clkDiv,
-      O => kpixClk);
+      O => kpixClkInt);
 
+  kpixClk <= kpixClkInt;
+  
 end architecture rtl;
