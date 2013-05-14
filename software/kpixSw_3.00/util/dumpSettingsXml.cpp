@@ -38,9 +38,6 @@ int main (int argc, char **argv) {
    // Process each event
    while ( dataRead.next(&event) );
 
-   // Dump config
-   dataRead.dumpConfig();
-
    cout << dataRead.getConfigXml();
 
    return(0);

@@ -68,9 +68,17 @@ ConFpga::ConFpga ( uint destination, uint index, uint kpixCount, Device *parent 
    getVariable("ClkPeriodRead")->setDescription("Readout clock period");
    getVariable("ClkPeriodRead")->setEnums(clkPeriod);
 
+   vector<string> clkPeriodp;
+   clkPeriodp.resize(0xFFF);
+   for (int x=0; x < 0xFFF; x++) {
+      tmp.str("");
+      tmp << dec << ((x+1)*10) << "nS";
+      clkPeriodp[x] = tmp.str();
+   }
+
    addVariable(new Variable("ClkPeriodPrecharge", Variable::Configuration));
    getVariable("ClkPeriodPrecharge")->setDescription("Precharge clock period");
-   getVariable("ClkPeriodPrecharge")->setEnums(clkPeriod);
+   getVariable("ClkPeriodPrecharge")->setEnums(clkPeriodp);
 
    // KPIX debug select register
    addRegister(new Register("DebugSelect", 0x01000003));
@@ -364,7 +372,7 @@ void ConFpga::readConfig ( ) {
    getVariable("ClkPeriodRead")->setInt(getRegister("ClockSelectA")->get(24,0x1F));
 
    readRegister(getRegister("ClockSelectB"));
-   getVariable("ClkPeriodPrecharge")->setInt(getRegister("ClockSelectB")->get(0,0x1F));
+   getVariable("ClkPeriodPrecharge")->setInt(getRegister("ClockSelectB")->get(0,0xFFF));
 
    readRegister(getRegister("DebugSelect"));
    getVariable("BncSourceA")->setInt(getRegister("DebugSelect")->get(0,0x1F));
@@ -409,7 +417,7 @@ void ConFpga::writeConfig ( bool force ) {
    getRegister("ClockSelectA")->set(getVariable("ClkPeriodRead")->getInt(),24,0x1F);
    writeRegister(getRegister("ClockSelectA"),force);
 
-   getRegister("ClockSelectB")->set(getVariable("ClkPeriodPrecharge")->getInt(),0,0x1F);
+   getRegister("ClockSelectB")->set(getVariable("ClkPeriodPrecharge")->getInt(),0,0xFFF);
    writeRegister(getRegister("ClockSelectB"),force);
 
    getRegister("DebugSelect")->set(getVariable("BncSourceA")->getInt(),0,0x1F);
