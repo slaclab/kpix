@@ -19,7 +19,7 @@ use ieee.std_logic_1164.all;
 
 package Version is
 
-  constant FPGA_VERSION_C : std_logic_vector(31 downto 0) := x"C000010F";  -- MAKE_VERSION
+  constant FPGA_VERSION_C : std_logic_vector(31 downto 0) := x"C0000110";  -- MAKE_VERSION
 
 end Version;
 
@@ -36,5 +36,6 @@ end Version;
 -- 02/12/2013 (0xC000010B): Added chipscope on EthFrontEnd
 -- 02/20/2013 (0xC000010C): Added Software Reset function.
 -- 05/10/2013 (0xC000010F): Extended precharge clock period register to 12 bits
+-- 05/14/2013 (0xC0000110): Fixed precharge clock period bug
 -------------------------------------------------------------------------------
 
