@@ -399,11 +399,12 @@ int main ( int argc, char **argv ) {
             chanFound[kpix][channel] = true;
             if ( chanData[kpix][channel][bucket][range] == NULL ) 
                chanData[kpix][channel][bucket][range] = new ChannelData;
-            if ( chanData[kpix][calChannel][bucket][range] == NULL ) 
-               chanData[kpix][calChannel][bucket][range] = new ChannelData;
+
+            // Non calibration based run. Fill mean, ignore times
+            if ( calState == "Idle" ) chanData[kpix][channel][bucket][range]->addBasePoint(value);
 
             // Filter for time
-            if ( tstamp > injectTime[bucket] && tstamp < injectTime[bucket+1] ) {
+            else if ( tstamp > injectTime[bucket] && tstamp < injectTime[bucket+1] ) {
 
                // Baseline
                if ( calState == "Baseline" ) chanData[kpix][channel][bucket][range]->addBasePoint(value);
@@ -435,6 +436,7 @@ int main ( int argc, char **argv ) {
    // Process Data
    //////////////////////////////////////////
    gStyle->SetOptFit(1111);
+   gStyle->SetOptStat(111111111);
 
    // Default canvas
    c1 = new TCanvas("c1","c1");
@@ -508,9 +510,9 @@ int main ( int argc, char **argv ) {
 
                // Each bucket
                for (bucket = 0; bucket < 4; bucket++) {
-               
+
                   // Bucket is valid
-                  if ( chanData[kpix][channel][bucket][0] != NULL || chanData[kpix][channel][bucket][0] != NULL ) {
+                  if ( chanData[kpix][channel][bucket][0] != NULL || chanData[kpix][channel][bucket][1] != NULL ) {
 
                      // Each range
                      for (range = 0; range < 2; range++) {
@@ -626,7 +628,7 @@ int main ( int argc, char **argv ) {
                for (bucket = 0; bucket < 4; bucket++) {
                
                   // Bucket is valid
-                  if ( chanData[kpix][channel][bucket][0] != NULL || chanData[kpix][channel][bucket][0] != NULL ) {
+                  if ( chanData[kpix][channel][bucket][0] != NULL || chanData[kpix][channel][bucket][1] != NULL ) {
                      xml << "         <Bucket id=\"" << bucket << "\">" << endl;
 
                      // Each range

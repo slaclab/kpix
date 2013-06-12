@@ -9,7 +9,8 @@ void histShow ( char * file, char * serial, int channel, int bucket, int range )
    TH1F *h;
 
    f->GetObject(buffer,h);
-   h->Draw("");
+   h->Fit("gaus","");
+   h->Draw("e");
 
 }
 

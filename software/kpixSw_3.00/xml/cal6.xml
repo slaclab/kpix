@@ -2,11 +2,11 @@
    <config>
       <CalChanMax>1023</CalChanMax>
       <CalChanMin>0</CalChanMin>
-      <CalDacCount>4</CalDacCount>
+      <CalDacCount>1</CalDacCount>
       <CalDacMax>255</CalDacMax>
       <CalDacMin>0</CalDacMin>
-      <CalDacStep>4</CalDacStep>
-      <CalMeanCount>4000</CalMeanCount>
+      <CalDacStep>5</CalDacStep>
+      <CalMeanCount>200</CalMeanCount>
       <DataAuto>True</DataAuto>
       <DataBase>/u1/kpix/data/</DataBase>
       <DataFile>/u1/kpix/data/</DataFile>
@@ -21,7 +21,7 @@
          <ClkPeriodAcq>50nS</ClkPeriodAcq>
          <ClkPeriodDig>50nS</ClkPeriodDig>
          <ClkPeriodIdle>100nS</ClkPeriodIdle>
-         <ClkPeriodPrecharge>5000nS</ClkPeriodPrecharge>
+         <ClkPeriodPrecharge>10000nS</ClkPeriodPrecharge>
          <ClkPeriodRead>100nS</ClkPeriodRead>
          <KpixRxRaw>False</KpixRxRaw>
          <RunMode>Calibrate</RunMode>
@@ -37,11 +37,9 @@
             <Cal3Delay>200</Cal3Delay>
             <CalCount>4</CalCount>
             <CfgAutoReadDisable>False</CfgAutoReadDisable>
+            <CfgAutoStatusReadEn>True</CfgAutoStatusReadEn>
             <CfgForceTemp>False</CfgForceTemp>
             <CfgDisableTemp>False</CfgDisableTemp>
-            <CfgAutoStatusReadEn>True</CfgAutoStatusReadEn>
-            <CfgTestDataEn>False</CfgTestDataEn>
-            <CntrlDiffTime>Half</CntrlDiffTime>
            <CntrlDisPerReset>True</CntrlDisPerReset>             <!-- bit  0 -->
            <CntrlEnDcReset>True</CntrlEnDcReset>                 <!-- bit  1 -->
            <CntrlHighGain>False</CntrlHighGain>                  <!-- bit  2 -->
@@ -56,6 +54,8 @@
            <CntrlPolarity>Positive</CntrlPolarity>               <!-- bit 15 -->
            <CntrlDisPwrCycle>False</CntrlDisPwrCycle>            <!-- bit 24 -->
            <CntrlFeCurr>31uA</CntrlFeCurr>                       <!-- bit 25-27 -->
+            <CfgTestDataEn>False</CfgTestDataEn>
+            <CntrlDiffTime>Half</CntrlDiffTime>
            <CntrlMonSource>None</CntrlMonSource>                 <!-- bit ? -->
             <CntrlTrigDisable>True</CntrlTrigDisable>            <!-- bit ? -->
             <Chan_0000_0031>DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD</Chan_0000_0031>

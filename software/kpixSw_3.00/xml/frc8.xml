@@ -21,7 +21,7 @@
          <ClkPeriodAcq>50nS</ClkPeriodAcq>
          <ClkPeriodDig>50nS</ClkPeriodDig>
          <ClkPeriodIdle>100nS</ClkPeriodIdle>
-         <ClkPeriodPrecharge>5000nS</ClkPeriodPrecharge>
+         <ClkPeriodPrecharge>10000nS</ClkPeriodPrecharge>
          <ClkPeriodRead>100nS</ClkPeriodRead>
          <KpixRxRaw>False</KpixRxRaw>
          <RunMode>Calibrate</RunMode>
@@ -108,7 +108,7 @@
             <TimeResetOff>9600</TimeResetOff>
             <TrigInhibitOff>500</TrigInhibitOff>
             <TimeDeselDelay>128</TimeDeselDelay>
-            <TimeBunchClkDelay>13600</TimeBunchClkDelay>
+            <TimeBunchClkDelay>50000</TimeBunchClkDelay>
            <TimeDigitizeDelay>200</TimeDigitizeDelay>
             <Version>0xa</Version>
          </kpixAsic>
