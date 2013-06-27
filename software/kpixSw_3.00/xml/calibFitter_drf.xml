@@ -10,7 +10,7 @@
    <FindBadMeanChisq>0</FindBadMeanChisq>
    <GoodMeanChisqMax>0</GoodMeanChisqMax>
 
-   <FindBadGainFit>0</FindBadGainFit>
+   <FindBadGainFit>1</FindBadGainFit>
    <GoodGainMinR0>2.0e15</GoodGainMinR0>
    <GoodGainMaxR0>7.0e15</GoodGainMaxR0>
    <GoodGainMinR1>2.0e15</GoodGainMinR1>
@@ -19,8 +19,8 @@
    <FindBadGainChisq>0</FindBadGainChisq>
    <GoodGainChisqMax>0</GoodGainChisqMax>
 
-   <GainFitMinR0>100e-15</GainFitMinR0>
-   <GainFitMaxR0>100e-15</GainFitMaxR0>
+   <GainFitMinR0>0</GainFitMinR0>
+   <GainFitMaxR0>400e-15</GainFitMaxR0>
    <GainFitMinR1>0.0</GainFitMinR1>
    <GainFitMaxR1>0.0</GainFitMaxR1>
    
