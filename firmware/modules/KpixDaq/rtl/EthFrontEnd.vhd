@@ -17,7 +17,6 @@
 
 LIBRARY ieee;
 LIBRARY unisim;
-use work.all;
 use work.EthClientPackage.all;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
@@ -139,7 +138,7 @@ architecture EthFrontEnd of EthFrontEnd is
 begin
 
    -- Ethernet block
-   U_EthClientGtp: EthClientGtp 
+   U_EthClientGtp: entity work.EthClientGtp 
       generic map (
          UdpPort => 8192
       ) port map (
@@ -166,7 +165,7 @@ begin
       );
 
    -- Ethernet framer
-   U_EthFrame : EthUdpFrame 
+   U_EthFrame : entity work.EthUdpFrame 
       port map ( 
          gtpClk       => gtpClk,
          gtpClkRst    => gtpClkRst,
@@ -204,7 +203,7 @@ begin
    vc1FrameRxValid   <= userRxValid when userRxVc = 1 else '0';
 
    -- Arbiter
-   U_EthArb: EthArbiter 
+   U_EthArb: entity work.EthArbiter 
       port map ( 
          gtpClk         => gtpClk,
          gtpClkRst      => gtpClkRst,
@@ -237,7 +236,7 @@ begin
       );
 
    -- Lane 0, VC0, External command processor
-   U_ExtCmd: EthCmdSlave 
+   U_ExtCmd: entity work.EthCmdSlave 
       generic map ( 
          DestId    => 0,
          DestMask  => 1,
@@ -273,7 +272,9 @@ begin
    );
 
    -- Lane 0, VC1, External register access control
-   U_ExtReg: EthRegSlave generic map ( FifoType => "V5" ) port map (
+   U_ExtReg: entity work.EthRegSlave
+      generic map ( FifoType => "V5" )
+      port map (
       pgpRxClk        => gtpClk,           pgpRxReset      => gtpClkRst,
       pgpTxClk        => gtpClk,           pgpTxReset      => gtpClkRst,
       locClk          => gtpClk,           locReset        => gtpClkRst,

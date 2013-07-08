@@ -37,30 +37,30 @@ TIMEGRP TG_kpixClk_f = FALLING kpixClk;
 
 # Constrain timing between clocks
 # pgpClk-sysClk125
-TIMESPEC TS_pgpClk_sysClk125 = FROM TG_pgpClk_r TO TG_sysClk125_r 10 ns DATAPATHONLY;
-TIMESPEC TS_sysClk125_pgpClk = FROM TG_sysClk125_r TO TG_pgpClk_r 10 ns DATAPATHONLY;
+#TIMESPEC TS_pgpClk_sysClk125 = FROM TG_pgpClk_r TO TG_sysClk125_r 10 ns DATAPATHONLY;
+#TIMESPEC TS_sysClk125_pgpClk = FROM TG_sysClk125_r TO TG_pgpClk_r 10 ns DATAPATHONLY;
 
 #evrClk-sysClk125
 #TIMESPEC TS_evrClk_sysClk125 = FROM TG_evrClk125_r TO TG_sysClk125_r 10 ns;
 #TIMESPEC TS_sysClk125_evrClk = FROM TG_sysClk125_r TO TG_evrClk_r 10 ns;
 
 #kpixClk-sysClk125
-TIMESPEC TS_sysClk125_kpixClk = FROM TG_sysClk125_r TO TG_kpixClk_r 10 ns DATAPATHONLY;
-TIMESPEC TS_kpixClk_sysClk125 = FROM TG_kpixClk_r TO TG_sysClk125_r 16 ns DATAPATHONLY;
+TIMESPEC TS_sysClk125_kpixClk = FROM sysClk125 TO kpixClk 10 ns DATAPATHONLY;
+TIMESPEC TS_kpixClk_sysClk125 = FROM kpixClk TO sysClk125 16 ns DATAPATHONLY;
 
 #clk200-sysClk
-TIMESPEC TS_sysClk125_clk200 = FROM TG_sysClk125_r TO TG_clk200_r 10 ns DATAPATHONLY;
-TIMESPEC TS_clk200_sysClk125 = FROM TG_clk200_r TO TG_sysClk125_r 10 ns DATAPATHONLY;
+TIMESPEC TS_sysClk125_clk200 = FROM sysClk125 TO clk200 10 ns DATAPATHONLY;
+TIMESPEC TS_clk200_sysClk125 = FROM clk200 TO sysClk125 10 ns DATAPATHONLY;
 
 #kpixClk-Clk200
-TIMESPEC TS_kpixClk_clk200 = FROM TG_kpixClk_r TO TG_clk200_r 16 ns DATAPATHONLY;
+TIMESPEC TS_kpixClk_clk200 = FROM kpixClk TO clk200 16 ns DATAPATHONLY;
 
 #Handle falling clock timing
 TIMESPEC TS_kpixClk_RF = FROM TG_kpixClk_r to TG_kpixClk_f 8 ns DATAPATHONLY;
 TIMESPEC TS_kpixClk_FR = FROM TG_kpixClk_f to TG_kpixClk_r 8 ns DATAPATHONLY;
 
 # Nets to ignore for timing
-NET "fpgaRstL"      TIG;
+NET "fpgaRst"      TIG;
 
 
 # Pin Assignments

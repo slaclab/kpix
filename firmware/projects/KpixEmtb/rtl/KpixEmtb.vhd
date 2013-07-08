@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2013-03-25
+-- Last update: 2013-05-14
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -414,7 +414,7 @@ begin
   --------------------------------------------------------------------------------------------------
   CLK_TRIG_OBUF_GEN : for i in 3 downto 0 generate
 
-    OBUF_KPIX_CLK : entity work.V5ClkOutBuf
+    OBUF_KPIX_CLK : entity work.ClkOutBuf
       port map (
         clkIn   => kpixClk,
         clkOutP => kpixClkOutP(i),

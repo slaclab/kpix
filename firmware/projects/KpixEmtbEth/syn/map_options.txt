@@ -136,5 +136,8 @@
 
 -ol high
 -xe n
+#-logic_opt on
+#-register_duplication on
+#-global_opt speed
 -t 1
 -detail

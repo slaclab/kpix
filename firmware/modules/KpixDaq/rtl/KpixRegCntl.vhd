@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2013-03-28
+-- Last update: 2013-06-10
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -97,8 +97,9 @@ architecture rtl of KpixRegCntl is
     state          : StateType;         -- State machine state
     txShiftReg     : slv(0 to KPIX_NUM_TX_BITS_C-1);  -- Range direction matches documentation
     txShiftCount   : unsigned(log2(KPIX_NUM_TX_BITS_C)+1 downto 0);  -- Counter for shifting
-    txEnable       : slv(NUM_KPIX_MODULES_G downto 0);               -- Enables for each serial
-                                                                     -- outpus
+    txEnable       : slv(NUM_KPIX_MODULES_G downto 0);               -- Enables for each serial outpus
+    isAcquire : sl;
+
     -- Output Registers
     kpixRegCntlOut : FrontEndRegCntlInType;  -- outputs to FrontEndRegCntl (must still be sync'd)
     kpixSerTxOut   : slv(NUM_KPIX_MODULES_G downto 0);               -- serial data to each kpix
@@ -134,6 +135,7 @@ begin
       r.txShiftReg               <= (others => '0')       after DELAY_G;
       r.txShiftCount             <= (others => '0')       after DELAY_G;
       r.txEnable                 <= (others => '0')       after DELAY_G;
+      r.isAcquire <= '0' after DELAY_G;
       r.kpixRegCntlOut.regAck    <= '0'                   after DELAY_G;
       r.kpixRegCntlOut.regFail   <= '0'                   after DELAY_G;
       r.kpixRegCntlOut.regDataIn <= (others => '0')       after DELAY_G;
@@ -184,6 +186,7 @@ begin
           addressedKpixVar                            := to_integer(unsigned(kpixRegCntlIn.regAddr(VALID_KPIX_ADDR_RANGE_C)));
           rVar.txEnable                               := (others => '0');
           rVar.txEnable(addressedKpixVar)             := '1';
+          rVar.isAcquire := '0';
           rVar.state                                  := PARITY_S;
 
         elsif (r.startReadoutSync.sync = '1') then
@@ -199,11 +202,13 @@ begin
           rVar.txShiftReg(KPIX_DATA_PARITY_INDEX_C)     := '0';
           rVar.txShiftCount                             := (others => '0');
           rVar.state                                    := PARITY_S;
+          rVar.isAcquire := '1';
           rVar.txEnable(NUM_KPIX_MODULES_G)             := '1';  -- Always enable internal kpix
           for i in NUM_KPIX_MODULES_G-1 downto 0 loop
             -- Send acquire only to enabled kpix asics.
             rVar.txEnable(i) := kpixDataRxRegsIn(i).enabled;
           end loop;
+
 
 
         elsif (r.startAcquireSync.sync = '1') then
@@ -219,6 +224,7 @@ begin
           rVar.txShiftReg(KPIX_DATA_PARITY_INDEX_C)     := '0';
           rVar.txShiftCount                             := (others => '0');
           rVar.state                                    := PARITY_S;
+          rVar.isAcquire := '1';
           rVar.txEnable(NUM_KPIX_MODULES_G)             := '1';  -- Always enable internal kpix
           for i in NUM_KPIX_MODULES_G-1 downto 0 loop
             -- Send acquire only to enabled kpix asics.
@@ -238,7 +244,7 @@ begin
         rVar.state                                  := TRANSMIT_S;
 
       when TRANSMIT_S =>
-        -- Shift (select) out each bit, gated by rxEnable
+        -- Shift (select) out each bit, gated by txEnable
         rVar.txShiftCount := r.txShiftCount + 1;
         rVar.txShiftReg   := r.txShiftReg(1 to KPIX_NUM_TX_BITS_C-1) & '0';
         for i in r.txEnable'range loop
@@ -246,7 +252,7 @@ begin
         end loop;
         if (r.txShiftCount = KPIX_NUM_TX_BITS_C) then  -- Check this
           rVar.txShiftCount := (others => '0');
-          if (uAnd(r.txEnable) = '1') then
+          if (r.isAcquire = '1') then
             -- All txEnable bits set indicates an acquire cmd being transmitted
             -- Don't need to wait for req to fall on CMD requests
             rVar.state := DATA_WAIT_S;

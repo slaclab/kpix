@@ -129,6 +129,7 @@ TRCE_OPTIONS_FILE =  $(CONFIG_DIR)/trce_options.txt
 	$(call ACTION_HEADER,"Trace")
 	@cd $(OUT_DIR); trce \
 	  -f $(TRCE_OPTIONS_FILE) \
+          -tsi $*.tsi \
 	  -o $*.twr \
 	  $*.ncd $*.pcf
 

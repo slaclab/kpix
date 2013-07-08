@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2013-02-20
+-- Last update: 2013-05-14
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -152,7 +152,7 @@ begin
   -- Synchronize sysRst125
   SysRstSyncInst : entity work.RstSync
     generic map (
-      DELAY_G        => DELAY_G,
+      TPD_G          => DELAY_G,
       IN_POLARITY_G  => '0',
       OUT_POLARITY_G => '1')
     port map (
@@ -163,7 +163,7 @@ begin
   -- Synchronize rst200
   Clk200RstSyncInst : entity work.RstSync
     generic map (
-      DELAY_G        => DELAY_G,
+      TPD_G          => DELAY_G,
       IN_POLARITY_G  => '0',
       OUT_POLARITY_G => '1')
     port map (
@@ -251,7 +251,7 @@ begin
       valid => ebFifoOut.valid);
 
 
-  OBUF_KPIX_CLK : entity work.V5ClkOutBuf
+  OBUF_KPIX_CLK : entity work.ClkOutBuf
     port map (
       clkIn   => kpixClk,
       clkOutP => kpixClkOutP,

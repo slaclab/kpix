@@ -37,7 +37,9 @@ vhdl work "_PROJ_DIR_/xil_cores/main_dcm.vhd"
 # RTL Files
 
 ## StdLib
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/Synchronizer.vhd"
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/RstSync.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/ClkOutBuf.vhd"
 
 ## KpixDaq
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EthFrontEnd.vhd"

@@ -46,4 +46,4 @@
 -intstyle ise
 -l 30
 -v 30
--tsi KpixSmall.tsi
+-u 30
