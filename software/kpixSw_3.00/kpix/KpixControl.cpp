@@ -138,6 +138,10 @@ KpixControl::KpixControl ( CommLink *commLink, string defFile, uint kpixCount ) 
    addVariable(new Variable("UserDataD",Variable::Configuration));
    getVariable("UserDataD")->setDescription("User defined data field");
 
+   addVariable(new Variable("Simulation",Variable::Configuration));
+   getVariable("Simulation")->setDescription("Enable simulation mode");
+   getVariable("Simulation")->setTrueFalse();
+
    // Add sub-devices
    addDevice(new ConFpga(0, 0, kpixCount, this));
 }
@@ -280,12 +284,21 @@ void KpixControl::swRunThread() {
 
             // One second has passed. event was missed.
             if ( (ctime-ltime) > 1000000) {
-               gotEvent = false;
-               if ( debug_ ) cout << "KpixControl::runThread -> Missed data event. Retrying" << endl;
 
-               // Verify and re-configure here
+               // In Simulation just make some noise
+               if ( getInt("Simulation") ) {
+                  if ( debug_ ) cout << "KpixControl::runThread -> Waiting for event." << endl;
+               }
 
-               break;
+               // Timeout in real mode
+               else {
+                  gotEvent = false;
+                  if ( debug_ ) cout << "KpixControl::runThread -> Missed data event. Retrying" << endl;
+
+                  // Verify and re-configure here
+
+                  break;
+               }
             }
             if ( !swRunEnable_ ) break;
          }
