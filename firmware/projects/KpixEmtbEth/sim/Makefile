@@ -14,7 +14,7 @@
 ##-----------------------------------------------------------------------------
 
 # Set Default Output
-SIM_DIR=$(PWD)/../../../build/KpixSmallSim
+SIM_DIR=$(PWD)/../../../build/KpixEmtbEthSim
 
 # Analog netlist
 ANA_NET = kpix_c.cir
@@ -25,8 +25,8 @@ SHM_ID=1
 SHM_NAME="kpix"
 
 # Set Top Level
-DIG_TOP=KpixSmallTb
-ANA_TOP=KpixSmallAnalogTb
+DIG_TOP=KpixEmtbEthTb
+ANA_TOP=KpixEmtbEthAnalogTb
 
 # Set 64-bit mode
 EN64=-full64
@@ -39,9 +39,14 @@ ANA_INC = $(PWD)/../../../modules/KpixCore/analog/olib_tsmc025.cir \
 
 # HDL Source Files
 HDL_SRC= $(PWD)/../../../modules/StdLib/rtl/StdRtlPkg.vhd \
-         $(PWD)/../../../modules/StdLib/rtl/SynchronizePkg.vhd \
          $(PWD)/../../../modules/StdLib/rtl/RstSync.vhd \
-         $(PWD)/../../../modules/StdLib/rtl/V5ClkOutBuf.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/ClkOutBufDiff.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/Synchronizer.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/SynchronizerEdge.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/SynchronizerVector.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/SynchronizerFifo.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/FifoAsync.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/SimpleDualPortRam.vhd \
 	 $(PWD)/../rtl/Version.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixPkg.vhd \
 	 $(PWD)/../../../modules/KpixCore/rtl/reg_rw_32.vhd \
@@ -74,17 +79,26 @@ HDL_SRC= $(PWD)/../../../modules/StdLib/rtl/StdRtlPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixRegCntl.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixDaqCore.vhd \
 	 $(PWD)/../xil_cores/*.vhd \
-	 $(PWD)/../rtl/KpixSmall.vhd \
+	 $(PWD)/../rtl/KpixEmtbEth.vhd \
 	 $(PWD)/../../../modules/KpixCore/sim/AnalogReg.vhd \
 	 $(PWD)/../../../modules/KpixCore/sim/DataRead.vhd \
 	 $(PWD)/../../../modules/KpixCore/sim/AsicSim.vhd \
 	 $(PWD)/../../../modules/gen_daq/simlink/SimLinkRx.vhd \
 	 $(PWD)/../../../modules/gen_daq/simlink/SimLinkTx.vhd \
-	 $(PWD)/KpixSmallAnalogTb.vhd \
-	 $(PWD)/KpixSmallTb.vhd
+         $(PWD)/../../../modules/StdLib/tb/ClkRst.vhd \
+	 $(PWD)/KpixEmtbEthTb.vhd
 
 # Verilog Source Files
-VLOG = $(PWD)/../../../modules/KpixCore/sim/Kpix.v 
+VLOG = $(PWD)/../../../modules/KpixCore/sim/Kpix.v \
+       $(PWD)/../../../modules/EvrCore/EventReceiverTop.v \
+       $(PWD)/../../../modules/EvrCore/rtl/EventReceiverChannel.v \
+       $(PWD)/../../../modules/EvrCore/rtl/evrReg.v \
+       $(PWD)/../../../modules/EvrCore/rtl/serialReceiver2.v \
+       $(PWD)/../../../modules/EvrCore/rtl/mgt_usrclk_source.v \
+       $(PWD)/../../../modules/EvrCore/rtl/rx_sync.v \
+       $(PWD)/../../../modules/EvrCore/rtl/timeofDayReceiver.v \
+       $(PWD)/../../../modules/EvrCore/rtl/TsFifo.v \
+       $(PWD)/../../../modules/EvrCore/xil_cores/*.vhd
 
 # Targets
 all:    dir env syn_setup rtl_src vhpi_src sim_dig

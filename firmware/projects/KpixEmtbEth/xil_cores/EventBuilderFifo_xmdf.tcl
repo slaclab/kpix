@@ -35,19 +35,27 @@ utilities_xmdf::xmdfSetData $instance FileSet $fcount type logical_library
 utilities_xmdf::xmdfSetData $instance FileSet $fcount logical_library unisim
 incr fcount
 
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/example_design/EventBuilderFifo_top.ucf
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/doc/fifo_generator_v9_3_readme.txt
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/example_design/EventBuilderFifo_top.vhd
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/doc/fifo_generator_v9_3_vinfo.html
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/example_design/EventBuilderFifo_top.xdc
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/doc/pg057-fifo-generator.pdf
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/example_design/EventBuilderFifo_top_wrapper.vhd
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/example_design/EventBuilderFifo_exdes.ucf
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/example_design/EventBuilderFifo_exdes.vhd
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/fifo_generator_v9_3_readme.txt
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
@@ -59,15 +67,23 @@ utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilder
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/implement/planAhead_rdn.bat
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/implement/implement_synplify.bat
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/implement/planAhead_rdn.sh
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/implement/implement_synplify.sh
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/implement/planAhead_rdn.tcl
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/implement/planAhead_ise.bat
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/implement/planAhead_ise.sh
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/implement/planAhead_ise.tcl
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
@@ -79,31 +95,35 @@ utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilder
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/fg_tb_dgen.vhd
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/EventBuilderFifo_dgen.vhd
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/fg_tb_dverif.vhd
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/EventBuilderFifo_dverif.vhd
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/fg_tb_pctrl.vhd
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/EventBuilderFifo_pctrl.vhd
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/fg_tb_pkg.vhd
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/EventBuilderFifo_pkg.vhd
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/fg_tb_rng.vhd
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/EventBuilderFifo_rng.vhd
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/fg_tb_synth.vhd
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/EventBuilderFifo_synth.vhd
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/fg_tb_top.vhd
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/EventBuilderFifo_tb.vhd
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/functional/simulate_isim.bat
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
@@ -111,11 +131,31 @@ utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilder
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/functional/simulate_mti.bat
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
 utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/functional/simulate_mti.do
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/functional/simulate_mti.sh
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
 utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/functional/simulate_ncsim.sh
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/functional/simulate_vcs.sh
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/functional/ucli_commands.key
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/functional/vcs_session.tcl
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
@@ -131,7 +171,15 @@ utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilder
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/timing/simulate_isim.bat
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
 utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/timing/simulate_isim.sh
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/timing/simulate_mti.bat
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
@@ -139,7 +187,23 @@ utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilder
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/timing/simulate_mti.sh
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
 utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/timing/simulate_ncsim.sh
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/timing/simulate_vcs.sh
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/timing/ucli_commands.key
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/timing/vcs_session.tcl
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
 incr fcount
 
@@ -153,6 +217,10 @@ incr fcount
 
 utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo/simulation/timing/wave_ncsim.sv
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type Ignore
+incr fcount
+
+utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo.asy
+utilities_xmdf::xmdfSetData $instance FileSet $fcount type asy
 incr fcount
 
 utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo.ngc
@@ -173,14 +241,6 @@ incr fcount
 
 utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path EventBuilderFifo_xmdf.tcl
 utilities_xmdf::xmdfSetData $instance FileSet $fcount type AnyView
-incr fcount
-
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path fifo_generator_ug175.pdf
-utilities_xmdf::xmdfSetData $instance FileSet $fcount type AnyView
-incr fcount
-
-utilities_xmdf::xmdfSetData $instance FileSet $fcount relative_path fifo_generator_v8_4_readme.txt
-utilities_xmdf::xmdfSetData $instance FileSet $fcount type text
 incr fcount
 
 utilities_xmdf::xmdfSetData $instance FileSet $fcount associated_module EventBuilderFifo

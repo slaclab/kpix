@@ -20,40 +20,52 @@ CONFIG PART = XC5VLX50T-FF665-1;
 #inst EthFrontEnd_1/U_EthClientGtp/U_GTP LOC=GTP_DUAL_X0Y4;
 
 # Define clocks
-NET sysClk125 TNM_NET = "sysClk125";
-NET clk200    TNM_NET = "clk200";
-NET kpixClk   TNM_NET = "kpixClk";
+NET sysClk125 TNM_NET = FFS sysClk125;
+NET clk200    TNM_NET = FFS clk200;
+NET kpixClk   TNM_NET = FFS kpixClk;
+#NET evrRefClkP   TNM_NET = evrRefClk;
+NET "EvrGtp_1/evrClk" TNM_NET = FFS evrClk;
 
 # Define clock frequncies
 TIMESPEC TS_sysClk125 = PERIOD sysClk125 125 Mhz HIGH 50%;
 TIMESPEC TS_clk200 = PERIOD clk200 200 Mhz HIGH 50%;
 TIMESPEC TS_kpixClk = PERIOD kpixClk 100 Mhz HIGH 50%;
+#TIMESPEC TS_evrRefClk = PERIOD evrRefClk 238 Mhz HIGH 50%;
+TIMESPEC TS_evrClk = PERIOD evrClk 119 Mhz HIGH 50%;
+
 
 # Group clocks
-TIMEGRP TG_sysClk125_r = RISING sysClk125;
+#TIMEGRP TG_sysClk125_r = RISING sysClk125;
 TIMEGRP TG_kpixClk_r = RISING kpixClk;
-TIMEGRP TG_clk200_r = RISING clk200;
+#TIMEGRP TG_clk200_r = RISING clk200;
 TIMEGRP TG_kpixClk_f = FALLING kpixClk;
+
 
 # Constrain timing between clocks
 # pgpClk-sysClk125
 #TIMESPEC TS_pgpClk_sysClk125 = FROM TG_pgpClk_r TO TG_sysClk125_r 10 ns DATAPATHONLY;
 #TIMESPEC TS_sysClk125_pgpClk = FROM TG_sysClk125_r TO TG_pgpClk_r 10 ns DATAPATHONLY;
 
-#evrClk-sysClk125
-#TIMESPEC TS_evrClk_sysClk125 = FROM TG_evrClk125_r TO TG_sysClk125_r 10 ns;
-#TIMESPEC TS_sysClk125_evrClk = FROM TG_sysClk125_r TO TG_evrClk_r 10 ns;
+#evrClk-clk125
+TIMESPEC TS_evrClk_sysClk125 = FROM evrClk TO sysClk125 10 ns DATAPATHONLY;
+TIMESPEC TS_sysClk125_evrClk = FROM sysClk125 TO evrClk 10 ns DATAPATHONLY;
+
+#evrClk-clk200
+TIMESPEC TS_evrClk_clk200 = FROM evrClk TO clk200 10 ns DATAPATHONLY;
+TIMESPEC TS_clk200_evrClk = FROM clk200 TO evrClk 10 ns DATAPATHONLY;
+
 
 #kpixClk-sysClk125
-TIMESPEC TS_sysClk125_kpixClk = FROM sysClk125 TO kpixClk 10 ns DATAPATHONLY;
-TIMESPEC TS_kpixClk_sysClk125 = FROM kpixClk TO sysClk125 16 ns DATAPATHONLY;
+TIMESPEC TS_sysClk125_kpixClk = FROM sysClk125 TO kpixClk 8 ns DATAPATHONLY;
+TIMESPEC TS_kpixClk_sysClk125 = FROM kpixClk TO sysClk125 10 ns DATAPATHONLY;
 
 #clk200-sysClk
-TIMESPEC TS_sysClk125_clk200 = FROM sysClk125 TO clk200 10 ns DATAPATHONLY;
-TIMESPEC TS_clk200_sysClk125 = FROM clk200 TO sysClk125 10 ns DATAPATHONLY;
+TIMESPEC TS_sysClk125_clk200 = FROM sysClk125 TO clk200 8 ns DATAPATHONLY;
+TIMESPEC TS_clk200_sysClk125 = FROM clk200 TO sysClk125 5 ns DATAPATHONLY;
 
 #kpixClk-Clk200
-TIMESPEC TS_kpixClk_clk200 = FROM kpixClk TO clk200 16 ns DATAPATHONLY;
+TIMESPEC TS_kpixClk_clk200 = FROM kpixClk TO clk200 10 ns DATAPATHONLY;
+TIMESPEC TS_clk200_kpixClk = FROM clk200 TO kpixClk 5 ns DATAPATHONLY;
 
 #Handle falling clock timing
 TIMESPEC TS_kpixClk_RF = FROM TG_kpixClk_r to TG_kpixClk_f 8 ns DATAPATHONLY;
@@ -62,6 +74,8 @@ TIMESPEC TS_kpixClk_FR = FROM TG_kpixClk_f to TG_kpixClk_r 8 ns DATAPATHONLY;
 # Nets to ignore for timing
 NET "fpgaRst"      TIG;
 
+# Needed to properly handle clk200->kpixClk constraints
+NET "KpixDaqCore_1/KpixClockGen_1/r_clkDiv" TIG;
 
 # Pin Assignments
 
@@ -77,12 +91,12 @@ NET "udpRxP"             LOC = "J1";
 NET "udpRxN"             LOC = "K1";
 
 # EVR Clock and Interface
-#NET "evrClkP" LOC = "T4";
-#NET "evrClkN" LOC = "T3";
+NET "evrRefClkP" LOC = "T4";
+NET "evrRefClkN" LOC = "T3";
 #NET "evrTxP"  LOC = "P2";
 #NET "evrTxN"  LOC = "R2";
-#NET "evrRxP"  LOC = "R1";
-#NET "evrRxN"  LOC = "T1";
+NET "evrRxP"  LOC = "R1";
+NET "evrRxN"  LOC = "T1";
 
 # Where to send debugOutA and B?
 NET "debugOutA" LOC = "AD24" | IOSTANDARD = "LVCMOS33"; 

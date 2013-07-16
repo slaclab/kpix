@@ -2,8 +2,6 @@
 
 ## StdLib
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/StdRtlPkg.vhd"
-vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SynchronizePkg.vhd"
-
 
 ## KpixDaq
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/FrontEndPkg.vhd"
@@ -15,7 +13,7 @@ vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixDataRxPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegCntlPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegRxPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/TriggerPkg.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EvrPkg.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EvrCorePkg.vhd"
 
 ## eth_client
 vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClientPackage.vhd"
@@ -39,8 +37,12 @@ vhdl work "_PROJ_DIR_/xil_cores/main_dcm.vhd"
 ## StdLib
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/Synchronizer.vhd"
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SynchronizerEdge.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SynchronizerVector.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SynchronizerFifo.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/FifoAsync.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SimpleDualPortRam.vhd"
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/RstSync.vhd"
-vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/ClkOutBuf.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/ClkOutBufDiff.vhd"
 
 ## KpixDaq
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EthFrontEnd.vhd"
@@ -62,6 +64,23 @@ vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/command_control.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/memory_array_control.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/readout_control.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/reg_rw_32.vhd"
+
+## 8B10B Decoder
+vhdl work "_PROJ_DIR_/../../modules/8b10bCore/rtl/Code8b10bPkg.vhd"
+vhdl work "_PROJ_DIR_/../../modules/8b10bCore/rtl/Decoder8b10b.vhd"
+
+## Fixed latency GTP
+
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/gtp/GtpRxCommaAligner.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/gtp/GtpTxPhaseAligner.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/gtp/Gtp16LowLatCore.vhd"
+
+## Event Receiver
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EvrCore.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EvrGtp.vhd"
+
+
+
 
 ## eth_client
 vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthArbiter.vhd"
