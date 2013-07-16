@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2013-06-11
+-- Last update: 2013-07-12
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -18,31 +18,33 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.StdRtlPkg.all;
-use work.SynchronizePkg.all;
 use work.FrontEndPkg.all;
 use work.KpixLocalPkg.all;
 use work.KpixPkg.all;
-use work.EvrPkg.all;
+use work.EvrCorePkg.all;
 use work.TriggerPkg.all;
 
 entity Trigger is
    
    generic (
       DELAY_G        : time    := 1 ns;
-      CLOCK_PERIOD_G : natural := 8);   -- In ns
+      CLOCK_PERIOD_G : natural := 5);   -- In ns
 
    port (
-      sysClk             : in  sl;
-      sysRst             : in  sl;
-      frontEndCmdCntlOut : in  FrontEndCmdCntlOutType;
-      evrOut             : in  EvrOutType;
-      kpixLocalSysOut    : in  KpixLocalSysOutType;
-      triggerRegsIn      : in  TriggerRegsInType;
-      kpixConfigRegs     : in  KpixConfigRegsType;
-      triggerExtIn       : in  TriggerExtInType;
-      triggerOut         : out TriggerOutType;
-      timestampIn        : in  TimestampInType;
-      timestampOut       : out TimestampOutType);
+      clk200       : in sl;
+      rst200       : in sl;
+      triggerExtIn : in TriggerExtInType;  -- noSync
+      evrOut       : in EvrOutType;        -- evrClk
+
+      kpixState          : in  KpixStateOutType;        -- kpixClk
+      frontEndCmdCntlOut : in  FrontEndCmdCntlOutType;  -- clk200
+      triggerOut         : out TriggerOutType;          -- clk200
+
+      sysClk         : in  sl;
+      triggerRegsIn  : in  TriggerRegsInType;   -- sysClk
+      kpixConfigRegs : in  KpixConfigRegsType;  -- sysClk
+      timestampIn    : in  TimestampInType;     -- sysClk
+      timestampOut   : out TimestampOutType);   -- sysClk
 
 end entity Trigger;
 
@@ -51,7 +53,8 @@ architecture rtl of Trigger is
    constant CLOCKS_PER_USEC_C : natural := 1000 / CLOCK_PERIOD_G;
 
    type RegType is record
-      extTriggerSync     : SynchronizerArray(0 to 7);
+      triggerRegsIn      : TriggerRegsInType;
+      autoReadDisable    : sl;
       triggerCounter     : unsigned(log2(CLOCKS_PER_USEC_C)-1 downto 0);
       triggerCountEnable : sl;
       startCounter       : unsigned(7 downto 0);
@@ -63,117 +66,183 @@ architecture rtl of Trigger is
       triggerOut         : TriggerOutType;
    end record;
 
-   signal r, rin   : RegType;
-   signal fifoFull : sl;
+   signal r, rin         : RegType;
+   signal fifoFull       : sl;
+   signal extTriggerRise : slv(0 to 7);
 
    component timestamp_fifo
       port (
-         clk   : in  std_logic;
-         rst   : in  std_logic;
-         din   : in  std_logic_vector(15 downto 0);
-         wr_en : in  std_logic;
-         rd_en : in  std_logic;
-         dout  : out std_logic_vector(15 downto 0);
-         full  : out std_logic;
-         empty : out std_logic;
-         valid : out std_logic
+         rst    : in  std_logic;
+         wr_clk : in  std_logic;
+         rd_clk : in  std_logic;
+         din    : in  std_logic_vector(15 downto 0);
+         wr_en  : in  std_logic;
+         rd_en  : in  std_logic;
+         dout   : out std_logic_vector(15 downto 0);
+         full   : out std_logic;
+         empty  : out std_logic;
+         valid  : out std_logic
          );
    end component;
 
 begin
 
-   sync : process (sysClk, sysRst) is
+   sync : process (clk200, rst200) is
    begin
 
-      if (rising_edge(sysClk)) then
+      if (rising_edge(clk200)) then
          r <= rin after DELAY_G;
       end if;
-      if (sysRst = '1') then
-         r.extTriggerSync            <= (others => SYNCHRONIZER_INIT_0_C) after DELAY_G;
-         r.triggerCounter            <= (others => '0')                   after DELAY_G;
-         r.triggerCountEnable        <= '0'                               after DELAY_G;
-         r.startCounter              <= (others => '0')                   after DELAY_G;
-         r.startCountEnable          <= '0'                               after DELAY_G;
-         r.timestampFifoWrEn         <= '0'                               after DELAY_G;
-         r.readoutPending            <= '0'                               after DELAY_G;
-         r.readoutCounter            <= (others => '0')                   after DELAY_G;
-         r.readoutCountEnable        <= '0'                               after DELAY_G;
-         r.triggerOut.trigger        <= '0'                               after DELAY_G;
-         r.triggerOut.startAcquire   <= '0'                               after DELAY_G;
-         r.triggerOut.startCalibrate <= '0'                               after DELAY_G;
-         r.triggerOut.startReadout   <= '0'                               after DELAY_G;
+      if (rst200 = '1') then
+         r.triggerRegsIn.extTriggerSrc   <= (others => '0') after DELAY_G;
+         r.triggerRegsIn.extTimestampSrc <= (others => '0') after DELAY_G;
+         r.triggerRegsIn.acquisitionSrc  <= (others => '0') after DELAY_G;
+         r.triggerRegsIn.calibrate       <= '0'             after DELAY_G;
+         r.autoReadDisable               <= '0'             after DELAY_G;
+         r.triggerCounter                <= (others => '0') after DELAY_G;
+         r.triggerCountEnable            <= '0'             after DELAY_G;
+         r.startCounter                  <= (others => '0') after DELAY_G;
+         r.startCountEnable              <= '0'             after DELAY_G;
+         r.timestampFifoWrEn             <= '0'             after DELAY_G;
+         r.readoutPending                <= '0'             after DELAY_G;
+         r.readoutCounter                <= (others => '0') after DELAY_G;
+         r.readoutCountEnable            <= '0'             after DELAY_G;
+         r.triggerOut.trigger            <= '0'             after DELAY_G;
+         r.triggerOut.startAcquire       <= '0'             after DELAY_G;
+         r.triggerOut.startCalibrate     <= '0'             after DELAY_G;
+         r.triggerOut.startReadout       <= '0'             after DELAY_G;
       end if;
    end process sync;
 
-   comb : process (r, frontEndCmdCntlOut, triggerRegsIn, triggerExtIn, kpixLocalSysOut, fifoFull) is
-      variable rVar : RegType;
-   begin
-      rVar := r;
+   -- Synchronize external inputs
+   extTriggerRise(0) <= '0';
 
-      ------------------------------------------------------------------------------------------------
-      -- Synchronize external signals to sysClk
-      ------------------------------------------------------------------------------------------------
-      synchronize('0', r.extTriggerSync(0), rVar.extTriggerSync(0));  -- It makes the code cleaner
-      synchronize(triggerExtIn.nimA, r.extTriggerSync(1), rVar.extTriggerSync(1));
-      synchronize(triggerExtIn.nimB, r.extTriggerSync(2), rVar.extTriggerSync(2));
-      synchronize(triggerExtIn.cmosA, r.extTriggerSync(3), rVar.extTriggerSync(3));
-      synchronize(triggerExtIn.cmosB, r.extTriggerSync(4), rVar.extTriggerSync(4));
-      synchronize('0', r.extTriggerSync(5), rVar.extTriggerSync(0));
-      synchronize('0', r.extTriggerSync(6), rVar.extTriggerSync(0));
-      synchronize(evrOut.trigger, r.extTriggerSync(7), rVar.extTriggerSync(0));
+   Synchronizer_NimA : entity work.SynchronizerEdge
+      generic map (
+         TPD_G          => DELAY_G,
+         RST_POLARITY_G => '1')
+      port map (
+         clk         => clk200,
+         aRst        => rst200,
+         dataIn      => triggerExtIn.nimA,
+         dataOut     => open,
+         risingEdge  => extTriggerRise(1),
+         fallingEdge => open);
+
+   Synchronizer_NimB : entity work.SynchronizerEdge
+      generic map (
+         TPD_G          => DELAY_G,
+         RST_POLARITY_G => '1')
+      port map (
+         clk         => clk200,
+         aRst        => rst200,
+         dataIn      => triggerExtIn.nimB,
+         dataOut     => open,
+         risingEdge  => extTriggerRise(2),
+         fallingEdge => open);
+
+   Synchronizer_CmosA : entity work.SynchronizerEdge
+      generic map (
+         TPD_G          => DELAY_G,
+         RST_POLARITY_G => '1')
+      port map (
+         clk         => clk200,
+         aRst        => rst200,
+         dataIn      => triggerExtIn.cmosA,
+         dataOut     => open,
+         risingEdge  => extTriggerRise(3),
+         fallingEdge => open);
+
+   Synchronizer_CmosB : entity work.SynchronizerEdge
+      generic map (
+         TPD_G          => DELAY_G,
+         RST_POLARITY_G => '1')
+      port map (
+         clk         => clk200,
+         aRst        => rst200,
+         dataIn      => triggerExtIn.cmosB,
+         dataOut     => open,
+         risingEdge  => extTriggerRise(4),
+         fallingEdge => open);
+
+   extTriggerRise(5) <= '0';
+   extTriggerRise(6) <= '0';
+
+   Synchronizer_EVR : entity work.SynchronizerEdge
+      generic map (
+         TPD_G          => DELAY_G,
+         RST_POLARITY_G => '1')
+      port map (
+         clk         => clk200,
+         aRst        => rst200,
+         dataIn      => evrOut.trigger,
+         dataOut     => open,
+         risingEdge  => extTriggerRise(7),
+         fallingEdge => open);
+
+   
+   comb : process (r, frontEndCmdCntlOut, triggerRegsIn, kpixConfigRegs, extTriggerRise, kpixState, fifoFull) is
+      variable v : RegType;
+   begin
+      v := r;
+
+      -- triggerRegsIn and kpixConfigRegs come from sysClk
+      -- Only set once before run begins. Don't need to worry about syncing them to clk200
+      v.triggerRegsIn   := triggerRegsIn;
+      v.autoReadDisable := kpixConfigRegs.autoReadDisable;
 
       ------------------------------------------------------------------------------------------------
       -- External Trigger
       ------------------------------------------------------------------------------------------------
-      if (detectRisingEdge(r.extTriggerSync(to_integer(unsigned(triggerRegsIn.extTriggerSrc)))) and
-          kpixLocalSysOut.analogState = KPIX_ANALOG_SAMP_STATE_C and
-          kpixLocalSysOut.trigInhibit = '0') then
-         rVar.triggerOut.trigger := '1';
-         rVar.triggerCountEnable := '1';
-         rVar.triggerCounter     := (others => '0');
+      if (extTriggerRise(to_integer(unsigned(r.triggerRegsIn.extTriggerSrc))) = '1' and
+          kpixState.analogState = KPIX_ANALOG_SAMP_STATE_C and
+          kpixState.trigInhibit = '0') then
+         v.triggerOut.trigger := '1';
+         v.triggerCountEnable := '1';
+         v.triggerCounter     := (others => '0');
       end if;
 
       if (r.triggerCountEnable = '1') then
-         rVar.triggerCounter := r.triggerCounter + 1;
+         v.triggerCounter := r.triggerCounter + 1;
          if (r.triggerCounter = CLOCKS_PER_USEC_C) then
-            rVar.triggerCounter     := (others => '0');
-            rVar.triggerCountEnable := '0';
-            rVar.triggerOut.trigger := '0';
+            v.triggerCounter     := (others => '0');
+            v.triggerCountEnable := '0';
+            v.triggerOut.trigger := '0';
          end if;
       end if;
 
       ------------------------------------------------------------------------------------------------
       -- Trigger timestamp
       ------------------------------------------------------------------------------------------------
-      rVar.timestampFifoWrEn := '0';
-      if (detectRisingEdge(r.extTriggerSync(to_integer(unsigned(triggerRegsIn.extTimestampSrc)))) and
-          kpixLocalSysOut.analogState = KPIX_ANALOG_SAMP_STATE_C and
-          kpixLocalSysOut.trigInhibit = '0' and
+      v.timestampFifoWrEn := '0';
+      if (extTriggerRise(to_integer(unsigned(r.triggerRegsIn.extTimestampSrc))) = '1' and
+          kpixState.analogState = KPIX_ANALOG_SAMP_STATE_C and
+          kpixState.trigInhibit = '0' and
           fifoFull = '0') then
-         rVar.timestampFifoWrEn := '1';
-         if (kpixConfigRegs.autoReadDisable = '1') then
-            rVar.readoutPending := '1';
+         v.timestampFifoWrEn := '1';
+         if (r.autoReadDisable = '1') then
+            v.readoutPending := '1';
          end if;
       end if;
 
       ------------------------------------------------------------------------------------------------
       -- Readout Trigger
       ------------------------------------------------------------------------------------------------
-      if (kpixLocalSysOut.analogState = KPIX_ANALOG_IDLE_STATE_C and
-          kpixLocalSysOut.readoutState = KPIX_READOUT_IDLE_STATE_C and
+      if (kpixState.analogState = KPIX_ANALOG_IDLE_STATE_C and
+          kpixState.readoutState = KPIX_READOUT_IDLE_STATE_C and
           r.readoutPending = '1') then
-         rVar.readoutPending          := '0';
-         rVar.triggerOut.startReadout := '1';
-         rVar.readoutCountEnable      := '1';
-         rVar.readoutCounter          := (others => '0');
+         v.readoutPending          := '0';
+         v.triggerOut.startReadout := '1';
+         v.readoutCountEnable      := '1';
+         v.readoutCounter          := (others => '0');
       end if;
 
       if (r.readoutCountEnable = '1') then
-         rVar.readoutCounter := r.readoutCounter + 1;
+         v.readoutCounter := r.readoutCounter + 1;
          if (uAnd(slv(r.readoutCounter)) = '1') then
-            rVar.readoutCounter          := (others => '0');
-            rVar.readoutCountEnable      := '0';
-            rVar.triggerOut.startReadout := '0';
+            v.readoutCounter          := (others => '0');
+            v.readoutCountEnable      := '0';
+            v.triggerOut.startReadout := '0';
          end if;
       end if;
 
@@ -182,44 +251,43 @@ begin
       -- Source could be software (through FrontEndCmdCntl), EVR, or external input
       -- Selected by Front End Register triggerRegsIn.acquisitionSrc
       ------------------------------------------------------------------------------------------------
-      if ((triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_SOFTWARE_C and
+      if ((r.triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_SOFTWARE_C and
            frontEndCmdCntlOut.cmdEn = '1' and frontEndCmdCntlOut.cmdOpCode = TRIGGER_OPCODE_C)
           or
-          (triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_EVR_C and
-           detectRisingEdge(r.extTriggerSync(7)))   -- EVR trigger routed through extTriggerSync(7)
+          (r.triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_EVR_C and
+           extTriggerRise(7) = '1')     -- EVR trigger routed through extTriggerSync(7)
           or
-          (triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_CMOSA_C and
-           detectRisingEdge(r.extTriggerSync(3))))  -- CMOS trigger is extTriggerSync(3)
+          (r.triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_CMOSA_C and
+           extTriggerRise(3) = '1'))    -- CMOS trigger is extTriggerSync(3)
       then
-         rVar.triggerOut.startAcquire   := '1';
-         rVar.triggerOut.startCalibrate := triggerRegsIn.calibrate;
-         rVar.startCountEnable          := '1';
-         rVar.startCounter              := (others => '0');
+         v.triggerOut.startAcquire   := '1';
+         v.triggerOut.startCalibrate := r.triggerRegsIn.calibrate;
+         v.startCountEnable          := '1';
+         v.startCounter              := (others => '0');
       end if;
 
       if (r.startCountEnable = '1') then
-         rVar.startCounter := r.startCounter + 1;
+         v.startCounter := r.startCounter + 1;
          if (uAnd(slv(r.startCounter)) = '1') then
-            rVar.startCounter              := (others => '0');
-            rVar.startCountEnable          := '0';
-            rVar.triggerOut.startAcquire   := '0';
-            rVar.triggerOut.startCalibrate := '0';
+            v.startCounter              := (others => '0');
+            v.startCountEnable          := '0';
+            v.triggerOut.startAcquire   := '0';
+            v.triggerOut.startCalibrate := '0';
          end if;
       end if;
 
 
-      rin        <= rVar;
+      rin        <= v;
       triggerOut <= r.triggerOut;
    end process comb;
 
-
-
    timestamp_fifo_1 : timestamp_fifo
       port map (
-         clk               => sysClk,
-         rst               => sysRst,
-         din(15 downto 3)  => kpixLocalSysOut.bunchCount,
-         din(2 downto 0)   => kpixLocalSysOut.subCount,
+         rd_clk            => sysClk,
+         wr_clk            => clk200,
+         rst               => rst200,
+         din(15 downto 3)  => kpixState.bunchCount,
+         din(2 downto 0)   => kpixState.subCount,
          wr_en             => r.timestampFifoWrEn,
          rd_en             => timestampIn.rdEn,
          dout(15 downto 3) => timestampOut.bunchCount,

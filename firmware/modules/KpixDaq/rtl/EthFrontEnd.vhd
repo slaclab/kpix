@@ -32,6 +32,10 @@ entity EthFrontEnd is
       gtpRefClk        : in  std_logic;
       gtpRefClkOut     : out std_logic;
 
+      -- Special 200 MHz clock for commands
+      clk200 : in std_logic;
+      rst200 : in std_logic;
+
       -- Local command signal
       cmdEn            : out std_logic;
       cmdOpCode        : out std_logic_vector(7  downto 0);
@@ -243,7 +247,7 @@ begin
          FifoType  => "V5"
       ) port map ( 
          pgpRxClk       => gtpClk,           pgpRxReset     => gtpClkRst,
-         locClk         => gtpClk,           locReset       => gtpClkRst,
+         locClk         => clk200,           locReset       => rst200,
          vcFrameRxValid => vc0FrameRxValid,  vcFrameRxSOF   => vcFrameRxSOF,
          vcFrameRxEOF   => vcFrameRxEOF,     vcFrameRxEOFE  => vcFrameRxEOFE,
          vcFrameRxData  => vcFrameRxData,    vcLocBuffAFull => open,

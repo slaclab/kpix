@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2013-07-08
+-- Last update: 2013-07-15
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -18,8 +18,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.StdRtlPkg.all;
-use work.SynchronizePkg.all;
 use work.KpixClockGenPkg.all;
+use work.TriggerPkg.all;
 use work.KpixLocalPkg.all;
 library UNISIM;
 use UNISIM.VCOMPONENTS.all;
@@ -30,14 +30,13 @@ entity KpixClockGen is
       DELAY_G : time := 1 ns);
 
    port (
-      clk200       : in  sl;
-      rst200       : in  sl;
-      extRegsIn    : in  KpixClockGenRegsInType;
-      analogState  : in  slv(2 downto 0);
-      readoutState : in  slv(2 downto 0);
-      prechargeBus : in  sl;
-      kpixClk      : out sl;
-      kpixClkRst   : out sl);
+      clk200     : in  sl;
+      rst200     : in  sl;
+      triggerOut : in  TriggerOutType;
+      extRegsIn  : in  KpixClockGenRegsInType;
+      kpixState  : in  KpixStateOutType;
+      kpixClk    : out sl;
+      kpixClkRst : out sl);
 
 end entity KpixClockGen;
 
@@ -45,21 +44,38 @@ architecture rtl of KpixClockGen is
 
    -- Kpix Clock registers run on 200 MHz clock
    type RegType is record
-      extRegsSync  : KpixClockGenRegsInType;
-      divCount     : unsigned(11 downto 0);
-      clkSel       : unsigned(11 downto 0);
-      clkDiv       : sl;
+      startAcquireLast : sl;
+      extRegsSync      : KpixClockGenRegsInType;
+      divCount         : unsigned(11 downto 0);
+      clkSel           : unsigned(11 downto 0);
+      clkDiv           : sl;
    end record RegType;
 
-   signal r, rin     : RegType;
+   signal r, rin       : RegType;
    signal newValueRise : sl;
-   signal kpixClkInt : sl;
+   signal kpixClkInt   : sl;
 
 begin
+
+   
+   SynchronizerEdge_NewValue : entity work.SynchronizerEdge
+      generic map (
+         TPD_G          => DELAY_G,
+         RST_POLARITY_G => '1',
+         STAGES_G       => 3,
+         INIT_G         => "000")
+      port map (
+         clk         => clk200,
+         aRst        => rst200,
+         dataIn      => extRegsIn.newValue,
+         dataOut     => open,
+         risingEdge  => newValueRise,
+         fallingEdge => open);
 
    seq : process (clk200, rst200) is
    begin
       if (rst200 = '1') then
+         r.startAcquireLast            <= '0'                         after DELAY_G;
          r.extRegsSync.clkSelReadout   <= CLK_SEL_READOUT_DEFAULT_C   after DELAY_G;
          r.extRegsSync.clkSelDigitize  <= CLK_SEL_DIGITIZE_DEFAULT_C  after DELAY_G;
          r.extRegsSync.clkSelAcquire   <= CLK_SEL_ACQUIRE_DEFAULT_C   after DELAY_G;
@@ -74,27 +90,17 @@ begin
       end if;
    end process seq;
 
-   SynchronizerEdge_1: entity work.SynchronizerEdge
-      generic map (
-         TPD_G          => DELAY_G,
-         RST_POLARITY_G => '1')
-      port map (
-         clk     => clk200,
-         aRst    => rst200,
-         dataIn  => extRegsIn.newValue,
-         dataOut => open,
-         risingEdge => newValueRise,
-         fallingEdge => open);
 
-
-   comb : process (r, analogState, readoutState, prechargeBus, extRegsIn, newValueRise) is
+   comb : process (r, kpixState, extRegsIn, newValueRise, triggerOut) is
       variable rVar : RegType;
    begin
       rVar := r;
 
+      rVar.startAcquireLast := triggerOut.startAcquire;
+
       -- When new reg values are stable, clock them into their 200 MHz registers
       if (newValueRise = '1') then
-         rVar.extRegsSync := extRegsIn; 
+         rVar.extRegsSync := extRegsIn;
       end if;
 
       rVar.divCount := r.divCount + 1;
@@ -105,21 +111,27 @@ begin
          rVar.clkDiv   := not r.clkDiv;
 
          -- Assign new clkSel dependant on kpixState
-         if (analogState = KPIX_ANALOG_DIG_STATE_C and prechargeBus = '1') then
+         if (kpixState.analogState = KPIX_ANALOG_DIG_STATE_C and kpixState.prechargeBus = '1') then
             rVar.clkSel := unsigned(r.extRegsSync.clkSelPrecharge);
-         elsif (analogState = KPIX_ANALOG_IDLE_STATE_C) then
+         elsif (kpixState.analogState = KPIX_ANALOG_IDLE_STATE_C) then
             rVar.clkSel := "0000" & unsigned(r.extRegsSync.clkSelIdle);
-         elsif (analogState = KPIX_ANALOG_PRE_STATE_C or
-                analogState = KPIX_ANALOG_SAMP_STATE_C or
-                analogState = KPIX_ANALOG_PAUSE_STATE_C) then
+         elsif (kpixState.analogState = KPIX_ANALOG_PRE_STATE_C or
+                kpixState.analogState = KPIX_ANALOG_SAMP_STATE_C or
+                kpixState.analogState = KPIX_ANALOG_PAUSE_STATE_C) then
             rVar.clkSel := "0000" & unsigned(r.extRegsSync.clkSelAcquire);
-         elsif (analogState = KPIX_ANALOG_DIG_STATE_C) then
+         elsif (kpixState.analogState = KPIX_ANALOG_DIG_STATE_C) then
             rVar.clkSel := "0000" & unsigned(r.extRegsSync.clkSelDigitize);
-         elsif (KPIX_READOUT_STATE_C /= KPIX_READOUT_IDLE_STATE_C) then
+         elsif (kpixState.readoutState /= KPIX_READOUT_IDLE_STATE_C) then
             rVar.clkSel := "0000" & unsigned(r.extRegsSync.clkSelReadout);
          else
             rVar.clkSel := "0000" & unsigned(r.extRegsSync.clkSelIdle);
          end if;
+      end if;
+
+      -- StartAcquire effectively resets kpix clock to ensure fixed time between acquire pulse and command
+      if (triggerOut.startAcquire = '1' and r.startAcquireLast = '0') then
+         rVar.divCount := (others => '0');
+         rVar.clkDiv   := '0';
       end if;
 
       rin <= rVar;

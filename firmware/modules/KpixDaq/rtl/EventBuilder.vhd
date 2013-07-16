@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2013-03-28
+-- Last update: 2013-07-12
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -18,14 +18,14 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.StdRtlPkg.all;
-use work.SynchronizePkg.all;
+--use work.SynchronizePkg.all;
 use work.KpixPkg.all;
 use work.KpixDataRxPkg.all;
 use work.FrontEndPkg.all;
 use work.EventBuilderFifoPkg.all;
 use work.TriggerPkg.all;
 use work.KpixLocalPkg.all;
-use work.EvrPkg.all;
+use work.EvrCorePkg.all;
 
 entity EventBuilder is
   
@@ -50,7 +50,7 @@ entity EventBuilder is
     evrOut : in EvrOutType;
 
     -- Kpix Local Interface
-    kpixLocalSysOut : in KpixLocalSysOutType;
+    sysKpixState : in KpixStateOutType;
 
     -- KPIX data interface
     kpixDataRxOut : in  KpixDataRxOutArray(NUM_KPIX_MODULES_G-1 downto 0);
@@ -85,7 +85,7 @@ architecture rtl of EventBuilder is
     timestamp      : unsigned(31 downto 0);
     eventNumber    : unsigned(31 downto 0);
     newAcquire     : sl;
-    kpixClkSync    : SynchronizerType;
+--    kpixClkSync    : SynchronizerType;
     state          : StateType;
     counter        : unsigned(15 downto 0);  -- Generic counter for stalling in a state
     activeModules  : slv(NUM_KPIX_MODULES_G-1 downto 0);
@@ -97,8 +97,33 @@ architecture rtl of EventBuilder is
   end record;
 
   signal r, rin : RegType;
+  signal startAcquireSync : sl;
+  signal kpixClkRise : sl;
 
 begin
+
+   -- Synchronize startAcquire to sysClk (from clk200)
+   Synchronizer_startAcquire : entity work.Synchronizer
+      generic map (
+         TPD_G          => DELAY_G,
+         RST_POLARITY_G => '1')
+      port map (
+         clk         => sysClk,
+         aRst        => sysRst,
+         dataIn      => triggerOut.startAcquire,
+         dataOut     => startAcquireSync);
+
+   Synchronizer_kpixClk : entity work.SynchronizerEdge
+      generic map (
+         TPD_G          => DELAY_G,
+         RST_POLARITY_G => '1')
+      port map (
+         clk         => sysClk,
+         aRst        => sysRst,
+         dataIn      => kpixClk,
+         dataOut     => open,
+         risingEdge => kpixClkRise,
+         fallingEdge => open);
 
   sync : process (sysClk, sysRst) is
   begin
@@ -107,7 +132,6 @@ begin
       r.timestamp        <= (others => '0')          after DELAY_G;
       r.eventNumber      <= (others => '1')          after DELAY_G;  -- So first event is 0 (eventNumber + 1)
       r.newAcquire       <= '0'                      after DELAY_G;
-      r.kpixClkSync      <= SYNCHRONIZER_INIT_0_C    after DELAY_G;
       r.state            <= WAIT_ACQUIRE_S           after DELAY_G;
       r.counter          <= (others => '0')          after DELAY_G;
       r.activeModules    <= (others => '0')          after DELAY_G;
@@ -122,7 +146,7 @@ begin
     end if;
   end process sync;
 
-  comb : process (r, triggerOut, kpixDataRxOut, ebFifoOut, frontEndUsDataOut) is
+  comb : process (r, kpixDataRxOut, ebFifoOut, frontEndUsDataOut, kpixConfigRegs, triggerRegsIn, evrOut, sysKpixState, timestampOut, startAcquireSync, kpixClkRise) is
     variable rVar : RegType;
 
     -- Write data to the EventBuilder FIFO
@@ -156,14 +180,13 @@ begin
   begin
     rVar := r;
 
-    synchronize(kpixClk, r.kpixClkSync, rVar.kpixClkSync);
 
     ------------------------------------------------------------------------------------------------
     -- FIFO WR Logic
     ------------------------------------------------------------------------------------------------
     -- Latch trigger
     rVar.timestampCount := r.timestampCount + 1;
-    if (r.newAcquire = '0' and triggerOut.startAcquire = '1' and r.state = WAIT_ACQUIRE_S) then
+    if (r.newAcquire = '0' and startAcquireSync = '1' and r.state = WAIT_ACQUIRE_S) then
       rVar.timestamp   := r.timestampCount;
       rVar.eventNumber := r.eventNumber + 1;
       rVar.newAcquire  := '1';
@@ -217,7 +240,7 @@ begin
 
       when WAIT_DIGITIZE_S =>
         -- Must wait until acquire state is done before reading timestamps
-        if (kpixLocalSysOut.analogState = KPIX_ANALOG_DIG_STATE_C) then
+        if (sysKpixState.analogState = KPIX_ANALOG_DIG_STATE_C) then
           if (kpixConfigRegs.autoReadDisable = '1' and timestampOut.valid = '0') then
             -- No data, Close frame
             writeFifo(slvZero(64), EOF_C);
@@ -238,7 +261,7 @@ begin
         end if;
 
       when WAIT_READOUT_S =>
-        if (kpixLocalSysOut.readoutState = KPIX_READOUT_DATA_STATE_C) then
+        if (sysKpixState.readoutState = KPIX_READOUT_DATA_STATE_C) then
           rVar.state := CHECK_BUSY_S;
         end if;
         
@@ -246,7 +269,7 @@ begin
         -- Wait X kpixClk cycles for busy signals
         -- Tells which modules are active
         rVar.counter := r.counter;
-        if (detectRisingEdge(r.kpixClkSync)) then
+        if (kpixClkRise = '1') then
           rVar.counter := r.counter + 1;
         end if;
         if (r.counter = 65532) then     -- Wait some amount of time for data to arrive

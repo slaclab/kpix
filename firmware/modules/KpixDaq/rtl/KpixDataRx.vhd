@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2013-07-03
+-- Last update: 2013-07-12
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -19,7 +19,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.StdRtlPkg.all;
-use work.SynchronizePkg.all;
 use work.KpixPkg.all;
 use work.KpixDataRxPkg.all;
 use work.KpixRegRxPkg.all;
@@ -77,6 +76,9 @@ architecture rtl of KpixDataRx is
    type RxStateType is (RX_IDLE_S, RX_HEADER_S, RX_ROW_ID_S, RX_DATA_S, RX_FRAME_DONE_S, RX_DUMP_S, RX_RESP_S);
 
    type RxRegType is record
+      inputEdge         : sl;                              -- From kpixConfigRegs
+      numColumns        : unsigned(4 downto 0);            -- from kpixConfigRegs
+      enabled           : sl;                              -- From extRegsIn
       rxShiftData       : slv(0 to SHIFT_REG_LENGTH_C-1);  -- Upward indexed to match documentation
       rxShiftCount      : unsigned(5 downto 0);            -- Counts bits shifted in
       rxColumnCount     : unsigned(4 downto 0);            -- 32 columns
@@ -88,7 +90,6 @@ architecture rtl of KpixDataRx is
       rxRamWrEn         : sl;
       rxRowBuffer       : unsigned(log2(NUM_ROW_BUFFERS_G)-1 downto 0);
       rxRowReq          : slv(NUM_ROW_BUFFERS_G-1 downto 0);
---    rxRowAck          : SynchronizerArray(NUM_ROW_BUFFERS_G-1 downto 0);
       rxBusy            : sl;
       markerError       : sl;
       headerParityError : sl;
@@ -126,12 +127,7 @@ architecture rtl of KpixDataRx is
       txTriggers      : slv(3 downto 0);
       txValidBuckets  : unsigned(3 downto 0);
       txRanges        : slv(3 downto 0);
---      txRowReq        : SynchronizerArray(NUM_ROW_BUFFERS_G-1 downto 0);
       txRowAck        : slv(NUM_ROW_BUFFERS_G-1 downto 0);
---    txRxBusySync          : SynchronizerType;       -- Sync rx busy to tx clock
---    markerErrorSync       : SynchronizerType;
---    headerParityErrorSync : SynchronizerType;
---    overflowErrorSync     : SynchronizerType;
       dataParityError : sl;
       extRegsOut      : kpixDataRxRegsOutType;  -- Output
       kpixDataRxOut   : KpixDataRxOutType;      -- Output
@@ -142,9 +138,9 @@ architecture rtl of KpixDataRx is
    signal markerErrorRise       : sl;
    signal headerParityErrorRise : sl;
    signal overflowErrorRise     : sl;
-   
-   signal txRegs, txRegsIn      : TxRegType;
-   signal kpixSerRxInFall       : sl;
+
+   signal txRegs, txRegsIn : TxRegType;
+   signal kpixSerRxInFall  : sl;
 
    -----------------------------------------------------------------------------
    -- Functions
@@ -203,6 +199,9 @@ begin
    rxSeq : process (kpixClk, kpixClkRst) is
    begin
       if (kpixClkRst = '1') then
+         rxRegs.inputEdge         <= '0'             after DELAY_G;
+         rxRegs.numColumns        <= (others => '0') after DELAY_G;
+         rxRegs.enabled           <= '0'             after DELAY_G;
          rxRegs.rxShiftData       <= (others => '0') after DELAY_G;
          rxRegs.rxShiftCount      <= (others => '0') after DELAY_G;
          rxRegs.rxColumnCount     <= (others => '0') after DELAY_G;
@@ -214,7 +213,6 @@ begin
          rxRegs.rxRamWrEn         <= '0'             after DELAY_G;
          rxRegs.rxRowBuffer       <= (others => '0') after DELAY_G;
          rxRegs.rxRowReq          <= (others => '0') after DELAY_G;
---         rxRegs.rxRowAck          <= (others => SYNCHRONIZER_INIT_0_C) after DELAY_G;
          rxRegs.rxBusy            <= '0'             after DELAY_G;
          rxRegs.markerError       <= '0'             after DELAY_G;
          rxRegs.headerParityError <= '0'             after DELAY_G;
@@ -244,8 +242,14 @@ begin
    begin
       rVar := rxRegs;
 
+      -- These sysClk signals are set at the start of the run and never change, so they don't need
+      -- to be fully sync'd.
+      rVar.inputEdge  := kpixConfigRegs.inputEdge;
+      rVar.numColumns := unsigned(kpixConfigRegs.numColumns);
+      rVar.enabled    := extRegsIn.enabled;
+
       -- Shift in new bit and increment counter every clock
-      if (kpixConfigRegs.inputEdge = '0') then
+      if (rxRegs.inputEdge = '0') then
          rVar.rxShiftData := rxRegs.rxShiftData(1 to SHIFT_REG_LENGTH_C-1) & kpixSerRxIn;
       else
          rVar.rxShiftData := rxRegs.rxShiftData(1 to SHIFT_REG_LENGTH_C-1) & kpixSerRxInFall;
@@ -272,8 +276,7 @@ begin
       case (rxRegs.rxState) is
          when RX_IDLE_S =>
             -- Wait for start bit
-            -- No need to synchronize enabled, never changes during a run.
-            if (rxRegs.rxShiftData(SHIFT_REG_LENGTH_C-1) = '1' and extRegsIn.enabled = '1') then
+            if (rxRegs.rxShiftData(SHIFT_REG_LENGTH_C-1) = '1' and rxRegs.enabled = '1') then
                rVar.rxShiftCount := (others => '0');
                rVar.rxState      := RX_HEADER_S;
             end if;
@@ -334,7 +337,7 @@ begin
 
                -- numColumns is in sysClk domain but never changes during a run so no need to worry about
                -- syncing it
-               if (rxRegs.rxColumnCount = unsigned(kpixConfigRegs.numColumns)) then
+               if (rxRegs.rxColumnCount = unsigned(rxRegs.numColumns)) then
                   -- All Columns in row have been received
                   rVar.rxState := RX_FRAME_DONE_S;
                end if;
@@ -393,12 +396,7 @@ begin
          txRegs.txTriggers                        <= (others => '0') after DELAY_G;
          txRegs.txValidBuckets                    <= (others => '0') after DELAY_G;
          txRegs.txRanges                          <= (others => '0') after DELAY_G;
---         txRegs.txRowReq                          <= (others => SYNCHRONIZER_INIT_0_C) after DELAY_G;
          txRegs.txRowAck                          <= (others => '0') after DELAY_G;
---         txRegs.txRxBusySync                      <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
---         txRegs.markerErrorSync                   <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
---         txRegs.headerParityErrorSync             <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
---         txRegs.overflowErrorSync                 <= SYNCHRONIZER_INIT_0_C             after DELAY_G;
          txRegs.dataParityError                   <= '0'             after DELAY_G;
          txRegs.kpixDataRxOut.data                <= (others => '0') after DELAY_G;
          txRegs.kpixDataRxOut.valid               <= '0'             after DELAY_G;
@@ -468,7 +466,7 @@ begin
          risingEdge  => markerErrorRise,
          fallingEdge => open);
 
-      SynchronizerEdge_6 : entity work.SynchronizerEdge
+   SynchronizerEdge_6 : entity work.SynchronizerEdge
       generic map (
          TPD_G          => DELAY_G,
          RST_POLARITY_G => '1')
@@ -479,8 +477,8 @@ begin
          dataOut     => open,
          risingEdge  => overflowErrorRise,
          fallingEdge => open);
-   
-   txComb : process (txRegs, rxRegs, txRamRdData, kpixDataRxIn, kpixRegRxOut, extRegsIn,
+
+   txComb : process (txRegs, rxRegs, txRamRdData, kpixDataRxIn, kpixRegRxOut, extRegsIn, kpixConfigRegs,
                      txRowReqSync, txRxBusyRise, headerParityErrorRise, markerErrorRise, overflowErrorRise) is
       variable rVar : txRegType;
    begin
@@ -490,11 +488,6 @@ begin
       rVar.kpixDataRxOut.last  := '0';
 
       rVar.dataParityError := '0';
-
-      -- Synchronize signals from rx
---      synchronize(rxRegs.rxRowReq, txRegs.txRowReq, rVar.txRowReq);
---      synchronize(rxRegs.rxBusy, txRegs.txRxBusySync, rVar.txRxBusySync);
-
 
       -- Reset row ack when req falls
       for i in txRegs.txRowAck'range loop
@@ -655,10 +648,6 @@ begin
       end case;
 
       -- Error Counts
-      -- First synchronize error signals from Rx clock domain
---      synchronize(rxRegs.headerParityError, txRegs.headerParityErrorSync, rVar.headerParityErrorSync);
---      synchronize(rxRegs.markerError, txRegs.markerErrorSync, rVar.markerErrorSync);
---      synchronize(rxRegs.overflowError, txRegs.overflowErrorSync, rVar.overflowErrorSync);
 
       -- Increment counts whenever rising edge detected in error signals
       if (headerParityErrorRise = '1') then

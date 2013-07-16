@@ -1,283 +1,544 @@
 --------------------------------------------------------------------------------
---    This file is owned and controlled by Xilinx and must be used solely     --
---    for design, simulation, implementation and creation of design files     --
---    limited to Xilinx devices or technologies. Use with non-Xilinx          --
---    devices or technologies is expressly prohibited and immediately         --
---    terminates your license.                                                --
---                                                                            --
---    XILINX IS PROVIDING THIS DESIGN, CODE, OR INFORMATION "AS IS" SOLELY    --
---    FOR USE IN DEVELOPING PROGRAMS AND SOLUTIONS FOR XILINX DEVICES.  BY    --
---    PROVIDING THIS DESIGN, CODE, OR INFORMATION AS ONE POSSIBLE             --
---    IMPLEMENTATION OF THIS FEATURE, APPLICATION OR STANDARD, XILINX IS      --
---    MAKING NO REPRESENTATION THAT THIS IMPLEMENTATION IS FREE FROM ANY      --
---    CLAIMS OF INFRINGEMENT, AND YOU ARE RESPONSIBLE FOR OBTAINING ANY       --
---    RIGHTS YOU MAY REQUIRE FOR YOUR IMPLEMENTATION.  XILINX EXPRESSLY       --
---    DISCLAIMS ANY WARRANTY WHATSOEVER WITH RESPECT TO THE ADEQUACY OF THE   --
---    IMPLEMENTATION, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OR          --
---    REPRESENTATIONS THAT THIS IMPLEMENTATION IS FREE FROM CLAIMS OF         --
---    INFRINGEMENT, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A   --
---    PARTICULAR PURPOSE.                                                     --
---                                                                            --
---    Xilinx products are not intended for use in life support appliances,    --
---    devices, or systems.  Use in such applications are expressly            --
---    prohibited.                                                             --
---                                                                            --
---    (c) Copyright 1995-2012 Xilinx, Inc.                                    --
---    All rights reserved.                                                    --
+-- Copyright (c) 1995-2012 Xilinx, Inc.  All rights reserved.
 --------------------------------------------------------------------------------
+--   ____  ____
+--  /   /\/   /
+-- /___/  \  /    Vendor: Xilinx
+-- \   \   \/     Version: P.58f
+--  \   \         Application: netgen
+--  /   /         Filename: timestamp_fifo.vhd
+-- /___/   /\     Timestamp: Wed Jul 10 13:41:25 2013
+-- \   \  /  \ 
+--  \___\/\___\
+--             
+-- Command	: -w -sim -ofmt vhdl /afs/slac.stanford.edu/u/re/bareese/projects/kpix/trunk/firmware/modules/KpixDaq/xil_cores/tmp/_cg/timestamp_fifo.ngc /afs/slac.stanford.edu/u/re/bareese/projects/kpix/trunk/firmware/modules/KpixDaq/xil_cores/tmp/_cg/timestamp_fifo.vhd 
+-- Device	: 5vlx50tff665-1
+-- Input file	: /afs/slac.stanford.edu/u/re/bareese/projects/kpix/trunk/firmware/modules/KpixDaq/xil_cores/tmp/_cg/timestamp_fifo.ngc
+-- Output file	: /afs/slac.stanford.edu/u/re/bareese/projects/kpix/trunk/firmware/modules/KpixDaq/xil_cores/tmp/_cg/timestamp_fifo.vhd
+-- # of Entities	: 2
+-- Design Name	: timestamp_fifo
+-- Xilinx	: /afs/slac.stanford.edu/g/reseng/vol15/Xilinx/14.5/ISE_DS/ISE/
+--             
+-- Purpose:    
+--     This VHDL netlist is a verification model and uses simulation 
+--     primitives which may not represent the true implementation of the 
+--     device, however the netlist is functionally correct and should not 
+--     be modified. This file cannot be synthesized and should only be used 
+--     with supported simulation tools.
+--             
+-- Reference:  
+--     Command Line Tools User Guide, Chapter 23
+--     Synthesis and Simulation Design Guide, Chapter 6
+--             
 --------------------------------------------------------------------------------
--- You must compile the wrapper file timestamp_fifo.vhd when simulating
--- the core, timestamp_fifo. When compiling the wrapper file, be sure to
--- reference the XilinxCoreLib VHDL simulation library. For detailed
--- instructions, please refer to the "CORE Generator Help".
 
--- The synthesis directives "translate_off/translate_on" specified
--- below are supported by Xilinx, Mentor Graphics and Synplicity
--- synthesis tools. Ensure they are correct for your synthesis tool(s).
 
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
 -- synthesis translate_off
-LIBRARY XilinxCoreLib;
--- synthesis translate_on
-ENTITY timestamp_fifo IS
-  PORT (
-    clk : IN STD_LOGIC;
-    rst : IN STD_LOGIC;
-    din : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-    wr_en : IN STD_LOGIC;
-    rd_en : IN STD_LOGIC;
-    dout : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-    full : OUT STD_LOGIC;
-    empty : OUT STD_LOGIC;
-    valid : OUT STD_LOGIC
-  );
-END timestamp_fifo;
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+library UNISIM;
+use UNISIM.VCOMPONENTS.ALL;
+use UNISIM.VPKG.ALL;
 
-ARCHITECTURE timestamp_fifo_a OF timestamp_fifo IS
--- synthesis translate_off
-COMPONENT wrapped_timestamp_fifo
-  PORT (
-    clk : IN STD_LOGIC;
-    rst : IN STD_LOGIC;
-    din : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-    wr_en : IN STD_LOGIC;
-    rd_en : IN STD_LOGIC;
-    dout : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-    full : OUT STD_LOGIC;
-    empty : OUT STD_LOGIC;
-    valid : OUT STD_LOGIC
+entity reset_builtin is
+  port (
+    CLK : in STD_LOGIC := 'X'; 
+    RST : in STD_LOGIC := 'X'; 
+    RD_CLK : in STD_LOGIC := 'X'; 
+    INT_CLK : in STD_LOGIC := 'X'; 
+    WR_CLK : in STD_LOGIC := 'X'; 
+    RD_RST_I : out STD_LOGIC_VECTOR ( 1 downto 0 ); 
+    WR_RST_I : out STD_LOGIC_VECTOR ( 1 downto 0 ); 
+    INT_RST_I : out STD_LOGIC_VECTOR ( 1 downto 0 ) 
   );
-END COMPONENT;
+end reset_builtin;
 
--- Configuration specification
-  FOR ALL : wrapped_timestamp_fifo USE ENTITY XilinxCoreLib.fifo_generator_v8_4(behavioral)
-    GENERIC MAP (
-      c_add_ngc_constraint => 0,
-      c_application_type_axis => 0,
-      c_application_type_rach => 0,
-      c_application_type_rdch => 0,
-      c_application_type_wach => 0,
-      c_application_type_wdch => 0,
-      c_application_type_wrch => 0,
-      c_axi_addr_width => 32,
-      c_axi_aruser_width => 1,
-      c_axi_awuser_width => 1,
-      c_axi_buser_width => 1,
-      c_axi_data_width => 64,
-      c_axi_id_width => 4,
-      c_axi_ruser_width => 1,
-      c_axi_type => 0,
-      c_axi_wuser_width => 1,
-      c_axis_tdata_width => 64,
-      c_axis_tdest_width => 4,
-      c_axis_tid_width => 8,
-      c_axis_tkeep_width => 4,
-      c_axis_tstrb_width => 4,
-      c_axis_tuser_width => 4,
-      c_axis_type => 0,
-      c_common_clock => 1,
-      c_count_type => 0,
-      c_data_count_width => 5,
-      c_default_value => "BlankString",
-      c_din_width => 16,
-      c_din_width_axis => 1,
-      c_din_width_rach => 32,
-      c_din_width_rdch => 64,
-      c_din_width_wach => 32,
-      c_din_width_wdch => 64,
-      c_din_width_wrch => 2,
-      c_dout_rst_val => "0",
-      c_dout_width => 16,
-      c_enable_rlocs => 0,
-      c_enable_rst_sync => 1,
-      c_error_injection_type => 0,
-      c_error_injection_type_axis => 0,
-      c_error_injection_type_rach => 0,
-      c_error_injection_type_rdch => 0,
-      c_error_injection_type_wach => 0,
-      c_error_injection_type_wdch => 0,
-      c_error_injection_type_wrch => 0,
-      c_family => "virtex5",
-      c_full_flags_rst_val => 1,
-      c_has_almost_empty => 0,
-      c_has_almost_full => 0,
-      c_has_axi_aruser => 0,
-      c_has_axi_awuser => 0,
-      c_has_axi_buser => 0,
-      c_has_axi_rd_channel => 0,
-      c_has_axi_ruser => 0,
-      c_has_axi_wr_channel => 0,
-      c_has_axi_wuser => 0,
-      c_has_axis_tdata => 0,
-      c_has_axis_tdest => 0,
-      c_has_axis_tid => 0,
-      c_has_axis_tkeep => 0,
-      c_has_axis_tlast => 0,
-      c_has_axis_tready => 1,
-      c_has_axis_tstrb => 0,
-      c_has_axis_tuser => 0,
-      c_has_backup => 0,
-      c_has_data_count => 0,
-      c_has_data_counts_axis => 0,
-      c_has_data_counts_rach => 0,
-      c_has_data_counts_rdch => 0,
-      c_has_data_counts_wach => 0,
-      c_has_data_counts_wdch => 0,
-      c_has_data_counts_wrch => 0,
-      c_has_int_clk => 0,
-      c_has_master_ce => 0,
-      c_has_meminit_file => 0,
-      c_has_overflow => 0,
-      c_has_prog_flags_axis => 0,
-      c_has_prog_flags_rach => 0,
-      c_has_prog_flags_rdch => 0,
-      c_has_prog_flags_wach => 0,
-      c_has_prog_flags_wdch => 0,
-      c_has_prog_flags_wrch => 0,
-      c_has_rd_data_count => 0,
-      c_has_rd_rst => 0,
-      c_has_rst => 1,
-      c_has_slave_ce => 0,
-      c_has_srst => 0,
-      c_has_underflow => 0,
-      c_has_valid => 1,
-      c_has_wr_ack => 0,
-      c_has_wr_data_count => 0,
-      c_has_wr_rst => 0,
-      c_implementation_type => 0,
-      c_implementation_type_axis => 1,
-      c_implementation_type_rach => 1,
-      c_implementation_type_rdch => 1,
-      c_implementation_type_wach => 1,
-      c_implementation_type_wdch => 1,
-      c_implementation_type_wrch => 1,
-      c_init_wr_pntr_val => 0,
-      c_interface_type => 0,
-      c_memory_type => 2,
-      c_mif_file_name => "BlankString",
-      c_msgon_val => 1,
-      c_optimization_mode => 0,
-      c_overflow_low => 0,
-      c_preload_latency => 0,
-      c_preload_regs => 1,
-      c_prim_fifo_type => "512x36",
-      c_prog_empty_thresh_assert_val => 4,
-      c_prog_empty_thresh_assert_val_axis => 1022,
-      c_prog_empty_thresh_assert_val_rach => 1022,
-      c_prog_empty_thresh_assert_val_rdch => 1022,
-      c_prog_empty_thresh_assert_val_wach => 1022,
-      c_prog_empty_thresh_assert_val_wdch => 1022,
-      c_prog_empty_thresh_assert_val_wrch => 1022,
-      c_prog_empty_thresh_negate_val => 5,
-      c_prog_empty_type => 0,
-      c_prog_empty_type_axis => 5,
-      c_prog_empty_type_rach => 5,
-      c_prog_empty_type_rdch => 5,
-      c_prog_empty_type_wach => 5,
-      c_prog_empty_type_wdch => 5,
-      c_prog_empty_type_wrch => 5,
-      c_prog_full_thresh_assert_val => 15,
-      c_prog_full_thresh_assert_val_axis => 1023,
-      c_prog_full_thresh_assert_val_rach => 1023,
-      c_prog_full_thresh_assert_val_rdch => 1023,
-      c_prog_full_thresh_assert_val_wach => 1023,
-      c_prog_full_thresh_assert_val_wdch => 1023,
-      c_prog_full_thresh_assert_val_wrch => 1023,
-      c_prog_full_thresh_negate_val => 14,
-      c_prog_full_type => 0,
-      c_prog_full_type_axis => 5,
-      c_prog_full_type_rach => 5,
-      c_prog_full_type_rdch => 5,
-      c_prog_full_type_wach => 5,
-      c_prog_full_type_wdch => 5,
-      c_prog_full_type_wrch => 5,
-      c_rach_type => 0,
-      c_rd_data_count_width => 5,
-      c_rd_depth => 16,
-      c_rd_freq => 1,
-      c_rd_pntr_width => 4,
-      c_rdch_type => 0,
-      c_reg_slice_mode_axis => 0,
-      c_reg_slice_mode_rach => 0,
-      c_reg_slice_mode_rdch => 0,
-      c_reg_slice_mode_wach => 0,
-      c_reg_slice_mode_wdch => 0,
-      c_reg_slice_mode_wrch => 0,
-      c_synchronizer_stage => 2,
-      c_underflow_low => 0,
-      c_use_common_overflow => 0,
-      c_use_common_underflow => 0,
-      c_use_default_settings => 0,
-      c_use_dout_rst => 1,
-      c_use_ecc => 0,
-      c_use_ecc_axis => 0,
-      c_use_ecc_rach => 0,
-      c_use_ecc_rdch => 0,
-      c_use_ecc_wach => 0,
-      c_use_ecc_wdch => 0,
-      c_use_ecc_wrch => 0,
-      c_use_embedded_reg => 0,
-      c_use_fifo16_flags => 0,
-      c_use_fwft_data_count => 1,
-      c_valid_low => 0,
-      c_wach_type => 0,
-      c_wdch_type => 0,
-      c_wr_ack_low => 0,
-      c_wr_data_count_width => 5,
-      c_wr_depth => 16,
-      c_wr_depth_axis => 1024,
-      c_wr_depth_rach => 16,
-      c_wr_depth_rdch => 1024,
-      c_wr_depth_wach => 16,
-      c_wr_depth_wdch => 1024,
-      c_wr_depth_wrch => 16,
-      c_wr_freq => 1,
-      c_wr_pntr_width => 4,
-      c_wr_pntr_width_axis => 10,
-      c_wr_pntr_width_rach => 4,
-      c_wr_pntr_width_rdch => 10,
-      c_wr_pntr_width_wach => 4,
-      c_wr_pntr_width_wdch => 10,
-      c_wr_pntr_width_wrch => 4,
-      c_wr_response_latency => 1,
-      c_wrch_type => 0
+architecture STRUCTURE of reset_builtin is
+  signal rd_rst_reg_22 : STD_LOGIC; 
+  signal wr_rst_reg_28 : STD_LOGIC; 
+  signal NlwRenamedSig_OI_INT_RST_I : STD_LOGIC_VECTOR ( 0 downto 0 ); 
+  signal NlwRenamedSignal_RD_RST_I : STD_LOGIC_VECTOR ( 0 downto 0 ); 
+  signal power_on_rd_rst : STD_LOGIC_VECTOR ( 5 downto 0 ); 
+  signal power_on_wr_rst : STD_LOGIC_VECTOR ( 5 downto 0 ); 
+  signal rd_rst_fb : STD_LOGIC_VECTOR ( 4 downto 0 ); 
+  signal wr_rst_fb : STD_LOGIC_VECTOR ( 4 downto 0 ); 
+begin
+  RD_RST_I(1) <= NlwRenamedSignal_RD_RST_I(0);
+  RD_RST_I(0) <= NlwRenamedSignal_RD_RST_I(0);
+  INT_RST_I(1) <= NlwRenamedSig_OI_INT_RST_I(0);
+  INT_RST_I(0) <= NlwRenamedSig_OI_INT_RST_I(0);
+  XST_GND : GND
+    port map (
+      G => NlwRenamedSig_OI_INT_RST_I(0)
     );
--- synthesis translate_on
-BEGIN
--- synthesis translate_off
-U0 : wrapped_timestamp_fifo
-  PORT MAP (
-    clk => clk,
-    rst => rst,
-    din => din,
-    wr_en => wr_en,
-    rd_en => rd_en,
-    dout => dout,
-    full => full,
-    empty => empty,
-    valid => valid
-  );
+  rd_rst_reg : FDPE
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => RD_CLK,
+      CE => rd_rst_fb(0),
+      D => NlwRenamedSig_OI_INT_RST_I(0),
+      PRE => RST,
+      Q => rd_rst_reg_22
+    );
+  wr_rst_fb_0 : FD
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => WR_CLK,
+      D => wr_rst_fb(1),
+      Q => wr_rst_fb(0)
+    );
+  wr_rst_fb_1 : FD
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => WR_CLK,
+      D => wr_rst_fb(2),
+      Q => wr_rst_fb(1)
+    );
+  wr_rst_fb_2 : FD
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => WR_CLK,
+      D => wr_rst_fb(3),
+      Q => wr_rst_fb(2)
+    );
+  wr_rst_fb_3 : FD
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => WR_CLK,
+      D => wr_rst_fb(4),
+      Q => wr_rst_fb(3)
+    );
+  wr_rst_fb_4 : FD
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => WR_CLK,
+      D => wr_rst_reg_28,
+      Q => wr_rst_fb(4)
+    );
+  power_on_rd_rst_0 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => RD_CLK,
+      D => power_on_rd_rst(1),
+      Q => power_on_rd_rst(0)
+    );
+  power_on_rd_rst_1 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => RD_CLK,
+      D => power_on_rd_rst(2),
+      Q => power_on_rd_rst(1)
+    );
+  power_on_rd_rst_2 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => RD_CLK,
+      D => power_on_rd_rst(3),
+      Q => power_on_rd_rst(2)
+    );
+  power_on_rd_rst_3 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => RD_CLK,
+      D => power_on_rd_rst(4),
+      Q => power_on_rd_rst(3)
+    );
+  power_on_rd_rst_4 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => RD_CLK,
+      D => power_on_rd_rst(5),
+      Q => power_on_rd_rst(4)
+    );
+  power_on_rd_rst_5 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => RD_CLK,
+      D => NlwRenamedSig_OI_INT_RST_I(0),
+      Q => power_on_rd_rst(5)
+    );
+  power_on_wr_rst_0 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => WR_CLK,
+      D => power_on_wr_rst(1),
+      Q => power_on_wr_rst(0)
+    );
+  power_on_wr_rst_1 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => WR_CLK,
+      D => power_on_wr_rst(2),
+      Q => power_on_wr_rst(1)
+    );
+  power_on_wr_rst_2 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => WR_CLK,
+      D => power_on_wr_rst(3),
+      Q => power_on_wr_rst(2)
+    );
+  power_on_wr_rst_3 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => WR_CLK,
+      D => power_on_wr_rst(4),
+      Q => power_on_wr_rst(3)
+    );
+  power_on_wr_rst_4 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => WR_CLK,
+      D => power_on_wr_rst(5),
+      Q => power_on_wr_rst(4)
+    );
+  power_on_wr_rst_5 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => WR_CLK,
+      D => NlwRenamedSig_OI_INT_RST_I(0),
+      Q => power_on_wr_rst(5)
+    );
+  wr_rst_reg : FDPE
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => WR_CLK,
+      CE => wr_rst_fb(0),
+      D => NlwRenamedSig_OI_INT_RST_I(0),
+      PRE => RST,
+      Q => wr_rst_reg_28
+    );
+  rd_rst_fb_0 : FD
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => RD_CLK,
+      D => rd_rst_fb(1),
+      Q => rd_rst_fb(0)
+    );
+  rd_rst_fb_1 : FD
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => RD_CLK,
+      D => rd_rst_fb(2),
+      Q => rd_rst_fb(1)
+    );
+  rd_rst_fb_2 : FD
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => RD_CLK,
+      D => rd_rst_fb(3),
+      Q => rd_rst_fb(2)
+    );
+  rd_rst_fb_3 : FD
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => RD_CLK,
+      D => rd_rst_fb(4),
+      Q => rd_rst_fb(3)
+    );
+  rd_rst_fb_4 : FD
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => RD_CLK,
+      D => rd_rst_reg_22,
+      Q => rd_rst_fb(4)
+    );
+  RD_RST_I_1_1 : LUT2
+    generic map(
+      INIT => X"E"
+    )
+    port map (
+      I0 => rd_rst_reg_22,
+      I1 => power_on_rd_rst(0),
+      O => NlwRenamedSignal_RD_RST_I(0)
+    );
+
+end STRUCTURE;
+
 -- synthesis translate_on
 
-END timestamp_fifo_a;
+-- synthesis translate_off
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+library UNISIM;
+use UNISIM.VCOMPONENTS.ALL;
+use UNISIM.VPKG.ALL;
+
+entity timestamp_fifo is
+  port (
+    rd_en : in STD_LOGIC := 'X'; 
+    rst : in STD_LOGIC := 'X'; 
+    empty : out STD_LOGIC; 
+    wr_en : in STD_LOGIC := 'X'; 
+    rd_clk : in STD_LOGIC := 'X'; 
+    valid : out STD_LOGIC; 
+    full : out STD_LOGIC; 
+    wr_clk : in STD_LOGIC := 'X'; 
+    dout : out STD_LOGIC_VECTOR ( 15 downto 0 ); 
+    din : in STD_LOGIC_VECTOR ( 15 downto 0 ) 
+  );
+end timestamp_fifo;
+
+architecture STRUCTURE of timestamp_fifo is
+  component reset_builtin
+    port (
+      CLK : in STD_LOGIC := 'X'; 
+      RST : in STD_LOGIC := 'X'; 
+      RD_CLK : in STD_LOGIC := 'X'; 
+      INT_CLK : in STD_LOGIC := 'X'; 
+      WR_CLK : in STD_LOGIC := 'X'; 
+      RD_RST_I : out STD_LOGIC_VECTOR ( 1 downto 0 ); 
+      WR_RST_I : out STD_LOGIC_VECTOR ( 1 downto 0 ); 
+      INT_RST_I : out STD_LOGIC_VECTOR ( 1 downto 0 ) 
+    );
+  end component;
+  signal N0 : STD_LOGIC; 
+  signal NlwRenamedSig_OI_empty : STD_LOGIC; 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_RD_RST_I_1_UNCONNECTED : STD_LOGIC; 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_WR_RST_I_1_UNCONNECTED : STD_LOGIC; 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_WR_RST_I_0_UNCONNECTED : STD_LOGIC; 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_INT_RST_I_1_UNCONNECTED : STD_LOGIC; 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_INT_RST_I_0_UNCONNECTED : STD_LOGIC; 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_ALMOSTEMPTY_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_ALMOSTFULL_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDERR_UNCONNECTED : STD_LOGIC; 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRERR_UNCONNECTED : STD_LOGIC; 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_DOP_1_UNCONNECTED : STD_LOGIC; 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_DOP_0_UNCONNECTED : STD_LOGIC; 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_11_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_10_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_9_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_8_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_7_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_6_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_5_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_4_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_3_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_2_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_1_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_0_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_11_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_10_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_9_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_8_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_7_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_6_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_5_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_4_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_3_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_2_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_1_UNCONNECTED : STD_LOGIC;
+ 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_0_UNCONNECTED : STD_LOGIC;
+ 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i : STD_LOGIC_VECTOR ( 0 downto 0 ); 
+begin
+  empty <= NlwRenamedSig_OI_empty;
+  XST_GND : GND
+    port map (
+      G => N0
+    );
+  U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt : reset_builtin
+    port map (
+      CLK => N0,
+      RST => rst,
+      RD_CLK => rd_clk,
+      INT_CLK => N0,
+      WR_CLK => wr_clk,
+      RD_RST_I(1) => NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_RD_RST_I_1_UNCONNECTED,
+      RD_RST_I(0) => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
+      WR_RST_I(1) => NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_WR_RST_I_1_UNCONNECTED,
+      WR_RST_I(0) => NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_WR_RST_I_0_UNCONNECTED,
+      INT_RST_I(1) => NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_INT_RST_I_1_UNCONNECTED,
+      INT_RST_I(0) => NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_INT_RST_I_0_UNCONNECTED
+    );
+  U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18 : FIFO18
+    generic map(
+      ALMOST_FULL_OFFSET => X"004",
+      SIM_MODE => "SAFE",
+      DATA_WIDTH => 18,
+      DO_REG => 1,
+      EN_SYN => FALSE,
+      FIRST_WORD_FALL_THROUGH => TRUE,
+      ALMOST_EMPTY_OFFSET => X"008"
+    )
+    port map (
+      RDEN => rd_en,
+      WREN => wr_en,
+      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
+      RDCLK => rd_clk,
+      WRCLK => wr_clk,
+      ALMOSTEMPTY => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_ALMOSTEMPTY_UNCONNECTED,
+      ALMOSTFULL => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_ALMOSTFULL_UNCONNECTED,
+      EMPTY => NlwRenamedSig_OI_empty,
+      FULL => full,
+      RDERR => NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDERR_UNCONNECTED,
+      WRERR => NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRERR_UNCONNECTED,
+      DI(15) => din(15),
+      DI(14) => din(14),
+      DI(13) => din(13),
+      DI(12) => din(12),
+      DI(11) => din(11),
+      DI(10) => din(10),
+      DI(9) => din(9),
+      DI(8) => din(8),
+      DI(7) => din(7),
+      DI(6) => din(6),
+      DI(5) => din(5),
+      DI(4) => din(4),
+      DI(3) => din(3),
+      DI(2) => din(2),
+      DI(1) => din(1),
+      DI(0) => din(0),
+      DIP(1) => N0,
+      DIP(0) => N0,
+      DO(15) => dout(15),
+      DO(14) => dout(14),
+      DO(13) => dout(13),
+      DO(12) => dout(12),
+      DO(11) => dout(11),
+      DO(10) => dout(10),
+      DO(9) => dout(9),
+      DO(8) => dout(8),
+      DO(7) => dout(7),
+      DO(6) => dout(6),
+      DO(5) => dout(5),
+      DO(4) => dout(4),
+      DO(3) => dout(3),
+      DO(2) => dout(2),
+      DO(1) => dout(1),
+      DO(0) => dout(0),
+      DOP(1) => NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_DOP_1_UNCONNECTED,
+      DOP(0) => NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_DOP_0_UNCONNECTED,
+      RDCOUNT(11) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_11_UNCONNECTED,
+      RDCOUNT(10) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_10_UNCONNECTED,
+      RDCOUNT(9) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_9_UNCONNECTED,
+      RDCOUNT(8) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_8_UNCONNECTED,
+      RDCOUNT(7) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_7_UNCONNECTED,
+      RDCOUNT(6) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_6_UNCONNECTED,
+      RDCOUNT(5) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_5_UNCONNECTED,
+      RDCOUNT(4) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_4_UNCONNECTED,
+      RDCOUNT(3) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_3_UNCONNECTED,
+      RDCOUNT(2) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_2_UNCONNECTED,
+      RDCOUNT(1) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_1_UNCONNECTED,
+      RDCOUNT(0) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_RDCOUNT_0_UNCONNECTED,
+      WRCOUNT(11) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_11_UNCONNECTED,
+      WRCOUNT(10) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_10_UNCONNECTED,
+      WRCOUNT(9) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_9_UNCONNECTED,
+      WRCOUNT(8) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_8_UNCONNECTED,
+      WRCOUNT(7) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_7_UNCONNECTED,
+      WRCOUNT(6) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_6_UNCONNECTED,
+      WRCOUNT(5) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_5_UNCONNECTED,
+      WRCOUNT(4) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_4_UNCONNECTED,
+      WRCOUNT(3) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_3_UNCONNECTED,
+      WRCOUNT(2) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_2_UNCONNECTED,
+      WRCOUNT(1) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_1_UNCONNECTED,
+      WRCOUNT(0) => 
+NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gf18_sngfifo18_WRCOUNT_0_UNCONNECTED
+    );
+  U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_VALID1_INV_0 : INV
+    port map (
+      I => NlwRenamedSig_OI_empty,
+      O => valid
+    );
+
+end STRUCTURE;
+
+-- synthesis translate_on

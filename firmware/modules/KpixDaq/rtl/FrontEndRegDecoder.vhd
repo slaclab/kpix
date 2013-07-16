@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-07
--- Last update: 2013-07-08
+-- Last update: 2013-07-12
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -26,7 +26,6 @@ use work.TriggerPkg.all;
 use work.KpixClockGenPkg.all;
 use work.KpixLocalPkg.all;
 use work.KpixDataRxPkg.all;
-use work.EvrPkg.all;
 
 entity FrontEndRegDecoder is
    
@@ -48,10 +47,6 @@ entity FrontEndRegDecoder is
       -- Interface to KPIX reg controller (reuse FrontEndRegCntl types)
       kpixRegCntlOut : in  FrontEndRegCntlInType;
       kpixRegCntlIn  : out FrontEndRegCntlOutType;
-
-      -- Interface to EVR module
-      evrIn  : out EvrInType;
-      evrOut : in  EvrOutType;
 
       -- Interface to local module registers
       triggerRegsIn      : out TriggerRegsInType;
@@ -78,7 +73,6 @@ architecture rtl of FrontEndRegDecoder is
    constant KPIX_CONFIG_REG_ADDR_C         : natural := 6;
    constant TIMESTAMP_CONTROL_REG_ADDR_C   : natural := 7;
    constant ACQUISITION_CONTROL_REG_ADDR_C : natural := 8;
-   constant EVR_ERROR_COUNT_REG_ADDR_C     : natural := 9;
    constant SOFTWARE_RESET_REG_ADDR_C      : natural := 10;
 
    constant KPIX_DATA_RX_MODE_REG_ADDR_C              : natural := 0;  --IntegerArray := list(256, NUM_KPIX_MODULES_G, 8);  --
@@ -97,15 +91,15 @@ architecture rtl of FrontEndRegDecoder is
 
 
    type RegType is record
-      frontEndRegCntlIn     : FrontEndRegCntlInType;   -- Outputs to FrontEnd module
-      softwareReset         : sl;
-      evrIn                 : EvrInType;
-      kpixRegCntlIn         : FrontEndRegCntlOutType;  -- Outputs to KpixRegCntl module
-      triggerRegsIn         : TriggerRegsInType;
-      kpixConfigRegs        : KpixConfigRegsType;
-      kpixClockGenRegsIn    : KpixClockGenRegsInType;
-      kpixLocalRegsIn       : KpixLocalRegsInType;
-      kpixDataRxRegsIn      : KpixDataRxRegsInArray(NUM_KPIX_MODULES_G-1 downto 0);
+      kpixRegCntlOut     : FrontEndRegCntlInType;   -- pipeline delay
+      frontEndRegCntlIn  : FrontEndRegCntlInType;   -- Outputs to FrontEnd module
+      softwareReset      : sl;
+      kpixRegCntlIn      : FrontEndRegCntlOutType;  -- Outputs to KpixRegCntl module
+      triggerRegsIn      : TriggerRegsInType;
+      kpixConfigRegs     : KpixConfigRegsType;
+      kpixClockGenRegsIn : KpixClockGenRegsInType;
+      kpixLocalRegsIn    : KpixLocalRegsInType;
+      kpixDataRxRegsIn   : KpixDataRxRegsInArray(NUM_KPIX_MODULES_G-1 downto 0);
    end record RegType;
 
    signal r, rin : RegType;
@@ -115,6 +109,10 @@ begin
    sync : process (sysClk, sysRst) is
    begin
       if (sysRst = '1') then
+         r.kpixRegCntlOut.regAck    <= '0'             after DELAY_G;
+         r.kpixRegCntlOut.regDataIn <= (others => '0') after DELAY_G;
+         r.kpixRegCntlOut.regFail   <= '0'             after DELAY_G;
+
          r.frontEndRegCntlIn.regAck    <= '0'             after DELAY_G;
          r.frontEndRegCntlIn.regDataIn <= (others => '0') after DELAY_G;
          r.frontEndRegCntlIn.regFail   <= '0'             after DELAY_G;
@@ -126,8 +124,6 @@ begin
          r.kpixRegCntlIn.regOp      <= '0'             after DELAY_G;
          r.kpixRegCntlIn.regAddr    <= (others => '0') after DELAY_G;
          r.kpixRegCntlIn.regDataOut <= (others => '0') after DELAY_G;
-
-         r.evrIn.countReset <= '0' after DELAY_G;
 
          r.triggerRegsIn.extTriggerSrc        <= (others => '0')             after DELAY_G;
          r.triggerRegsIn.calibrate            <= '0'                         after DELAY_G;
@@ -160,12 +156,15 @@ begin
       end if;
    end process sync;
 
-   comb : process (r, frontEndRegCntlOut, kpixDataRxRegsOut, kpixRegCntlOut, evrOut) is
+   comb : process (r, frontEndRegCntlOut, kpixDataRxRegsOut, kpixRegCntlOut) is
       variable v            : RegType;
       variable addrIndexVar : integer;
       variable kpixIndexVar : integer;
    begin
       v := r;
+
+      -- Pipeline 1 cycle to ease timing across boundary
+      v.kpixRegCntlOut := kpixRegCntlOut;
 
       v.frontEndRegCntlIn.regAck    := '0';
       v.frontEndRegCntlIn.regDataIn := (others => '0');
@@ -180,7 +179,6 @@ begin
       -- Pulse these for 1 cycle only when accessed
       v.kpixClockGenRegsIn.newValue := '0';
       v.kpixConfigRegs.kpixReset    := '0';
-      v.evrIn.countReset            := '0';
       for i in NUM_KPIX_MODULES_G-1 downto 0 loop
          v.kpixDataRxRegsIn(i).resetHeaderParityErrorCount := '0';
          v.kpixDataRxRegsIn(i).resetDataParityErrorCount   := '0';
@@ -193,7 +191,7 @@ begin
          -- Pass FrontEndCntl io right though
          -- Will revert back when frontEndRegCntlOut.regReq falls
          v.kpixRegCntlIn     := frontEndRegCntlOut;
-         v.frontEndRegCntlIn := kpixRegCntlOut;
+         v.frontEndRegCntlIn := r.kpixRegCntlOut;
 
       -- Wait for an access request
       elsif (frontEndRegCntlOut.regAddr(ADDR_BLOCK_RANGE_C) = LOCAL_REGS_ADDR_C and
@@ -284,12 +282,6 @@ begin
                      v.triggerRegsIn.acquisitionSrc := frontEndRegCntlOut.regDataOut(1 downto 0);
                   end if;
 
-               when EVR_ERROR_COUNT_REG_ADDR_C =>
-                  -- Might need to sychronize this.
-                  v.frontEndRegCntlIn.regDataIn(15 downto 0) := evrOut.errors;
-                  if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
-                     v.evrIn.countReset := '1';
-                  end if;
 
                when SOFTWARE_RESET_REG_ADDR_C =>
                   v.frontEndRegCntlIn.regDataIn(0) := r.softwareReset;
@@ -300,7 +292,7 @@ begin
                when others =>
                   null;
             end case;
-         else            -- (frontEndRegCntlOut.regAddr(8) = '1')
+         else                           -- (frontEndRegCntlOut.regAddr(8) = '1')
             -- Access per KpixDataRx registers
             kpixIndexVar := to_integer(unsigned(frontEndRegCntlOut.regAddr(7 downto 3)));
             addrIndexVar := to_integer(unsigned(frontEndRegCntlOut.regAddr(2 downto 0)));
@@ -355,7 +347,6 @@ begin
       kpixClockGenRegsIn <= r.kpixClockGenRegsIn;
       kpixLocalRegsIn    <= r.kpixLocalRegsIn;
       kpixDataRxRegsIn   <= r.kpixDataRxRegsIn;
-      evrIn              <= r.evrIn;
       
    end process comb;
 
