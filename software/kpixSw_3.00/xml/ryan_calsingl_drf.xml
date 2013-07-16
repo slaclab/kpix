@@ -11,7 +11,7 @@
       <DataBase>/u1/kpix/data/</DataBase>
       <DataFile>/u1/kpix/data/</DataFile>
       <DebugCmdTime>True</DebugCmdTime>
-      <DebugEnable>False</DebugEnable>
+      <DebugEnable>True</DebugEnable>
       <RunCount>1000</RunCount>
       <RunRate>No Limit</RunRate>
       <cntrlFpga>

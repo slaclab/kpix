@@ -181,10 +181,7 @@ ConFpga::ConFpga ( uint destination, uint index, uint kpixCount, Device *parent 
    acqSrc[2] = "CmosA";
    getVariable("AcquisitionTrigger")->setEnums(acqSrc);
 
-   //EVR Error Count Register
-   addRegister(new Register("EvrErrorCount", 0x01000009));
-   addVariable(new Variable("EvrErrorCount", Variable::Status));
-   getVariable("EvrErrorCount")->setDescription("Event Receiver Error Count");
+
 
    //Allows firmware to be fully reset
    addRegister(new Register("SoftwareReset", 0x0100000A));
@@ -195,46 +192,52 @@ ConFpga::ConFpga ( uint destination, uint index, uint kpixCount, Device *parent 
 
       tmp.str("");
       tmp << "KpixRxMode_" << setw(2) << setfill('0') << dec << i;
-      addRegister(new Register(tmp.str(), (0x01000100 + i*5 + 0)));
+      addRegister(new Register(tmp.str(), (0x01000100 + i*8 + 0)));
 
       tmp.str("");
       tmp << "KpixRxHeaderPerr_" << setw(2) << setfill('0') << dec << i;
-      addRegister(new Register(tmp.str(), (0x01000100 + i*5 + 1)));
+      addRegister(new Register(tmp.str(), (0x01000100 + i*8 + 1)));
       addVariable(new Variable(tmp.str(),Variable::Status));
       getVariable(tmp.str())->setDescription("Kpix header parity error count.");
 
       tmp.str("");
       tmp << "KpixRxDataPerr_" << setw(2) << setfill('0') << dec << i;
-      addRegister(new Register(tmp.str(), (0x01000100 + i*5 + 2)));
+      addRegister(new Register(tmp.str(), (0x01000100 + i*8 + 2)));
       addVariable(new Variable(tmp.str(),Variable::Status));
       getVariable(tmp.str())->setDescription("Kpix data parity error count.");
 
       tmp.str("");
       tmp << "KpixRxMarkerError_" << setw(2) << setfill('0') << dec << i;
-      addRegister(new Register(tmp.str(), (0x01000100 + i*5 + 3)));
+      addRegister(new Register(tmp.str(), (0x01000100 + i*8 + 3)));
       addVariable(new Variable(tmp.str(),Variable::Status));
       getVariable(tmp.str())->setDescription("Kpix marker error count.");
 
       tmp.str("");
       tmp << "KpixRxOverflowError_" << setw(2) << setfill('0') << dec << i;
-      addRegister(new Register(tmp.str(), (0x01000100 + i*5 + 4)));
+      addRegister(new Register(tmp.str(), (0x01000100 + i*8 + 4)));
       addVariable(new Variable(tmp.str(),Variable::Status));
       getVariable(tmp.str())->setDescription("Kpix overflow error count.");
    }
 
    // EVR Module Registers
    uint evrBaseAddr = 0x01200000;
-   addRegister(new Register("EvrEnable", evrBaseAddr + 0x00000100));
+   addRegister(new Register("EvrEnable", evrBaseAddr + 0x00000000));
+   addVariable(new Variable("EvrEnable", Variable::Configuration));
+   getVariable("EvrEnable")->setTrueFalse();
 
-   addRegister(new Register("EvrDelay", evrBaseAddr + 0x00000101));
-   addVariable(new Variable("EvrDelay", Variable::Configuration));
-   getVariable("EvrDelay")->setDescription("EVR pulse delay");
-   getVariable("EvrDelay")->setComp(0,(1.0/119.0),0,"mS");
-   getVariable("EvrDelay")->setRange(0,999999999);
+   addRegister(new Register("EvrTriggerDelay", evrBaseAddr + 0x00000001));
+   addVariable(new Variable("EvrTriggerDelay", Variable::Configuration));
+   getVariable("EvrTriggerDelay")->setDescription("EVR pulse delay");
+   getVariable("EvrTriggerDelay")->setComp(0,(1.0/119.0),0,"mS");
+   getVariable("EvrTriggerDelay")->setRange(0,999999999);
 
-   addRegister(new Register("EvrWidth", evrBaseAddr + 0x00000102));
+   addRegister(new Register("EvrTriggerWidth", evrBaseAddr + 0x00000002));
+   addVariable(new Variable("EvrTriggerWidth", Variable::Configuration));
+   getVariable("EvrTriggerWidth")->setDescription("EVR pulse width");
+   getVariable("EvrTriggerWidth")->setComp(0,(1.0/119.0),0,"mS");
+   getVariable("EvrTriggerWidth")->setRange(0,999999999);
 
-   addRegister(new Register("EvrOpCode", evrBaseAddr + 0x00000146));
+   addRegister(new Register("EvrOpCode", evrBaseAddr + 0x00000003));
    addVariable(new Variable("EvrOpCode", Variable::Configuration));
    getVariable("EvrOpCode")->setDescription("OpCode for internal EVR trigger");
    vector<string> evrCodes;
@@ -247,7 +250,11 @@ ConFpga::ConFpga ( uint destination, uint index, uint kpixCount, Device *parent 
    evrCodes[5] = "1Hz";
    evrCodes[6] = "1Hz_Alt";
    getVariable("EvrOpCode")->setEnums(evrCodes);
-   getVariable("EvrOpCode")->setHidden(true);
+
+      //EVR Error Count Register
+   addRegister(new Register("EvrErrorCount", evrBaseAddr + 0x00000004));
+   addVariable(new Variable("EvrErrorCount", Variable::Status));
+   getVariable("EvrErrorCount")->setDescription("Event Receiver Error Count");
 
 
    // Commands
@@ -306,7 +313,8 @@ void ConFpga::command ( string name, string arg) {
          tmp << "KpixRxOverflowError_" << setw(2) << setfill('0') << dec << i;
          writeRegister(getRegister(tmp.str()),true,true);
       }
-      //writeRegister(getRegister("EvrErrorCount"),true,true);
+
+      writeRegister(getRegister("EvrErrorCount"),true,true);
 
       REGISTER_UNLOCK
    }
@@ -350,8 +358,8 @@ void ConFpga::readStatus ( ) {
       getVariable(tmp.str())->setInt(getRegister(tmp.str())->get());
    }
 
-   //readRegister(getRegister("EvrErrorCount"));
-   //getVariable("EvrErrorCount")->setInt(getRegister("EvrErrorCount")->get());
+   readRegister(getRegister("EvrErrorCount"));
+   getVariable("EvrErrorCount")->setInt(getRegister("EvrErrorCount")->get());
 
    // Sub devices
    Device::readStatus();
@@ -393,11 +401,17 @@ void ConFpga::readConfig ( ) {
    readRegister(getRegister("AcquisitionConfig"));
    getVariable("AcquisitionTrigger")->setInt(getRegister("TimestampConfig")->get(0,0x3));
 
-   //readRegister(getRegister("EvrDelay"));
-   //getVariable("EvrDelay")->setInt(getRegister("EvrDelay")->get()); //Mask register maybe?
+   readRegister(getRegister("EvrEnable"));
+   getVariable("EvrEnable")->setInt(getRegister("EvrEnable")->get(0,0x1)); //Mask register maybe?
+ 
+   readRegister(getRegister("EvrTriggerDelay"));
+   getVariable("EvrTriggerDelay")->setInt(getRegister("EvrTriggerDelay")->get(0,0xFFFF)); //Mask register maybe?
+   
+   readRegister(getRegister("EvrTriggerWidth"));
+   getVariable("EvrTriggerWidth")->setInt(getRegister("EvrTriggerWidth")->get(0,0xFFFF)); //Mask register maybe?
 
-   //readRegister(getRegister("EvrOpCode"));
-   //getVariable("EvrOpCode")->setInt(getRegister("EvrOpCode")->get(0,0x7));
+   readRegister(getRegister("EvrOpCode"));
+   getVariable("EvrOpCode")->setInt(getRegister("EvrOpCode")->get(0,0xFF)-40);
 
    // Sub devices
    Device::readConfig();
@@ -407,7 +421,6 @@ void ConFpga::readConfig ( ) {
 // Method to write configuration registers
 void ConFpga::writeConfig ( bool force ) {
    stringstream tmpA;
-   stringstream tmpB;
 
    REGISTER_LOCK
 
@@ -442,27 +455,26 @@ void ConFpga::writeConfig ( bool force ) {
    getRegister("AcquisitionConfig")->set(getVariable("AcquisitionTrigger")->getInt(),0,0x3);
    writeRegister(getRegister("AcquisitionConfig"),force);
 
-   //getRegister("EvrDelay")->set(getVariable("EvrDelay")->getInt());
-   //writeRegister(getRegister("EvrDelay"),force);
+   getRegister("EvrEnable")->set(getVariable("EvrEnable")->getInt(),0,0x1);
+   writeRegister(getRegister("EvrEnable"),force);
 
-   //getRegister("EvrOpCode")->set(getVariable("EvrOpCode")->getInt(),0,0x7);
-   //writeRegister(getRegister("EvrOpCode"),force);
+   getRegister("EvrTriggerDelay")->set(getVariable("EvrTriggerDelay")->getInt(),0,0xFFFF);
+   writeRegister(getRegister("EvrTriggerDelay"),force);
+
+   getRegister("EvrTriggerWidth")->set(getVariable("EvrTriggerWidth")->getInt(),0,0xFFFF);
+   writeRegister(getRegister("EvrTriggerWidth"),force);
+
+   getRegister("EvrOpCode")->set(getVariable("EvrOpCode")->getInt()+40,0,0xFF);
+   writeRegister(getRegister("EvrOpCode"),force);
 
    // KPIX support registers
    for (uint i=0; i < (kpixCount-1); i++) {
 
       tmpA.str("");
       tmpA << "KpixRxMode_" << setw(2) << setfill('0') << dec << i;
-
-      tmpB.str("");
-      tmpB << "KpixRxEn_" << setw(2) << setfill('0') << dec << i;
       getRegister(tmpA.str())->set(device("kpixAsic",i)->getInt("Enabled"),0,0x1);
-
-//       tmpB.str("");
-//       tmpB << "KpixRxRaw_" << setw(2) << setfill('0') << dec << i;
-//       getRegister(tmpA.str())->set(getVariable("KpixRxRaw")->getInt(),1,0x1);
-
       writeRegister(getRegister(tmpA.str()),force);
+      
    }
 
    // Sub devices
@@ -483,8 +495,10 @@ void ConFpga::verifyConfig ( ) {
    verifyRegister(getRegister("KpixConfig"));
    verifyRegister(getRegister("TimestampConfig"));
    verifyRegister(getRegister("AcquisitionConfig"));
-   //verifyRegister(getRegister("EvrDelay"));
-   //verifyRegister(getRegister("EvrOpCode"));
+   verifyRegister(getRegister("EvrEnable"));
+   verifyRegister(getRegister("EvrTriggerDelay"));
+   verifyRegister(getRegister("EvrTriggerWidth"));
+   verifyRegister(getRegister("EvrOpCode"));
 
    // KPIX support registers
    for (uint i=0; i < (kpixCount-1); i++) {
