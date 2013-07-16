@@ -19,7 +19,7 @@ use ieee.std_logic_1164.all;
 
 package Version is
 
-  constant FPGA_VERSION_C : std_logic_vector(31 downto 0) := x"C0000112";  -- MAKE_VERSION
+  constant FPGA_VERSION_C : std_logic_vector(31 downto 0) := x"D0000000";  -- MAKE_VERSION
 
 end Version;
 
@@ -39,5 +39,7 @@ end Version;
 -- 05/14/2013 (0xC0000110): Fixed precharge clock period bug
 -- 05/14/2013 (0xC0000111): Use updated StdLib
 -- 07/03/2013 (0xC0000112): Fixed multiple StartAcquire bug, renumbered KpixDataRx register addresses
+-- 07/08/2013 (0xC0000113): Moved Trigger module to 200 MHz clock
+-- 07/15/2013 (0xD0000000): Fixed multiple StartAcquire bug, renumbered KpixDataRx register addresses
 -------------------------------------------------------------------------------
 

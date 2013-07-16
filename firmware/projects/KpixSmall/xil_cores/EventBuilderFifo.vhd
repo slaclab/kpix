@@ -4,20 +4,20 @@
 --   ____  ____
 --  /   /\/   /
 -- /___/  \  /    Vendor: Xilinx
--- \   \   \/     Version: P.28xd
+-- \   \   \/     Version: P.58f
 --  \   \         Application: netgen
 --  /   /         Filename: EventBuilderFifo.vhd
--- /___/   /\     Timestamp: Fri Sep 28 16:08:39 2012
+-- /___/   /\     Timestamp: Tue Jul  9 13:14:06 2013
 -- \   \  /  \ 
 --  \___\/\___\
 --             
--- Command	: -w -sim -ofmt vhdl /afs/slac.stanford.edu/u/re/bareese/projects/kpix/kpix-trunk/firmware/projects/KpixSmall/xil_cores/tmp/_cg/EventBuilderFifo.ngc /afs/slac.stanford.edu/u/re/bareese/projects/kpix/kpix-trunk/firmware/projects/KpixSmall/xil_cores/tmp/_cg/EventBuilderFifo.vhd 
+-- Command	: -w -sim -ofmt vhdl /afs/slac.stanford.edu/u/re/bareese/projects/kpix/trunk/firmware/projects/KpixSmall/xil_cores/tmp/_cg/EventBuilderFifo.ngc /afs/slac.stanford.edu/u/re/bareese/projects/kpix/trunk/firmware/projects/KpixSmall/xil_cores/tmp/_cg/EventBuilderFifo.vhd 
 -- Device	: 5vlx30tff323-2
--- Input file	: /afs/slac.stanford.edu/u/re/bareese/projects/kpix/kpix-trunk/firmware/projects/KpixSmall/xil_cores/tmp/_cg/EventBuilderFifo.ngc
--- Output file	: /afs/slac.stanford.edu/u/re/bareese/projects/kpix/kpix-trunk/firmware/projects/KpixSmall/xil_cores/tmp/_cg/EventBuilderFifo.vhd
--- # of Entities	: 1
+-- Input file	: /afs/slac.stanford.edu/u/re/bareese/projects/kpix/trunk/firmware/projects/KpixSmall/xil_cores/tmp/_cg/EventBuilderFifo.ngc
+-- Output file	: /afs/slac.stanford.edu/u/re/bareese/projects/kpix/trunk/firmware/projects/KpixSmall/xil_cores/tmp/_cg/EventBuilderFifo.vhd
+-- # of Entities	: 2
 -- Design Name	: EventBuilderFifo
--- Xilinx	: /afs/slac.stanford.edu/g/reseng/vol14/Xilinx/14.2/14.2/ISE_DS/ISE/
+-- Xilinx	: /afs/slac.stanford.edu/g/reseng/vol15/Xilinx/14.5/ISE_DS/ISE/
 --             
 -- Purpose:    
 --     This VHDL netlist is a verification model and uses simulation 
@@ -32,6 +32,167 @@
 --             
 --------------------------------------------------------------------------------
 
+
+-- synthesis translate_off
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+library UNISIM;
+use UNISIM.VCOMPONENTS.ALL;
+use UNISIM.VPKG.ALL;
+
+entity reset_builtin is
+  port (
+    CLK : in STD_LOGIC := 'X'; 
+    RST : in STD_LOGIC := 'X'; 
+    RD_CLK : in STD_LOGIC := 'X'; 
+    INT_CLK : in STD_LOGIC := 'X'; 
+    WR_CLK : in STD_LOGIC := 'X'; 
+    RD_RST_I : out STD_LOGIC_VECTOR ( 1 downto 0 ); 
+    WR_RST_I : out STD_LOGIC_VECTOR ( 1 downto 0 ); 
+    INT_RST_I : out STD_LOGIC_VECTOR ( 1 downto 0 ) 
+  );
+end reset_builtin;
+
+architecture STRUCTURE of reset_builtin is
+  signal wr_rst_reg_15 : STD_LOGIC; 
+  signal NlwRenamedSig_OI_INT_RST_I : STD_LOGIC_VECTOR ( 0 downto 0 ); 
+  signal NlwRenamedSignal_WR_RST_I : STD_LOGIC_VECTOR ( 0 downto 0 ); 
+  signal power_on_wr_rst : STD_LOGIC_VECTOR ( 5 downto 0 ); 
+  signal wr_rst_fb : STD_LOGIC_VECTOR ( 4 downto 0 ); 
+begin
+  RD_RST_I(1) <= NlwRenamedSignal_WR_RST_I(0);
+  RD_RST_I(0) <= NlwRenamedSignal_WR_RST_I(0);
+  WR_RST_I(1) <= NlwRenamedSignal_WR_RST_I(0);
+  WR_RST_I(0) <= NlwRenamedSignal_WR_RST_I(0);
+  INT_RST_I(1) <= NlwRenamedSig_OI_INT_RST_I(0);
+  INT_RST_I(0) <= NlwRenamedSig_OI_INT_RST_I(0);
+  XST_GND : GND
+    port map (
+      G => NlwRenamedSig_OI_INT_RST_I(0)
+    );
+  wr_rst_fb_0 : FD
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => CLK,
+      D => wr_rst_fb(1),
+      Q => wr_rst_fb(0)
+    );
+  wr_rst_fb_1 : FD
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => CLK,
+      D => wr_rst_fb(2),
+      Q => wr_rst_fb(1)
+    );
+  wr_rst_fb_2 : FD
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => CLK,
+      D => wr_rst_fb(3),
+      Q => wr_rst_fb(2)
+    );
+  wr_rst_fb_3 : FD
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => CLK,
+      D => wr_rst_fb(4),
+      Q => wr_rst_fb(3)
+    );
+  wr_rst_fb_4 : FD
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => CLK,
+      D => wr_rst_reg_15,
+      Q => wr_rst_fb(4)
+    );
+  power_on_wr_rst_0 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => CLK,
+      D => power_on_wr_rst(1),
+      Q => power_on_wr_rst(0)
+    );
+  power_on_wr_rst_1 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => CLK,
+      D => power_on_wr_rst(2),
+      Q => power_on_wr_rst(1)
+    );
+  power_on_wr_rst_2 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => CLK,
+      D => power_on_wr_rst(3),
+      Q => power_on_wr_rst(2)
+    );
+  power_on_wr_rst_3 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => CLK,
+      D => power_on_wr_rst(4),
+      Q => power_on_wr_rst(3)
+    );
+  power_on_wr_rst_4 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => CLK,
+      D => power_on_wr_rst(5),
+      Q => power_on_wr_rst(4)
+    );
+  power_on_wr_rst_5 : FD
+    generic map(
+      INIT => '1'
+    )
+    port map (
+      C => CLK,
+      D => NlwRenamedSig_OI_INT_RST_I(0),
+      Q => power_on_wr_rst(5)
+    );
+  wr_rst_reg : FDPE
+    generic map(
+      INIT => '0'
+    )
+    port map (
+      C => CLK,
+      CE => wr_rst_fb(0),
+      D => NlwRenamedSig_OI_INT_RST_I(0),
+      PRE => RST,
+      Q => wr_rst_reg_15
+    );
+  RD_RST_I_1_1 : LUT2
+    generic map(
+      INIT => X"E"
+    )
+    port map (
+      I0 => wr_rst_reg_15,
+      I1 => power_on_wr_rst(0),
+      O => NlwRenamedSignal_WR_RST_I(0)
+    );
+
+end STRUCTURE;
+
+-- synthesis translate_on
 
 -- synthesis translate_off
 library IEEE;
@@ -55,6 +216,18 @@ entity EventBuilderFifo is
 end EventBuilderFifo;
 
 architecture STRUCTURE of EventBuilderFifo is
+  component reset_builtin
+    port (
+      CLK : in STD_LOGIC := 'X'; 
+      RST : in STD_LOGIC := 'X'; 
+      RD_CLK : in STD_LOGIC := 'X'; 
+      INT_CLK : in STD_LOGIC := 'X'; 
+      WR_CLK : in STD_LOGIC := 'X'; 
+      RD_RST_I : out STD_LOGIC_VECTOR ( 1 downto 0 ); 
+      WR_RST_I : out STD_LOGIC_VECTOR ( 1 downto 0 ); 
+      INT_RST_I : out STD_LOGIC_VECTOR ( 1 downto 0 ) 
+    );
+  end component;
   signal N0 : STD_LOGIC; 
   signal N1 : STD_LOGIC; 
   signal N10 : STD_LOGIC; 
@@ -66,50 +239,53 @@ architecture STRUCTURE of EventBuilderFifo is
   signal N4 : STD_LOGIC; 
   signal N6 : STD_LOGIC; 
   signal N8 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_Mshreg_power_on_wr_rst_0_12 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_reg_19 : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_fifo : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_q_29 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_30 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_rstpot_31 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_q_36 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_37 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_rstpot_38 : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_rden_fifo : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_fifo : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_q_34 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_35 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_rstpot_36 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_q_41 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_42 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_rstpot_43 : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_rden_fifo : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_fifo : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_q_39 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_40 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_rstpot_41 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_q_46 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_47 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_rstpot_48 : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_rden_fifo : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_fifo : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_q_44 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_45 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_rstpot_46 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_q_51 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_52 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_rstpot_53 : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_rden_fifo : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_fifo : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_q_49 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_50 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_rstpot_51 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_q_56 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_57 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_rstpot_58 : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_rden_fifo : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_fifo : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_q_54 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_55 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_rstpot_56 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_q_61 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_62 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_rstpot_63 : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_rden_fifo : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_fifo : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_q_59 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_60 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_rstpot_61 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_q_66 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_67 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_rstpot_68 : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_rden_fifo : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_fifo : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_q_64 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_65 : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_rstpot_66 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_q_71 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_72 : STD_LOGIC; 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_rstpot_73 : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_rden_fifo : STD_LOGIC; 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_wr_ack_i : STD_LOGIC; 
   signal NlwRenamedSig_OI_empty : STD_LOGIC; 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_RD_RST_I_1_UNCONNECTED : STD_LOGIC; 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_RD_RST_I_0_UNCONNECTED : STD_LOGIC; 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_WR_RST_I_1_UNCONNECTED : STD_LOGIC; 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_INT_RST_I_1_UNCONNECTED : STD_LOGIC; 
+  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_INT_RST_I_0_UNCONNECTED : STD_LOGIC; 
   signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_gfn72_sngfifo36_ALMOSTEMPTY_UNCONNECTED : STD_LOGIC;
  
   signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_gfn72_sngfifo36_ALMOSTFULL_UNCONNECTED : STD_LOGIC;
@@ -1006,11 +1182,8 @@ architecture STRUCTURE of EventBuilderFifo is
  
   signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gfn72_sngfifo36_WRCOUNT_0_UNCONNECTED : STD_LOGIC;
  
-  signal NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_Mshreg_power_on_wr_rst_0_Q15_UNCONNECTED : STD_LOGIC; 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i : STD_LOGIC_VECTOR ( 0 downto 0 ); 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_power_on_wr_rst : STD_LOGIC_VECTOR ( 0 downto 0 ); 
-  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_fb : STD_LOGIC_VECTOR ( 4 downto 0 ); 
   signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_ful : STD_LOGIC_VECTOR ( 8 downto 1 ); 
+  signal U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i : STD_LOGIC_VECTOR ( 0 downto 0 ); 
 begin
   empty <= NlwRenamedSig_OI_empty;
   XST_GND : GND
@@ -1021,61 +1194,19 @@ begin
     port map (
       P => N1
     );
-  U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_reg : FDPE
-    generic map(
-      INIT => '0'
-    )
+  U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt : reset_builtin
     port map (
-      C => clk,
-      CE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_fb(0),
-      D => N0,
-      PRE => rst,
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_reg_19
-    );
-  U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_fb_4 : FD
-    generic map(
-      INIT => '0'
-    )
-    port map (
-      C => clk,
-      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_reg_19,
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_fb(4)
-    );
-  U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_fb_3 : FD
-    generic map(
-      INIT => '0'
-    )
-    port map (
-      C => clk,
-      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_fb(4),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_fb(3)
-    );
-  U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_fb_2 : FD
-    generic map(
-      INIT => '0'
-    )
-    port map (
-      C => clk,
-      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_fb(3),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_fb(2)
-    );
-  U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_fb_1 : FD
-    generic map(
-      INIT => '0'
-    )
-    port map (
-      C => clk,
-      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_fb(2),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_fb(1)
-    );
-  U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_fb_0 : FD
-    generic map(
-      INIT => '0'
-    )
-    port map (
-      C => clk,
-      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_fb(1),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_fb(0)
+      CLK => clk,
+      RST => rst,
+      RD_CLK => N0,
+      INT_CLK => N0,
+      WR_CLK => N0,
+      RD_RST_I(1) => NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_RD_RST_I_1_UNCONNECTED,
+      RD_RST_I(0) => NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_RD_RST_I_0_UNCONNECTED,
+      WR_RST_I(1) => NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_WR_RST_I_1_UNCONNECTED,
+      WR_RST_I(0) => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      INT_RST_I(1) => NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_INT_RST_I_1_UNCONNECTED,
+      INT_RST_I(0) => NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_INT_RST_I_0_UNCONNECTED
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_q : FDP
     generic map(
@@ -1084,8 +1215,8 @@ begin
     port map (
       C => clk,
       D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_fifo,
-      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_q_64
+      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_q_71
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_gfn72_sngfifo36 : FIFO36_EXP
     generic map(
@@ -1100,7 +1231,7 @@ begin
     port map (
       RDEN => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_rden_fifo,
       WREN => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_wr_ack_i,
-      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
+      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
       RDCLKU => clk,
       RDCLKL => clk,
       WRCLKU => clk,
@@ -1247,8 +1378,8 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_g
     port map (
       C => clk,
       D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_fifo,
-      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_q_59
+      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_q_66
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_gfn72_sngfifo36 : FIFO36_EXP
     generic map(
@@ -1263,7 +1394,7 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_g
     port map (
       RDEN => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_rden_fifo,
       WREN => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_wr_ack_i,
-      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
+      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
       RDCLKU => clk,
       RDCLKL => clk,
       WRCLKU => clk,
@@ -1410,8 +1541,8 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_g
     port map (
       C => clk,
       D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_fifo,
-      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_q_54
+      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_q_61
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_gfn72_sngfifo36 : FIFO36_EXP
     generic map(
@@ -1426,7 +1557,7 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_g
     port map (
       RDEN => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_rden_fifo,
       WREN => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_wr_ack_i,
-      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
+      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
       RDCLKU => clk,
       RDCLKL => clk,
       WRCLKU => clk,
@@ -1573,8 +1704,8 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_g
     port map (
       C => clk,
       D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_fifo,
-      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_q_49
+      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_q_56
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_gfn72_sngfifo36 : FIFO36_EXP
     generic map(
@@ -1589,7 +1720,7 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_g
     port map (
       RDEN => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_rden_fifo,
       WREN => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_wr_ack_i,
-      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
+      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
       RDCLKU => clk,
       RDCLKL => clk,
       WRCLKU => clk,
@@ -1736,8 +1867,8 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_g
     port map (
       C => clk,
       D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_fifo,
-      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_q_44
+      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_q_51
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_gfn72_sngfifo36 : FIFO36_EXP
     generic map(
@@ -1752,7 +1883,7 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_g
     port map (
       RDEN => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_rden_fifo,
       WREN => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_wr_ack_i,
-      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
+      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
       RDCLKU => clk,
       RDCLKL => clk,
       WRCLKU => clk,
@@ -1899,8 +2030,8 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_g
     port map (
       C => clk,
       D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_fifo,
-      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_q_39
+      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_q_46
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_gfn72_sngfifo36 : FIFO36_EXP
     generic map(
@@ -1915,7 +2046,7 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_g
     port map (
       RDEN => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_rden_fifo,
       WREN => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_wr_ack_i,
-      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
+      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
       RDCLKU => clk,
       RDCLKL => clk,
       WRCLKU => clk,
@@ -2062,8 +2193,8 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_g
     port map (
       C => clk,
       D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_fifo,
-      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_q_34
+      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_q_41
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_gfn72_sngfifo36 : FIFO36_EXP
     generic map(
@@ -2078,7 +2209,7 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_g
     port map (
       RDEN => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_rden_fifo,
       WREN => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_wr_ack_i,
-      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
+      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
       RDCLKU => clk,
       RDCLKL => clk,
       WRCLKU => clk,
@@ -2225,8 +2356,8 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_g
     port map (
       C => clk,
       D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_fifo,
-      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_q_29
+      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_q_36
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gfn72_sngfifo36 : FIFO36_EXP
     generic map(
@@ -2241,7 +2372,7 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_g
     port map (
       RDEN => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_rden_fifo,
       WREN => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_wr_ack_i,
-      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
+      RST => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
       RDCLKU => clk,
       RDCLKL => clk,
       WRCLKU => clk,
@@ -2381,23 +2512,14 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
       WRCOUNT(0) => 
 NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_gfn72_sngfifo36_WRCOUNT_0_UNCONNECTED
     );
-  U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_RD_RST_I_1_1 : LUT2
-    generic map(
-      INIT => X"E"
-    )
-    port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_wr_rst_reg_19,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_power_on_wr_rst(0),
-      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0)
-    );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_empty_i_SW0 : LUT3
     generic map(
       INIT => X"FE"
     )
     port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_40,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_55,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_50,
+      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_47,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_62,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_57,
       O => N2
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_empty_i : LUT6
@@ -2405,11 +2527,11 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
       INIT => X"FFFFFFFFFFFFFFFE"
     )
     port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_65,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_60,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_35,
-      I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_30,
-      I4 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_45,
+      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_72,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_67,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_42,
+      I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_37,
+      I4 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_52,
       I5 => N2,
       O => NlwRenamedSig_OI_empty
     );
@@ -2442,9 +2564,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       C => clk,
-      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_rstpot_66,
-      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_65
+      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_rstpot_73,
+      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_72
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user : FDP
     generic map(
@@ -2452,9 +2574,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       C => clk,
-      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_rstpot_61,
-      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_60
+      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_rstpot_68,
+      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_67
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user : FDP
     generic map(
@@ -2462,9 +2584,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       C => clk,
-      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_rstpot_56,
-      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_55
+      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_rstpot_63,
+      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_62
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user : FDP
     generic map(
@@ -2472,9 +2594,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       C => clk,
-      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_rstpot_51,
-      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_50
+      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_rstpot_58,
+      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_57
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user : FDP
     generic map(
@@ -2482,9 +2604,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       C => clk,
-      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_rstpot_46,
-      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_45
+      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_rstpot_53,
+      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_52
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user : FDP
     generic map(
@@ -2492,9 +2614,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       C => clk,
-      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_rstpot_41,
-      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_40
+      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_rstpot_48,
+      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_47
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user : FDP
     generic map(
@@ -2502,9 +2624,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       C => clk,
-      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_rstpot_36,
-      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_35
+      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_rstpot_43,
+      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_42
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user : FDP
     generic map(
@@ -2512,105 +2634,105 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       C => clk,
-      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_rstpot_31,
-      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rd_rst_i(0),
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_30
+      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_rstpot_38,
+      PRE => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_wr_rst_i(0),
+      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_37
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_rstpot : LUT5
     generic map(
       INIT => X"F050FC10"
     )
     port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_q_64,
+      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_q_71,
       I1 => rd_en,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_65,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_72,
       I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_fifo,
       I4 => NlwRenamedSig_OI_empty,
-      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_rstpot_66
+      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_rstpot_73
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_rstpot : LUT5
     generic map(
       INIT => X"F050FC10"
     )
     port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_q_59,
+      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_q_66,
       I1 => rd_en,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_60,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_67,
       I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_fifo,
       I4 => NlwRenamedSig_OI_empty,
-      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_rstpot_61
+      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_rstpot_68
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_rstpot : LUT5
     generic map(
       INIT => X"F050FC10"
     )
     port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_q_54,
+      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_q_61,
       I1 => rd_en,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_55,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_62,
       I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_fifo,
       I4 => NlwRenamedSig_OI_empty,
-      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_rstpot_56
+      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_rstpot_63
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_rstpot : LUT5
     generic map(
       INIT => X"F050FC10"
     )
     port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_q_49,
+      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_q_56,
       I1 => rd_en,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_50,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_57,
       I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_fifo,
       I4 => NlwRenamedSig_OI_empty,
-      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_rstpot_51
+      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_rstpot_58
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_rstpot : LUT5
     generic map(
       INIT => X"F050FC10"
     )
     port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_q_44,
+      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_q_51,
       I1 => rd_en,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_45,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_52,
       I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_fifo,
       I4 => NlwRenamedSig_OI_empty,
-      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_rstpot_46
+      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_rstpot_53
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_rstpot : LUT5
     generic map(
       INIT => X"F050FC10"
     )
     port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_q_39,
+      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_q_46,
       I1 => rd_en,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_40,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_47,
       I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_fifo,
       I4 => NlwRenamedSig_OI_empty,
-      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_rstpot_41
+      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_rstpot_48
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_rstpot : LUT5
     generic map(
       INIT => X"F050FC10"
     )
     port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_q_34,
+      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_q_41,
       I1 => rd_en,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_35,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_42,
       I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_fifo,
       I4 => NlwRenamedSig_OI_empty,
-      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_rstpot_36
+      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_rstpot_43
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_rstpot : LUT5
     generic map(
       INIT => X"F050FC10"
     )
     port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_q_29,
+      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_q_36,
       I1 => rd_en,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_30,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_37,
       I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_fifo,
       I4 => NlwRenamedSig_OI_empty,
-      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_rstpot_31
+      O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_rstpot_38
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_full_i_SW1 : LUT2
     generic map(
@@ -2640,9 +2762,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       I0 => rd_en,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_45,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_35,
-      I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_30,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_52,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_42,
+      I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_37,
       O => N8
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_rden_fifo1 : LUT6
@@ -2650,9 +2772,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
       INIT => X"00A000A000A003A3"
     )
     port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_q_64,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_60,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_65,
+      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_q_71,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_67,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_72,
       I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_fifo,
       I4 => N2,
       I5 => N8,
@@ -2664,9 +2786,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       I0 => rd_en,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_30,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_35,
-      I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_45,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_37,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_42,
+      I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_52,
       O => N10
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_rden_fifo1 : LUT6
@@ -2674,9 +2796,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
       INIT => X"0088038B00880088"
     )
     port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_q_59,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_60,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_65,
+      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_q_66,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_67,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_72,
       I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_fifo,
       I4 => N2,
       I5 => N10,
@@ -2688,10 +2810,10 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       I0 => rd_en,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_60,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_35,
-      I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_45,
-      I4 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_30,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_67,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_42,
+      I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_52,
+      I4 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_37,
       O => N12
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_rden_fifo1 : LUT6
@@ -2700,10 +2822,10 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_fifo,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_q_54,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_55,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_q_61,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_empty_user_62,
       I3 => N2,
-      I4 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_65,
+      I4 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_72,
       I5 => N12,
       O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_6_inst_extd_gonep_inst_prim_rden_fifo
     );
@@ -2713,10 +2835,10 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_fifo,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_q_49,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_50,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_q_56,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_empty_user_57,
       I3 => N2,
-      I4 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_65,
+      I4 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_72,
       I5 => N12,
       O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_5_inst_extd_gonep_inst_prim_rden_fifo
     );
@@ -2726,9 +2848,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       I0 => rd_en,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_30,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_35,
-      I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_60,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_37,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_42,
+      I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_67,
       O => N16
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_rden_fifo1 : LUT6
@@ -2736,9 +2858,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
       INIT => X"0088038B00880088"
     )
     port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_q_44,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_45,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_65,
+      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_q_51,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_52,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_72,
       I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_fifo,
       I4 => N2,
       I5 => N16,
@@ -2750,10 +2872,10 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_fifo,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_q_39,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_40,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_q_46,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_empty_user_47,
       I3 => N2,
-      I4 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_65,
+      I4 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_72,
       I5 => N12,
       O => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_3_inst_extd_gonep_inst_prim_rden_fifo
     );
@@ -2763,9 +2885,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       I0 => rd_en,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_30,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_45,
-      I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_60,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_37,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_52,
+      I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_67,
       O => N20
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_rden_fifo1 : LUT6
@@ -2773,9 +2895,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
       INIT => X"0088038B00880088"
     )
     port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_q_34,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_35,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_65,
+      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_q_41,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_42,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_72,
       I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_fifo,
       I4 => N2,
       I5 => N20,
@@ -2787,9 +2909,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
     )
     port map (
       I0 => rd_en,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_35,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_45,
-      I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_60,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_42,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_52,
+      I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_67,
       O => N22
     );
   U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_rden_fifo1 : LUT6
@@ -2797,9 +2919,9 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
       INIT => X"0088038B00880088"
     )
     port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_q_29,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_30,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_65,
+      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_q_36,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_37,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_72,
       I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_fifo,
       I4 => N2,
       I5 => N22,
@@ -2810,38 +2932,13 @@ NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_g
       INIT => X"0000000000000001"
     )
     port map (
-      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_65,
-      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_60,
-      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_35,
-      I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_30,
-      I4 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_45,
+      I0 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_8_inst_extd_gonep_inst_prim_empty_user_72,
+      I1 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_7_inst_extd_gonep_inst_prim_empty_user_67,
+      I2 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_2_inst_extd_gonep_inst_prim_empty_user_42,
+      I3 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_1_inst_extd_gonep_inst_prim_empty_user_37,
+      I4 => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_v5_fifo_fblk_gextw_4_inst_extd_gonep_inst_prim_empty_user_52,
       I5 => N2,
       O => valid
-    );
-  U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_Mshreg_power_on_wr_rst_0 : SRLC16E
-    generic map(
-      INIT => X"001F"
-    )
-    port map (
-      A0 => N0,
-      A1 => N0,
-      A2 => N1,
-      A3 => N0,
-      CE => N1,
-      CLK => clk,
-      D => N0,
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_Mshreg_power_on_wr_rst_0_12,
-      Q15 => NLW_U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_Mshreg_power_on_wr_rst_0_Q15_UNCONNECTED
-    );
-  U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_power_on_wr_rst_0 : FDE
-    generic map(
-      INIT => '1'
-    )
-    port map (
-      C => clk,
-      CE => N1,
-      D => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_Mshreg_power_on_wr_rst_0_12,
-      Q => U0_xst_fifo_generator_gconvfifo_rf_gbiv5_bi_rstbt_power_on_wr_rst(0)
     );
 
 end STRUCTURE;

@@ -30,30 +30,36 @@ TIMESPEC TS_clk200 = PERIOD clk200 200 Mhz HIGH 50%;
 TIMESPEC TS_kpixClk = PERIOD kpixClk 100 Mhz HIGH 50%;
 
 # Group clocks
-TIMEGRP TG_sysClk125_r = RISING sysClk125;
+#TIMEGRP TG_sysClk125_r = RISING sysClk125;
 TIMEGRP TG_kpixClk_r = RISING kpixClk;
-TIMEGRP TG_clk200_r = RISING clk200;
+#TIMEGRP TG_clk200_r = RISING clk200;
 TIMEGRP TG_kpixClk_f = FALLING kpixClk;
+
 
 # Constrain timing between clocks
 #kpixClk-sysClk125
-TIMESPEC TS_sysClk125_kpixClk = FROM TG_sysClk125_r TO TG_kpixClk_r 10 ns;
-TIMESPEC TS_kpixClk_sysClk125 = FROM TG_kpixClk_r TO TG_sysClk125_r 16 ns;
+TIMESPEC TS_sysClk125_kpixClk = FROM sysClk125 TO kpixClk 8 ns DATAPATHONLY;
+TIMESPEC TS_kpixClk_sysClk125 = FROM kpixClk TO sysClk125 10 ns DATAPATHONLY;
 
 #clk200-sysClk
-TIMESPEC TS_sysClk125_clk200 = FROM TG_sysClk125_r TO TG_clk200_r 10 ns;
-TIMESPEC TS_clk200_sysClk125 = FROM TG_clk200_r TO TG_sysClk125_r 10 ns;
+TIMESPEC TS_sysClk125_clk200 = FROM sysClk125 TO clk200 8 ns DATAPATHONLY;
+TIMESPEC TS_clk200_sysClk125 = FROM clk200 TO sysClk125 5 ns DATAPATHONLY;
 
 #kpixClk-Clk200
-TIMESPEC TS_kpixClk_clk200 = FROM TG_kpixClk_r TO TG_clk200_r 16 ns;
+TIMESPEC TS_kpixClk_clk200 = FROM kpixClk TO clk200 10 ns DATAPATHONLY;
+TIMESPEC TS_clk200_kpixClk = FROM clk200 TO kpixClk 5 ns DATAPATHONLY;
 
 #Handle falling clock timing
-TIMESPEC TS_kpixClk_RF = FROM TG_kpixClk_r to TG_kpixClk_f 8 ns;
-TIMESPEC TS_kpixClk_FR = FROM TG_kpixClk_f to TG_kpixClk_r 8 ns;
+TIMESPEC TS_kpixClk_RF = FROM TG_kpixClk_r to TG_kpixClk_f 8 ns DATAPATHONLY;
+TIMESPEC TS_kpixClk_FR = FROM TG_kpixClk_f to TG_kpixClk_r 8 ns DATAPATHONLY;
 
 # Nets to ignore for timing
 NET "fpgaRstL"      TIG;
+NET "sysRst125" TIG;
+NET "rst200" TIG;
 
+# Needed to properly handle clk200->kpixClk constraints
+NET "KpixDaqCore_1/KpixClockGen_1/r_clkDiv" TIG;
 
 # Pin Assignments
 

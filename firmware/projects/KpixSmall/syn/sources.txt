@@ -15,7 +15,7 @@ vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixDataRxPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegCntlPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegRxPkg.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/TriggerPkg.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EvrPkg.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EvrCorePkg.vhd"
 
 ## eth_client
 vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClientPackage.vhd"
@@ -39,8 +39,13 @@ vhdl work "_PROJ_DIR_/xil_cores/main_dcm.vhd"
 ## StdLib
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/Synchronizer.vhd"
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SynchronizerEdge.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SynchronizerVector.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SynchronizerFifo.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/FifoAsync.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SimpleDualPortRam.vhd"
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/RstSync.vhd"
-vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/ClkOutBuf.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/ClkOutBufDiff.vhd"
+
 
 ## KpixDaq
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EthFrontEnd.vhd"

@@ -43,7 +43,7 @@ HDL_SRC= $(PWD)/../../../modules/StdLib/rtl/StdRtlPkg.vhd \
          $(PWD)/../../../modules/StdLib/rtl/Synchronizer.vhd \
          $(PWD)/../../../modules/StdLib/rtl/SynchronizerEdge.vhd \
          $(PWD)/../../../modules/StdLib/rtl/RstSync.vhd \
-         $(PWD)/../../../modules/StdLib/rtl/ClkOutBuf.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/ClkOutBufDiff.vhd \
 	 $(PWD)/../rtl/Version.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixPkg.vhd \
 	 $(PWD)/../../../modules/KpixCore/rtl/reg_rw_32.vhd \
