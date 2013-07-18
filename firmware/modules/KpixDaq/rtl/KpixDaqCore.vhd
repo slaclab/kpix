@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-17
--- Last update: 2013-07-15
+-- Last update: 2013-07-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -193,7 +193,7 @@ begin
          triggerOut        => triggerOut,
          timestampIn       => timestampIn,
          timestampOut      => timestampOut,
-         evrOut            => SysEvrOut,
+         evrOut            => sysEvrOut,
          sysKpixState      => sysKpixState,
          kpixDataRxOut     => kpixDataRxOut,
          kpixDataRxIn      => kpixDataRxIn,

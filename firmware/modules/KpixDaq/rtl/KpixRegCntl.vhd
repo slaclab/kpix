@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2013-07-15
+-- Last update: 2013-07-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -88,24 +88,21 @@ architecture rtl of KpixRegCntl is
       txEnable     : slv(NUM_KPIX_MODULES_G downto 0);  -- Enables for each serial outpus
       isAcquire    : sl;
 
-      -- kpixRegCntlIn inputs clocked onto kpixClk domain
-      regAddr    : slv(23 downto 0);
-      regDataOut : slv(31 downto 0);
-      regOp      : sl;
-
-      outputEdge : sl;
-
       -- Output Registers
       kpixRegCntlOut : FrontEndRegCntlInType;  -- outputs to FrontEndRegCntl (must still be sync'd)
       kpixSerTxOut   : slv(NUM_KPIX_MODULES_G downto 0);  -- serial data to each kpix
    end record RegType;
 
-   signal r, rin             : RegType;
+   signal r, rin : RegType;
+
+   -- Synchonization signals
    signal kpixResetHoldSync  : sl;
-   signal regReqSync         : sl;
+   signal kpixRegCntlInSync  : FrontEndRegCntlOutType;
    signal startAcquireSync   : sl;
    signal startCalibrateSync : sl;
    signal startReadoutSync   : sl;
+   signal kpixEnableSync     : slv(NUM_KPIX_MODULES_G downto 0);
+   signal outputEdgeSync     : sl;
    signal kpixSerTxOutFall   : slv(NUM_KPIX_MODULES_G downto 0);
 
    -----------------------------------------------------------------------------
@@ -117,8 +114,7 @@ architecture rtl of KpixRegCntl is
 
    signal sysR, sysRin        : SysRegType;
    signal kpixResetHoldReSync : sl;
-   signal regAckSync          : sl;
-   signal regFailSync         : sl;
+   signal kpixRegCntlOutSync  : FrontEndRegCntlInType;
    
 
 begin
@@ -179,21 +175,28 @@ begin
    kpixResetOut <= kpixResetHoldSync;
 
    -------------------------------------------------------------------------------------------------
-   -- Kpix Clocked Logic
+   -- Synchronize Inputs to kpixClk that require it
    -------------------------------------------------------------------------------------------------
 
    -- Synchronize regReq to kpixClk
-   Synchronizer_RegReq : entity work.Synchronizer
+   SynchronizerFifo_KpixRegCntlIn : entity work.SynchronizerFifo
       generic map (
-         TPD_G          => DELAY_G,
-         RST_POLARITY_G => '1',
-         STAGES_G       => 4,
-         INIT_G         => "0000")
+         TPD_G        => DELAY_G,
+         DATA_WIDTH_G => 59)
       port map (
-         clk     => kpixClk,
-         aRst    => kpixClkRst,
-         dataIn  => kpixRegCntlIn.regReq,
-         dataOut => regReqSync);
+         rst                => sysRst,
+         wr_clk             => sysClk,
+         din(31 downto 0)   => kpixRegCntlIn.regDataout,
+         din(55 downto 32)  => kpixRegCntlIn.regAddr,
+         din(56)            => kpixRegCntlIn.regOp,
+         din(57)            => kpixRegCntlIn.regReq,
+         din(58)            => kpixRegCntlIn.regInp,
+         rd_clk             => kpixClk,
+         dout(31 downto 0)  => kpixRegCntlInSync.regDataout,
+         dout(55 downto 32) => kpixRegCntlInSync.regAddr,
+         dout(56)           => kpixRegCntlInSync.regOp,
+         dout(57)           => kpixRegCntlInSync.regReq,
+         dout(58)           => kpixRegCntlInSync.regInp);
 
    Synchronizer_StartAcquire : entity work.Synchronizer
       generic map (
@@ -231,6 +234,36 @@ begin
          dataIn  => triggerOut.startReadout,
          dataOut => startReadoutSync);
 
+   GEN_KPIX_ENABLE_SYNC : for i in NUM_KPIX_MODULES_G-1 downto 0 generate
+      Synchronizer_KpixEnable : entity work.Synchronizer
+         generic map (
+            TPD_G          => DELAY_G,
+            RST_POLARITY_G => '1',
+            STAGES_G       => 2,
+            INIT_G         => "00")
+         port map (
+            clk     => kpixClk,
+            aRst    => kpixClkRst,
+            dataIn  => kpixDataRxRegsIn(i).enabled,
+            dataOut => kpixEnableSync(i));
+   end generate GEN_KPIX_ENABLE_SYNC;
+   kpixEnableSync(NUM_KPIX_MODULES_G) <= '1';  -- Pretend local kpix always enabled
+
+   Synchronizer_OutputEdge : entity work.Synchronizer
+      generic map (
+         TPD_G          => DELAY_G,
+         RST_POLARITY_G => '1',
+         STAGES_G       => 2,
+         INIT_G         => "00")
+      port map (
+         clk     => kpixClk,
+         aRst    => kpixClkRst,
+         dataIn  => kpixConfigRegs.outputEdge,
+         dataOut => outputEdgeSync);
+
+   -------------------------------------------------------------------------------------------------
+   -- Main Logic
+   -------------------------------------------------------------------------------------------------
    seq : process (kpixClk, kpixClkRst) is
    begin
       if (kpixClkRst = '1') then
@@ -239,10 +272,6 @@ begin
          r.txShiftCount             <= (others => '0') after DELAY_G;
          r.txEnable                 <= (others => '0') after DELAY_G;
          r.isAcquire                <= '0'             after DELAY_G;
-         r.regAddr                  <= (others => '0') after DELAY_G;
-         r.regDataOut               <= (others => '0') after DELAY_G;
-         r.regOp                    <= '0'             after DELAY_G;
-         r.outputEdge               <= '0'             after DELAY_G;
          r.kpixRegCntlOut.regAck    <= '0'             after DELAY_G;
          r.kpixRegCntlOut.regFail   <= '0'             after DELAY_G;
          r.kpixRegCntlOut.regDataIn <= (others => '0') after DELAY_G;
@@ -252,23 +281,12 @@ begin
       end if;
    end process seq;
 
-
-
-   comb : process (r, regReqSync, startAcquireSync, startCalibrateSync, startReadoutSync, kpixResetHoldSync,
-                   kpixRegRxOut, kpixRegCntlIn, kpixDataRxRegsIn, kpixState, kpixConfigRegs) is
+   comb : process (r, kpixRegCntlInSync, startAcquireSync, startCalibrateSync, startReadoutSync, kpixResetHoldSync,
+                   kpixEnableSync, kpixRegRxOut, kpixState, outputEdgeSync) is
       variable v                : RegType;
       variable addressedKpixVar : natural;
    begin
       v := r;
-
-      -- Don't need to sync through 2 flops, always wait for regReq to go through 4 flops and then
-      -- these should be stable
-      v.regAddr    := kpixRegCntlIn.regAddr;
-      v.regDataOut := kpixRegCntlIn.regDataOut;
-      v.regOp      := kpixRegCntlIn.regOp;
-
-      -- Set at start of run so don't need to fully sync
-      v.outputEdge := kpixConfigRegs.outputEdge;
 
       v.kpixSerTxOut := (others => '0');
 
@@ -277,22 +295,22 @@ begin
             v.txShiftCount := (others => '0');
             v.txEnable     := (others => '0');
 
-            if (regReqSync = '1' and uOr(r.regAddr(INVALID_KPIX_ADDR_RANGE_C)) = '0') then
+            if (kpixRegCntlInSync.regReq = '1' and uOr(kpixRegCntlInSync.regAddr(INVALID_KPIX_ADDR_RANGE_C)) = '0') then
                -- Register access, format output word
                v.txShiftReg                               := (others => '0');  -- Simplifies parity calc
                v.txShiftReg(KPIX_MARKER_RANGE_C)          := KPIX_MARKER_C;
                v.txShiftReg(KPIX_FRAME_TYPE_INDEX_C)      := KPIX_CMD_RSP_FRAME_C;
                v.txShiftReg(KPIX_ACCESS_TYPE_INDEX_C)     := KPIX_REG_ACCESS_C;
-               v.txShiftReg(KPIX_WRITE_INDEX_C)           := r.regOp;          --r.regOpSync.sync;
-               v.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := bitReverse(r.regAddr(REG_ADDR_RANGE_C));
-               v.txShiftReg(KPIX_DATA_RANGE_C)            := bitReverse(r.regDataOut);
-               if (r.regOp = '0') then  -- Override data field with 0s of doing a read
+               v.txShiftReg(KPIX_WRITE_INDEX_C)           := kpixRegCntlInSync.regOp;
+               v.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := bitReverse(kpixRegCntlInSync.regAddr(REG_ADDR_RANGE_C));
+               v.txShiftReg(KPIX_DATA_RANGE_C)            := bitReverse(kpixRegCntlInSync.regDataOut);
+               if (kpixRegCntlInSync.regOp = '0') then  -- Override data field with 0s of doing a read
                   v.txShiftReg(KPIX_DATA_RANGE_C) := (others => '0');
                end if;
                v.txShiftReg(KPIX_HEADER_PARITY_INDEX_C) := '0';
                v.txShiftReg(KPIX_DATA_PARITY_INDEX_C)   := '0';
                v.txShiftCount                           := (others => '0');
-               addressedKpixVar                         := to_integer(unsigned(r.regAddr(VALID_KPIX_ADDR_RANGE_C)));
+               addressedKpixVar                         := to_integer(unsigned(kpixRegCntlInSync.regAddr(VALID_KPIX_ADDR_RANGE_C)));
                v.txEnable                               := (others => '0');
                v.txEnable(addressedKpixVar)             := '1';
                v.isAcquire                              := '0';
@@ -312,13 +330,8 @@ begin
                v.txShiftCount                             := (others => '0');
                v.state                                    := PARITY_S;
                v.isAcquire                                := '1';
+               v.txEnable                              := kpixEnableSync;
                v.txEnable(NUM_KPIX_MODULES_G)             := '1';  -- Always enable internal kpix
-               for i in NUM_KPIX_MODULES_G-1 downto 0 loop
-                  -- Send acquire only to enabled kpix asics.
-                  v.txEnable(i) := kpixDataRxRegsIn(i).enabled;
-               end loop;
-
-
 
             elsif (startAcquireSync = '1') then
                -- Start an acquisition
@@ -334,11 +347,9 @@ begin
                v.txShiftCount                             := (others => '0');
                v.state                                    := PARITY_S;
                v.isAcquire                                := '1';
+               -- Send acquire only to enabled kpix asics.
+               v.txEnable                              := kpixEnableSync;
                v.txEnable(NUM_KPIX_MODULES_G)             := '1';  -- Always enable internal kpix
-               for i in NUM_KPIX_MODULES_G-1 downto 0 loop
-                  -- Send acquire only to enabled kpix asics.
-                  v.txEnable(i) := kpixDataRxRegsIn(i).enabled;
-               end loop;
                if (startCalibrateSync = '1') then
                   v.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := KPIX_CALIBRATE_CMD_ID_REV_C;
                end if;
@@ -367,7 +378,7 @@ begin
                   v.state := DATA_WAIT_S;
                else
                   -- Register request
-                  if (r.regOp = '1') then
+                  if (kpixRegCntlInSync.regOp = '1') then
                      v.state := WRITE_WAIT_S;
                   else
                      v.state := READ_WAIT_S;
@@ -396,9 +407,9 @@ begin
             -- Wait for read response
             -- Timeout and fail after defined number of cycles
             v.txShiftCount   := r.txShiftCount + 1;
-            addressedKpixVar := to_integer(unsigned(r.regAddr(VALID_KPIX_ADDR_RANGE_C)));  --VALID_KPIX_ADDR_RANGE_C
+            addressedKpixVar := to_integer(unsigned(kpixRegCntlInSync.regAddr(VALID_KPIX_ADDR_RANGE_C)));  --VALID_KPIX_ADDR_RANGE_C
             if (kpixRegRxOut(addressedKpixVar).regValid = '1' and
-                kpixRegRxOut(addressedKpixVar).regAddr = r.regAddr(REG_ADDR_RANGE_C)) then  -- REG_ADDR_RANGE_C
+                kpixRegRxOut(addressedKpixVar).regAddr = kpixRegCntlInSync.regAddr(REG_ADDR_RANGE_C)) then  -- REG_ADDR_RANGE_C
                -- Only ack when kpix id and reg addr is the same as tx'd
                v.kpixRegCntlOut.regDataIn := kpixRegRxOut(addressedKpixVar).regData;
                v.kpixRegCntlOut.regAck    := '1';
@@ -411,7 +422,7 @@ begin
             end if;
 
          when WAIT_RELEASE_S =>
-            if (regReqSync = '0') then
+            if (kpixRegCntlInSync.regReq = '0') then
                -- Can't deassert ack until regReq is dropped
                v.kpixRegCntlOut.regAck  := '0';
                v.kpixRegCntlOut.regFail := '0';
@@ -428,35 +439,22 @@ begin
 
 
    -------------------------------------------------------------------------------------------------
-   -- Sync front end control signals back to sysclk
+   -- Sync front end control output signals back to sysclk
    -------------------------------------------------------------------------------------------------
-   Synchronizer_RegAckSync : entity work.Synchronizer
+   SynchronizerFifo_KpixRegCntrlOut : entity work.SynchronizerFifo
       generic map (
-         TPD_G          => DELAY_G,
-         RST_POLARITY_G => '1',
-         STAGES_G       => 4,
-         INIT_G         => "0000")
+         TPD_G        => DELAY_G,
+         DATA_WIDTH_G => 34)
       port map (
-         clk     => sysClk,
-         aRst    => sysRst,
-         dataIn  => r.kpixRegCntlOut.regAck,
-         dataOut => regAckSync);
-
-   Synchronizer_RegFailSync : entity work.Synchronizer
-      generic map (
-         TPD_G          => DELAY_G,
-         RST_POLARITY_G => '1')
-      port map (
-         clk     => sysClk,
-         aRst    => sysRst,
-         dataIn  => r.kpixRegCntlOut.regFail,
-         dataOut => regFailSync);
-
-   kpixRegCntlOut.regAck    <= regAckSync;
-   kpixRegCntlOut.regFail   <= regFailSync;
-   kpixRegCntlOut.regDataIn <= r.kpixRegCntlOut.regDataIn;
-
-
+         rst               => kpixClkRst,
+         wr_clk            => kpixClk,
+         din(31 downto 0)  => r.kpixRegCntlOut.regDataIn,
+         din(32)           => r.kpixRegCntlOut.regAck,
+         din(33)           => r.kpixRegCntlOut.regFail,
+         rd_clk            => sysClk,
+         dout(31 downto 0) => kpixRegCntlOut.regDataIn,
+         dout(32)          => kpixRegCntlOut.regAck,
+         dout(33)          => kpixRegCntlOut.regFail);
 
    -------------------------------------------------------------------------------------------------
    -- Optional clocking of serial clock on falling edge
@@ -470,6 +468,6 @@ begin
       end if;
    end process fallingClk;
 
-   kpixSerTxOut <= r.kpixSerTxOut when r.outputEdge = '0' else kpixSerTxOutFall;
+   kpixSerTxOut <= r.kpixSerTxOut when outputEdgeSync = '0' else kpixSerTxOutFall;
 
 end architecture rtl;

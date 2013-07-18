@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2013-07-12
+-- Last update: 2013-07-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -138,6 +138,7 @@ architecture rtl of KpixDataRx is
    signal markerErrorRise       : sl;
    signal headerParityErrorRise : sl;
    signal overflowErrorRise     : sl;
+   signal kpixRegRxOutSys       : KpixRegRxOutType;
 
    signal txRegs, txRegsIn : TxRegType;
    signal kpixSerRxInFall  : sl;
@@ -478,7 +479,27 @@ begin
          risingEdge  => overflowErrorRise,
          fallingEdge => open);
 
-   txComb : process (txRegs, rxRegs, txRamRdData, kpixDataRxIn, kpixRegRxOut, extRegsIn, kpixConfigRegs,
+   -- Synchronize kpix temp data to sysclk
+   SynchronizerFifo_Temperature : entity work.SynchronizerFifo
+      generic map (
+         TPD_G        => DELAY_G,
+         BRAM_EN_G    => false,
+         DATA_WIDTH_G => 20)
+      port map (
+         rst                => kpixClkRst,
+         wr_clk             => kpixClk,
+         din(19 downto 12)  => kpixRegRxOut.temperature,
+         din(11 downto 0)   => kpixRegRxOut.tempCount,
+         rd_clk             => sysClk,
+         valid              => open,
+         dout(19 downto 12) => kpixRegRxOutSys.temperature,
+         dout(11 downto 0)  => kpixRegRxOutSys.tempCount);
+   kpixRegRxOutSys.regAddr      <= (others => '0');
+   kpixRegRxOutSys.regData      <= (others => '0');
+   kpixRegRxOutSys.regValid     <= '0';
+   kpixRegRxOutSys.regParityErr <= '0';
+
+   txComb : process (txRegs, rxRegs, txRamRdData, kpixDataRxIn, kpixRegRxOutSys, extRegsIn, kpixConfigRegs,
                      txRowReqSync, txRxBusyRise, headerParityErrorRise, markerErrorRise, overflowErrorRise) is
       variable rVar : txRegType;
    begin
@@ -636,7 +657,7 @@ begin
             rVar.txState        := TX_TIMESTAMP_S;
 
          when TX_TEMP_S =>
-            rVar.kpixDataRxOut.data  := formatTemperature(kpixRegRxOut);
+            rVar.kpixDataRxOut.data  := formatTemperature(kpixRegRxOutSys);
             rVar.kpixDataRxOut.valid := '1';
             rVar.kpixDataRxOut.last  := '1';
             if (kpixDataRxIn.ack = '1') then

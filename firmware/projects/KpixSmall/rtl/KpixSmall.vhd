@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2013-07-16
+-- Last update: 2013-07-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -82,14 +82,19 @@ architecture rtl of KpixSmall is
 
    signal softwareReset : sl;
 
-   -- No EVR interface, will be undriven
+   -- Fake Evr Interface
+   signal evrConfigIntfIn  : EvrConfigIntfInType;   -- sysClk
+   signal evrConfigIntfOut : EvrConfigIntfOutType;  -- sysClk
    signal evrOut : EvrOutType := (eventStream => (others => '0'),
                                   dataStream  => (others => '0'),
                                   trigger     => '0',
                                   seconds     => (others => '0'),
                                   offset      => (others => '0'),
                                   errors      => (others => '0'));
-
+   
+   -- Front End Reg Cntl Ouputs from kpixDaq
+   signal frontEndRegCntlInKpix : FrontEndRegCntlInType;
+   
    -- Event Builder FIFO signals
    -- Optionaly pass this through as IO to external FIFO
    signal ebFifoOut : EventBuilderFifoOutType;
@@ -211,6 +216,24 @@ begin
    intTriggerIn.nimB  <= not triggerExtIn.nimB;
    intTriggerIn.cmosA <= not triggerExtIn.cmosA;
    intTriggerIn.cmosB <= not triggerExtIn.cmosB;
+
+   -------------------------------------------------------------------------------------------------
+   -- EVR Core. Needed to make EVR registers work, even if they aren't used in this case
+   -------------------------------------------------------------------------------------------------
+   EvrCore_1 : entity work.EvrCore
+      generic map (
+         TPD_G => DELAY_G)
+      port map (
+         evrRecClk        => '0',
+         evrRst           => '0',
+         phyIn            => (rxData => (others => '0'), rxDataK => (others => '0'), decErr => (others => '0'), dispErr => (others => '0')),
+         evrOut           => open,
+         sysClk           => sysClk125,
+         sysRst           => sysRst125,
+         evrConfigIntfIn  => evrConfigIntfIn,
+         evrConfigIntfOut => evrConfigIntfOut,
+         sysEvrOut        => open);
+
    --------------------------------------------------------------------------------------------------
    -- KPIX Core
    --------------------------------------------------------------------------------------------------
@@ -224,7 +247,7 @@ begin
          clk200             => clk200,
          rst200             => rst200,
          frontEndRegCntlOut => frontEndRegCntlOut,
-         frontEndRegCntlIn  => frontEndRegCntlIn,
+         frontEndRegCntlIn  => frontEndRegCntlInKpix,
          frontEndCmdCntlOut => frontEndCmdCntlOut,
          frontEndUsDataOut  => frontEndUsDataOut,
          frontEndUsDataIn   => frontEndUsDataIn,
@@ -256,6 +279,27 @@ begin
          full  => ebFifoOut.full,
          empty => ebFifoOut.empty,
          valid => ebFifoOut.valid);
+
+   --------------------------------------------------------------------------------------------------
+   -- Front End Reg Cntl Mux
+   --------------------------------------------------------------------------------------------------
+   regCntlMux : process (frontEndRegCntlOut, evrConfigIntfOut, frontEndRegCntlInKpix) is
+   begin
+      -- Create EVR register interface inputs from frontEndRegCntlOut signals
+      evrConfigIntfIn.req    <= frontEndRegCntlOut.regReq and toSl(frontEndRegCntlOut.regAddr(23 downto 20) = "0010");
+      evrConfigIntfIn.wrEna  <= frontEndRegCntlOut.regOp;
+      evrConfigIntfIn.dataIn <= frontEndRegCntlOut.regDataOut;
+      evrConfigIntfIn.addr   <= frontEndRegCntlOut.regAddr(7 downto 0);
+
+      -- Mux EVR and KpixDaq register interface signals onto frontEndRegCntlIn
+      if (frontEndRegCntlOut.regAddr(23 downto 20) = "0010") then
+         frontEndRegCntlIn.regDataIn <= evrConfigIntfOut.dataOut;
+         frontEndRegCntlIn.regAck    <= evrConfigIntfOut.ack;
+         frontEndRegCntlIn.regFail   <= '0';
+      else
+         frontEndRegCntlIn <= frontEndRegCntlInKpix;
+      end if;
+   end process regCntlMux;
 
 
    OBUF_KPIX_CLK : entity work.ClkOutBufDiff

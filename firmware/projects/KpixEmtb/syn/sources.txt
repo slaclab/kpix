@@ -59,7 +59,7 @@ vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/readout_control.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/reg_rw_32.vhd"
 
 ## Event Receiver
-verilog work "_PROJ_DIR_/../../modules/EvrCore/rtl/EventReceiverTop.v"
+verilog work "_PROJ_DIR_/../../modules/EvrCore/EventReceiverTop.v"
 verilog work "_PROJ_DIR_/../../modules/EvrCore/rtl/EventReceiverChannel.v"
 verilog work "_PROJ_DIR_/../../modules/EvrCore/rtl/evrReg.v"
 verilog work "_PROJ_DIR_/../../modules/EvrCore/rtl/serialReceiver2.v"

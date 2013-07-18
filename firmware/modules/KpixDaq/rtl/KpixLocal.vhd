@@ -156,10 +156,6 @@ architecture KpixLocal of KpixLocal is
 
    signal r, rin : RegType;
 
-
-   signal syncFifoIn  : slv(23 downto 0);
-   signal syncFifoOut : slv(23 downto 0);
-   
 begin
 
    calStrobeOut <= cal_strobe;
@@ -285,27 +281,22 @@ begin
          BRAM_EN_G    => false,
          DATA_WIDTH_G => 24)
       port map (
-         rst    => kpixClkRst,
-         wr_clk => kpixClk,
-         din    => syncFifoIn,
-         rd_clk => sysClk,
-         valid  => open,
-         dout   => syncFifoOut);
-
-   syncFifoIn(2 downto 0)   <= v8_analog_state;
-   syncFifoIn(5 downto 3)   <= v8_read_state;
-   syncFifoIn(6)            <= v8_precharge_bus;
-   syncFifoIn(19 downto 7)  <= slv(r.bunchCount);
-   syncFifoIn(22 downto 20) <= slv(r.subCount);
-   syncFifoIn(23)           <= trig_inh;
-
-   sysKpixState.analogState  <= syncFifoOut(2 downto 0);
-   sysKpixState.readoutState <= syncFifoOut(5 downto 3);
-   sysKpixState.prechargeBus <= syncFifoOut(6);
-   sysKpixState.bunchCount   <= syncFifoOut(19 downto 7);
-   sysKpixState.subCount     <= syncFifoOut(22 downto 20);
-   sysKpixState.trigInhibit  <= syncFifoOut(23);
-
+         rst                => kpixClkRst,
+         wr_clk             => kpixClk,
+         din(23)            => trig_inh,
+         din(22 downto 20)  => slv(r.subCount),
+         din(19 downto 7)   => slv(r.bunchCount),
+         din(6)             => v8_precharge_bus,
+         din(5 downto 3)    => v8_read_state,
+         din(2 downto 0)    => v8_analog_state,
+         rd_clk             => sysClk,
+         valid              => open,
+         dout(23)           => sysKpixState.trigInhibit,
+         dout(22 downto 20) => sysKpixState.subCount,
+         dout(19 downto 7)  => sysKpixState.bunchCount,
+         dout(6)            => sysKpixState.prechargeBus,
+         dout(5 downto 3)   => sysKpixState.readoutState,
+         dout(2 downto 0)   => sysKpixState.analogState);
 
    --------------------------------------------------------------------------------------------------
 

@@ -24,7 +24,7 @@ NET sysClk125 TNM_NET = FFS sysClk125;
 NET clk200    TNM_NET = FFS clk200;
 NET kpixClk   TNM_NET = FFS kpixClk;
 #NET evrRefClkP   TNM_NET = evrRefClk;
-NET "EvrGtp_1/evrClk" TNM_NET = FFS evrClk;
+NET "EvrGtp_1/evrRecClk" TNM_NET = FFS evrClk;
 
 # Define clock frequncies
 TIMESPEC TS_sysClk125 = PERIOD sysClk125 125 Mhz HIGH 50%;
@@ -64,7 +64,7 @@ TIMESPEC TS_sysClk125_clk200 = FROM sysClk125 TO clk200 8 ns DATAPATHONLY;
 TIMESPEC TS_clk200_sysClk125 = FROM clk200 TO sysClk125 5 ns DATAPATHONLY;
 
 #kpixClk-Clk200
-TIMESPEC TS_kpixClk_clk200 = FROM kpixClk TO clk200 10 ns DATAPATHONLY;
+TIMESPEC TS_kpixClk_clk200 = FROM kpixClk TO clk200 5 ns DATAPATHONLY;
 TIMESPEC TS_clk200_kpixClk = FROM clk200 TO kpixClk 5 ns DATAPATHONLY;
 
 #Handle falling clock timing

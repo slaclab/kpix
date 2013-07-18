@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2013-07-12
+-- Last update: 2013-07-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -65,8 +65,8 @@ entity KpixEmtbEth is
       kpixRstOut      : out sl;
       kpixTriggerOutP : out slv(3 downto 0);
       kpixTriggerOutN : out slv(3 downto 0);
-      kpixSerTxOut    : out slv(NUM_KPIX_MODULES_G-1 downto 0);
-      kpixSerRxIn     : in  slv(NUM_KPIX_MODULES_G-1 downto 0));
+      kpixSerTxOut    : out slv(30 downto 0);
+      kpixSerRxIn     : in  slv(30 downto 0));
 
 end entity KpixEmtbEth;
 
@@ -93,7 +93,6 @@ architecture rtl of KpixEmtbEth is
 
    -- EVR Signals
    signal evrClk           : sl;
---   signal evrIn     : EvrInType;
    signal evrOut           : EvrOutType;            -- evrClk
    signal sysEvrOut        : EvrOutType;            -- sysClk
    signal evrConfigIntfIn  : EvrConfigIntfInType;   -- sysClk
@@ -140,34 +139,6 @@ architecture rtl of KpixEmtbEth is
          );
    end component;
 
-   -- Component declaration needed for verilog modules too
---   component EventReceiverTop is
---      generic (
---         USE_CHIPSCOPE : integer);
---      port (
---         Reset           : in  std_logic;
---         m_Timing_MGTCLK : in  std_logic;
---         p_Timing_MGTCLK : in  std_logic;
---         RXN_IN          : in  std_logic;
---         RXP_IN          : in  std_logic;
---         EventStream     : out std_logic_vector(7 downto 0);
---         DataStream      : out std_logic_vector(7 downto 0);
---         evrTrigger      : out std_logic;
---         evrRegDataOut   : out std_logic_vector(31 downto 0);
---         evrRegWrEna     : in  std_logic;
---         evrRegDataIn    : in  std_logic_vector(31 downto 0);
---         evrRegAddr      : in  std_logic_vector(7 downto 0);
---         evrRegEna       : in  std_logic;
---         cxiClk          : in  std_logic;
---         cxiClkRst       : in  std_logic;
---         evrClk          : out std_logic;
---         evrDebug        : out std_logic_vector(63 downto 0);
---         outSeconds      : out std_logic_vector(31 downto 0);
---         outOffset       : out std_logic_vector(31 downto 0);
---         evrErrors       : out std_logic_vector(15 downto 0);
---         countReset      : in  std_logic);
---   end component EventReceiverTop;
-   
 begin
 
    fpgaRst <= not fpgaRstL or softwareReset;
@@ -245,33 +216,6 @@ begin
          gtpTxN        => udpTxN,
          gtpTxP        => udpTxP);
 
-   -- Event Receiver
---  EventReceiverTop_1 : EventReceiverTop
---    generic map (
---      USE_CHIPSCOPE => 0)
---    port map (
---      Reset           => fpgaRst,
---      m_Timing_MGTCLK => evrRefClkN,
---      p_Timing_MGTCLK => evrRefClkP,
---      RXN_IN          => evrRxN,
---      RXP_IN          => evrRxP,
---      EventStream     => evrOut.eventStream,
---      DataStream      => evrOut.dataStream,
---      evrTrigger      => evrOut.trigger,
---      evrRegDataOut   => evrRegOut.dataOut,
---      evrRegWrEna     => evrRegIn.wrEna,
---      evrRegDataIn    => evrRegIn.dataIn,
---      evrRegAddr      => evrRegIn.addr,
---      evrRegEna       => evrRegIn.ena,
---      cxiClk          => sysClk125,
---      cxiClkRst       => sysRst125,
---      evrClk          => evrClk,
---      evrDebug        => evrOut.debug,
---      outSeconds      => evrOut.seconds,
---      outOffset       => evrOut.offset,
---      evrErrors       => evrOut.errors,
---      countReset      => evrIn.countReset);
-
    -- EVR
    EvrGtp_1 : entity work.EvrGtp
       generic map (
@@ -346,11 +290,6 @@ begin
    regCntlMux : process (frontEndRegCntlOut, evrConfigIntfOut, frontEndRegCntlInKpix) is
    begin
       -- Create EVR register interface inputs from frontEndRegCntlOut signals
---    evrRegIn.ena    <= frontEndRegCntlOut.regReq and toSl(frontEndRegCntlOut.regAddr(23 downto 20) = "0010");
---    evrRegIn.wrEna  <= frontEndRegCntlOut.regOp;
---    evrRegIn.dataIn <= frontEndRegCntlOut.regDataOut;
---    evrRegIn.addr   <= frontEndRegCntlOut.regAddr(7 downto 0);
-
       evrConfigIntfIn.req    <= frontEndRegCntlOut.regReq and toSl(frontEndRegCntlOut.regAddr(23 downto 20) = "0010");
       evrConfigIntfIn.wrEna  <= frontEndRegCntlOut.regOp;
       evrConfigIntfIn.dataIn <= frontEndRegCntlOut.regDataOut;

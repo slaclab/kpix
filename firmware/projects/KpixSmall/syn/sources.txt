@@ -59,7 +59,7 @@ vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegCntl.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegRx.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/Trigger.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EthUsBuff64.vhd"
-
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EvrCore.vhd"
 
 ## KpixCore
 vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/analog_control.vhd"

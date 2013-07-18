@@ -76,7 +76,7 @@ begin
          );
 
    -- KPIX simulation
-   KpixSim : for i in 30 downto 0 generate
+   KpixSim : for i in 31 downto 0 generate
       U_AsicSim : entity AsicSim port map (
          sysclk   => kpixClkOutP(i/10),
          reset    => kpixRstOut,

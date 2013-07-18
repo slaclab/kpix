@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2013-07-12
--- Last update: 2013-07-12
+-- Last update: 2013-07-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ end entity EvrGtp;
 architecture rtl of EvrGtp is
 
    signal gtpRefClkIn  : sl;
-   signal evrClk       : sl;
+   signal evrRecClk    : sl;
    signal evrRst       : sl;
    signal phy          : EvrPhyType;
    signal gtpRxAligned : sl;
@@ -59,14 +59,14 @@ begin
 
    Gtp16LowLatCore_1 : entity work.Gtp16LowLatCore
       generic map (
-         TPD_G          => TPD_G,
---         SIM_PLL_PERDIV2 => SIM_PLL_PERDIV2,
-         CLK25_DIVIDER  => 10,
-         PLL_DIVSEL_FB  => 2,
-         PLL_DIVSEL_REF => 2,
-         REC_CLK_PERIOD => 4.202,
-         REC_PLL_MULT   => 4,
-         REC_PLL_DIV    => 1)
+         TPD_G           => TPD_G,
+         SIM_PLL_PERDIV2 => X"0C8",
+         CLK25_DIVIDER   => 10,
+         PLL_DIVSEL_FB   => 2,
+         PLL_DIVSEL_REF  => 2,
+         REC_CLK_PERIOD  => 4.202,
+         REC_PLL_MULT    => 4,
+         REC_PLL_DIV     => 1)
       port map (
          gtpClkIn         => gtpRefClkIn,
          gtpRefClkOut     => open,
@@ -83,7 +83,7 @@ begin
          gtpRxElecIdle    => open,
          gtpRxElecIdleRst => '0',
          gtpRxUsrClk      => open,
-         gtpRxUsrClk2     => evrClk,
+         gtpRxUsrClk2     => evrRecClk,
          gtpRxUsrClkRst   => open,
          gtpRxData        => phy.rxData,
          gtpRxDataK       => phy.rxDataK,
@@ -98,14 +98,14 @@ begin
          gtpTxData        => (others => '0'),
          gtpTxDataK       => (others => '0'));
 
-   -- Use aligned signal as reset for evrClk logic
+   -- Use aligned signal as reset for evrRecClk logic
    RstSync_1 : entity work.RstSync
       generic map (
          TPD_G          => TPD_G,
          IN_POLARITY_G  => '0',
          OUT_POLARITY_G => '1')
       port map (
-         clk      => evrClk,
+         clk      => evrRecClk,
          asyncRst => gtpRxAligned,
          syncRst  => evrRst);
 
@@ -113,7 +113,7 @@ begin
       generic map (
          TPD_G => TPD_G)
       port map (
-         evrClk           => evrClk,
+         evrRecClk        => evrRecClk,
          evrRst           => evrRst,
          phyIn            => phy,
          evrOut           => evrOut,

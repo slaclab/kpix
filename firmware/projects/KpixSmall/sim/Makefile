@@ -39,9 +39,12 @@ ANA_INC = $(PWD)/../../../modules/KpixCore/analog/olib_tsmc025.cir \
 
 # HDL Source Files
 HDL_SRC= $(PWD)/../../../modules/StdLib/rtl/StdRtlPkg.vhd \
-         $(PWD)/../../../modules/StdLib/rtl/SynchronizePkg.vhd \
          $(PWD)/../../../modules/StdLib/rtl/Synchronizer.vhd \
          $(PWD)/../../../modules/StdLib/rtl/SynchronizerEdge.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/SynchronizerVector.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/SynchronizerFifo.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/FifoAsync.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/SimpleDualPortRam.vhd \
          $(PWD)/../../../modules/StdLib/rtl/RstSync.vhd \
          $(PWD)/../../../modules/StdLib/rtl/ClkOutBufDiff.vhd \
 	 $(PWD)/../rtl/Version.vhd \
