@@ -248,7 +248,7 @@ public class BeamTestCalAnalyze extends AbstractLoopListener implements RecordLi
             KPiX_Bucket = sample1.getBucket();
             KPiX_Channel = sample1.getChannel();
             Bunch_Time = sample1.getTime();
-             _BunchTime_Hist[KPiX_Bucket].fill(Bunch_Time) ;
+             _BunchTime_Hist[KPiX_Bucket][Sensor_Address].fill(Bunch_Time) ;
 
             //See if there is a match to Trigger_Times
  /*           for (int i = 0; i < N_Triggers; i++) {
