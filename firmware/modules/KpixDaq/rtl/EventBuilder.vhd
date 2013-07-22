@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2013-07-12
+-- Last update: 2013-07-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -146,7 +146,8 @@ begin
     end if;
   end process sync;
 
-  comb : process (r, kpixDataRxOut, ebFifoOut, frontEndUsDataOut, kpixConfigRegs, triggerRegsIn, evrOut, sysKpixState, timestampOut, startAcquireSync, kpixClkRise) is
+  comb : process (ebFifoOut, evrOut, frontEndUsDataOut, kpixClkRise, kpixConfigRegs, kpixDataRxOut,
+                  r, startAcquireSync, sysKpixState, timestampOut, triggerRegsIn) is
     variable rVar : RegType;
 
     -- Write data to the EventBuilder FIFO
