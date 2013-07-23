@@ -284,6 +284,7 @@ void KpixControl::swRunThread() {
 
             // One second has passed. event was missed.
             if ( (ctime-ltime) > 1000000) {
+               ltime = ctime;
 
                // In Simulation just make some noise
                if ( getInt("Simulation") ) {
