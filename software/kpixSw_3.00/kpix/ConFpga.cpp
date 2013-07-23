@@ -242,14 +242,11 @@ ConFpga::ConFpga ( uint destination, uint index, uint kpixCount, Device *parent 
    addVariable(new Variable("EvrOpCode", Variable::Configuration));
    getVariable("EvrOpCode")->setDescription("OpCode for internal EVR trigger");
    vector<string> evrCodes;
-   evrCodes.resize(7);
-   evrCodes[0] = "120Hz";
-   evrCodes[1] = "60Hz";
-   evrCodes[2] = "30Hz";
-   evrCodes[3] = "10Hz";
-   evrCodes[4] = "5Hz";
-   evrCodes[5] = "1Hz";
-   evrCodes[6] = "1Hz_Alt";
+   evrCodes.resize(4);
+   evrCodes[0] = "10Hz";
+   evrCodes[1] = "5Hz";
+   evrCodes[2] = "1Hz";
+   evrCodes[3] = "ESA_Beam";
    getVariable("EvrOpCode")->setEnums(evrCodes);
 
       //EVR Error Count Register
@@ -385,6 +382,8 @@ void ConFpga::readStatus ( ) {
 void ConFpga::readConfig ( ) {
    stringstream tmpA;
    stringstream tmpB;
+   uint         evrReg;
+   uint         evrIdx;
 
    REGISTER_LOCK
 
@@ -426,7 +425,12 @@ void ConFpga::readConfig ( ) {
    getVariable("EvrTriggerWidth")->setInt(getRegister("EvrTriggerWidth")->get(0,0xFFFF)); //Mask register maybe?
 
    readRegister(getRegister("EvrOpCode"));
-   getVariable("EvrOpCode")->setInt(getRegister("EvrOpCode")->get(0,0xFF)-40);
+   evrReg = getRegister("EvrOpCode")->get(0,0xFF);
+
+   if ( evrReg == 161 ) evrIdx = 3; // 161 = ESA Beam
+   else evrIdx = evrReg - 43; // 43 = 10hz, 44 = 5hz, 45 = 1hz
+
+   getVariable("EvrOpCode")->setInt(evrIdx);
 
    // Sub devices
    Device::readConfig();
@@ -436,6 +440,8 @@ void ConFpga::readConfig ( ) {
 // Method to write configuration registers
 void ConFpga::writeConfig ( bool force ) {
    stringstream tmpA;
+   uint         evrReg;
+   uint         evrIdx;
 
    REGISTER_LOCK
 
@@ -479,7 +485,12 @@ void ConFpga::writeConfig ( bool force ) {
    getRegister("EvrTriggerWidth")->set(getVariable("EvrTriggerWidth")->getInt(),0,0xFFFF);
    writeRegister(getRegister("EvrTriggerWidth"),force);
 
-   getRegister("EvrOpCode")->set(getVariable("EvrOpCode")->getInt()+40,0,0xFF);
+   evrIdx = getVariable("EvrOpCode")->getInt();
+
+   if ( evrIdx == 3 ) evrReg = 161; // 161 = ESA Beam
+   else evrReg = evrIdx + 43; // 43 = 10hz, 44 = 5hz, 45 = 1hz
+
+   getRegister("EvrOpCode")->set(evrReg,0,0xFF);
    writeRegister(getRegister("EvrOpCode"),force);
 
    // KPIX support registers

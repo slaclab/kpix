@@ -35,6 +35,7 @@ int main (int argc, char **argv) {
    stringstream  tmp;
    string        serialList[32];
    string        serial;
+   uint          sampleCnt;
    time_t        curr, last;
 
    // Check args
@@ -49,12 +50,19 @@ int main (int argc, char **argv) {
    time(&curr);
    last = curr;
    count = 0;
+   sampleCnt = 0;
    while (1) {
 
       time(&curr);
       if ( last != curr ) {
-         cout << "Got " << dec << count << " events" << endl;
+         cout << "Got " << dec << count << " events, " << dec << sampleCnt << " Samples";
+
+         if ( (float)sampleCnt / (float)count > 9 ) cout << "   *******";
+         cout << endl;
+
          last = curr;
+         count = 0;
+         sampleCnt = 0;
       }
 
       if ( dataRead.next(&event) ) {
@@ -67,6 +75,8 @@ int main (int argc, char **argv) {
                serialList[x] = dataRead.getConfig(tmp.str());
             }
          }
+
+         sampleCnt += event.count();
 
          if ( dataRead.sawRunStop()  ) dataRead.dumpRunStop();
          if ( dataRead.sawRunStart() ) dataRead.dumpRunStart();
