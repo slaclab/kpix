@@ -1,0 +1,62 @@
+5c5
+<       <CalDacCount>16</CalDacCount>
+---
+>       <CalDacCount>4</CalDacCount>
+8c8
+<       <CalDacStep>32</CalDacStep>
+---
+>       <CalDacStep>4</CalDacStep>
+34c34
+<             <Cal0Delay>1000</Cal0Delay>
+---
+>             <Cal0Delay>2000</Cal0Delay>
+38c38
+<             <CalCount>1</CalCount>
+---
+>             <CalCount>4</CalCount>
+49c49
+<            <CntrlForceTrigSource>Disable</CntrlForceTrigSource>  <!-- bit  4 -->
+---
+>            <CntrlForceTrigSource>Internal</CntrlForceTrigSource> <!-- bit  4 -->
+51c51
+<            <CntrlHoldTime>64x</CntrlHoldTime>                    <!-- bit  8-10 -->
+---
+>            <CntrlHoldTime>64x</CntrlHoldTime>                    <!-- bit 8-10 -->
+60,62c60,62
+<            <CntrlTrigDisable>False</CntrlTrigDisable>            <!-- bit ? -->
+<             <Chan_0000_0031>CCCCCCCC AAAAADDD CCCCCCCC CCCCCCCC</Chan_0000_0031>
+<             <Chan_0032_0063>CCCCCCCC ADAAAAAA AAAAAADD CCCCCCCC</Chan_0032_0063>
+---
+>             <CntrlTrigDisable>True</CntrlTrigDisable>            <!-- bit ? -->
+>             <Chan_0000_0031>CCCCCCCC CCCCCCCC CCCCCCCC CCCCCCCC</Chan_0000_0031>
+>             <Chan_0032_0063>CCCCCCCC CCCCCCCC CCCCCCCC CCCCCCCC</Chan_0032_0063>
+69c69
+<             <Chan_0256_0287>DDDDAAAA ADDDDAAA CCCCCCCC AAAADDDD</Chan_0256_0287>
+---
+>             <Chan_0256_0287>CCCCCCCC CCCCCCCC CCCCCCCC CCCCCCCC</Chan_0256_0287>
+84c84
+<             <Chan_0736_0767>DDDDAAAA ADDDDAAA CCCCCCCC AAAADDDD</Chan_0736_0767>
+---
+>             <Chan_0736_0767>CCCCCCCC CCCCCCCC CCCCCCCC CCCCCCCC</Chan_0736_0767>
+91,92c91,92
+<             <Chan_0960_0991>CCCCCCCC CCCCCCCC AAAAAADD CCCCCCCC</Chan_0960_0991>
+<             <Chan_0992_1023>CCCCCCCC AAAAADDD CCCCCCCC CCCCCCCC</Chan_0992_1023>
+---
+>             <Chan_0960_0991>CCCCCCCC CCCCCCCC CCCCCCCC CCCCCCCC</Chan_0960_0991>
+>             <Chan_0992_1023>CCCCCCCC CCCCCCCC CCCCCCCC CCCCCCCC</Chan_0992_1023>
+96c96
+<             <DacRampThresh>224</DacRampThresh>
+---
+>             <DacRampThresh>240</DacRampThresh>
+106d105
+<             <TimeResetOff>7800</TimeResetOff>
+108a108
+>             <TimeResetOff>7800</TimeResetOff>
+121,122d120
+<             <Chan_0000_0031>AAADDAAA DAAAADDD AAAAADAA DADAAAAA</Chan_0000_0031>
+<             <Chan_0032_0063>DAAAAADA ADAAADAD ADAAAADD ADDADDAD</Chan_0032_0063>
+131d128
+<             <Chan_0992_1023>CCCCCCCC AAAAADDD ADAAAAAA CCCCCCCC</Chan_0992_1023>
+152,153d148
+<             <Chan_0000_0031>CCCCCCCC AAAAADDD AAADAAAA AAADAAAA</Chan_0000_0031>
+<             <Chan_0032_0063>CCCCCCCC ADDAAAAA ADAADADD ADAAAAAA</Chan_0032_0063>
