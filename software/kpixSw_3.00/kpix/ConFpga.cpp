@@ -256,7 +256,17 @@ ConFpga::ConFpga ( uint destination, uint index, uint kpixCount, Device *parent 
    addVariable(new Variable("EvrErrorCount", Variable::Status));
    getVariable("EvrErrorCount")->setDescription("Event Receiver Error Count");
 
+      //EVR Seconds Count Register
+   addRegister(new Register("EvrSecondsCount", evrBaseAddr + 0x00000005));
+   addVariable(new Variable("EvrSecondsCount", Variable::Status));
+   getVariable("EvrSecondsCount")->setDescription("Event Receiver Seconds Count");
 
+   //EVR Offset Count Register
+   addRegister(new Register("EvrOffsetCount", evrBaseAddr + 0x00000006));
+   addVariable(new Variable("EvrOffsetCount", Variable::Status));
+   getVariable("EvrOffsetCount")->setDescription("Event Receiver Offset Count");
+
+   
    // Commands
    addCommand(new Command("KpixRun",0x0));
    getCommand("KpixRun")->setDescription("Kpix run command");
@@ -360,7 +370,11 @@ void ConFpga::readStatus ( ) {
 
    readRegister(getRegister("EvrErrorCount"));
    getVariable("EvrErrorCount")->setInt(getRegister("EvrErrorCount")->get());
-
+   readRegister(getRegister("EvrSecondsCount"));
+   getVariable("EvrSecondsCount")->setInt(getRegister("EvrSecondsCount")->get());
+   readRegister(getRegister("EvrOffsetCount"));
+   getVariable("EvrOffsetCount")->setInt(getRegister("EvrOffsetCount")->get());
+   
    // Sub devices
    Device::readStatus();
    REGISTER_UNLOCK
