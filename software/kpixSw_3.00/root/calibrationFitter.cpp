@@ -397,8 +397,7 @@ int main ( int argc, char **argv ) {
             // Create entry if it does not exist
             kpixFound[kpix]          = true;
             chanFound[kpix][channel] = true;
-            if ( chanData[kpix][channel][bucket][range] == NULL ) 
-               chanData[kpix][channel][bucket][range] = new ChannelData;
+            if ( chanData[kpix][channel][bucket][range] == NULL ) chanData[kpix][channel][bucket][range] = new ChannelData;
 
             // Non calibration based run. Fill mean, ignore times
             if ( calState == "Idle" ) chanData[kpix][channel][bucket][range]->addBasePoint(value);
@@ -411,9 +410,8 @@ int main ( int argc, char **argv ) {
 
                // Injection
                else if ( calState == "Inject" && calDac != minDac ) {
-                  if ( channel == calChannel ) 
-                     chanData[kpix][channel][bucket][range]->addCalibPoint(calDac, value);
-                  else 
+                  if ( channel == calChannel ) chanData[kpix][channel][bucket][range]->addCalibPoint(calDac, value);
+                  else if ( chanData[kpix][calChannel][bucket][range] != NULL ) 
                      chanData[kpix][calChannel][bucket][range]->addNeighborPoint(channel, calDac, value);
                }
             }
