@@ -41,6 +41,7 @@ SharedMem::~SharedMem ( ) {
 
 // Ack
 void SharedMem::ack() {
+   //cout << "Ack=" << dec << ackCount << ", event=" << dec << eventCount << endl;
    ackCount = eventCount;
 }
 
@@ -48,14 +49,14 @@ void SharedMem::ack() {
 void SharedMem::run () {
    while (runEnable) {
 
-      if ( ackCount >= eventCount ) {
+      //if ( ackCount >= eventCount ) {
          if ( dread_->next(event_)) {
             event();
             eventCount++;
          }
          else usleep(1);
-      }
-      else usleep(1);
+      //}
+      //else usleep(1);
    }
 }
 

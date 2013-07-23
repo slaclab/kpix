@@ -175,10 +175,11 @@ ConFpga::ConFpga ( uint destination, uint index, uint kpixCount, Device *parent 
    addVariable(new Variable("AcquisitionTrigger", Variable::Configuration));
    getVariable("AcquisitionTrigger")->setDescription("Acquisition Trigger Source");
    vector<string> acqSrc;
-   acqSrc.resize(3);
+   acqSrc.resize(4);
    acqSrc[0] = "Software";
    acqSrc[1] = "Event Receiver";
    acqSrc[2] = "CmosA";
+   acqSrc[3] = "NimA";
    getVariable("AcquisitionTrigger")->setEnums(acqSrc);
 
 
