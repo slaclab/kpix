@@ -28,41 +28,67 @@ int main (int argc, char **argv) {
    KpixEvent     event;
    KpixSample    *sample;
    uint          x;
-   double        mean;
-   double        gain;
-   double        charge;
    uint          count;
    stringstream  tmp;
    string        serialList[32];
    string        serial;
-   uint          sampleCnt;
+   uint          sampleCnt[9];
+   uint          minTime[9];
+   uint          maxTime[9];
+   uint          addr;
+   uint          uid;
    time_t        curr, last;
 
    // Check args
-   if ( argc != 1 ) {
-      cout << "Usage: readShared" << endl;
+   if ( argc < 1 ) {
+      cout << "Usage: readShared [uid]" << endl;
       return(1);
    }
 
-   dataRead.openShared("kpix",1);
+   if ( argc == 2 ) uid = atoi(argv[1]);
+   else uid = 0;
+
+   cout << "Id=" << dec << uid << endl;
+
+   dataRead.openShared("kpix",1,uid);
 
    // Process each event
    time(&curr);
    last = curr;
    count = 0;
-   sampleCnt = 0;
+
+   for (x=0; x < 9; x++) {
+      sampleCnt[x] = 0;
+      minTime[x]   = 9999;
+      maxTime[x]   = 0;
+   }
+
    while (1) {
 
       time(&curr);
       if ( last != curr ) {
-         cout << "Got " << dec << count << " events, " << dec << sampleCnt << " Samples";
+         cout << "Got " << dec << setw(4) << count << " events, ";
 
-         if ( (float)sampleCnt / (float)count > 9 ) cout << "   *******";
+         for (x=0; x < 9; x++) cout << dec << setw(12) << setfill(' ') << sampleCnt[x];
          cout << endl;
+
+         cout << "                 ";
+         for (x=0; x < 9; x++) {
+            if ( minTime[x] != 9999 ) cout << dec << setw(7) << setfill(' ') << minTime[x];
+            else cout << dec << setw(7) << setfill(' ') << 0;
+            cout << "-";
+            if ( maxTime[x] != 0 ) cout << dec << setw(4) << setfill(' ') << maxTime[x];
+            else cout << dec << setw(4) << setfill(' ') << 0;
+         }
+         cout << endl << endl;
 
          last = curr;
          count = 0;
-         sampleCnt = 0;
+         for (x=0; x < 9; x++) {
+            sampleCnt[x] = 0;
+            minTime[x]   = 9999;
+            maxTime[x]   = 0;
+         }
       }
 
       if ( dataRead.next(&event) ) {
@@ -76,59 +102,16 @@ int main (int argc, char **argv) {
             }
          }
 
-         sampleCnt += event.count();
-
-         if ( dataRead.sawRunStop()  ) dataRead.dumpRunStop();
-         if ( dataRead.sawRunStart() ) dataRead.dumpRunStart();
-         if ( dataRead.sawRunTime()  ) dataRead.dumpRunTime();
-
-#if 0
-
-         // Dump header values
-         cout << "Header:eventNumber = " << dec << event.eventNumber() << endl;
-         cout << "Header:timeStamp   = " << dec << event.timestamp() << endl;
-         cout << "Header:count       = " << dec << event.count() << endl;
-         cout << endl;
-
-#endif
-#if 0
-
-         // Iterate through samples
          for (x=0; x < event.count(); x++) {
-
-            // Get sample
             sample = event.sample(x);
+            addr   = sample->getKpixAddress();
 
-            // Get serial number
-            if ( sample->getKpixAddress() < 32 ) serial = serialList[sample->getKpixAddress()];
-            else serial = "";
-
-            // Show sample data
-            cout << "Sample:index       = " << dec << x << endl;
-            cout << "Sample:eventNumber = " << dec << sample->getEventNum()    << endl;
-            cout << "Sample:address     = " << dec << sample->getKpixAddress() << endl;
-            cout << "Sample:serial      = " << dec << serial                   << endl;
-            cout << "Sample:channel     = " << dec << sample->getKpixChannel() << endl;
-            cout << "Sample:bucket      = " << dec << sample->getKpixBucket()  << endl;
-            cout << "Sample:time        = " << dec << sample->getSampleTime()  << endl;
-            cout << "Sample:value       = " << dec << sample->getSampleValue() << endl;
-            cout << "Sample:range       = " << dec << sample->getSampleRange() << endl;
-            cout << "Sample:trigType    = " << dec << sample->getTrigType()    << endl;
-            cout << "Sample:empty       = " << dec << sample->getEmpty()       << endl;
-            cout << "Sample:badCount    = " << dec << sample->getBadCount()    << endl;
-            cout << "Sample:sampleType  = " << dec << sample->getSampleType()  << endl;
-
-            // Do something if this is a data sample
             if ( sample->getSampleType() == KpixSample::Data ) {
-
-               // Get a config variable associated with event
-               cout << "Sample:CalDac      = " << dataRead.getConfigInt("conFpga:kpixAsic:DacCalibration") << endl;
-               cout << "Sample:CalState    = " << dataRead.getStatus("CalState") << endl;
+               sampleCnt[addr]++;
+               if ( minTime[addr] > sample->getSampleTime() ) minTime[addr] = sample->getSampleTime();
+               if ( maxTime[addr] < sample->getSampleTime() ) maxTime[addr] = sample->getSampleTime();
             }
-            cout << endl;
          }
-
-#endif
 
          count++;
       }
