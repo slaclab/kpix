@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2013-07-12
+-- Last update: 2013-07-24
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -86,34 +86,7 @@ architecture rtl of Trigger is
    end component;
 
 begin
-
-   sync : process (clk200, rst200) is
-   begin
-
-      if (rising_edge(clk200)) then
-         r <= rin after DELAY_G;
-      end if;
-      if (rst200 = '1') then
-         r.triggerRegsIn.extTriggerSrc   <= (others => '0') after DELAY_G;
-         r.triggerRegsIn.extTimestampSrc <= (others => '0') after DELAY_G;
-         r.triggerRegsIn.acquisitionSrc  <= (others => '0') after DELAY_G;
-         r.triggerRegsIn.calibrate       <= '0'             after DELAY_G;
-         r.autoReadDisable               <= '0'             after DELAY_G;
-         r.triggerCounter                <= (others => '0') after DELAY_G;
-         r.triggerCountEnable            <= '0'             after DELAY_G;
-         r.startCounter                  <= (others => '0') after DELAY_G;
-         r.startCountEnable              <= '0'             after DELAY_G;
-         r.timestampFifoWrEn             <= '0'             after DELAY_G;
-         r.readoutPending                <= '0'             after DELAY_G;
-         r.readoutCounter                <= (others => '0') after DELAY_G;
-         r.readoutCountEnable            <= '0'             after DELAY_G;
-         r.triggerOut.trigger            <= '0'             after DELAY_G;
-         r.triggerOut.startAcquire       <= '0'             after DELAY_G;
-         r.triggerOut.startCalibrate     <= '0'             after DELAY_G;
-         r.triggerOut.startReadout       <= '0'             after DELAY_G;
-      end if;
-   end process sync;
-
+   
    -- Synchronize external inputs
    extTriggerRise(0) <= '0';
 
@@ -179,6 +152,35 @@ begin
          dataOut     => open,
          risingEdge  => extTriggerRise(7),
          fallingEdge => open);
+   
+   sync : process (clk200, rst200) is
+   begin
+
+      if (rising_edge(clk200)) then
+         r <= rin after DELAY_G;
+      end if;
+      if (rst200 = '1') then
+         r.triggerRegsIn.extTriggerSrc   <= (others => '0') after DELAY_G;
+         r.triggerRegsIn.extTimestampSrc <= (others => '0') after DELAY_G;
+         r.triggerRegsIn.acquisitionSrc  <= (others => '0') after DELAY_G;
+         r.triggerRegsIn.calibrate       <= '0'             after DELAY_G;
+         r.autoReadDisable               <= '0'             after DELAY_G;
+         r.triggerCounter                <= (others => '0') after DELAY_G;
+         r.triggerCountEnable            <= '0'             after DELAY_G;
+         r.startCounter                  <= (others => '0') after DELAY_G;
+         r.startCountEnable              <= '0'             after DELAY_G;
+         r.timestampFifoWrEn             <= '0'             after DELAY_G;
+         r.readoutPending                <= '0'             after DELAY_G;
+         r.readoutCounter                <= (others => '0') after DELAY_G;
+         r.readoutCountEnable            <= '0'             after DELAY_G;
+         r.triggerOut.trigger            <= '0'             after DELAY_G;
+         r.triggerOut.startAcquire       <= '0'             after DELAY_G;
+         r.triggerOut.startCalibrate     <= '0'             after DELAY_G;
+         r.triggerOut.startReadout       <= '0'             after DELAY_G;
+      end if;
+   end process sync;
+
+
 
    
    comb : process (r, frontEndCmdCntlOut, triggerRegsIn, kpixConfigRegs, extTriggerRise, kpixState, fifoFull) is
@@ -258,7 +260,10 @@ begin
            extTriggerRise(7) = '1')     -- EVR trigger routed through extTriggerSync(7)
           or
           (r.triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_CMOSA_C and
-           extTriggerRise(3) = '1'))    -- CMOS trigger is extTriggerSync(3)
+           extTriggerRise(3) = '1')    -- CMOSA trigger is extTriggerSync(3)
+          or
+          (r.triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_NIMA_C and
+           extTriggerRise(1) = '1'))    -- NIMA trigger is extTriggerSync(1)
       then
          v.triggerOut.startAcquire   := '1';
          v.triggerOut.startCalibrate := r.triggerRegsIn.calibrate;

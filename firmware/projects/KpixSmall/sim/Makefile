@@ -14,7 +14,7 @@
 ##-----------------------------------------------------------------------------
 
 # Set Default Output
-SIM_DIR=$(PWD)/../../../build/KpixSmallSim
+SIM_DIR=$(PWD)/../../../build/KpixEmtbEthSim
 
 # Analog netlist
 ANA_NET = kpix_c.cir
@@ -42,11 +42,16 @@ HDL_SRC= $(PWD)/../../../modules/StdLib/rtl/StdRtlPkg.vhd \
          $(PWD)/../../../modules/StdLib/rtl/Synchronizer.vhd \
          $(PWD)/../../../modules/StdLib/rtl/SynchronizerEdge.vhd \
          $(PWD)/../../../modules/StdLib/rtl/SynchronizerVector.vhd \
-         $(PWD)/../../../modules/StdLib/rtl/SynchronizerFifo.vhd \
-         $(PWD)/../../../modules/StdLib/rtl/FifoAsync.vhd \
-         $(PWD)/../../../modules/StdLib/rtl/SimpleDualPortRam.vhd \
          $(PWD)/../../../modules/StdLib/rtl/RstSync.vhd \
          $(PWD)/../../../modules/StdLib/rtl/ClkOutBufDiff.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/SimpleDualPortRam.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/FifoAsync.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/SynchronizerFifo.vhd \
+         $(PWD)/../../../modules/8b10bCore/rtl/Code8b10bPkg.vhd \
+         $(PWD)/../../../modules/8b10bCore/rtl/Decoder8b10b.vhd \
+         $(PWD)/../../../modules/Pgp2Core/rtl/gtp/GtpRxCommaAligner.vhd \
+         $(PWD)/../../../modules/Pgp2Core/rtl/gtp/GtpTxPhaseAligner.vhd \
+         $(PWD)/../../../modules/Pgp2Core/rtl/gtp/Gtp16LowLatCore.vhd \
 	 $(PWD)/../rtl/Version.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixPkg.vhd \
 	 $(PWD)/../../../modules/KpixCore/rtl/reg_rw_32.vhd \
@@ -58,24 +63,26 @@ HDL_SRC= $(PWD)/../../../modules/StdLib/rtl/StdRtlPkg.vhd \
 	 $(PWD)/../../../modules/eth_client/rtl/1g/EthRegSlave.vhd \
 	 $(PWD)/../../../modules/eth_client/rtl/1g/EthCmdSlave.vhd \
 	 $(PWD)/../../../modules/KpixDaq/xil_cores/*.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/TriggerPkg.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/KpixLocalPkg.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/FrontEndPkg.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/KpixRegCntlPkg.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/KpixClockGenPkg.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/EventBuilderFifoPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/EthUsBuff64.vhd \
          $(PWD)/../../../modules/KpixDaq/sim/EthFrontEndSim.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/EvrPkg.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/EvrCorePkg.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/EvrCore.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/EvrGtp.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixRegRxPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixRegRx.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixDataRxPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixDataRx.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/KpixLocalPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixLocal.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/KpixClockGenPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixClockGen.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/FrontEndPkg.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/TriggerPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/Trigger.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/FrontEndRegDecoder.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/EventBuilderFifoPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/EventBuilder.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/KpixRegCntlPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixRegCntl.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixDaqCore.vhd \
 	 $(PWD)/../xil_cores/*.vhd \
@@ -85,7 +92,7 @@ HDL_SRC= $(PWD)/../../../modules/StdLib/rtl/StdRtlPkg.vhd \
 	 $(PWD)/../../../modules/KpixCore/sim/AsicSim.vhd \
 	 $(PWD)/../../../modules/gen_daq/simlink/SimLinkRx.vhd \
 	 $(PWD)/../../../modules/gen_daq/simlink/SimLinkTx.vhd \
-	 $(PWD)/KpixSmallAnalogTb.vhd \
+         $(PWD)/../../../modules/StdLib/tb/ClkRst.vhd \
 	 $(PWD)/KpixSmallTb.vhd
 
 # Verilog Source Files

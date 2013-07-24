@@ -39,14 +39,19 @@ ANA_INC = $(PWD)/../../../modules/KpixCore/analog/olib_tsmc025.cir \
 
 # HDL Source Files
 HDL_SRC= $(PWD)/../../../modules/StdLib/rtl/StdRtlPkg.vhd \
-         $(PWD)/../../../modules/StdLib/rtl/RstSync.vhd \
-         $(PWD)/../../../modules/StdLib/rtl/ClkOutBufDiff.vhd \
          $(PWD)/../../../modules/StdLib/rtl/Synchronizer.vhd \
          $(PWD)/../../../modules/StdLib/rtl/SynchronizerEdge.vhd \
          $(PWD)/../../../modules/StdLib/rtl/SynchronizerVector.vhd \
-         $(PWD)/../../../modules/StdLib/rtl/SynchronizerFifo.vhd \
-         $(PWD)/../../../modules/StdLib/rtl/FifoAsync.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/RstSync.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/ClkOutBufDiff.vhd \
          $(PWD)/../../../modules/StdLib/rtl/SimpleDualPortRam.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/FifoAsync.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/SynchronizerFifo.vhd \
+         $(PWD)/../../../modules/8b10bCore/rtl/Code8b10bPkg.vhd \
+         $(PWD)/../../../modules/8b10bCore/rtl/Decoder8b10b.vhd \
+         $(PWD)/../../../modules/Pgp2Core/rtl/gtp/GtpRxCommaAligner.vhd \
+         $(PWD)/../../../modules/Pgp2Core/rtl/gtp/GtpTxPhaseAligner.vhd \
+         $(PWD)/../../../modules/Pgp2Core/rtl/gtp/Gtp16LowLatCore.vhd \
 	 $(PWD)/../rtl/Version.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixPkg.vhd \
 	 $(PWD)/../../../modules/KpixCore/rtl/reg_rw_32.vhd \
@@ -58,24 +63,26 @@ HDL_SRC= $(PWD)/../../../modules/StdLib/rtl/StdRtlPkg.vhd \
 	 $(PWD)/../../../modules/eth_client/rtl/1g/EthRegSlave.vhd \
 	 $(PWD)/../../../modules/eth_client/rtl/1g/EthCmdSlave.vhd \
 	 $(PWD)/../../../modules/KpixDaq/xil_cores/*.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/TriggerPkg.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/KpixLocalPkg.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/FrontEndPkg.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/KpixRegCntlPkg.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/KpixClockGenPkg.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/EventBuilderFifoPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/EthUsBuff64.vhd \
          $(PWD)/../../../modules/KpixDaq/sim/EthFrontEndSim.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/EvrPkg.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/EvrCorePkg.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/EvrCore.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/EvrGtp.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixRegRxPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixRegRx.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixDataRxPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixDataRx.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/KpixLocalPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixLocal.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/KpixClockGenPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixClockGen.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/FrontEndPkg.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/TriggerPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/Trigger.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/FrontEndRegDecoder.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/EventBuilderFifoPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/EventBuilder.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/KpixRegCntlPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixRegCntl.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixDaqCore.vhd \
 	 $(PWD)/../xil_cores/*.vhd \
@@ -89,16 +96,7 @@ HDL_SRC= $(PWD)/../../../modules/StdLib/rtl/StdRtlPkg.vhd \
 	 $(PWD)/KpixEmtbEthTb.vhd
 
 # Verilog Source Files
-VLOG = $(PWD)/../../../modules/KpixCore/sim/Kpix.v \
-       $(PWD)/../../../modules/EvrCore/EventReceiverTop.v \
-       $(PWD)/../../../modules/EvrCore/rtl/EventReceiverChannel.v \
-       $(PWD)/../../../modules/EvrCore/rtl/evrReg.v \
-       $(PWD)/../../../modules/EvrCore/rtl/serialReceiver2.v \
-       $(PWD)/../../../modules/EvrCore/rtl/mgt_usrclk_source.v \
-       $(PWD)/../../../modules/EvrCore/rtl/rx_sync.v \
-       $(PWD)/../../../modules/EvrCore/rtl/timeofDayReceiver.v \
-       $(PWD)/../../../modules/EvrCore/rtl/TsFifo.v \
-       $(PWD)/../../../modules/EvrCore/xil_cores/*.vhd
+VLOG = $(PWD)/../../../modules/KpixCore/sim/Kpix.v 
 
 # Targets
 all:    dir env syn_setup rtl_src vhpi_src sim_dig

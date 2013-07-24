@@ -19,7 +19,7 @@ use ieee.std_logic_1164.all;
 
 package Version is
 
-  constant FPGA_VERSION_C : std_logic_vector(31 downto 0) := x"D0000002";  -- MAKE_VERSION
+  constant FPGA_VERSION_C : std_logic_vector(31 downto 0) := x"D0000003";  -- MAKE_VERSION
 
 end Version;
 
@@ -36,5 +36,6 @@ end Version;
 -- addresses, added EVR
 -- 07/16/2013 (0xD0000001): Added EVR Seconds and Offset status registers
 -- 07/18/2013 (0xD0000002): Updated with newer StdLib components.
+-- 07/24/2013 (0xD0000003): Fixed bunchCount bug. Was not being generated properly.
 -------------------------------------------------------------------------------
 

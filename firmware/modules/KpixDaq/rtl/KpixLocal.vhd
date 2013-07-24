@@ -45,12 +45,15 @@ entity KpixLocal is
       kpixCmd   : in  std_logic;        -- Command data in
       kpixData  : out std_logic;        -- Response Data out
 
-      -- KPIX State
+      -- KPIX State (output on clk200)
+      clk200    : in  sl;
+      rst200    : in  sl;
       kpixState : out KpixStateOutType;
 
       -- Cal strobe out
       calStrobeOut : out std_logic;
 
+      -- KPIX State (output on sysClk)
       sysClk       : in  std_logic;
       sysRst       : in  std_logic;
       sysKpixState : out KpixStateOutType  -- Outputs on sysClk
@@ -154,7 +157,9 @@ architecture KpixLocal of KpixLocal is
       subCount   : unsigned(2 downto 0);
    end record RegType;
 
-   signal r, rin : RegType;
+   signal r, rin      : RegType;
+   signal regClkRise  : sl;
+   signal kpixClkRise : sl;
 
 begin
 
@@ -229,33 +234,66 @@ begin
    reg_wr_ena      <= v8_reg_wr_ena;
 
 
+   -------------------------------------------------------------------------------------------------
+   -- Synchronize kpix signals to clk200
+   -- Not really necessary since clk200 and kpixClk have synchronous edges,
+   -- but it's easy to do edge detection this way.
+   -------------------------------------------------------------------------------------------------
+   SynchronizerEdge_KpixClk : entity work.SynchronizerEdge
+      generic map (
+         TPD_G => DELAY_G)
+      port map (
+         clk         => clk200,
+         aRst        => rst200,
+         dataIn      => kpixClk,
+         dataOut     => open,
+         risingEdge  => kpixClkRise,
+         fallingEdge => open);
+
+   SynchronizerEdge_RegClk : entity work.SynchronizerEdge
+      generic map (
+         TPD_G => DELAY_G)
+      port map (
+         clk         => clk200,
+         aRst        => rst200,
+         dataIn      => reg_clock,
+         dataOut     => open,
+         risingEdge  => regClkRise,
+         fallingEdge => open);
 
    --------------------------------------------------------------------------------------------------
    -- Generate subCount and bunchCount
    --------------------------------------------------------------------------------------------------
-   process (kpixClk, kpixClkRst) is
+   process (clk200, rst200) is
    begin
-      if (kpixClkRst = '1') then
+      if (rst200 = '1') then
          r.div        <= '0'             after DELAY_G;
          r.bunchCount <= (others => '0') after DELAY_G;
          r.subCount   <= (others => '0') after DELAY_G;
-      elsif rising_edge(kpixClk) then
+      elsif rising_edge(clk200) then
          r <= rin after DELAY_G;
       end if;
    end process;
 
-   comb : process (r, v8_analog_state, reg_clock) is
+   comb : process (r, v8_analog_state, regClkRise, kpixClkRise) is
       variable v : RegType;
    begin
-      v          := r;
-      v.subCount := r.subCount + 1;
+      v := r;
 
-      if (v8_analog_state = KPIX_ANALOG_SAMP_STATE_C and reg_clock = '1') then
-         v.div := not r.div;
-         if (r.div = '1') then
-            v.bunchCount := r.bunchCount + 1;
-            v.subCount   := (others => '0');
-         end if;
+      if (kpixClkRise = '1') then
+         v.subCount := r.subCount + 1;
+      end if;
+
+      -- v8_analog_state clock boundary crossing
+      -- Ok for now but maybe there's a better way to do this
+      if (v8_analog_state = KPIX_ANALOG_SAMP_STATE_C) then
+          if (regClkRise = '1') then
+             v.div := not r.div;
+             if (r.div = '1') then
+                v.bunchCount := r.bunchCount + 1;
+                v.subCount   := (others => '0');
+             end if;
+          end if;
       else
          v.bunchCount := (others => '0');
       end if;

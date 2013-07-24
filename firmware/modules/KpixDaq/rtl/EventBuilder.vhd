@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2013-07-18
+-- Last update: 2013-07-23
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -207,6 +207,9 @@ begin
     -- Determines which kpix to look for data from.
     -- Increments every cycle so that kpixes are read in round robin fashion.
     rVar.kpixCounter := r.kpixCounter + 1;
+    if (r.kpixCounter = NUM_KPIX_MODULES_G-1) then
+       rVar.kpixCounter := (others => '0');
+    end if;
 
     -- Reset ack when valid falls
     for i in NUM_KPIX_MODULES_G-1 downto 0 loop

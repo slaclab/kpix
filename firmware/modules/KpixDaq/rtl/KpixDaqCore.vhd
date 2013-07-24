@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-17
--- Last update: 2013-07-17
+-- Last update: 2013-07-22
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -291,6 +291,8 @@ begin
          kpixReset    => intKpixResetOut,
          kpixCmd      => intKpixSerTxOut(NUM_KPIX_MODULES_G),
          kpixData     => intKpixSerRxIn(NUM_KPIX_MODULES_G),
+         clk200       => clk200,
+         rst200       => rst200,
          kpixState    => kpixState,
          calStrobeOut => open,
          sysClk       => sysClk,
