@@ -683,17 +683,20 @@ int main ( int argc, char **argv ) {
                                  // Find crosstalk, value - base > 3 * sigma
                                  for (crChan=0; crChan < 1024; crChan++ ) {
 
-                                    crossDiff = chanData[kpix][channel][bucket][range]->calibOtherValue[crChan] - 
-                                                chanData[kpix][crChan][bucket][range]->baseMean;
+                                    if ( chanData[kpix][crChan][bucket][range] != NULL ) {
 
-                                    if ( (chanData[kpix][channel][bucket][range]->calibOtherDac[crChan] == x)  && 
-                                         (crChan != channel) && 
-                                         (chanData[kpix][channel][bucket][range] != NULL ) &&
-                                         (crossDiff > (10.0 * chanData[kpix][crChan][bucket][range]->baseRms))) {
+                                       crossDiff = chanData[kpix][channel][bucket][range]->calibOtherValue[crChan] - 
+                                                   chanData[kpix][crChan][bucket][range]->baseMean;
 
-                                       if ( crossString.str() != "" ) crossString << " ";
-                                       crossString << dec << crChan << ":" << dec << (uint)crossDiff;
-                                       crossStringCsv << "," << dec << crChan << "," << dec << (uint)crossDiff;
+                                       if ( (chanData[kpix][channel][bucket][range]->calibOtherDac[crChan] == x)  && 
+                                            (crChan != channel) && 
+                                            (chanData[kpix][channel][bucket][range] != NULL ) &&
+                                            (crossDiff > (10.0 * chanData[kpix][crChan][bucket][range]->baseRms))) {
+
+                                          if ( crossString.str() != "" ) crossString << " ";
+                                          crossString << dec << crChan << ":" << dec << (uint)crossDiff;
+                                          crossStringCsv << "," << dec << crChan << "," << dec << (uint)crossDiff;
+                                       }
                                     }
                                  }
                               }
