@@ -93,6 +93,10 @@ int main (int argc, char **argv) {
 
       if ( dataRead.next(&event) ) {
 
+         if ( dataRead.sawRunStop()  ) dataRead.dumpRunStop();
+         if ( dataRead.sawRunStart() ) dataRead.dumpRunStart();
+         if ( dataRead.sawRunTime()  ) dataRead.dumpRunTime();
+
          // Extract kpix serial numbers after reading first event
          if ( count == 0 ) {
             for (x=0; x < 32; x++) {

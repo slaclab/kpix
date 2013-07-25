@@ -40,10 +40,11 @@ KpixControl::KpixControl ( CommLink *commLink, string defFile, uint kpixCount ) 
 
    // Set run states
    vector<string> states;
-   states.resize(3);
+   states.resize(4);
    states[0] = "Stopped";
    states[1] = "Running";
    states[2] = "Running Calibration";
+   states[3] = "Evr Running";
    getVariable("RunState")->setEnums(states);
 
    // Set run rates
@@ -435,6 +436,13 @@ void KpixControl::setRunState ( string state ) {
          pthread_join(swRunThread_,NULL);
       }
 
+      if ( hwRunning_ ) {
+         addRunStop();
+         device("cntrlFpga",0)->set("AcquisitionTrigger","Software");
+         writeConfig(false);
+         hwRunning_ = false;
+      }
+
       allStatusReq_ = true;
       addRunStop();
    }
@@ -493,6 +501,22 @@ void KpixControl::setRunState ( string state ) {
             throw(err.str());
          }
       }
+   }
+
+   // Evr Running state is requested
+   else if ( !hwRunning_ && state == "Evr Running" ) {
+
+      // Increment run number
+      runNumber = getVariable("RunNumber")->getInt() + 1;
+      getVariable("RunNumber")->setInt(runNumber);
+      addRunStart();
+
+      swRunRetState_ = "Stopped";
+      hwRunning_   = true;
+      getVariable("RunState")->set(state);
+
+      device("cntrlFpga",0)->set("AcquisitionTrigger","Event Receiver");
+      writeConfig(false);
    }
 }
 
