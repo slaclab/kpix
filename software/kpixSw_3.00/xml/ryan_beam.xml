@@ -21,7 +21,7 @@
          <ClkPeriodAcq>70nS</ClkPeriodAcq>
          <ClkPeriodDig>50nS</ClkPeriodDig>
          <ClkPeriodIdle>100nS</ClkPeriodIdle>
-         <ClkPeriodPrecharge>1000nS</ClkPeriodPrecharge>
+         <ClkPeriodPrecharge>6000nS</ClkPeriodPrecharge>
          <ClkPeriodRead>100nS</ClkPeriodRead>
          <KpixRxRaw>False</KpixRxRaw>
          <RunMode>Acquire</RunMode>
@@ -29,7 +29,7 @@
          <KpixOutputEdge>Rising Edge</KpixOutputEdge>
          <TrigSource>None</TrigSource>
 	      <TimestampSource>None</TimestampSource>
-	      <EvrOpCode>10Hz</EvrOpCode>
+	      <EvrOpCode>ESA_Beam</EvrOpCode>
 	      <EvrEnable>True</EvrEnable>
 	      <EvrTriggerDelay>1</EvrTriggerDelay>
 	      <EvrTriggerWidth>100</EvrTriggerWidth>

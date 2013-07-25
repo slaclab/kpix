@@ -35,8 +35,11 @@ int main (int argc, char **argv) {
    uint          sampleCnt[9];
    uint          minTime[9];
    uint          maxTime[9];
+   uint          hitChan[1024];
    uint          addr;
-   uint          uid;
+   uint          chan;
+   uint          buck;
+   int           uid;
    time_t        curr, last;
 
    // Check args
@@ -46,7 +49,7 @@ int main (int argc, char **argv) {
    }
 
    if ( argc == 2 ) uid = atoi(argv[1]);
-   else uid = 0;
+   else uid = -1;
 
    cout << "Id=" << dec << uid << endl;
 
@@ -62,6 +65,8 @@ int main (int argc, char **argv) {
       minTime[x]   = 9999;
       maxTime[x]   = 0;
    }
+
+   for (x=0; x < 1024; x++) hitChan[x] = 0;
 
    while (1) {
 
@@ -81,6 +86,13 @@ int main (int argc, char **argv) {
             else cout << dec << setw(4) << setfill(' ') << 0;
          }
          cout << endl << endl;
+
+         //cout << "                 ";
+         //for (x=0; x < 1024; x++) {
+            //if ( hitChan[x] != 0 ) cout << setw(10) << dec << x;
+         //}
+         //cout << endl << endl;
+         for (x=0; x < 1024; x++) hitChan[x] = 0;
 
          last = curr;
          count = 0;
@@ -109,11 +121,14 @@ int main (int argc, char **argv) {
          for (x=0; x < event.count(); x++) {
             sample = event.sample(x);
             addr   = sample->getKpixAddress();
+            chan   = sample->getKpixChannel();
+            buck   = sample->getKpixBucket();
 
             if ( sample->getSampleType() == KpixSample::Data ) {
                sampleCnt[addr]++;
                if ( minTime[addr] > sample->getSampleTime() ) minTime[addr] = sample->getSampleTime();
                if ( maxTime[addr] < sample->getSampleTime() ) maxTime[addr] = sample->getSampleTime();
+               if ( addr == 8 && buck == 0 ) hitChan[chan]++;
             }
          }
 

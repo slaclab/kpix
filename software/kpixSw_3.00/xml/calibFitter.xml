@@ -4,7 +4,7 @@
    <FindBadMeanFit>1</FindBadMeanFit>
    <GoodMeanMinR0>100</GoodMeanMinR0>
    <GoodMeanMaxR0>400</GoodMeanMaxR0>
-   <GoodMeanMinR1>100</GoodMeanMinR1>
+   <GoodMeanMinR1>10</GoodMeanMinR1>
    <GoodMeanMaxR1>400</GoodMeanMaxR1>
 
    <FindBadMeanChisq>0</FindBadMeanChisq>
@@ -13,8 +13,8 @@
    <FindBadGainFit>1</FindBadGainFit>
    <GoodGainMinR0>2.0e15</GoodGainMinR0>
    <GoodGainMaxR0>7.0e15</GoodGainMaxR0>
-   <GoodGainMinR1>2.0e15</GoodGainMinR1>
-   <GoodGainMaxR1>7.0e15</GoodGainMaxR1>
+   <GoodGainMinR1>1.0e14</GoodGainMinR1>
+   <GoodGainMaxR1>4.0e14</GoodGainMaxR1>
 
    <FindBadGainChisq>0</FindBadGainChisq>
    <GoodGainChisqMax>0</GoodGainChisqMax>
@@ -25,6 +25,6 @@
    <GainFitMaxR1>0.0</GainFitMaxR1>
    
    <GainChargeErrorR0>4.0</GainChargeErrorR0>
-   <GainChargeErrorR1>4.0</GainChargeErrorR1>
+   <GainChargeErrorR1>2.0</GainChargeErrorR1>
 
 </config>
