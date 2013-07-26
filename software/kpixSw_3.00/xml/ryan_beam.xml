@@ -31,7 +31,7 @@
 	      <TimestampSource>None</TimestampSource>
 	      <EvrOpCode>ESA_Beam</EvrOpCode>
 	      <EvrEnable>True</EvrEnable>
-	      <EvrTriggerDelay>1</EvrTriggerDelay>
+	      <EvrTriggerDelay>40</EvrTriggerDelay>
 	      <EvrTriggerWidth>100</EvrTriggerWidth>
          <kpixAsic>
             <BunchClockCount>1812</BunchClockCount>
