@@ -58,9 +58,9 @@ int main (int argc, char **argv) {
    for( x=0; x < 9; x++ ) {
       tmp.str("");
       tmp << "layer " << dec << x;
-      hist[x] = new TH1F(tmp.str().c_str(),tmp.str().c_str(),110,-10e-15,100e-15);
-      minVal[x] = 100e-15;
-      maxVal[x] = -10e-15;
+      hist[x] = new TH1F(tmp.str().c_str(),tmp.str().c_str(),1000,-500e-15,500e-15);
+      minVal[x] = 500e-15;
+      maxVal[x] = -500e-15;
    }
 
    // Process each event
@@ -123,7 +123,8 @@ int main (int argc, char **argv) {
 
    for( x=0; x < 9; x++ ) {
       c1->cd(x+1);
-      hist[x]->GetXaxis()->SetRangeUser(minVal[x],maxVal[x]);
+      //hist[x]->GetXaxis()->SetRangeUser(minVal[x],maxVal[x]);
+      hist[x]->GetXaxis()->SetRangeUser(-20e-15,20e-15);
       hist[x]->Draw();
    }
 
