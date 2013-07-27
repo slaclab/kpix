@@ -13,7 +13,7 @@
       <DebugCmdTime>True</DebugCmdTime>
       <DebugEnable>False</DebugEnable>
       <RunCount>1000</RunCount>
-      <RunRate>No Limit</RunRate>
+      <RunRate>5Hz</RunRate>
       <cntrlFpga>
          <AcquisitionTrigger>Software</AcquisitionTrigger>
          <BncSourceA>RegClock</BncSourceA>
@@ -29,7 +29,7 @@
          <KpixOutputEdge>Rising Edge</KpixOutputEdge>
          <TrigSource>None</TrigSource>
 	      <TimestampSource>None</TimestampSource>
-	      <EvrOpCode>10Hz</EvrOpCode>
+	      <EvrOpCode>5Hz</EvrOpCode>
 	      <EvrEnable>True</EvrEnable>
 	      <EvrTriggerDelay>1</EvrTriggerDelay>
 	      <EvrTriggerWidth>100</EvrTriggerWidth>

@@ -49,19 +49,20 @@ KpixControl::KpixControl ( CommLink *commLink, string defFile, uint kpixCount ) 
 
    // Set run rates
    vector<string> rates;
-   rates.resize(12);
+   rates.resize(13);
    rates[0]  = "1Hz";
-   rates[1]  = "10Hz";
-   rates[2]  = "20Hz";
-   rates[3]  = "30Hz";
-   rates[4]  = "40Hz";
-   rates[5]  = "50Hz";
-   rates[6]  = "60Hz";
-   rates[7]  = "70Hz";
-   rates[8]  = "80Hz";
-   rates[9]  = "90Hz";
-   rates[10] = "100Hz";
-   rates[11] = "No Limit";
+   rates[1]  = "5Hz";
+   rates[2]  = "10Hz";
+   rates[3]  = "20Hz";
+   rates[4]  = "30Hz";
+   rates[5]  = "40Hz";
+   rates[6]  = "50Hz";
+   rates[7]  = "60Hz";
+   rates[8]  = "70Hz";
+   rates[9]  = "80Hz";
+   rates[10] = "90Hz";
+   rates[11] = "100Hz";
+   rates[12] = "No Limit";
    getVariable("RunRate")->setEnums(rates);
 
    // Data file nameing controls
@@ -476,6 +477,7 @@ void KpixControl::setRunState ( string state ) {
       else if ( get("RunRate") == "30Hz"     ) swRunPeriod_ =   33333;
       else if ( get("RunRate") == "20Hz"     ) swRunPeriod_ =   50000;
       else if ( get("RunRate") == "10Hz"     ) swRunPeriod_ =  100000;
+      else if ( get("RunRate") == "5Hz"      ) swRunPeriod_ =  200000;
       else if ( get("RunRate") == "1Hz"      ) swRunPeriod_ = 1000000;
       else if ( get("RunRate") == "No Limit" ) swRunPeriod_ = 0;
       else swRunPeriod_ = 1000000;

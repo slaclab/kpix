@@ -35,10 +35,11 @@ int main (int argc, char **argv) {
    uint          sampleCnt[9];
    uint          minTime[9];
    uint          maxTime[9];
-   uint          hitChan[1024];
+   uint          rangeCnt[9];
    uint          addr;
    uint          chan;
    uint          buck;
+   uint          range;
    int           uid;
    time_t        curr, last;
 
@@ -64,9 +65,8 @@ int main (int argc, char **argv) {
       sampleCnt[x] = 0;
       minTime[x]   = 9999;
       maxTime[x]   = 0;
+      rangeCnt[x]  = 0;
    }
-
-   for (x=0; x < 1024; x++) hitChan[x] = 0;
 
    while (1) {
 
@@ -85,14 +85,11 @@ int main (int argc, char **argv) {
             if ( maxTime[x] != 0 ) cout << dec << setw(4) << setfill(' ') << maxTime[x];
             else cout << dec << setw(4) << setfill(' ') << 0;
          }
-         cout << endl << endl;
+         cout << endl;
 
-         //cout << "                 ";
-         //for (x=0; x < 1024; x++) {
-            //if ( hitChan[x] != 0 ) cout << setw(10) << dec << x;
-         //}
-         //cout << endl << endl;
-         for (x=0; x < 1024; x++) hitChan[x] = 0;
+         cout << "                 ";
+         for (x=0; x < 9; x++) cout << dec << setw(12) << setfill(' ') << rangeCnt[x];
+         cout << endl << endl;
 
          last = curr;
          count = 0;
@@ -100,6 +97,7 @@ int main (int argc, char **argv) {
             sampleCnt[x] = 0;
             minTime[x]   = 9999;
             maxTime[x]   = 0;
+            rangeCnt[x]  = 0;
          }
       }
 
@@ -123,12 +121,13 @@ int main (int argc, char **argv) {
             addr   = sample->getKpixAddress();
             chan   = sample->getKpixChannel();
             buck   = sample->getKpixBucket();
+            range  = sample->getSampleRange();
 
             if ( sample->getSampleType() == KpixSample::Data ) {
                sampleCnt[addr]++;
                if ( minTime[addr] > sample->getSampleTime() ) minTime[addr] = sample->getSampleTime();
                if ( maxTime[addr] < sample->getSampleTime() ) maxTime[addr] = sample->getSampleTime();
-               if ( addr == 8 && buck == 0 ) hitChan[chan]++;
+               if ( range ) rangeCnt[addr]++;
             }
          }
 
