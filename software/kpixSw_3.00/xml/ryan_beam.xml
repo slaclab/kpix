@@ -98,7 +98,7 @@
             <DacDefaultAnalog>189</DacDefaultAnalog>
             <DacEventThreshold>80</DacEventThreshold>
             <DacRampThresh>240</DacRampThresh>
-            <DacRangeThreshold>90</DacRangeThreshold>
+            <DacRangeThreshold>0</DacRangeThreshold>
             <DacShaperBias>120</DacShaperBias>
             <DacThresholdA>240</DacThresholdA>
             <DacThresholdB>0</DacThresholdB>
