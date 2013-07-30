@@ -26,6 +26,7 @@ int main (int argc, char **argv) {
    string        serialList[32];
    string        serial;
    TH1F        * hist[9];
+   TH1F        * bg[9];
    uint          addr;
    uint          bucket;
    uint          time;
@@ -59,6 +60,9 @@ int main (int argc, char **argv) {
       tmp.str("");
       tmp << "layer " << dec << x;
       hist[x] = new TH1F(tmp.str().c_str(),tmp.str().c_str(),1000,-500e-15,500e-15);
+      tmp.str("");
+      tmp << "bg " << dec << x;
+      bg[x] = new TH1F(tmp.str().c_str(),tmp.str().c_str(),1000,-500e-15,500e-15);
       minVal[x] = 500e-15;
       maxVal[x] = -500e-15;
    }
@@ -108,11 +112,13 @@ int main (int argc, char **argv) {
                charge = ((double)sample->getSampleValue() - mean) / gain;
 
                // Time cut
-               if ( time > 750 && time < 755 ) {
+               //if ( time >= 751 && time <= 753) {
+               if ( bucket == 0 && time == 752 ) {
                   hist[addr]->Fill(charge);
                   if ( minVal[addr] > charge ) minVal[addr] = charge;
                   if ( maxVal[addr] < charge ) maxVal[addr] = charge;
                }
+               if ( time == 762 ) bg[addr]->Fill(charge);
             }
          }
       }
@@ -123,6 +129,7 @@ int main (int argc, char **argv) {
 
    for( x=0; x < 9; x++ ) {
       c1->cd(x+1);
+      //hist[x]->Add(bg[x],-20);
       //hist[x]->GetXaxis()->SetRangeUser(minVal[x],maxVal[x]);
       hist[x]->GetXaxis()->SetRangeUser(-20e-15,20e-15);
       hist[x]->Draw();

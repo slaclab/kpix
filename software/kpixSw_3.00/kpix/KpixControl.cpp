@@ -442,6 +442,7 @@ void KpixControl::setRunState ( string state ) {
          device("cntrlFpga",0)->set("AcquisitionTrigger","Software");
          writeConfig(false);
          hwRunning_ = false;
+         getVariable("RunState")->set(state);
       }
 
       allStatusReq_ = true;
