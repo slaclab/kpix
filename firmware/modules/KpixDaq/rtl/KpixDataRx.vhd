@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2013-07-17
+-- Last update: 2013-07-31
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -31,10 +31,11 @@ entity KpixDataRx is
       NUM_ROW_BUFFERS_G : natural := 4);    -- Number of row buffers (power of 2)
 
    port (
-      kpixClk      : in sl;                -- Clock for RX (KPIX interface)
-      kpixClkRst   : in sl;
-      kpixSerRxIn  : in sl;                -- Serial Data from KPIX
-      kpixRegRxOut : in KpixRegRxOutType;  -- For Temperature
+      kpixClk            : in sl;                -- Clock for RX (KPIX interface)
+      kpixClkRst         : in sl;
+      kpixSerRxIn        : in sl;                -- Serial Data from KPIX
+      kpixRegRxOut       : in KpixRegRxOutType;  -- For Temperature
+      kpixConfigRegsKpix : in KpixConfigRegsType;
 
       sysClk         : in  sl;                 -- Clock for Tx (EventBuilder interface)
       sysRst         : in  sl;
@@ -73,12 +74,16 @@ architecture rtl of KpixDataRx is
    ---------------------------------------------------------------------------
    -- Rx controlled Registers
    ---------------------------------------------------------------------------
-   type RxStateType is (RX_IDLE_S, RX_HEADER_S, RX_ROW_ID_S, RX_DATA_S, RX_FRAME_DONE_S, RX_DUMP_S, RX_RESP_S);
+   type RxStateType is (
+      RX_IDLE_S,
+      RX_HEADER_S,
+      RX_ROW_ID_S,
+      RX_DATA_S,
+      RX_FRAME_DONE_S,
+      RX_DUMP_S,
+      RX_RESP_S);
 
    type RxRegType is record
-      inputEdge         : sl;                              -- From kpixConfigRegs
-      numColumns        : unsigned(4 downto 0);            -- from kpixConfigRegs
-      enabled           : sl;                              -- From extRegsIn
       rxShiftData       : slv(0 to SHIFT_REG_LENGTH_C-1);  -- Upward indexed to match documentation
       rxShiftCount      : unsigned(5 downto 0);            -- Counts bits shifted in
       rxColumnCount     : unsigned(4 downto 0);            -- 32 columns
@@ -96,14 +101,41 @@ architecture rtl of KpixDataRx is
       overflowError     : sl;
    end record;
 
+   constant RX_REG_INIT_C : RxRegType := (
+      rxShiftData       => (others => '0'),
+      rxShiftCount      => (others => '0'),
+      rxColumnCount     => (others => '0'),
+      rxRowId           => (others => '0'),
+      rxWordId          => (others => '0'),
+      rxState           => RX_IDLE_S,
+      rxRamWrAddr       => (others => '0'),
+      rxRamWrData       => (others => '0'),
+      rxRamWrEn         => '0',
+      rxRowBuffer       => (others => '0'),
+      rxRowReq          => (others => '0'),
+      rxBusy            => '0',
+      markerError       => '0',
+      headerParityError => '0',
+      overflowError     => '0');
+
    signal rxRowAckSync     : slv(NUM_ROW_BUFFERS_G-1 downto 0);
-   signal rxRegs, rxRegsIn : RxRegType;
+   signal enabledSync      : sl;
+   signal rxRegs, rxRegsIn : RxRegType := RX_REG_INIT_C;
 
    ---------------------------------------------------------------------------
    -- Tx controlled Registers
    ---------------------------------------------------------------------------
-   type TxStateType is (TX_CLEAR_S, TX_IDLE_S, TX_ROW_ID_S, TX_NXT_COL_S, TX_CNT_S, TX_TIMESTAMP_S,
-                        TX_ADC_DATA_S, TX_SEND_SAMPLE_S, TX_WAIT_S, TX_TEMP_S);
+   type TxStateType is (
+      TX_CLEAR_S,
+      TX_IDLE_S,
+      TX_ROW_ID_S,
+      TX_NXT_COL_S,
+      TX_CNT_S,
+      TX_TIMESTAMP_S,
+      TX_ADC_DATA_S,
+      TX_SEND_SAMPLE_S,
+      TX_WAIT_S,
+      TX_TEMP_S);
 
    type SampleType is record
       emptyBit     : sl;
@@ -116,6 +148,17 @@ architecture rtl of KpixDataRx is
       timestamp    : slv(12 downto 0);
       adc          : slv(12 downto 0);
    end record SampleType;
+
+   constant SAMPLE_INIT_C : SampleType := (
+      emptyBit     => '0',
+      badCountFlag => '0',
+      rangeBit     => '0',
+      triggerBit   => '0',
+      bucket       => (others => '0'),
+      row          => (others => '0'),
+      column       => (others => '0'),
+      timestamp    => (others => '0'),
+      adc          => (others => '0'));
 
    type TxRegType is record
       txRowBuffer     : unsigned(log2(NUM_ROW_BUFFERS_G)-1 downto 0);
@@ -133,6 +176,21 @@ architecture rtl of KpixDataRx is
       kpixDataRxOut   : KpixDataRxOutType;      -- Output
    end record;
 
+   constant TX_REG_INIT_C : TxRegType := (
+      txRowBuffer     => (others => '0'),
+      txSample        => SAMPLE_INIT_C,
+      txState         => TX_CLEAR_S,
+      txColumnCount   => (others => '0'),
+      txBucketCount   => (others => '0'),
+      txColumnOffset  => (others => '0'),
+      txTriggers      => (others => '0'),
+      txValidBuckets  => (others => '0'),
+      txRanges        => (others => '0'),
+      txRowAck        => (others => '0'),
+      dataParityError => '0',
+      kpixDataRxOut   => KPIX_DATA_RX_OUT_INIT_C,
+      extRegsOut      => KPIX_DATA_RX_REGS_OUT_INIT_C);
+
    signal txRowReqSync          : slv(NUM_ROW_BUFFERS_G-1 downto 0);
    signal txRxBusyRise          : sl;   -- Sync rx busy to tx clock
    signal markerErrorRise       : sl;
@@ -140,7 +198,7 @@ architecture rtl of KpixDataRx is
    signal overflowErrorRise     : sl;
    signal kpixRegRxOutSys       : KpixRegRxOutType;
 
-   signal txRegs, txRegsIn : TxRegType;
+   signal txRegs, txRegsIn : TxRegType := TX_REG_INIT_C;
    signal kpixSerRxInFall  : sl;
 
    -----------------------------------------------------------------------------
@@ -193,41 +251,11 @@ begin
       end if;
    end process rxFall;
 
-   -----------------------------------------------------------------------------
-   -- Rx Logic
-   -- Runs on kpixClk
-   -----------------------------------------------------------------------------
-   rxSeq : process (kpixClk, kpixClkRst) is
-   begin
-      if (kpixClkRst = '1') then
-         rxRegs.inputEdge         <= '0'             after DELAY_G;
-         rxRegs.numColumns        <= (others => '0') after DELAY_G;
-         rxRegs.enabled           <= '0'             after DELAY_G;
-         rxRegs.rxShiftData       <= (others => '0') after DELAY_G;
-         rxRegs.rxShiftCount      <= (others => '0') after DELAY_G;
-         rxRegs.rxColumnCount     <= (others => '0') after DELAY_G;
-         rxRegs.rxRowId           <= (others => '0') after DELAY_G;
-         rxRegs.rxWordId          <= (others => '0') after DELAY_G;
-         rxRegs.rxState           <= RX_IDLE_S       after DELAY_G;
-         rxRegs.rxRamWrAddr       <= (others => '0') after DELAY_G;
-         rxRegs.rxRamWrData       <= (others => '0') after DELAY_G;
-         rxRegs.rxRamWrEn         <= '0'             after DELAY_G;
-         rxRegs.rxRowBuffer       <= (others => '0') after DELAY_G;
-         rxRegs.rxRowReq          <= (others => '0') after DELAY_G;
-         rxRegs.rxBusy            <= '0'             after DELAY_G;
-         rxRegs.markerError       <= '0'             after DELAY_G;
-         rxRegs.headerParityError <= '0'             after DELAY_G;
-         rxRegs.overflowError     <= '0'             after DELAY_G;
-      elsif (rising_edge(kpixClk)) then
-         rxRegs <= rxRegsIn after DELAY_G;
-         if (rxRegs.rxRamWrEn = '1') then
-            ram(to_integer(rxRegs.rxRamWrAddr)) <= rxRegs.rxRamWrData after DELAY_G;
-         end if;
-      end if;
-   end process rxSeq;
-
+   -------------------------------------------------------------------------------------------------
+   -- Synchronize signals to kpixClk that need it
+   -------------------------------------------------------------------------------------------------
    GEN_RX_ROW_ACK_SYNC : for i in NUM_ROW_BUFFERS_G-1 downto 0 generate
-      Synchronizer_1 : entity work.Synchronizer
+      Synchronizer_txAck : entity work.Synchronizer
          generic map (
             TPD_G          => DELAY_G,
             RST_POLARITY_G => '1')
@@ -238,19 +266,41 @@ begin
             dataOut => rxRowAckSync(i));
    end generate GEN_RX_ROW_ACK_SYNC;
 
-   rxComb : process (rxRegs, txRegs, kpixConfigRegs, extRegsIn, kpixSerRxIn, kpixSerRxInFall, rxRowAckSync) is
+   Synchronizer_enabled : entity work.Synchronizer
+      generic map (
+         TPD_G          => DELAY_G,
+         RST_POLARITY_G => '1')
+      port map (
+         clk     => kpixClk,
+         aRst    => kpixClkRst,
+         dataIn  => extRegsIn.enabled,
+         dataOut => enabledSync);
+
+   -----------------------------------------------------------------------------
+   -- Rx Logic
+   -- Runs on kpixClk
+   -----------------------------------------------------------------------------
+   rxSeq : process (kpixClk, kpixClkRst) is
+   begin
+      if (kpixClkRst = '1') then
+         rxRegs <= RX_REG_INIT_C after DELAY_G;
+      elsif (rising_edge(kpixClk)) then
+         rxRegs <= rxRegsIn after DELAY_G;
+         if (rxRegs.rxRamWrEn = '1') then
+            ram(to_integer(rxRegs.rxRamWrAddr)) <= rxRegs.rxRamWrData after DELAY_G;
+         end if;
+      end if;
+   end process rxSeq;
+
+
+
+   rxComb : process (enabledSync, kpixConfigRegsKpix, kpixSerRxIn, kpixSerRxInFall, rxRegs, rxRowAckSync) is
       variable rVar : RxRegType;
    begin
       rVar := rxRegs;
 
-      -- These sysClk signals are set at the start of the run and never change, so they don't need
-      -- to be fully sync'd.
-      rVar.inputEdge  := kpixConfigRegs.inputEdge;
-      rVar.numColumns := unsigned(kpixConfigRegs.numColumns);
-      rVar.enabled    := extRegsIn.enabled;
-
       -- Shift in new bit and increment counter every clock
-      if (rxRegs.inputEdge = '0') then
+      if (kpixConfigRegsKpix.inputEdge = '0') then
          rVar.rxShiftData := rxRegs.rxShiftData(1 to SHIFT_REG_LENGTH_C-1) & kpixSerRxIn;
       else
          rVar.rxShiftData := rxRegs.rxShiftData(1 to SHIFT_REG_LENGTH_C-1) & kpixSerRxInFall;
@@ -277,7 +327,7 @@ begin
       case (rxRegs.rxState) is
          when RX_IDLE_S =>
             -- Wait for start bit
-            if (rxRegs.rxShiftData(SHIFT_REG_LENGTH_C-1) = '1' and rxRegs.enabled = '1') then
+            if (rxRegs.rxShiftData(SHIFT_REG_LENGTH_C-1) = '1' and enabledSync = '1') then
                rVar.rxShiftCount := (others => '0');
                rVar.rxState      := RX_HEADER_S;
             end if;
@@ -338,7 +388,7 @@ begin
 
                -- numColumns is in sysClk domain but never changes during a run so no need to worry about
                -- syncing it
-               if (rxRegs.rxColumnCount = unsigned(rxRegs.numColumns)) then
+               if (rxRegs.rxColumnCount = unsigned(kpixConfigRegsKpix.numColumns)) then
                   -- All Columns in row have been received
                   rVar.rxState := RX_FRAME_DONE_S;
                end if;
@@ -374,51 +424,9 @@ begin
       rxRegsIn <= rVar;
    end process;
 
-   -----------------------------------------------------------------------------
-   -- Tx logic, runs on sysClk
-   -----------------------------------------------------------------------------
-   txSeq : process (sysClk, sysRst) is
-   begin
-      if (sysRst = '1') then
-         txRegs.txRowBuffer                       <= (others => '0') after DELAY_G;
-         txRegs.txSample.emptyBit                 <= '0'             after DELAY_G;
-         txRegs.txSample.badCountFlag             <= '0'             after DELAY_G;
-         txRegs.txSample.rangeBit                 <= '0'             after DELAY_G;
-         txRegs.txSample.triggerBit               <= '0'             after DELAY_G;
-         txRegs.txSample.bucket                   <= (others => '0') after DELAY_G;
-         txRegs.txSample.row                      <= (others => '0') after DELAY_G;
-         txRegs.txSample.column                   <= (others => '0') after DELAY_G;
-         txRegs.txSample.timestamp                <= (others => '0') after DELAY_G;
-         txRegs.txSample.adc                      <= (others => '0') after DELAY_G;
-         txRegs.txState                           <= TX_CLEAR_S      after DELAY_G;
-         txRegs.txColumnCount                     <= (others => '0') after DELAY_G;
-         txRegs.txBucketCount                     <= (others => '0') after DELAY_G;
-         txRegs.txColumnOffset                    <= (others => '0') after DELAY_G;
-         txRegs.txTriggers                        <= (others => '0') after DELAY_G;
-         txRegs.txValidBuckets                    <= (others => '0') after DELAY_G;
-         txRegs.txRanges                          <= (others => '0') after DELAY_G;
-         txRegs.txRowAck                          <= (others => '0') after DELAY_G;
-         txRegs.dataParityError                   <= '0'             after DELAY_G;
-         txRegs.kpixDataRxOut.data                <= (others => '0') after DELAY_G;
-         txRegs.kpixDataRxOut.valid               <= '0'             after DELAY_G;
-         txRegs.kpixDataRxOut.last                <= '0'             after DELAY_G;
-         txRegs.kpixDataRxOut.busy                <= '0'             after DELAY_G;
-         txRegs.extRegsOut.overflowErrorCount     <= (others => '0') after DELAY_G;
-         txRegs.extRegsOut.headerParityErrorCount <= (others => '0') after DELAY_G;
-         txRegs.extRegsOut.markerErrorCount       <= (others => '0') after DELAY_G;
-         txRegs.extRegsOut.dataParityErrorCount   <= (others => '0') after DELAY_G;
-
-      elsif (rising_edge(sysClk)) then
-         if (sysRst = '1') then
-            -- Needs synchronous reset to infer block ram
-            txRamRdData <= (others => '0') after DELAY_G;
-         else
-            txRegs      <= txRegsIn                                                                           after DELAY_G;
-            txRamRdData <= ram(to_integer(txRegs.txRowBuffer & txRegs.txColumnCount & txRegs.txColumnOffset)) after DELAY_G;  -- Might need it's own process      
-         end if;
-      end if;
-   end process;
-
+   -------------------------------------------------------------------------------------------------
+   -- Synchronize signals to sysClk
+   -------------------------------------------------------------------------------------------------
    TX_ROW_REQ_SYNC : for i in NUM_ROW_BUFFERS_G-1 downto 0 generate
       Synchronizer_2 : entity work.Synchronizer
          generic map (
@@ -498,6 +506,24 @@ begin
    kpixRegRxOutSys.regData      <= (others => '0');
    kpixRegRxOutSys.regValid     <= '0';
    kpixRegRxOutSys.regParityErr <= '0';
+
+   -----------------------------------------------------------------------------
+   -- Tx logic, runs on sysClk
+   -----------------------------------------------------------------------------
+   txSeq : process (sysClk, sysRst) is
+   begin
+      if (sysRst = '1') then
+         txRegs <= TX_REG_INIT_C after DELAY_G;
+      elsif (rising_edge(sysClk)) then
+         if (sysRst = '1') then
+            -- Needs synchronous reset to infer block ram
+            txRamRdData <= (others => '0') after DELAY_G;
+         else
+            txRegs      <= txRegsIn                                                                           after DELAY_G;
+            txRamRdData <= ram(to_integer(txRegs.txRowBuffer & txRegs.txColumnCount & txRegs.txColumnOffset)) after DELAY_G;  -- Might need it's own process      
+         end if;
+      end if;
+   end process;
 
    txComb : process (txRegs, rxRegs, txRamRdData, kpixDataRxIn, kpixRegRxOutSys, extRegsIn, kpixConfigRegs,
                      txRowReqSync, txRxBusyRise, headerParityErrorRise, markerErrorRise, overflowErrorRise) is

@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2013-07-15
+-- Last update: 2013-07-31
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -30,11 +30,15 @@ entity KpixClockGen is
       DELAY_G : time := 1 ns);
 
    port (
-      clk200     : in  sl;
-      rst200     : in  sl;
-      triggerOut : in  TriggerOutType;
-      extRegsIn  : in  KpixClockGenRegsInType;
-      kpixState  : in  KpixStateOutType;
+      sysClk    : in sl;
+      sysRst    : in sl;
+      extRegsIn : in KpixClockGenRegsInType;  -- sysClk
+
+      clk200     : in sl;
+      rst200     : in sl;
+      triggerOut : in TriggerOutType;
+      kpixState  : in KpixStateOutType;
+
       kpixClk    : out sl;
       kpixClkRst : out sl);
 
@@ -45,63 +49,68 @@ architecture rtl of KpixClockGen is
    -- Kpix Clock registers run on 200 MHz clock
    type RegType is record
       startAcquireLast : sl;
-      extRegsSync      : KpixClockGenRegsInType;
       divCount         : unsigned(11 downto 0);
       clkSel           : unsigned(11 downto 0);
       clkDiv           : sl;
    end record RegType;
 
-   signal r, rin       : RegType;
-   signal newValueRise : sl;
-   signal kpixClkInt   : sl;
+   constant REG_INIT_C : RegType := (
+      startAcquireLast => '0',
+      divCount         => (others => '0'),
+      clkSel           => (others => '0'),
+      clkDiv           => '0');
+
+   signal r, rin      : RegType := REG_INIT_C;
+   signal extRegsSync : KpixClockGenRegsInType;
+   signal kpixClkInt  : sl;
+
+   constant FIFO_INIT_C : slv(43 downto 0) :=
+      (CLK_SEL_PRECHARGE_DEFAULT_C &
+       CLK_SEL_IDLE_DEFAULT_C &
+       CLK_SEL_ACQUIRE_DEFAULT_C &
+       CLK_SEL_DIGITIZE_DEFAULT_C &
+       CLK_SEL_READOUT_DEFAULT_C);
 
 begin
 
-   
-   SynchronizerEdge_NewValue : entity work.SynchronizerEdge
+   SynchronizerFifo_1 : entity work.SynchronizerFifo
       generic map (
-         TPD_G          => DELAY_G,
-         RST_POLARITY_G => '1',
-         STAGES_G       => 3,
-         INIT_G         => "000")
+         TPD_G        => DELAY_G,
+         BRAM_EN_G    => false,
+         DATA_WIDTH_G => 44,
+         ADDR_WIDTH_G => 4,
+         INIT_G       => FIFO_INIT_C)
       port map (
-         clk         => clk200,
-         aRst        => rst200,
-         dataIn      => extRegsIn.newValue,
-         dataOut     => open,
-         risingEdge  => newValueRise,
-         fallingEdge => open);
+         rst                => sysRst,
+         wr_clk             => sysClk,
+         din(7 downto 0)    => extRegsIn.clkSelReadout,
+         din(15 downto 8)   => extRegsIn.clkSelDigitize,
+         din(23 downto 16)  => extRegsIn.clkSelAcquire,
+         din(31 downto 24)  => extRegsIn.clkSelIdle,
+         din(43 downto 32)  => extRegsIn.clkSelPrecharge,
+         rd_clk             => clk200,
+         dout(7 downto 0)   => extRegsSync.clkSelReadout,
+         dout(15 downto 8)  => extRegsSync.clkSelDigitize,
+         dout(23 downto 16) => extRegsSync.clkSelAcquire,
+         dout(31 downto 24) => extRegsSync.clkSelIdle,
+         dout(43 downto 32) => extRegsSync.clkSelPrecharge);
 
    seq : process (clk200, rst200) is
    begin
       if (rst200 = '1') then
-         r.startAcquireLast            <= '0'                         after DELAY_G;
-         r.extRegsSync.clkSelReadout   <= CLK_SEL_READOUT_DEFAULT_C   after DELAY_G;
-         r.extRegsSync.clkSelDigitize  <= CLK_SEL_DIGITIZE_DEFAULT_C  after DELAY_G;
-         r.extRegsSync.clkSelAcquire   <= CLK_SEL_ACQUIRE_DEFAULT_C   after DELAY_G;
-         r.extRegsSync.clkSelIdle      <= CLK_SEL_IDLE_DEFAULT_C      after DELAY_G;
-         r.extRegsSync.clkSelPrecharge <= CLK_SEL_PRECHARGE_DEFAULT_C after DELAY_G;
-         r.extRegsSync.newValue        <= '0'                         after DELAY_G;
-         r.divCount                    <= (others => '0')             after DELAY_G;
-         r.clkSel                      <= (others => '0')             after DELAY_G;
-         r.clkDiv                      <= '0'                         after DELAY_G;
+         r <= REG_INIT_C after DELAY_G;
       elsif (rising_edge(clk200)) then
          r <= rin after DELAY_G;
       end if;
    end process seq;
 
 
-   comb : process (r, kpixState, extRegsIn, newValueRise, triggerOut) is
+   comb : process (r, kpixState, extRegsSync, triggerOut) is
       variable rVar : RegType;
    begin
       rVar := r;
 
       rVar.startAcquireLast := triggerOut.startAcquire;
-
-      -- When new reg values are stable, clock them into their 200 MHz registers
-      if (newValueRise = '1') then
-         rVar.extRegsSync := extRegsIn;
-      end if;
 
       rVar.divCount := r.divCount + 1;
 
@@ -112,19 +121,19 @@ begin
 
          -- Assign new clkSel dependant on kpixState
          if (kpixState.analogState = KPIX_ANALOG_DIG_STATE_C and kpixState.prechargeBus = '1') then
-            rVar.clkSel := unsigned(r.extRegsSync.clkSelPrecharge);
+            rVar.clkSel := unsigned(extRegsSync.clkSelPrecharge);
          elsif (kpixState.analogState = KPIX_ANALOG_IDLE_STATE_C) then
-            rVar.clkSel := "0000" & unsigned(r.extRegsSync.clkSelIdle);
+            rVar.clkSel := "0000" & unsigned(extRegsSync.clkSelIdle);
          elsif (kpixState.analogState = KPIX_ANALOG_PRE_STATE_C or
                 kpixState.analogState = KPIX_ANALOG_SAMP_STATE_C or
                 kpixState.analogState = KPIX_ANALOG_PAUSE_STATE_C) then
-            rVar.clkSel := "0000" & unsigned(r.extRegsSync.clkSelAcquire);
+            rVar.clkSel := "0000" & unsigned(extRegsSync.clkSelAcquire);
          elsif (kpixState.analogState = KPIX_ANALOG_DIG_STATE_C) then
-            rVar.clkSel := "0000" & unsigned(r.extRegsSync.clkSelDigitize);
+            rVar.clkSel := "0000" & unsigned(extRegsSync.clkSelDigitize);
          elsif (kpixState.readoutState /= KPIX_READOUT_IDLE_STATE_C) then
-            rVar.clkSel := "0000" & unsigned(r.extRegsSync.clkSelReadout);
+            rVar.clkSel := "0000" & unsigned(extRegsSync.clkSelReadout);
          else
-            rVar.clkSel := "0000" & unsigned(r.extRegsSync.clkSelIdle);
+            rVar.clkSel := "0000" & unsigned(extRegsSync.clkSelIdle);
          end if;
       end if;
 

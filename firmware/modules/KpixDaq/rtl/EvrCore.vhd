@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2013-07-10
--- Last update: 2013-07-17
+-- Last update: 2013-07-31
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -77,7 +77,7 @@ architecture rtl of EvrCore is
        evrConfig        => EVR_CONFIG_INIT_C,
        evrConfigIntfOut => EVR_CONFIG_INTF_OUT_INIT_C);
 
-   signal sysR, sysRin : SysRegType;
+   signal sysR, sysRin : SysRegType := SYS_REG_INIT_C;
    signal sysEvrOutInt : EvrOutType;    -- Evr outputs sync'd to sysclk
 
 
@@ -98,7 +98,7 @@ architecture rtl of EvrCore is
        trigHoldEn  => '0',
        evrOut      => EVR_OUT_INIT_C);
 
-   signal mainR, mainRin : MainRegType;
+   signal mainR, mainRin : MainRegType := MAIN_REG_INIT_C;
    signal mainEvrConfig  : EvrConfigType;  -- Evr intf refisters sync'd to evr clock
 
 

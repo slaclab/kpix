@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2013-07-12
+-- Last update: 2013-07-31
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -30,8 +30,8 @@ entity KpixRegRx is
       kpixClk    : in sl;
       kpixClkRst : in sl;
 
-      kpixConfigRegs : in KpixConfigRegsType;
-      kpixSerRxIn    : in sl;           -- Serial Data from KPIX
+      kpixConfigRegsKpix : in KpixConfigRegsType;
+      kpixSerRxIn        : in sl;       -- Serial Data from KPIX
 
       kpixRegRxOut : out KpixRegRxOutType
       );
@@ -49,7 +49,13 @@ architecture rtl of KpixRegRx is
       kpixRegRxOut : KpixRegRxOutType;
    end record RegType;
 
-   signal r, rin          : RegType;
+   constant REG_INIT_C : RegType := (
+      shiftReg     => (others => '0'),
+      shiftCount   => (others => '0'),
+      state        => IDLE_S,
+      kpixRegRxOut => KPIX_REG_RX_OUT_INIT_C);
+
+   signal r, rin          : RegType := REG_INIT_C;
    signal kpixSerRxInFall : sl;
 
 begin
@@ -67,26 +73,18 @@ begin
    seq : process (kpixClk, kpixClkRst) is
    begin
       if (kpixClkRst = '1') then
-         r.shiftReg                  <= (others => '0') after DELAY_G;
-         r.shiftCount                <= (others => '0') after DELAY_G;
-         r.state                     <= IDLE_S          after DELAY_G;
-         r.kpixRegRxOut.temperature  <= (others => '0') after DELAY_G;
-         r.kpixRegRxOut.tempCount    <= (others => '0') after DELAY_G;
-         r.kpixRegRxOut.regAddr      <= (others => '0') after DELAY_G;
-         r.kpixRegRxOut.regData      <= (others => '0') after DELAY_G;
-         r.kpixRegRxOut.regValid     <= '0'             after DELAY_G;
-         r.kpixRegRxOut.regParityErr <= '0'             after DELAY_G;
+         r <= REG_INIT_C after DELAY_G;
       elsif (rising_edge(kpixClk)) then
          r <= rin after DELAY_G;
       end if;
    end process seq;
 
-   comb : process (r, kpixConfigRegs, kpixSerRxInFall, kpixSerRxIn)is
+   comb : process (r, kpixConfigRegsKpix, kpixSerRxInFall, kpixSerRxIn)is
       variable rVar : RegType;
    begin
       rVar := r;
 
-      if (kpixConfigRegs.inputEdge = '0') then
+      if (kpixConfigRegsKpix.inputEdge = '0') then
          rVar.shiftReg := r.shiftReg(1 to KPIX_NUM_TX_BITS_C) & kpixSerRxIn;
       else
          rVar.shiftReg := r.shiftReg(1 to KPIX_NUM_TX_BITS_C) & kpixSerRxInFall;

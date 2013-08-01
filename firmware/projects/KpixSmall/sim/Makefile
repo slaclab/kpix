@@ -14,7 +14,7 @@
 ##-----------------------------------------------------------------------------
 
 # Set Default Output
-SIM_DIR=$(PWD)/../../../build/KpixEmtbEthSim
+SIM_DIR=$(PWD)/../../../build/KpixSmallSim
 
 # Analog netlist
 ANA_NET = kpix_c.cir
@@ -46,34 +46,30 @@ HDL_SRC= $(PWD)/../../../modules/StdLib/rtl/StdRtlPkg.vhd \
          $(PWD)/../../../modules/StdLib/rtl/ClkOutBufDiff.vhd \
          $(PWD)/../../../modules/StdLib/rtl/SimpleDualPortRam.vhd \
          $(PWD)/../../../modules/StdLib/rtl/FifoAsync.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/FifoSync.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/FifoSyncBuiltIn.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/Fifo.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/FifoMux.vhd \
          $(PWD)/../../../modules/StdLib/rtl/SynchronizerFifo.vhd \
-         $(PWD)/../../../modules/8b10bCore/rtl/Code8b10bPkg.vhd \
-         $(PWD)/../../../modules/8b10bCore/rtl/Decoder8b10b.vhd \
-         $(PWD)/../../../modules/Pgp2Core/rtl/gtp/GtpRxCommaAligner.vhd \
-         $(PWD)/../../../modules/Pgp2Core/rtl/gtp/GtpTxPhaseAligner.vhd \
-         $(PWD)/../../../modules/Pgp2Core/rtl/gtp/Gtp16LowLatCore.vhd \
-	 $(PWD)/../rtl/Version.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/Code8b10bPkg.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/Decoder8b10b.vhd \
+         $(PWD)/../../../modules/VcLib/rtl/VcPkg.vhd \
+         $(PWD)/../../../modules/VcLib/rtl/VcCmdSlave.vhd \
+         $(PWD)/../../../modules/VcLib/rtl/VcRegSlave.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixPkg.vhd \
 	 $(PWD)/../../../modules/KpixCore/rtl/reg_rw_32.vhd \
 	 $(PWD)/../../../modules/KpixCore/rtl/command_control.vhd \
 	 $(PWD)/../../../modules/KpixCore/rtl/analog_control.vhd \
 	 $(PWD)/../../../modules/KpixCore/rtl/readout_control.vhd \
 	 $(PWD)/../../../modules/KpixCore/rtl/memory_array_control.vhd \
-	 $(PWD)/../../../modules/eth_client/xil_cores/*.vhd \
-	 $(PWD)/../../../modules/eth_client/rtl/1g/EthRegSlave.vhd \
-	 $(PWD)/../../../modules/eth_client/rtl/1g/EthCmdSlave.vhd \
-	 $(PWD)/../../../modules/KpixDaq/xil_cores/*.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/TriggerPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixLocalPkg.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/FrontEndPkg.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/KpixRegCntlPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixClockGenPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/EventBuilderFifoPkg.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/EthUsBuff64.vhd \
+         $(PWD)/../../../modules/KpixDaq/rtl/VcUsBuff64Kpix.vhd \
          $(PWD)/../../../modules/KpixDaq/sim/EthFrontEndSim.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/EvrCorePkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/EvrCore.vhd \
-         $(PWD)/../../../modules/KpixDaq/rtl/EvrGtp.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixRegRxPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixRegRx.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixDataRxPkg.vhd \
@@ -85,7 +81,7 @@ HDL_SRC= $(PWD)/../../../modules/StdLib/rtl/StdRtlPkg.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/EventBuilder.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixRegCntl.vhd \
          $(PWD)/../../../modules/KpixDaq/rtl/KpixDaqCore.vhd \
-	 $(PWD)/../xil_cores/*.vhd \
+	 $(PWD)/../rtl/Version.vhd \
 	 $(PWD)/../rtl/KpixSmall.vhd \
 	 $(PWD)/../../../modules/KpixCore/sim/AnalogReg.vhd \
 	 $(PWD)/../../../modules/KpixCore/sim/DataRead.vhd \
@@ -134,6 +130,7 @@ syn_setup:
 	@echo "UNISIM:$(XIL_SIMLIB)/unisim"                >  $(SIM_DIR)/.synopsys_vss.setup
 	@echo "XILINXCORELIB:$(XIL_SIMLIB)/xilinxcorelib"  >> $(SIM_DIR)/.synopsys_vss.setup
 	@echo "SIMPRIM:$(XIL_SIMLIB)/simprim"              >> $(SIM_DIR)/.synopsys_vss.setup
+	@echo "UNIMACRO:$(XIL_SIMLIB)/unimacro"            >> $(SIM_DIR)/.synopsys_vss.setup
 
 # Analog simulation files
 ana_files:

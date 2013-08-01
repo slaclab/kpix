@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2013-07-18
+-- Last update: 2013-07-31
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -19,11 +19,11 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.StdRtlPkg.all;
+use work.VcPkg.all;
 use work.KpixPkg.all;
 use work.KpixLocalPkg.all;
 use work.KpixRegRxPkg.all;
 use work.KpixDataRxPkg.all;
-use work.FrontEndPkg.all;
 use work.TriggerPkg.all;
 
 entity KpixRegCntl is
@@ -37,8 +37,8 @@ entity KpixRegCntl is
       sysRst : in sl;
 
       -- Interface to Reg Control (sysClk domain)
-      kpixRegCntlIn  : in  FrontEndRegCntlOutType;
-      kpixRegCntlOut : out FrontEndRegCntlInType;
+      kpixRegCntlIn  : in  VcRegSlaveOutType;
+      kpixRegCntlOut : out VcRegSlaveInType;
 
       -- Interface with internal registers
       kpixConfigRegs   : in KpixConfigRegsType;
@@ -89,15 +89,24 @@ architecture rtl of KpixRegCntl is
       isAcquire    : sl;
 
       -- Output Registers
-      kpixRegCntlOut : FrontEndRegCntlInType;  -- outputs to FrontEndRegCntl (must still be sync'd)
+      kpixRegCntlOut : VcRegSlaveInType;  -- outputs to FrontEndRegCntl (must still be sync'd)
       kpixSerTxOut   : slv(NUM_KPIX_MODULES_G downto 0);  -- serial data to each kpix
    end record RegType;
 
-   signal r, rin : RegType;
+   constant REG_INIT_C : RegType := (
+      state          => IDLE_S,
+      txShiftReg     => (others => '0'),
+      txShiftCount   => (others => '0'),
+      txEnable       => (others => '0'),
+      isAcquire      => '0',
+      kpixRegCntlOut => VC_REG_SLAVE_IN_INIT_C,
+      kpixSerTxOut   => (others => '0'));
+
+   signal r, rin : RegType := REG_INIT_C;
 
    -- Synchonization signals
    signal kpixResetHoldSync  : sl;
-   signal kpixRegCntlInSync  : FrontEndRegCntlOutType;
+   signal kpixRegCntlInSync  : VcRegSlaveOutType;
    signal startAcquireSync   : sl;
    signal startCalibrateSync : sl;
    signal startReadoutSync   : sl;
@@ -112,9 +121,9 @@ architecture rtl of KpixRegCntl is
       kpixResetHold : sl;
    end record SysRegType;
 
-   signal sysR, sysRin        : SysRegType;
+   signal sysR, sysRin        : SysRegType := (kpixResetHold => '0');
    signal kpixResetHoldReSync : sl;
-   signal kpixRegCntlOutSync  : FrontEndRegCntlInType;
+   signal kpixRegCntlOutSync  : VcRegSlaveInType;
    
 
 begin
@@ -186,17 +195,17 @@ begin
       port map (
          rst                => sysRst,
          wr_clk             => sysClk,
-         din(31 downto 0)   => kpixRegCntlIn.regDataout,
-         din(55 downto 32)  => kpixRegCntlIn.regAddr,
-         din(56)            => kpixRegCntlIn.regOp,
-         din(57)            => kpixRegCntlIn.regReq,
-         din(58)            => kpixRegCntlIn.regInp,
+         din(31 downto 0)   => kpixRegCntlIn.wrData,
+         din(55 downto 32)  => kpixRegCntlIn.addr,
+         din(56)            => kpixRegCntlIn.op,
+         din(57)            => kpixRegCntlIn.req,
+         din(58)            => kpixRegCntlIn.inp,
          rd_clk             => kpixClk,
-         dout(31 downto 0)  => kpixRegCntlInSync.regDataout,
-         dout(55 downto 32) => kpixRegCntlInSync.regAddr,
-         dout(56)           => kpixRegCntlInSync.regOp,
-         dout(57)           => kpixRegCntlInSync.regReq,
-         dout(58)           => kpixRegCntlInSync.regInp);
+         dout(31 downto 0)  => kpixRegCntlInSync.wrData,
+         dout(55 downto 32) => kpixRegCntlInSync.addr,
+         dout(56)           => kpixRegCntlInSync.op,
+         dout(57)           => kpixRegCntlInSync.req,
+         dout(58)           => kpixRegCntlInSync.inp);
 
    Synchronizer_StartAcquire : entity work.Synchronizer
       generic map (
@@ -267,15 +276,15 @@ begin
    seq : process (kpixClk, kpixClkRst) is
    begin
       if (kpixClkRst = '1') then
-         r.state                    <= IDLE_S          after DELAY_G;
-         r.txShiftReg               <= (others => '0') after DELAY_G;
-         r.txShiftCount             <= (others => '0') after DELAY_G;
-         r.txEnable                 <= (others => '0') after DELAY_G;
-         r.isAcquire                <= '0'             after DELAY_G;
-         r.kpixRegCntlOut.regAck    <= '0'             after DELAY_G;
-         r.kpixRegCntlOut.regFail   <= '0'             after DELAY_G;
-         r.kpixRegCntlOut.regDataIn <= (others => '0') after DELAY_G;
-         r.kpixSerTxOut             <= (others => '0') after DELAY_G;
+         r.state                 <= IDLE_S          after DELAY_G;
+         r.txShiftReg            <= (others => '0') after DELAY_G;
+         r.txShiftCount          <= (others => '0') after DELAY_G;
+         r.txEnable              <= (others => '0') after DELAY_G;
+         r.isAcquire             <= '0'             after DELAY_G;
+         r.kpixRegCntlOut.ack    <= '0'             after DELAY_G;
+         r.kpixRegCntlOut.fail   <= '0'             after DELAY_G;
+         r.kpixRegCntlOut.rdData <= (others => '0') after DELAY_G;
+         r.kpixSerTxOut          <= (others => '0') after DELAY_G;
       elsif (rising_edge(kpixClk)) then
          r <= rin after DELAY_G;
       end if;
@@ -295,22 +304,22 @@ begin
             v.txShiftCount := (others => '0');
             v.txEnable     := (others => '0');
 
-            if (kpixRegCntlInSync.regReq = '1' and uOr(kpixRegCntlInSync.regAddr(INVALID_KPIX_ADDR_RANGE_C)) = '0') then
+            if (kpixRegCntlInSync.req = '1' and uOr(kpixRegCntlInSync.addr(INVALID_KPIX_ADDR_RANGE_C)) = '0') then
                -- Register access, format output word
                v.txShiftReg                               := (others => '0');  -- Simplifies parity calc
                v.txShiftReg(KPIX_MARKER_RANGE_C)          := KPIX_MARKER_C;
                v.txShiftReg(KPIX_FRAME_TYPE_INDEX_C)      := KPIX_CMD_RSP_FRAME_C;
                v.txShiftReg(KPIX_ACCESS_TYPE_INDEX_C)     := KPIX_REG_ACCESS_C;
-               v.txShiftReg(KPIX_WRITE_INDEX_C)           := kpixRegCntlInSync.regOp;
-               v.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := bitReverse(kpixRegCntlInSync.regAddr(REG_ADDR_RANGE_C));
-               v.txShiftReg(KPIX_DATA_RANGE_C)            := bitReverse(kpixRegCntlInSync.regDataOut);
-               if (kpixRegCntlInSync.regOp = '0') then  -- Override data field with 0s of doing a read
+               v.txShiftReg(KPIX_WRITE_INDEX_C)           := kpixRegCntlInSync.op;
+               v.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := bitReverse(kpixRegCntlInSync.addr(REG_ADDR_RANGE_C));
+               v.txShiftReg(KPIX_DATA_RANGE_C)            := bitReverse(kpixRegCntlInSync.wrData);
+               if (kpixRegCntlInSync.op = '0') then  -- Override data field with 0s of doing a read
                   v.txShiftReg(KPIX_DATA_RANGE_C) := (others => '0');
                end if;
                v.txShiftReg(KPIX_HEADER_PARITY_INDEX_C) := '0';
                v.txShiftReg(KPIX_DATA_PARITY_INDEX_C)   := '0';
                v.txShiftCount                           := (others => '0');
-               addressedKpixVar                         := to_integer(unsigned(kpixRegCntlInSync.regAddr(VALID_KPIX_ADDR_RANGE_C)));
+               addressedKpixVar                         := to_integer(unsigned(kpixRegCntlInSync.addr(VALID_KPIX_ADDR_RANGE_C)));
                v.txEnable                               := (others => '0');
                v.txEnable(addressedKpixVar)             := '1';
                v.isAcquire                              := '0';
@@ -330,7 +339,7 @@ begin
                v.txShiftCount                             := (others => '0');
                v.state                                    := PARITY_S;
                v.isAcquire                                := '1';
-               v.txEnable                              := kpixEnableSync;
+               v.txEnable                                 := kpixEnableSync;
                v.txEnable(NUM_KPIX_MODULES_G)             := '1';  -- Always enable internal kpix
 
             elsif (startAcquireSync = '1') then
@@ -348,7 +357,7 @@ begin
                v.state                                    := PARITY_S;
                v.isAcquire                                := '1';
                -- Send acquire only to enabled kpix asics.
-               v.txEnable                              := kpixEnableSync;
+               v.txEnable                                 := kpixEnableSync;
                v.txEnable(NUM_KPIX_MODULES_G)             := '1';  -- Always enable internal kpix
                if (startCalibrateSync = '1') then
                   v.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := KPIX_CALIBRATE_CMD_ID_REV_C;
@@ -378,7 +387,7 @@ begin
                   v.state := DATA_WAIT_S;
                else
                   -- Register request
-                  if (kpixRegCntlInSync.regOp = '1') then
+                  if (kpixRegCntlInSync.op = '1') then
                      v.state := WRITE_WAIT_S;
                   else
                      v.state := READ_WAIT_S;
@@ -399,35 +408,35 @@ begin
             -- Keeps KPIX from being overwhelmed
             v.txShiftCount := r.txShiftCount + 1;
             if (r.txShiftCount = WRITE_WAIT_CYCLES_C) then
-               v.kpixRegCntlOut.regAck := '1';
-               v.state                 := WAIT_RELEASE_S;
+               v.kpixRegCntlOut.ack := '1';
+               v.state              := WAIT_RELEASE_S;
             end if;
 
          when READ_WAIT_S =>
             -- Wait for read response
             -- Timeout and fail after defined number of cycles
             v.txShiftCount   := r.txShiftCount + 1;
-            addressedKpixVar := to_integer(unsigned(kpixRegCntlInSync.regAddr(VALID_KPIX_ADDR_RANGE_C)));  --VALID_KPIX_ADDR_RANGE_C
+            addressedKpixVar := to_integer(unsigned(kpixRegCntlInSync.addr(VALID_KPIX_ADDR_RANGE_C)));  --VALID_KPIX_ADDR_RANGE_C
             if (kpixRegRxOut(addressedKpixVar).regValid = '1' and
-                kpixRegRxOut(addressedKpixVar).regAddr = kpixRegCntlInSync.regAddr(REG_ADDR_RANGE_C)) then  -- REG_ADDR_RANGE_C
+                kpixRegRxOut(addressedKpixVar).regAddr = kpixRegCntlInSync.addr(REG_ADDR_RANGE_C)) then  -- REG_ADDR_RANGE_C
                -- Only ack when kpix id and reg addr is the same as tx'd
-               v.kpixRegCntlOut.regDataIn := kpixRegRxOut(addressedKpixVar).regData;
-               v.kpixRegCntlOut.regAck    := '1';
-               v.kpixRegCntlOut.regFail   := kpixRegRxOut(addressedKpixVar).regParityErr;
-               v.state                    := WAIT_RELEASE_S;
+               v.kpixRegCntlOut.rdData := kpixRegRxOut(addressedKpixVar).regData;
+               v.kpixRegCntlOut.ack    := '1';
+               v.kpixRegCntlOut.fail   := kpixRegRxOut(addressedKpixVar).regParityErr;
+               v.state                 := WAIT_RELEASE_S;
             elsif (r.txShiftCount = READ_WAIT_CYCLES_C) then
-               v.kpixRegCntlOut.regAck  := '1';
-               v.kpixRegCntlOut.regFail := '1';
-               v.state                  := WAIT_RELEASE_S;
+               v.kpixRegCntlOut.ack  := '1';
+               v.kpixRegCntlOut.fail := '1';
+               v.state               := WAIT_RELEASE_S;
             end if;
 
          when WAIT_RELEASE_S =>
-            if (kpixRegCntlInSync.regReq = '0') then
+            if (kpixRegCntlInSync.req = '0') then
                -- Can't deassert ack until regReq is dropped
-               v.kpixRegCntlOut.regAck  := '0';
-               v.kpixRegCntlOut.regFail := '0';
-               v.txEnable               := (others => '0');
-               v.state                  := IDLE_S;
+               v.kpixRegCntlOut.ack  := '0';
+               v.kpixRegCntlOut.fail := '0';
+               v.txEnable            := (others => '0');
+               v.state               := IDLE_S;
             end if;
 
       end case;
@@ -448,13 +457,13 @@ begin
       port map (
          rst               => kpixClkRst,
          wr_clk            => kpixClk,
-         din(31 downto 0)  => r.kpixRegCntlOut.regDataIn,
-         din(32)           => r.kpixRegCntlOut.regAck,
-         din(33)           => r.kpixRegCntlOut.regFail,
+         din(31 downto 0)  => r.kpixRegCntlOut.rdData,
+         din(32)           => r.kpixRegCntlOut.ack,
+         din(33)           => r.kpixRegCntlOut.fail,
          rd_clk            => sysClk,
-         dout(31 downto 0) => kpixRegCntlOut.regDataIn,
-         dout(32)          => kpixRegCntlOut.regAck,
-         dout(33)          => kpixRegCntlOut.regFail);
+         dout(31 downto 0) => kpixRegCntlOut.rdData,
+         dout(32)          => kpixRegCntlOut.ack,
+         dout(33)          => kpixRegCntlOut.fail);
 
    -------------------------------------------------------------------------------------------------
    -- Optional clocking of serial clock on falling edge

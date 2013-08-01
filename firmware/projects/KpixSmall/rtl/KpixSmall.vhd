@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2013-07-17
+-- Last update: 2013-07-29
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -17,8 +17,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use work.StdRtlPkg.all;
+use work.VcPkg.all;
 use work.KpixPkg.all;
-use work.FrontEndPkg.all;
 use work.EventBuilderFifoPkg.all;
 use work.TriggerPkg.all;
 use work.EvrCorePkg.all;
@@ -38,10 +38,10 @@ entity KpixSmall is
       gtpRefClkN : in std_logic;
 
       -- Ethernet Interface
-      udpTxP : out std_logic;
-      udpTxN : out std_logic;
-      udpRxP : in  std_logic;
-      udpRxN : in  std_logic;
+      gtpTxP : out std_logic;
+      gtpTxN : out std_logic;
+      gtpRxP : in  std_logic;
+      gtpRxN : in  std_logic;
 
       -- Internal Kpix debug
       debugOutA : out sl;
@@ -64,6 +64,7 @@ end entity KpixSmall;
 architecture rtl of KpixSmall is
 
    signal fpgaRst       : sl;
+   signal fpgaRstHold   : sl;
    signal gtpRefClk     : sl;
    signal gtpRefClkOut  : sl;
    signal gtpRefClkBufg : sl;
@@ -74,11 +75,11 @@ architecture rtl of KpixSmall is
    signal dcmLocked     : sl;
 
    -- Front End Signals
-   signal frontEndRegCntlIn  : FrontEndRegCntlInType;
-   signal frontEndRegCntlOut : FrontEndRegCntlOutType;
-   signal frontEndCmdCntlOut : FrontEndCmdCntlOutType;
-   signal frontEndUsDataOut  : FrontEndUsDataOutType;
-   signal frontEndUsDataIn   : FrontEndUsDataInType;
+   signal cmdSlaveOut : VcCmdSlaveOutType;
+   signal regSlaveIn  : VcRegSlaveInType;
+   signal regSlaveOut : VcRegSlaveOutType;
+   signal usBuff64In  : VcUsBuff64InType;
+   signal usBuff64Out : VcUsBuff64OutType;
 
    signal softwareReset : sl;
 
@@ -91,10 +92,10 @@ architecture rtl of KpixSmall is
                                   seconds     => (others => '0'),
                                   offset      => (others => '0'),
                                   errors      => (others => '0'));
-   
+
    -- Front End Reg Cntl Ouputs from kpixDaq
-   signal frontEndRegCntlInKpix : FrontEndRegCntlInType;
-   
+   signal regSlaveInKpix : VcRegSlaveInType;
+
    -- Event Builder FIFO signals
    -- Optionaly pass this through as IO to external FIFO
    signal ebFifoOut : EventBuilderFifoOutType;
@@ -119,24 +120,7 @@ architecture rtl of KpixSmall is
          LOCKED_OUT : out std_logic);
    end component main_dcm;
 
-   component EventBuilderFifo
-      port (
-         clk   : in  std_logic;
-         rst   : in  std_logic;
-         din   : in  std_logic_vector(71 downto 0);
-         wr_en : in  std_logic;
-         rd_en : in  std_logic;
-         dout  : out std_logic_vector(71 downto 0);
-         full  : out std_logic;
-         empty : out std_logic;
-         valid : out std_logic
-         );
-   end component;
-
-
 begin
-
-   fpgaRst <= not fpgaRstL or softwareReset;
 
    -- Input clock buffer
    GtpRefClkIbufds : IBUFDS
@@ -150,11 +134,25 @@ begin
          I => gtpRefClkOut,
          O => gtpRefClkBufg);
 
+   fpgaRst <= not fpgaRstL or softwareReset;
+
+   -- Must hold reset for at least 3 clocks
+   RstSync_FpgaRstHold : entity work.RstSync
+      generic map (
+         TPD_G           => DELAY_G,
+         IN_POLARITY_G   => '1',
+         OUT_POLARITY_G  => '1',
+         RELEASE_DELAY_G => 10)
+      port map (
+         clk      => gtpRefClkBufg,
+         asyncRst => fpgaRst,
+         syncRst  => fpgaRstHold);
+
    -- Generate clocks
    main_dcm_1 : main_dcm
       port map (
          CLKIN_IN   => gtpRefClkBufg,
-         RST_IN     => fpgaRst,
+         RST_IN     => fpgaRstHold,
          CLKFX_OUT  => clk200,
          CLK0_OUT   => sysClk125,
          LOCKED_OUT => dcmLocked);
@@ -183,33 +181,25 @@ begin
 
    -- Ethernet module
    EthFrontEnd_1 : entity work.EthFrontEnd
+      generic map (
+         TPD_G => DELAY_G)
       port map (
-         gtpClk        => sysClk125,
-         gtpClkRst     => sysRst125,
-         gtpRefClk     => gtpRefClk,
-         gtpRefClkOut  => gtpRefClkOut,
-         clk200        => clk200,
-         rst200        => rst200,
-         cmdEn         => frontEndCmdCntlOut.cmdEn,
-         cmdOpCode     => frontEndCmdCntlOut.cmdOpCode,
-         cmdCtxOut     => frontEndCmdCntlOut.cmdCtxOut,
-         regReq        => frontEndRegCntlOut.regReq,
-         regOp         => frontEndRegCntlOut.regOp,
-         regInp        => frontEndRegCntlOut.regInp,
-         regAck        => frontEndRegCntlIn.regAck,
-         regFail       => frontEndRegCntlIn.regFail,
-         regAddr       => frontEndRegCntlOut.regAddr,
-         regDataOut    => frontEndRegCntlOut.regDataOut,
-         regDataIn     => frontEndRegCntlIn.regDataIn,
-         frameTxEnable => frontEndUsDataIn.frameTxEnable,
-         frameTxSOF    => frontEndUsDataIn.frameTxSOF,
-         frameTxEOF    => frontEndUsDataIn.frameTxEOF,
-         frameTxAfull  => frontEndUsDataOut.frameTxAfull,
-         frameTxData   => frontEndUsDataIn.frameTxData,
-         gtpRxN        => udpRxN,
-         gtpRxP        => udpRxP,
-         gtpTxN        => udpTxN,
-         gtpTxP        => udpTxP);
+         gtpClk       => sysClk125,
+         gtpClkRst    => sysRst125,
+         gtpRefClk    => gtpRefClk,
+         gtpRefClkOut => gtpRefClkOut,
+         gtpRxN       => gtpRxN,
+         gtpRxP       => gtpRxP,
+         gtpTxN       => gtpTxN,
+         gtpTxP       => gtpTxP,
+         clk200       => clk200,
+         rst200       => rst200,
+         cmdSlaveOut  => cmdSlaveOut,
+         regSlaveIn   => regSlaveIn,
+         regSlaveOut  => regSlaveOut,
+         usBuff64In   => usBuff64In,
+         usBuff64Out  => usBuff64Out);
+
 
    -- Route triggers to their proper inputs
    intTriggerIn.nimA  <= not triggerExtIn.nimA;
@@ -242,62 +232,69 @@ begin
          DELAY_G            => DELAY_G,
          NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
       port map (
-         sysClk             => sysClk125,
-         sysRst             => sysRst125,
-         clk200             => clk200,
-         rst200             => rst200,
-         frontEndRegCntlOut => frontEndRegCntlOut,
-         frontEndRegCntlIn  => frontEndRegCntlInKpix,
-         frontEndCmdCntlOut => frontEndCmdCntlOut,
-         frontEndUsDataOut  => frontEndUsDataOut,
-         frontEndUsDataIn   => frontEndUsDataIn,
-         softwareReset      => softwareReset,
-         triggerExtIn       => intTriggerIn,
-         evrOut             => evrOut,  -- No EVR module in KpixSmall
-         sysEvrOut          => evrOut,
-         ebFifoOut          => ebFifoOut,
-         ebFifoIn           => ebFifoIn,
-         debugOutA          => debugOutA,
-         debugOutB          => debugOutB,
-         kpixClkOut         => kpixClk,
-         kpixTriggerOut     => kpixTrigger,
-         kpixResetOut       => kpixRst,
-         kpixSerTxOut       => intKpixSerTxOut,
-         kpixSerRxIn        => intKpixSerRxIn);
+         sysClk         => sysClk125,
+         sysRst         => sysRst125,
+         clk200         => clk200,
+         rst200         => rst200,
+         regSlaveOut    => regSlaveOut,
+         regSlaveIn     => regSlaveInKpix,
+         cmdSlaveOut    => cmdSlaveOut,
+         usBuff64Out    => usBuff64Out,
+         usBuff64In     => usBuff64In,
+         softwareReset  => softwareReset,
+         triggerExtIn   => intTriggerIn,
+         evrOut         => evrOut,      -- No EVR module in KpixSmall
+         sysEvrOut      => evrOut,
+         ebFifoOut      => ebFifoOut,
+         ebFifoIn       => ebFifoIn,
+         debugOutA      => debugOutA,
+         debugOutB      => debugOutB,
+         kpixClkOut     => kpixClk,
+         kpixTriggerOut => kpixTrigger,
+         kpixResetOut   => kpixRst,
+         kpixSerTxOut   => intKpixSerTxOut,
+         kpixSerRxIn    => intKpixSerRxIn);
 
    --------------------------------------------------------------------------------------------------
    -- Event Builder FIFO
    --------------------------------------------------------------------------------------------------
-   EventBuilderFifo_1 : EventBuilderFifo
+   FifoSync_EventBuilderFifo : entity work.FifoSync
+      generic map (
+         TPD_G        => DELAY_G,
+         BRAM_EN_G    => true,
+         FWFT_EN_G    => true,
+         DATA_WIDTH_G => 72,
+         ADDR_WIDTH_G => 12)
       port map (
-         clk   => sysClk125,
          rst   => sysRst125,
-         din   => ebFifoIn.wrData,
+         clk   => sysClk125,
          wr_en => ebFifoIn.wrEn,
          rd_en => ebFifoIn.rdEn,
+         din   => ebFifoIn.wrData,
          dout  => ebFifoOut.rdData,
+         valid => ebFifoOut.valid,
          full  => ebFifoOut.full,
-         empty => ebFifoOut.empty,
-         valid => ebFifoOut.valid);
+         empty => ebFifoOut.empty);
+
 
    --------------------------------------------------------------------------------------------------
    -- Front End Reg Cntl Mux
    --------------------------------------------------------------------------------------------------
-   regCntlMux : process (frontEndRegCntlOut, evrConfigIntfOut, frontEndRegCntlInKpix) is
+   regCntlMux : process (regSlaveOut, evrConfigIntfOut, regSlaveInKpix) is
    begin
-      -- Create EVR register interface inputs from frontEndRegCntlOut signals
-      evrConfigIntfIn.req    <= frontEndRegCntlOut.regReq and toSl(frontEndRegCntlOut.regAddr(23 downto 20) = "0010");
-      evrConfigIntfIn.wrEna  <= frontEndRegCntlOut.regOp;
-      evrConfigIntfIn.dataIn <= frontEndRegCntlOut.regDataOut;
-      evrConfigIntfIn.addr   <= frontEndRegCntlOut.regAddr(7 downto 0);
+      -- Create EVR register interface inputs from regSlaveOut signals
+      evrConfigIntfIn.req    <= regSlaveOut.req and toSl(regSlaveOut.addr(23 downto 20) = "0010");
+      evrConfigIntfIn.wrEna  <= regSlaveOut.op;
+      evrConfigIntfIn.dataIn <= regSlaveOut.wrData;
+      evrConfigIntfIn.addr   <= regSlaveOut.addr(7 downto 0);
 
-      -- Mux EVR and KpixDaq register interface signals onto frontEndRegCntlIn
-      if (frontEndRegCntlOut.regAddr(23 downto 20) = "0010") then
-         frontEndRegCntlIn.regDataIn <= evrConfigIntfOut.dataOut;
-         frontEndRegCntlIn.regAck    <= evrConfigIntfOut.ack;
-         frontEndRegCntlIn.regFail   <= '0';
+      -- Mux EVR and KpixDaq register interface signals onto regSlaveIn
+      if (regSlaveOut.addr(23 downto 20) = "0010") then
+         regSlaveIn.rdData <= evrConfigIntfOut.dataOut;
+         regSlaveIn.ack    <= evrConfigIntfOut.ack;
+         regSlaveIn.fail   <= '0';
       else
-         frontEndRegCntlIn <= frontEndRegCntlInKpix;
+         regSlaveIn <= regSlaveInKpix;
       end if;
    end process regCntlMux;
 

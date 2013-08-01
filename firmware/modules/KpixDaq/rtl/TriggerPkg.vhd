@@ -6,7 +6,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-14
--- Last update: 2013-07-22
+-- Last update: 2013-07-31
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -38,6 +38,12 @@ package TriggerPkg is
       calibrate       : sl;
    end record TriggerRegsInType;
 
+   constant TRIGGER_REGS_IN_INIT_C : TriggerRegsInType := (
+      extTriggerSrc   => (others => '0'),
+      extTimestampSrc => (others => '0'),
+      acquisitionSrc  => (others => '0'),
+      calibrate       => '0');
+
    type TriggerExtInType is record
       nimA  : sl;
       nimB  : sl;
@@ -51,6 +57,12 @@ package TriggerPkg is
       startCalibrate : sl;
       startReadout   : sl;
    end record TriggerOutType;
+
+   constant TRIGGER_OUT_INIT_C : TriggerOutType := (
+      trigger        => '0',
+      startAcquire   => '0',
+      startCalibrate => '0',
+      startReadout   => '0');
 
    type TimestampOutType is record
       bunchCount : slv(12 downto 0);

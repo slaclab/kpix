@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-17
--- Last update: 2013-07-22
+-- Last update: 2013-07-31
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -17,10 +17,9 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use work.StdRtlPkg.all;
-use work.FrontEndPkg.all;
+use work.VcPkg.all;
 use work.EventBuilderFifoPkg.all;
 use work.KpixPkg.all;
-use work.KpixRegCntlPkg.all;
 use work.KpixDataRxPkg.all;
 use work.KpixRegRxPkg.all;
 use work.TriggerPkg.all;
@@ -41,11 +40,11 @@ entity KpixDaqCore is
       rst200 : in sl;
 
       -- Front End Interface (Generic. Could be Ethernet, PGP or other)
-      frontEndRegCntlOut : in  FrontEndRegCntlOutType;
-      frontEndRegCntlIn  : out FrontEndRegCntlInType;
-      frontEndCmdCntlOut : in  FrontEndCmdCntlOutType;
-      frontEndUsDataOut  : in  FrontEndUsDataOutType;
-      frontEndUsDataIn   : out FrontEndUsDataInType;
+      cmdSlaveOut : in  VcCmdSlaveOutType;
+      regSlaveIn  : out VcRegSlaveInType;
+      regSlaveOut : in  VcRegSlaveOutType;
+      usBuff64In  : out VcUsBuff64InType;
+      usBuff64Out : in  VcUsBuff64OutType;
 
       softwareReset : out sl;
 
@@ -79,13 +78,14 @@ architecture rtl of KpixDaqCore is
    signal kpixClk    : sl;
    signal kpixClkRst : sl;
 
-   signal kpixRegCntlIn  : FrontEndRegCntlOutType;
-   signal kpixRegCntlOut : FrontEndRegCntlInType;
+   signal kpixRegCntlIn  : VcRegSlaveOutType;  --FrontEndRegCntlOutType;
+   signal kpixRegCntlOut : VcRegSlaveInType;   --FrontEndRegCntlInType;
 
    -- Front end accessible registers
    signal kpixClockGenRegsIn : KpixClockGenRegsInType;
    signal triggerRegsIn      : TriggerRegsInType;
    signal kpixConfigRegs     : KpixConfigRegsType;
+   signal kpixConfigRegsKpix : KpixConfigRegsType;  -- KpixConfigRegs sync'd to kpixClk
    signal kpixDataRxRegsIn   : KpixDataRxRegsInArray(NUM_KPIX_MODULES_G-1 downto 0);
    signal kpixDataRxRegsOut  : KpixDataRxRegsOutArray(NUM_KPIX_MODULES_G-1 downto 0);
    signal kpixLocalRegsIn    : KpixLocalRegsInType;
@@ -131,8 +131,8 @@ begin
       port map (
          sysClk             => sysClk,
          sysRst             => sysRst,
-         frontEndRegCntlOut => frontEndRegCntlOut,
-         frontEndRegCntlIn  => frontEndRegCntlIn,
+         regSlaveOut        => regSlaveOut,
+         regSlaveIn         => regSlaveIn,
          softwareReset      => softwareReset,
          kpixRegCntlOut     => kpixRegCntlOut,
          kpixRegCntlIn      => kpixRegCntlIn,
@@ -143,6 +143,31 @@ begin
          kpixDataRxRegsIn   => kpixDataRxRegsIn,
          kpixDataRxRegsOut  => kpixDataRxRegsOut);
 
+   -------------------------------------------------------------------------------------------------
+   -- Sync kpixConfigRegs to KpixClk
+   -- numColumns is the only bus, at it is set at start of run and never changes, so don't need
+   -- the whole SynchronizerFifo. Simple synchronizer is sufficient
+   -------------------------------------------------------------------------------------------------
+   SynchronizerVector_1 : entity work.SynchronizerVector
+      generic map (
+         TPD_G   => DELAY_G,
+         WIDTH_G => 10)
+      port map (
+         arst                => sysRst,
+         clk                 => kpixClk,
+         dataIn(0)           => kpixConfigRegs.kpixReset,
+         dataIn(1)           => kpixConfigRegs.inputEdge,
+         dataIn(2)           => kpixConfigRegs.outputEdge,
+         dataIn(3)           => kpixConfigRegs.rawDataMode,
+         dataIn(8 downto 4)  => kpixConfigRegs.numColumns,
+         dataIn(9)           => kpixConfigRegs.autoReadDisable,
+         dataOut(0)          => kpixConfigRegsKpix.kpixReset,
+         dataOut(1)          => kpixConfigRegsKpix.inputEdge,
+         dataOut(2)          => kpixConfigRegsKpix.outputEdge,
+         dataOut(3)          => kpixConfigRegsKpix.rawDataMode,
+         dataOut(8 downto 4) => kpixConfigRegsKpix.numColumns,
+         dataOut(9)          => kpixConfigRegsKpix.autoReadDisable);
+
    --------------------------------------------------------------------------------------------------
    -- Generate the KPIX Clock
    --------------------------------------------------------------------------------------------------
@@ -150,10 +175,12 @@ begin
       generic map (
          DELAY_G => DELAY_G)
       port map (
+         sysClk     => sysClk,
+         sysRst     => sysRst,
+         extRegsIn  => kpixClockGenRegsIn,
          clk200     => clk200,
          rst200     => rst200,
          triggerOut => triggerOut,
-         extRegsIn  => kpixClockGenRegsIn,
          kpixState  => kpixState,
          kpixClk    => kpixClk,
          kpixClkRst => kpixClkRst);
@@ -165,18 +192,19 @@ begin
       generic map (
          DELAY_G => DELAY_G)
       port map (
-         clk200             => clk200,
-         rst200             => rst200,
-         triggerExtIn       => triggerExtIn,
-         evrOut             => evrOut,
-         kpixState          => kpixState,
-         frontEndCmdCntlOut => frontEndCmdCntlOut,
-         triggerOut         => triggerOut,
-         sysClk             => sysClk,
-         triggerRegsIn      => triggerRegsIn,
-         kpixConfigRegs     => kpixConfigRegs,
-         timestampIn        => timestampIn,
-         timestampOut       => timestampOut);
+         clk200         => clk200,
+         rst200         => rst200,
+         triggerExtIn   => triggerExtIn,
+         evrOut         => evrOut,
+         kpixState      => kpixState,
+         cmdSlaveOut    => cmdSlaveOut,
+         triggerOut     => triggerOut,
+         sysClk         => sysClk,
+         sysRst         => sysRst,
+         triggerRegsIn  => triggerRegsIn,
+         kpixConfigRegs => kpixConfigRegs,
+         timestampIn    => timestampIn,
+         timestampOut   => timestampOut);
 
    kpixTriggerOut <= triggerOut.trigger;
 
@@ -188,22 +216,22 @@ begin
          DELAY_G            => DELAY_G,
          NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
       port map (
-         sysClk            => sysClk,
-         sysRst            => sysRst,
-         triggerOut        => triggerOut,
-         timestampIn       => timestampIn,
-         timestampOut      => timestampOut,
-         evrOut            => sysEvrOut,
-         sysKpixState      => sysKpixState,
-         kpixDataRxOut     => kpixDataRxOut,
-         kpixDataRxIn      => kpixDataRxIn,
-         kpixClk           => kpixClk,
-         kpixConfigRegs    => kpixConfigRegs,
-         triggerRegsIn     => triggerRegsIn,
-         ebFifoIn          => ebFifoIn,
-         ebFifoOut         => ebFifoOut,
-         frontEndUsDataOut => frontEndUsDataOut,
-         frontEndUsDataIn  => frontEndUsDataIn);
+         sysClk         => sysClk,
+         sysRst         => sysRst,
+         triggerOut     => triggerOut,
+         timestampIn    => timestampIn,
+         timestampOut   => timestampOut,
+         evrOut         => sysEvrOut,
+         sysKpixState   => sysKpixState,
+         kpixDataRxOut  => kpixDataRxOut,
+         kpixDataRxIn   => kpixDataRxIn,
+         kpixClk        => kpixClk,
+         kpixConfigRegs => kpixConfigRegs,
+         triggerRegsIn  => triggerRegsIn,
+         ebFifoIn       => ebFifoIn,
+         ebFifoOut      => ebFifoOut,
+         usBuff64Out    => usBuff64Out,
+         usBuff64In     => usBuff64In);
 
 
    kpixSerTxOut                                  <= intKpixSerTxOut(NUM_KPIX_MODULES_G-1 downto 0);
@@ -246,11 +274,11 @@ begin
             DELAY_G   => DELAY_G,
             KPIX_ID_G => i)
          port map (
-            kpixClk        => kpixClk,
-            kpixClkRst     => kpixClkRst,
-            kpixConfigRegs => kpixConfigRegs,
-            kpixSerRxIn    => intKpixSerRxIn(i),
-            kpixRegRxOut   => kpixRegRxOut(i));
+            kpixClk            => kpixClk,
+            kpixClkRst         => kpixClkRst,
+            kpixConfigRegsKpix => kpixConfigRegsKpix,
+            kpixSerRxIn        => intKpixSerRxIn(i),
+            kpixRegRxOut       => kpixRegRxOut(i));
    end generate KpixRegRxGen;
 
    --------------------------------------------------------------------------------------------------
@@ -264,17 +292,18 @@ begin
             DELAY_G   => DELAY_G,
             KPIX_ID_G => i)
          port map (
-            kpixClk        => kpixClk,
-            kpixClkRst     => kpixClkRst,
-            kpixSerRxIn    => intKpixSerRxIn(i),
-            kpixRegRxOut   => kpixRegRxOut(i),
-            sysClk         => sysClk,
-            sysRst         => sysRst,
-            kpixConfigRegs => kpixConfigRegs,
-            extRegsIn      => kpixDataRxRegsIn(i),
-            extRegsOut     => kpixDataRxRegsOut(i),
-            kpixDataRxOut  => kpixDataRxOut(i),
-            kpixDataRxIn   => kpixDataRxIn(i));
+            kpixClk            => kpixClk,
+            kpixClkRst         => kpixClkRst,
+            kpixSerRxIn        => intKpixSerRxIn(i),
+            kpixRegRxOut       => kpixRegRxOut(i),
+            kpixConfigRegsKpix => kpixConfigRegsKpix,
+            sysClk             => sysClk,
+            sysRst             => sysRst,
+            kpixConfigRegs     => kpixConfigRegs,
+            extRegsIn          => kpixDataRxRegsIn(i),
+            extRegsOut         => kpixDataRxRegsOut(i),
+            kpixDataRxOut      => kpixDataRxOut(i),
+            kpixDataRxIn       => kpixDataRxIn(i));
    end generate KpixDataRxGen;
 
    ----------------------------------------

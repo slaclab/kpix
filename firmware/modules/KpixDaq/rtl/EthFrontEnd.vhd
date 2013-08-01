@@ -15,162 +15,163 @@
 -- 05/03/2012: created.
 -------------------------------------------------------------------------------
 
-LIBRARY ieee;
-LIBRARY unisim;
-use work.EthClientPackage.all;
+library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;
-use ieee.std_logic_unsigned.all;
-use unisim.vcomponents.all;
 
-entity EthFrontEnd is 
-   port ( 
-     
+use work.StdRtlPkg.all;
+use work.VcPkg.all;
+use work.EthClientPackage.all;
+
+entity EthFrontEnd is
+   generic (
+      TPD_G      : time        := 1 ns;
+      IP_ADDR_G  : IPAddrType  := (X"C0", X"A8", X"01", X"10");  -- 192.168.1.16
+      MAC_ADDR_G : MacAddrType := (X"00", X"44", X"56", X"00", X"03", X"01"));
+   port (
       -- System clock, reset & control
-      gtpClk           : in  std_logic;
-      gtpClkRst        : in  std_logic;
-      gtpRefClk        : in  std_logic;
-      gtpRefClkOut     : out std_logic;
-
-      -- Special 200 MHz clock for commands
-      clk200 : in std_logic;
-      rst200 : in std_logic;
-
-      -- Local command signal
-      cmdEn            : out std_logic;
-      cmdOpCode        : out std_logic_vector(7  downto 0);
-      cmdCtxOut        : out std_logic_vector(23 downto 0);
-
-      -- Local register control signals
-      regReq           : out std_logic;
-      regOp            : out std_logic;
-      regInp           : out std_logic;
-      regAck           : in  std_logic;
-      regFail          : in  std_logic;
-      regAddr          : out std_logic_vector(23 downto 0);
-      regDataOut       : out std_logic_vector(31 downto 0);
-      regDataIn        : in  std_logic_vector(31 downto 0);
-
-      -- Local data transfer signals
-      frameTxEnable    : in  std_logic;
-      frameTxSOF       : in  std_logic;
-      frameTxEOF       : in  std_logic;
-      frameTxAfull     : out std_logic;
-      frameTxData      : in  std_logic_vector(63 downto 0);
+      gtpClk       : in  sl;
+      gtpClkRst    : in  sl;
+      gtpRefClk    : in  sl;
+      gtpRefClkOut : out sl;
 
       -- GTP Signals
-      gtpRxN           : in  std_logic;
-      gtpRxP           : in  std_logic;
-      gtpTxN           : out std_logic;
-      gtpTxP           : out std_logic
-   );
+      gtpRxN : in  sl;
+      gtpRxP : in  sl;
+      gtpTxN : out sl;
+      gtpTxP : out sl;
+
+      -- Special 200 MHz clock for commands
+      clk200 : in sl;
+      rst200 : in sl;
+
+      -- Local command signal
+      cmdSlaveOut : out VcCmdSlaveOutType;
+
+      -- Local register control signals
+      regSlaveIn  : in  VcRegSlaveInType;
+      regSlaveOut : out VcRegSlaveOutType;
+
+      -- Local data transfer signals
+      usBuff64In  : in  VcUsBuff64InType;
+      usBuff64Out : out VcUsBuff64OutType);
 end EthFrontEnd;
 
 
 -- Define architecture
 architecture EthFrontEnd of EthFrontEnd is
 
-   -- Buffer
-   component UsBuff 
-      port ( 
-         sysClk           : in  std_logic;
-         sysClkRst        : in  std_logic;
-         frameTxValid     : in  std_logic;
-         frameTxSOF       : in  std_logic;
-         frameTxEOF       : in  std_logic;
-         frameTxEOFE      : in  std_logic;
-         frameTxData      : in  std_logic_vector(63 downto 0);
-         frameTxAFull     : out std_logic;
-         vcFrameTxValid   : out std_logic;
-         vcFrameTxReady   : in  std_logic;
-         vcFrameTxSOF     : out std_logic;
-         vcFrameTxEOF     : out std_logic;
-         vcFrameTxEOFE    : out std_logic;
-         vcFrameTxData    : out std_logic_vector(15 downto 0);
-         vcRemBuffAFull   : in  std_logic;
-         vcRemBuffFull    : in  std_logic
-      );
-   end component;
+   signal vcTx0In  : VcTxInType;
+   signal vcTx0Out : VcTxOutType;
 
-   -- Local Signals
-   signal vc0FrameTxValid   : std_logic;
-   signal vc0FrameTxReady   : std_logic;
-   signal vc0FrameTxSOF     : std_logic;
-   signal vc0FrameTxEOF     : std_logic;
-   signal vc0FrameTxData    : std_logic_vector(15 downto 0);
-   signal vc1FrameTxValid   : std_logic;
-   signal vc1FrameTxReady   : std_logic;
-   signal vc1FrameTxSOF     : std_logic;
-   signal vc1FrameTxEOF     : std_logic;
-   signal vc1FrameTxData    : std_logic_vector(15 downto 0);
-   signal vcFrameRxSOF      : std_logic;
-   signal vcFrameRxEOF      : std_logic;
-   signal vcFrameRxEOFE     : std_logic;
-   signal vcFrameRxData     : std_logic_vector(15 downto 0);
-   signal vc0FrameRxValid   : std_logic;
-   signal vc1FrameRxValid   : std_logic;
-   signal udpTxValid        : std_logic;
-   signal udpTxFast         : std_logic;
-   signal udpTxFastOut      : std_logic;
-   signal udpTxReady        : std_logic;
-   signal udpTxData         : std_logic_vector(7  downto 0);
-   signal udpTxLength       : std_logic_vector(15 downto 0);
-   signal udpRxValid        : std_logic;
-   signal udpRxData         : std_logic_vector(7 downto 0);
-   signal udpRxGood         : std_logic;
-   signal udpRxError        : std_logic;
-   signal udpRxCount        : std_logic_vector(15 downto 0);
-   signal userTxValid       : std_logic;
-   signal userTxReady       : std_logic;
-   signal userTxData        : std_logic_vector(15 downto 0);
-   signal userTxSOF         : std_logic;
-   signal userTxEOF         : std_logic;
-   signal userTxVc          : std_logic_vector(1  downto 0);
-   signal userRxValid       : std_logic;
-   signal userRxData        : std_logic_vector(15 downto 0);
-   signal userRxSOF         : std_logic;
-   signal userRxEOF         : std_logic;
-   signal userRxEOFE        : std_logic;
-   signal userRxVc          : std_logic_vector(1  downto 0);
-   signal swapRegDataIn     : std_logic_vector(31 downto 0);
-   signal ipAddr            : IPAddrType;
-   signal macAddr           : MacAddrType;
+   signal vcTx1In  : VcTxInType;
+   signal vcTx1Out : VcTxOutType;
 
-   -- Register delay for simulation
-   constant tpd:time := 0.5 ns;
+   signal vcRxCommonOut : VcRxCommonOutType;
+   signal vcRx0Out      : VcRxOutType;
+   signal vcRx1Out      : VcRxOutType;
+
+   -- Ethernet signals (Should cleanup Eth Client someday)
+   signal udpTxValid   : sl;
+   signal udpTxFast    : sl;
+   signal udpTxFastOut : sl;
+   signal udpTxReady   : sl;
+   signal udpTxData    : slv(7 downto 0);
+   signal udpTxLength  : slv(15 downto 0);
+   signal udpRxValid   : sl;
+   signal udpRxData    : slv(7 downto 0);
+   signal udpRxGood    : sl;
+   signal udpRxError   : sl;
+   signal udpRxCount   : slv(15 downto 0);
+   signal userTxValid  : sl;
+   signal userTxReady  : sl;
+   signal userTxData   : slv(15 downto 0);
+   signal userTxSOF    : sl;
+   signal userTxEOF    : sl;
+   signal userTxVc     : slv(1 downto 0);
+   signal userRxValid  : sl;
+   signal userRxData   : slv(15 downto 0);
+   signal userRxSOF    : sl;
+   signal userRxEOF    : sl;
+   signal userRxEOFE   : sl;
+   signal userRxVc     : slv(1 downto 0);
 
 begin
 
    -- Ethernet block
-   U_EthClientGtp: entity work.EthClientGtp 
+   U_EthClientGtp : entity work.EthClientGtp
       generic map (
          UdpPort => 8192
-      ) port map (
-         gtpClk       => gtpClk,
-         gtpClkOut    => gtpRefClkOut,
-         gtpClkRef    => gtpRefClk,
-         gtpClkRst    => gtpClkRst,
-         ipAddr       => ipAddr,
-         macAddr      => macAddr,
-         udpTxValid   => udpTxValid,
-         udpTxFast    => '0',
-         udpTxReady   => udpTxReady,
-         udpTxData    => udpTxData,
-         udpTxLength  => udpTxLength,
-         udpRxValid   => udpRxValid,
-         udpRxData    => udpRxData,
-         udpRxGood    => udpRxGood,
-         udpRxError   => udpRxError,
-         udpRxCount   => udpRxCount,
-         gtpRxN       => gtpRxN,
-         gtpRxP       => gtpRxP,
-         gtpTxN       => gtpTxN,
-         gtpTxP       => gtpTxP
-      );
+         ) port map (
+            gtpClk      => gtpClk,
+            gtpClkOut   => gtpRefClkOut,
+            gtpClkRef   => gtpRefClk,
+            gtpClkRst   => gtpClkRst,
+            ipAddr      => IP_ADDR_G,
+            macAddr     => MAC_ADDR_G,
+            udpTxValid  => udpTxValid,
+            udpTxFast   => '0',
+            udpTxReady  => udpTxReady,
+            udpTxData   => udpTxData,
+            udpTxLength => udpTxLength,
+            udpRxValid  => udpRxValid,
+            udpRxData   => udpRxData,
+            udpRxGood   => udpRxGood,
+            udpRxError  => udpRxError,
+            udpRxCount  => udpRxCount,
+            gtpRxN      => gtpRxN,
+            gtpRxP      => gtpRxP,
+            gtpTxN      => gtpTxN,
+            gtpTxP      => gtpTxP
+            );
 
    -- Ethernet framer
-   U_EthFrame : entity work.EthUdpFrame 
-      port map ( 
+   U_EthFrame : entity work.EthUdpFrame
+      port map (
+         gtpClk      => gtpClk,
+         gtpClkRst   => gtpClkRst,
+         userTxValid => userTxValid,
+         userTxReady => userTxReady,
+         userTxData  => userTxData,
+         userTxSOF   => userTxSOF,
+         userTxEOF   => userTxEOF,
+         userTxVc    => userTxVc,
+         userRxValid => userRxValid,
+         userRxData  => userRxData,
+         userRxSOF   => userRxSOF,
+         userRxEOF   => userRxEOF,
+         userRxEOFE  => userRxEOFE,
+         userRxVc    => userRxVc,
+         udpTxValid  => udpTxValid,
+         udpTxFast   => open,
+         udpTxJumbo  => '0',
+         udpTxReady  => udpTxReady,
+         udpTxData   => udpTxData,
+         udpTxLength => udpTxLength,
+         udpRxValid  => udpRxValid,
+         udpRxData   => udpRxData,
+         udpRxGood   => udpRxGood,
+         udpRxError  => udpRxError,
+         udpRxCount  => udpRxCount
+         );
+
+   -- Demux
+   vcRxCommonOut.sof     <= userRxSOF;
+   vcRxCommonOut.eof     <= userRxEOF;
+   vcRxCommonOut.eofe    <= userRxEOFE;
+   vcRxCommonOut.data(0) <= userRxData;
+   vcRxCommonOut.data(1) <= (others => '0');
+   vcRxCommonOut.data(2) <= (others => '0');
+   vcRxCommonOut.data(3) <= (others => '0');
+   vcRx0Out.valid        <= userRxValid when userRxVc = "00" else '0';
+   vcRx1Out.valid        <= userRxValid when userRxVc = "01" else '0';
+   vcRx0Out.remBuffAFull <= '0';        -- EthClient doesn't drive these
+   vcRx0Out.remBuffFull  <= '0';        -- EthClient doesn't drive these
+   vcRx1Out.remBuffAFull <= '0';
+   vcRx1Out.remBuffFull  <= '0';
+
+   -- Arbiter
+   U_EthArb : entity work.EthArbiter
+      port map (
          gtpClk       => gtpClk,
          gtpClkRst    => gtpClkRst,
          userTxValid  => userTxValid,
@@ -179,139 +180,93 @@ begin
          userTxSOF    => userTxSOF,
          userTxEOF    => userTxEOF,
          userTxVc     => userTxVc,
-         userRxValid  => userRxValid,
-         userRxData   => userRxData,
-         userRxSOF    => userRxSOF,
-         userRxEOF    => userRxEOF,
-         userRxEOFE   => userRxEOFE,
-         userRxVc     => userRxVc,
-         udpTxValid   => udpTxValid,
-         udpTxFast    => open,
-         udpTxJumbo   => '0',
-         udpTxReady   => udpTxReady,
-         udpTxData    => udpTxData,
-         udpTxLength  => udpTxLength,
-         udpRxValid   => udpRxValid,
-         udpRxData    => udpRxData,
-         udpRxGood    => udpRxGood,
-         udpRxError   => udpRxError,
-         udpRxCount   => udpRxCount
-      );
+         user0TxValid => vcTx0In.valid,
+         user0TxReady => vcTx0Out.ready,
+         user0TxData  => vcTx0In.data(0),
+         user0TxSOF   => vcTx0In.sof,
+         user0TxEOF   => vcTx0In.eof,
+         user1TxValid => vcTx1In.valid,
+         user1TxReady => vcTx1Out.ready,
+         user1TxData  => vcTx1In.data(0),
+         user1TxSOF   => vcTx1In.sof,
+         user1TxEOF   => vcTx1In.eof,
+         user2TxValid => '0',
+         user2TxReady => open,
+         user2TxData  => (others => '0'),
+         user2TxSOF   => '0',
+         user2TxEOF   => '0',
+         user3TxValid => '0',
+         user3TxReady => open,
+         user3TxData  => (others => '0'),
+         user3TxSOF   => '0',
+         user3TxEOF   => '0'
+         );
 
-   -- Demux
-   vcFrameRxSOF      <= userRxSOF;
-   vcFrameRxEOF      <= userRxEOF;
-   vcFrameRxEOFE     <= userRxEOFE;
-   vcFrameRxData     <= userRxData;
-   vc0FrameRxValid   <= userRxValid when userRxVc = 0 else '0';
-   vc1FrameRxValid   <= userRxValid when userRxVc = 1 else '0';
 
-   -- Arbiter
-   U_EthArb: entity work.EthArbiter 
-      port map ( 
-         gtpClk         => gtpClk,
-         gtpClkRst      => gtpClkRst,
-         userTxValid    => userTxValid,
-         userTxReady    => userTxReady,
-         userTxData     => userTxData,
-         userTxSOF      => userTxSOF,
-         userTxEOF      => userTxEOF,
-         userTxVc       => userTxVc,
-         user0TxValid   => vc0FrameTxValid,
-         user0TxReady   => vc0FrameTxReady,
-         user0TxData    => vc0FrameTxData,
-         user0TxSOF     => vc0FrameTxSOF,
-         user0TxEOF     => vc0FrameTxEOF,
-         user1TxValid   => vc1FrameTxValid,
-         user1TxReady   => vc1FrameTxReady,
-         user1TxData    => vc1FrameTxData,
-         user1TxSOF     => vc1FrameTxSOF,
-         user1TxEOF     => vc1FrameTxEOF,
-         user2TxValid   => '0',
-         user2TxReady   => open,
-         user2TxData    => (others=>'0'),
-         user2TxSOF     => '0',
-         user2TxEOF     => '0',
-         user3TxValid   => '0',
-         user3TxReady   => open,
-         user3TxData    => (others=>'0'),
-         user3TxSOF     => '0',
-         user3TxEOF     => '0'
-      );
-
-   -- Lane 0, VC0, External command processor
-   U_ExtCmd: entity work.EthCmdSlave 
-      generic map ( 
-         DestId    => 0,
-         DestMask  => 1,
-         FifoType  => "V5"
-      ) port map ( 
-         pgpRxClk       => gtpClk,           pgpRxReset     => gtpClkRst,
-         locClk         => clk200,           locReset       => rst200,
-         vcFrameRxValid => vc0FrameRxValid,  vcFrameRxSOF   => vcFrameRxSOF,
-         vcFrameRxEOF   => vcFrameRxEOF,     vcFrameRxEOFE  => vcFrameRxEOFE,
-         vcFrameRxData  => vcFrameRxData,    vcLocBuffAFull => open,
-         vcLocBuffFull  => open,             cmdEn          => cmdEn,
-         cmdOpCode      => cmdOpCode,        cmdCtxOut      => cmdCtxOut
-      );
-
-   -- Return data, Lane 0, VC0
-   U_DataBuff0: UsBuff port map ( 
-      sysClk           => gtpClk,
-      sysClkRst        => gtpClkRst,
-      frameTxValid     => frameTxEnable,
-      frameTxSOF       => frameTxSOF,
-      frameTxEOF       => frameTxEOF,
-      frameTxEOFE      => '0',
-      frameTxData      => frameTxData,
-      frameTxAFull     => frameTxAfull,
-      vcFrameTxValid   => vc0FrameTxValid,
-      vcFrameTxReady   => vc0FrameTxReady,
-      vcFrameTxSOF     => vc0FrameTxSOF,
-      vcFrameTxEOF     => vc0FrameTxEOF,
-      vcFrameTxEOFE    => open,
-      vcFrameTxData    => vc0FrameTxData,
-      vcRemBuffAFull   => '0',
-      vcRemBuffFull    => '0'
-   );
-
-   -- Lane 0, VC1, External register access control
-   U_ExtReg: entity work.EthRegSlave
-      generic map ( FifoType => "V5" )
+   -- VC0 RX, External command processor
+   VcCmdSlave_1 : entity work.VcCmdSlave
+      generic map (
+         TPD_G           => TPD_G,
+         RX_LANE_G       => 0,
+         DEST_ID_G       => 0,
+         DEST_MASK_G     => 1,
+         GEN_SYNC_FIFO_G => false,
+         BRAM_EN_G       => true,
+         ETH_MODE_G      => true)
       port map (
-      pgpRxClk        => gtpClk,           pgpRxReset      => gtpClkRst,
-      pgpTxClk        => gtpClk,           pgpTxReset      => gtpClkRst,
-      locClk          => gtpClk,           locReset        => gtpClkRst,
-      vcFrameRxValid  => vc1FrameRxValid,  vcFrameRxSOF    => vcFrameRxSOF,
-      vcFrameRxEOF    => vcFrameRxEOF,     vcFrameRxEOFE   => vcFrameRxEOFE,
-      vcFrameRxData   => vcFrameRxData,    vcLocBuffAFull  => open,
-      vcLocBuffFull   => open,             vcFrameTxValid  => vc1FrameTxValid,
-      vcFrameTxReady  => vc1FrameTxReady,  vcFrameTxSOF    => vc1FrameTxSOF,
-      vcFrameTxEOF    => vc1FrameTxEOF,    vcFrameTxEOFE   => open,
-      vcFrameTxData   => vc1FrameTxData,   vcRemBuffAFull  => '0',
-      vcRemBuffFull   => '0',              regInp          => regInp,
-      regReq          => regReq,           regOp           => regOp,
-      regAck          => regAck,           regFail         => regFail,
-      regAddr         => regAddr,          regDataOut      => regDataOut,
-      regDataIn       => swapRegDataIn
-   );
+         vcRxOut             => vcRx0Out,
+         vcRxCommonOut       => vcRxCommonOut,
+         vcTxIn_locBuffAFull => vcTx0In.locBuffAFull,
+         vcTxIn_locBuffFull  => vcTx0In.locBuffFull,
+         cmdSlaveOut         => cmdSlaveOut,
+         locClk              => clk200,
+         locAsyncRst         => rst200,
+         vcRxClk             => gtpClk,
+         vcRxAsyncRst        => gtpClkRst);
 
-   swapRegDataIn(15 downto  0) <= regDataIn(31 downto 16);
-   swapRegDataIn(31 downto 16) <= regDataIn(15 downto  0);
+   -- VC0 Tx, Return data
+   VcUsBuff64Kpix_1 : entity work.VcUsBuff64Kpix
+      generic map (
+         TPD_G             => TPD_G,
+         GEN_SYNC_FIFO_G   => true,
+         BRAM_EN_G         => true,
+         FIFO_ADDR_WIDTH_G => 10)
+      port map (
+         vcTxIn               => vcTx0In,
+         vcTxOut              => vcTx0Out,
+         vcRxOut_remBuffAFull => vcRx0Out.remBuffAFull,
+         vcRxOut_remBuffFull  => vcRx0Out.remBuffFull,
+         usBuff64In           => usBuff64In,
+         usBuff64Out          => usBuff64Out,
+         locClk               => gtpClk,
+         locAsyncRst          => gtpClkRst,
+         vcTxClk              => gtpClk,
+         vcTxAsyncRst         => gtpClkRst);
 
-   -- IP Address
-   ipAddr(3) <= x"c0"; -- 192
-   ipAddr(2) <= x"A8"; -- 168
-   ipAddr(1) <= x"01"; -- 1
-   ipAddr(0) <= x"10"; -- 16
-
-   -- MAC Address
-   macAddr(0) <= x"00";
-   macAddr(1) <= x"44";
-   macAddr(2) <= x"56";
-   macAddr(3) <= x"00";
-   macAddr(4) <= x"03";
-   macAddr(5) <= x"01";
+   -- VC1, Register Slave
+   VcRegSlave_1 : entity work.VcRegSlave
+      generic map (
+         RX_LANE_G      => 0,
+         SYNC_RX_FIFO_G => true,
+         BRAM_EN_RX_G   => true,
+         TX_LANE_G      => 0,
+         SYNC_TX_FIFO_G => true,
+         BRAM_EN_TX_G   => true,
+         TPD_G          => TPD_G,
+         ETH_MODE_G      => true)
+      port map (
+         vcRxOut       => vcRx1Out,
+         vcRxCommonOut => vcRxCommonOut,
+         vcTxIn        => vcTx1In,
+         vcTxOut       => vcTx1Out,
+         regSlaveIn    => regSlaveIn,
+         regSlaveOut   => regSlaveOut,
+         locClk        => gtpClk,
+         locAsyncRst   => gtpClkRst,
+         vcTxClk       => gtpClk,
+         vcTxAsyncRst  => gtpClkRst,
+         vcRxClk       => gtpClk,
+         vcRxAsyncRst  => gtpClkRst);
 
 end EthFrontEnd;
 

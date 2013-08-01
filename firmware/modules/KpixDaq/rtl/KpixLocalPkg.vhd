@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-22
--- Last update: 2013-07-08
+-- Last update: 2013-07-31
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -43,13 +43,15 @@ package KpixLocalPkg is
   constant KPIX_REAOUT_DONE_STATE_C       : slv(2 downto 0) := "111";  -- Done With Readout
 
 
-
-
   -- External Configuration registers
   type KpixLocalRegsInType is record
     debugASel : slv(4 downto 0);
     debugBsel : slv(4 downto 0);
   end record KpixLocalRegsInType;
+
+  constant KPIX_LOCAL_REGS_IN_INIT_C : KpixLocalRegsInType := (
+     debugASel => (others => '0'),
+     debugBsel => (others => '0'));
 
   -- Kpix Local outputs that are synchronous with sysClk
   type KpixStateOutType is record

@@ -69,10 +69,10 @@ NET "gtpRefClkP"         LOC = "C3";
 NET "gtpRefClkN"         LOC = "C4";
 
 # Ethernet Interface
-NET "udpTxP"             LOC = "A2";
-NET "udpTxN"             LOC = "B2";
-NET "udpRxP"             LOC = "B1";
-NET "udpRxN"             LOC = "C1";
+NET "gtpTxP"             LOC = "A2";
+NET "gtpTxN"             LOC = "B2";
+NET "gtpRxP"             LOC = "B1";
+NET "gtpRxN"             LOC = "C1";
 
 # Where to send debugOutA and B?
 NET "debugOutA" LOC = "V13" | IOSTANDARD = "LVCMOS33"; 

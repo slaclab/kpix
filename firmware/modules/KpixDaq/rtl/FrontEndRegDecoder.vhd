@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-07
--- Last update: 2013-07-12
+-- Last update: 2013-07-31
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -19,7 +19,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.StdRtlPkg.all;
 use work.Version.all;
-use work.FrontEndPkg.all;
+use work.VcPkg.all;
 use work.KpixRegRxPkg.all;
 use work.KpixPkg.all;
 use work.TriggerPkg.all;
@@ -38,15 +38,15 @@ entity FrontEndRegDecoder is
       sysRst : in sl;
 
       -- Interface to front end
-      frontEndRegCntlOut : in  FrontEndRegCntlOutType;
-      frontEndRegCntlIn  : out FrontEndRegCntlInType;
+      regSlaveOut : in  VcRegSlaveOutType;
+      regSlaveIn  : out VcRegSlaveInType;
 
       -- Allows firmware to be reset through FrontEnd
       softwareReset : out sl;
 
-      -- Interface to KPIX reg controller (reuse FrontEndRegCntl types)
-      kpixRegCntlOut : in  FrontEndRegCntlInType;
-      kpixRegCntlIn  : out FrontEndRegCntlOutType;
+      -- Interface to KPIX reg controller (reuse VcRegSlave types)
+      kpixRegCntlOut : in  VcRegSlaveInType;
+      kpixRegCntlIn  : out VcRegSlaveOutType;
 
       -- Interface to local module registers
       triggerRegsIn      : out TriggerRegsInType;
@@ -59,9 +59,6 @@ entity FrontEndRegDecoder is
 end entity FrontEndRegDecoder;
 
 architecture rtl of FrontEndRegDecoder is
-
-   constant FRONT_END_REG_WRITE_C : sl := '1';
-   constant FRONT_END_REG_READ_C  : sl := '0';
 
    -- Define local registers addresses
    constant VERSION_REG_ADDR_C             : natural := 0;
@@ -91,10 +88,10 @@ architecture rtl of FrontEndRegDecoder is
 
 
    type RegType is record
-      kpixRegCntlOut     : FrontEndRegCntlInType;   -- pipeline delay
-      frontEndRegCntlIn  : FrontEndRegCntlInType;   -- Outputs to FrontEnd module
+      kpixRegCntlOut     : VcRegSlaveInType;   -- pipeline delay
+      regSlaveIn         : VcRegSlaveInType;   -- Outputs to FrontEnd module
       softwareReset      : sl;
-      kpixRegCntlIn      : FrontEndRegCntlOutType;  -- Outputs to KpixRegCntl module
+      kpixRegCntlIn      : VcRegSlaveOutType;  -- Outputs to KpixRegCntl module
       triggerRegsIn      : TriggerRegsInType;
       kpixConfigRegs     : KpixConfigRegsType;
       kpixClockGenRegsIn : KpixClockGenRegsInType;
@@ -102,61 +99,31 @@ architecture rtl of FrontEndRegDecoder is
       kpixDataRxRegsIn   : KpixDataRxRegsInArray(NUM_KPIX_MODULES_G-1 downto 0);
    end record RegType;
 
-   signal r, rin : RegType;
+   constant REG_INIT_C : RegType := (
+      kpixRegCntlOut     => VC_REG_SLAVE_IN_INIT_C,
+      regSlaveIn         => VC_REG_SLAVE_IN_INIT_C,
+      softwareReset      => '0',
+      kpixRegCntlIn      => VC_REG_SLAVE_OUT_INIT_C,
+      triggerRegsIn      => TRIGGER_REGS_IN_INIT_C,
+      kpixConfigRegs     => KPIX_CONFIG_REGS_INIT_C,
+      kpixClockGenRegsIn => KPIX_CLOCK_GEN_REGS_INIT_C,
+      kpixLocalRegsIn    => KPIX_LOCAL_REGS_IN_INIT_C,
+      kpixDataRxRegsIn   => (others => KPIX_DATA_RX_REGS_IN_INIT_C));
+
+   signal r, rin : RegType := REG_INIT_C;
 
 begin
 
    sync : process (sysClk, sysRst) is
    begin
       if (sysRst = '1') then
-         r.kpixRegCntlOut.regAck    <= '0'             after DELAY_G;
-         r.kpixRegCntlOut.regDataIn <= (others => '0') after DELAY_G;
-         r.kpixRegCntlOut.regFail   <= '0'             after DELAY_G;
-
-         r.frontEndRegCntlIn.regAck    <= '0'             after DELAY_G;
-         r.frontEndRegCntlIn.regDataIn <= (others => '0') after DELAY_G;
-         r.frontEndRegCntlIn.regFail   <= '0'             after DELAY_G;
-
-         r.softwareReset <= '0' after DELAY_G;
-
-         r.kpixRegCntlIn.regInp     <= '0'             after DELAY_G;
-         r.kpixRegCntlIn.regReq     <= '0'             after DELAY_G;
-         r.kpixRegCntlIn.regOp      <= '0'             after DELAY_G;
-         r.kpixRegCntlIn.regAddr    <= (others => '0') after DELAY_G;
-         r.kpixRegCntlIn.regDataOut <= (others => '0') after DELAY_G;
-
-         r.triggerRegsIn.extTriggerSrc        <= (others => '0')             after DELAY_G;
-         r.triggerRegsIn.calibrate            <= '0'                         after DELAY_G;
-         r.triggerRegsIn.extTimestampSrc      <= (others => '0')             after DELAY_G;
-         r.triggerRegsIn.acquisitionSrc       <= (others => '0')             after DELAY_G;  -- 
-         r.KpixConfigRegs.kpixReset           <= '0'                         after DELAY_G;  -- 
-         r.kpixConfigRegs.inputEdge           <= '0'                         after DELAY_G;  -- Rising Edge
-         r.kpixConfigRegs.outputEdge          <= '0'                         after DELAY_G;  -- Rising Edge
-         r.kpixConfigRegs.rawDataMode         <= '0'                         after DELAY_G;
-         r.kpixConfigRegs.numColumns          <= "11111"                     after DELAY_G;  -- 32 columns
-         r.kpixConfigRegs.autoReadDisable     <= '0'                         after DELAY_G;
-         r.kpixClockGenRegsIn.clkSelReadout   <= CLK_SEL_READOUT_DEFAULT_C   after DELAY_G;  -- 100 ns
-         r.kpixClockGenRegsIn.clkSelDigitize  <= CLK_SEL_DIGITIZE_DEFAULT_C  after DELAY_G;  -- 50 ns
-         r.kpixClockGenRegsIn.clkSelAcquire   <= CLK_SEL_ACQUIRE_DEFAULT_C   after DELAY_G;  -- 50 ns
-         r.kpixClockGenRegsIn.clkSelIdle      <= CLK_SEL_IDLE_DEFAULT_C      after DELAY_G;  -- 100 ns
-         r.kpixClockGenRegsIn.clkSelPrecharge <= CLK_SEL_PRECHARGE_DEFAULT_C after DELAY_G;  -- 50 ns
-         r.kpixClockGenRegsIn.newValue        <= '0'                         after DELAY_G;
-
-         r.kpixLocalRegsIn.debugASel <= (others => '0') after DELAY_G;
-         r.kpixLocalRegsIn.debugBsel <= (others => '0') after DELAY_G;
-         r.kpixDataRxRegsIn <= (others =>
-                                (enabled                     => '0',
-                                 resetHeaderParityErrorCount => '0',
-                                 resetDataParityErrorCount   => '0',
-                                 resetMarkerErrorCount       => '0',
-                                 resetOverflowErrorCount     => '0')) after DELAY_G;
-
+         r <= REG_INIT_C after DELAY_G;
       elsif (rising_edge(sysClk)) then
          r <= rin after DELAY_G;
       end if;
    end process sync;
 
-   comb : process (r, frontEndRegCntlOut, kpixDataRxRegsOut, kpixRegCntlOut) is
+   comb : process (r, regSlaveOut, kpixDataRxRegsOut, kpixRegCntlOut) is
       variable v            : RegType;
       variable addrIndexVar : integer;
       variable kpixIndexVar : integer;
@@ -166,19 +133,18 @@ begin
       -- Pipeline 1 cycle to ease timing across boundary
       v.kpixRegCntlOut := kpixRegCntlOut;
 
-      v.frontEndRegCntlIn.regAck    := '0';
-      v.frontEndRegCntlIn.regDataIn := (others => '0');
-      v.frontEndRegCntlIn.regFail   := '0';
+      v.regSlaveIn.ack    := '0';
+      v.regSlaveIn.rdData := (others => '0');
+      v.regSlaveIn.fail   := '0';
 
-      v.kpixRegCntlIn.regInp     := '0';
-      v.kpixRegCntlIn.regReq     := '0';
-      v.kpixRegCntlIn.regOp      := '0';
-      v.kpixRegCntlIn.regAddr    := (others => '0');  -- Not necessary
-      v.kpixRegCntlIn.regDataOut := (others => '0');  -- Not necessary
+      v.kpixRegCntlIn.inp    := '0';
+      v.kpixRegCntlIn.req    := '0';
+      v.kpixRegCntlIn.op     := '0';
+      v.kpixRegCntlIn.addr   := (others => '0');  -- Not necessary
+      v.kpixRegCntlIn.wrData := (others => '0');  -- Not necessary
 
       -- Pulse these for 1 cycle only when accessed
-      v.kpixClockGenRegsIn.newValue := '0';
-      v.kpixConfigRegs.kpixReset    := '0';
+      v.kpixConfigRegs.kpixReset := '0';
       for i in NUM_KPIX_MODULES_G-1 downto 0 loop
          v.kpixDataRxRegsIn(i).resetHeaderParityErrorCount := '0';
          v.kpixDataRxRegsIn(i).resetDataParityErrorCount   := '0';
@@ -186,145 +152,143 @@ begin
          v.kpixDataRxRegsIn(i).resetOverflowErrorCount     := '0';
       end loop;
 
-      if (frontEndRegCntlOut.regAddr(ADDR_BLOCK_RANGE_C) = KPIX_REGS_ADDR_C) then
+      if (regSlaveOut.addr(ADDR_BLOCK_RANGE_C) = KPIX_REGS_ADDR_C) then
          -- KPIX regs being accessed
          -- Pass FrontEndCntl io right though
-         -- Will revert back when frontEndRegCntlOut.regReq falls
-         v.kpixRegCntlIn     := frontEndRegCntlOut;
-         v.frontEndRegCntlIn := r.kpixRegCntlOut;
+         -- Will revert back when regSlaveOut.req falls
+         v.kpixRegCntlIn := regSlaveOut;
+         v.regSlaveIn    := r.kpixRegCntlOut;
 
       -- Wait for an access request
-      elsif (frontEndRegCntlOut.regAddr(ADDR_BLOCK_RANGE_C) = LOCAL_REGS_ADDR_C and
-             frontEndRegCntlOut.regReq = '1') then
+      elsif (regSlaveOut.addr(ADDR_BLOCK_RANGE_C) = LOCAL_REGS_ADDR_C and
+             regSlaveOut.req = '1') then
 
          -- Local Regs being accessed
 
          -- Ack right away
-         v.frontEndRegCntlIn.regAck := '1';
+         v.regSlaveIn.ack := '1';
 
          -- Peform register access
-         if (frontEndRegCntlOut.regAddr(8) = '0') then
+         if (regSlaveOut.addr(8) = '0') then
             -- Access general registers
 
-            addrIndexVar := to_integer(unsigned(frontEndRegCntlOut.regAddr(3 downto 0)));
+            addrIndexVar := to_integer(unsigned(regSlaveOut.addr(3 downto 0)));
             case (addrIndexVar) is
 
                when VERSION_REG_ADDR_C =>
-                  v.frontEndRegCntlIn.regDataIn := FPGA_VERSION_C;
+                  v.regSlaveIn.rdData := FPGA_VERSION_C;
 
                when CLOCK_SELECT_A_REG_ADDR_C =>
                   -- Only use 8 bits of these registers for legacy purposes
-                  v.frontEndRegCntlIn.regDataIn(31 downto 24) := r.kpixClockGenRegsIn.clkSelReadout(7 downto 0);
-                  v.frontEndRegCntlIn.regDataIn(23 downto 16) := r.kpixClockGenRegsIn.clkSelDigitize(7 downto 0);
-                  v.frontEndRegCntlIn.regDataIn(15 downto 8)  := r.kpixClockGenRegsIn.clkSelAcquire(7 downto 0);
-                  v.frontEndRegCntlIn.regDataIn(7 downto 0)   := r.kpixClockGenRegsIn.clkSelIdle(7 downto 0);
-                  if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
-                     v.kpixClockGenRegsIn.clkSelReadout(7 downto 0)  := frontEndRegCntlOut.regDataOut(31 downto 24);
-                     v.kpixClockGenRegsIn.clkSelDigitize(7 downto 0) := frontEndRegCntlOut.regDataOut(23 downto 16);
-                     v.kpixClockGenRegsIn.clkSelAcquire(7 downto 0)  := frontEndRegCntlOut.regDataOut(15 downto 8);
-                     v.kpixClockGenRegsIn.clkSelIdle(7 downto 0)     := frontEndRegCntlOut.regDataOut(7 downto 0);
-                     v.kpixClockGenRegsIn.newValue                   := '1';  -- Let ClockGen know to resync
+                  v.regSlaveIn.rdData(31 downto 24) := r.kpixClockGenRegsIn.clkSelReadout(7 downto 0);
+                  v.regSlaveIn.rdData(23 downto 16) := r.kpixClockGenRegsIn.clkSelDigitize(7 downto 0);
+                  v.regSlaveIn.rdData(15 downto 8)  := r.kpixClockGenRegsIn.clkSelAcquire(7 downto 0);
+                  v.regSlaveIn.rdData(7 downto 0)   := r.kpixClockGenRegsIn.clkSelIdle(7 downto 0);
+                  if (regSlaveOut.op = VC_REG_SLAVE_WR_OP_C) then
+                     v.kpixClockGenRegsIn.clkSelReadout(7 downto 0)  := regSlaveOut.wrData(31 downto 24);
+                     v.kpixClockGenRegsIn.clkSelDigitize(7 downto 0) := regSlaveOut.wrData(23 downto 16);
+                     v.kpixClockGenRegsIn.clkSelAcquire(7 downto 0)  := regSlaveOut.wrData(15 downto 8);
+                     v.kpixClockGenRegsIn.clkSelIdle(7 downto 0)     := regSlaveOut.wrData(7 downto 0);
                   end if;
 
                when CLOCK_SELECT_B_REG_ADDR_C =>
                   -- Precharge is the only 12 bit clock register, others are 8.
-                  v.frontEndRegCntlIn.regDataIn(11 downto 0) := r.kpixClockGenRegsIn.clkSelPrecharge;
-                  if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
-                     v.kpixClockGenRegsIn.clkSelPrecharge := frontEndRegCntlOut.regDataOut(11 downto 0);
-                     v.kpixClockGenRegsIn.newValue        := '1';
+                  v.regSlaveIn.rdData(11 downto 0) := r.kpixClockGenRegsIn.clkSelPrecharge;
+                  if (regSlaveOut.op = VC_REG_SLAVE_WR_OP_C) then
+                     v.kpixClockGenRegsIn.clkSelPrecharge := regSlaveOut.wrData(11 downto 0);
                   end if;
 
                when DEBUG_SELECT_REG_ADDR_C =>
-                  v.frontEndRegCntlIn.regDataIn(4 downto 0)  := r.kpixLocalRegsIn.debugASel;
-                  v.frontEndRegCntlIn.regDataIn(12 downto 8) := r.kpixLocalRegsIn.debugBsel;
-                  if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
-                     v.kpixLocalRegsIn.debugASel := frontEndRegCntlOut.regDataOut(4 downto 0);
-                     v.kpixLocalRegsIn.debugBsel := frontEndRegCntlOut.regDataOut(12 downto 8);
+                  v.regSlaveIn.rdData(4 downto 0)  := r.kpixLocalRegsIn.debugASel;
+                  v.regSlaveIn.rdData(12 downto 8) := r.kpixLocalRegsIn.debugBsel;
+                  if (regSlaveOut.op = VC_REG_SLAVE_WR_OP_C) then
+                     v.kpixLocalRegsIn.debugASel := regSlaveOut.wrData(4 downto 0);
+                     v.kpixLocalRegsIn.debugBsel := regSlaveOut.wrData(12 downto 8);
                   end if;
 
                when TRIGGER_CONTROL_REG_ADDR_C =>
-                  v.frontEndRegCntlIn.regDataIn(2 downto 0) := r.triggerRegsIn.extTriggerSrc;
-                  v.frontEndRegCntlIn.regDataIn(4)          := r.triggerRegsIn.calibrate;
-                  if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
-                     v.triggerRegsIn.extTriggerSrc := frontEndRegCntlOut.regDataOut(2 downto 0);
-                     v.triggerRegsIn.calibrate     := frontEndRegCntlOut.regDataOut(4);
+                  v.regSlaveIn.rdData(2 downto 0) := r.triggerRegsIn.extTriggerSrc;
+                  v.regSlaveIn.rdData(4)          := r.triggerRegsIn.calibrate;
+                  if (regSlaveOut.op = VC_REG_SLAVE_WR_OP_C) then
+                     v.triggerRegsIn.extTriggerSrc := regSlaveOut.wrData(2 downto 0);
+                     v.triggerRegsIn.calibrate     := regSlaveOut.wrData(4);
                   end if;
 
                when KPIX_RESET_REG_ADDR_C =>
-                  v.frontEndRegCntlIn.regDataIn(0) := r.kpixConfigRegs.kpixReset;
-                  if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
-                     v.kpixConfigRegs.kpixReset := frontEndRegCntlOut.regDataOut(0);
+                  v.regSlaveIn.rdData(0) := r.kpixConfigRegs.kpixReset;
+                  if (regSlaveOut.op = VC_REG_SLAVE_WR_OP_C) then
+                     v.kpixConfigRegs.kpixReset := regSlaveOut.wrData(0);
                   end if;
 
                when KPIX_CONFIG_REG_ADDR_C =>
-                  v.frontEndRegCntlIn.regDataIn(0)           := r.kpixConfigRegs.inputEdge;
-                  v.frontEndRegCntlIn.regDataIn(1)           := r.kpixConfigRegs.outputEdge;
-                  v.frontEndRegCntlIn.regDataIn(4)           := r.kpixConfigRegs.rawDataMode;
-                  v.frontEndRegCntlIn.regDataIn(12 downto 8) := r.kpixConfigRegs.numColumns;
-                  v.frontEndRegCntlIn.regDataIn(16)          := r.kpixConfigRegs.autoReadDisable;
-                  if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
-                     v.kpixConfigRegs.inputEdge       := frontEndRegCntlOut.regDataOut(0);
-                     v.kpixConfigRegs.outputEdge      := frontEndRegCntlOut.regDataOut(1);
-                     v.kpixConfigRegs.rawDataMode     := frontEndRegCntlOut.regDataOut(4);
-                     v.kpixConfigRegs.numColumns      := frontEndRegCntlOut.regDataOut(12 downto 8);
-                     v.kpixConfigRegs.autoReadDisable := frontEndRegCntlOut.regDataOut(16);
+                  v.regSlaveIn.rdData(0)           := r.kpixConfigRegs.inputEdge;
+                  v.regSlaveIn.rdData(1)           := r.kpixConfigRegs.outputEdge;
+                  v.regSlaveIn.rdData(4)           := r.kpixConfigRegs.rawDataMode;
+                  v.regSlaveIn.rdData(12 downto 8) := r.kpixConfigRegs.numColumns;
+                  v.regSlaveIn.rdData(16)          := r.kpixConfigRegs.autoReadDisable;
+                  if (regSlaveOut.op = VC_REG_SLAVE_WR_OP_C) then
+                     v.kpixConfigRegs.inputEdge       := regSlaveOut.wrData(0);
+                     v.kpixConfigRegs.outputEdge      := regSlaveOut.wrData(1);
+                     v.kpixConfigRegs.rawDataMode     := regSlaveOut.wrData(4);
+                     v.kpixConfigRegs.numColumns      := regSlaveOut.wrData(12 downto 8);
+                     v.kpixConfigRegs.autoReadDisable := regSlaveOut.wrData(16);
                   end if;
 
                when TIMESTAMP_CONTROL_REG_ADDR_C =>
-                  v.frontEndRegCntlIn.regDataIn(2 downto 0) := r.triggerRegsIn.extTimestampSrc;
-                  if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
-                     v.triggerRegsIn.extTimestampSrc := frontEndRegCntlOut.regDataOut(2 downto 0);
+                  v.regSlaveIn.rdData(2 downto 0) := r.triggerRegsIn.extTimestampSrc;
+                  if (regSlaveOut.op = VC_REG_SLAVE_WR_OP_C) then
+                     v.triggerRegsIn.extTimestampSrc := regSlaveOut.wrData(2 downto 0);
                   end if;
 
                when ACQUISITION_CONTROL_REG_ADDR_C =>
-                  v.frontEndRegCntlIn.regDataIn(1 downto 0) := r.triggerRegsIn.acquisitionSrc;
-                  if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
-                     v.triggerRegsIn.acquisitionSrc := frontEndRegCntlOut.regDataOut(1 downto 0);
+                  v.regSlaveIn.rdData(1 downto 0) := r.triggerRegsIn.acquisitionSrc;
+                  if (regSlaveOut.op = VC_REG_SLAVE_WR_OP_C) then
+                     v.triggerRegsIn.acquisitionSrc := regSlaveOut.wrData(1 downto 0);
                   end if;
 
 
                when SOFTWARE_RESET_REG_ADDR_C =>
-                  v.frontEndRegCntlIn.regDataIn(0) := r.softwareReset;
-                  if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
-                     v.softwareReset := frontEndRegCntlOut.regDataOut(0);
+                  v.regSlaveIn.rdData(0) := r.softwareReset;
+                  if (regSlaveOut.op = VC_REG_SLAVE_WR_OP_C) then
+                     v.softwareReset := regSlaveOut.wrData(0);
                   end if;
 
                when others =>
                   null;
             end case;
-         else                           -- (frontEndRegCntlOut.regAddr(8) = '1')
+         else                           -- (regSlaveOut.addr(8) = '1')
             -- Access per KpixDataRx registers
-            kpixIndexVar := to_integer(unsigned(frontEndRegCntlOut.regAddr(7 downto 3)));
-            addrIndexVar := to_integer(unsigned(frontEndRegCntlOut.regAddr(2 downto 0)));
+            kpixIndexVar := to_integer(unsigned(regSlaveOut.addr(7 downto 3)));
+            addrIndexVar := to_integer(unsigned(regSlaveOut.addr(2 downto 0)));
 
             case addrIndexVar is
                when KPIX_DATA_RX_MODE_REG_ADDR_C =>
-                  v.frontEndRegCntlIn.regDataIn(0) := r.kpixDataRxRegsIn(kpixIndexVar).enabled;
-                  if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
-                     v.kpixDataRxRegsIn(kpixIndexVar).enabled := frontEndRegCntlOut.regDataOut(0);
+                  v.regSlaveIn.rdData(0) := r.kpixDataRxRegsIn(kpixIndexVar).enabled;
+                  if (regSlaveOut.op = VC_REG_SLAVE_WR_OP_C) then
+                     v.kpixDataRxRegsIn(kpixIndexVar).enabled := regSlaveOut.wrData(0);
                   end if;
 
                when KPIX_HEADER_PARITY_ERROR_COUNT_REG_ADDR_C =>
-                  v.frontEndRegCntlIn.regDataIn := kpixDataRxRegsOut(kpixIndexVar).headerParityErrorCount;
-                  if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
+                  v.regSlaveIn.rdData := kpixDataRxRegsOut(kpixIndexVar).headerParityErrorCount;
+                  if (regSlaveOut.op = VC_REG_SLAVE_WR_OP_C) then
                      v.kpixDataRxRegsIn(kpixIndexVar).resetHeaderParityErrorCount := '1';
                   end if;
 
                when KPIX_DATA_PARITY_ERROR_COUNT_REG_ADDR_C =>
-                  v.frontEndRegCntlIn.regDataIn := kpixDataRxRegsOut(kpixIndexVar).dataParityErrorCount;
-                  if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
+                  v.regSlaveIn.rdData := kpixDataRxRegsOut(kpixIndexVar).dataParityErrorCount;
+                  if (regSlaveOut.op = VC_REG_SLAVE_WR_OP_C) then
                      v.kpixDataRxRegsIn(kpixIndexVar).resetDataParityErrorCount := '1';
                   end if;
 
                when KPIX_MARKER_ERROR_COUNT_REG_ADDR_C =>
-                  v.frontEndRegCntlIn.regDataIn := kpixDataRxRegsOut(kpixIndexVar).markerErrorCount;
-                  if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
+                  v.regSlaveIn.rdData := kpixDataRxRegsOut(kpixIndexVar).markerErrorCount;
+                  if (regSlaveOut.op = VC_REG_SLAVE_WR_OP_C) then
                      v.kpixDataRxRegsIn(kpixIndexVar).resetMarkerErrorCount := '1';
                   end if;
 
                when KPIX_OVERFLOW_ERROR_COUNT_REG_ADDR_C =>
-                  v.frontEndRegCntlIn.regDataIn := kpixDataRxRegsOut(kpixIndexVar).overflowErrorCount;
-                  if (frontEndRegCntlOut.regOp = FRONT_END_REG_WRITE_C) then
+                  v.regSlaveIn.rdData := kpixDataRxRegsOut(kpixIndexVar).overflowErrorCount;
+                  if (regSlaveOut.op = VC_REG_SLAVE_WR_OP_C) then
                      v.kpixDataRxRegsIn(kpixIndexVar).resetOverflowErrorCount := '1';
                   end if;
 
@@ -332,14 +296,14 @@ begin
                when others => null;
             end case;
          end if;
-      elsif (frontEndRegCntlOut.regReq = '1') then
+      elsif (regSlaveOut.req = '1') then
          -- Ack non existant registers too so they don't fail
-         v.frontEndRegCntlIn.regAck := '1';
+         v.regSlaveIn.ack := '1';
       end if;
 
       rin <= v;
 
-      frontEndRegCntlIn  <= r.frontEndRegCntlIn;
+      regSlaveIn         <= r.regSlaveIn;
       softwareReset      <= r.softwareReset;
       kpixRegCntlIn      <= r.kpixRegCntlIn;
       triggerRegsIn      <= r.triggerRegsIn;

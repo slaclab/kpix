@@ -20,6 +20,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity UsBuff is
+   generic (
+      TPD_G : time := 1 ns);
   port (
 
     -- Clock and reset     
@@ -58,21 +60,21 @@ architecture UsBuff of UsBuff is
   signal fifoFull  : std_logic;
   signal fifoValid : std_logic;
 
-  component fifo_72x512_18x2048_fwft
-    port (
-      rst         : in  std_logic;
-      wr_clk      : in  std_logic;
-      rd_clk      : in  std_logic;
-      din         : in  std_logic_vector(71 downto 0);
-      wr_en       : in  std_logic;
-      rd_en       : in  std_logic;
-      dout        : out std_logic_vector(17 downto 0);
-      full        : out std_logic;
-      almost_full : out std_logic;
-      empty       : out std_logic;
-      valid       : out std_logic
-      );
-  end component;
+--  component fifo_72x512_18x2048_fwft
+--    port (
+--      rst         : in  std_logic;
+--      wr_clk      : in  std_logic;
+--      rd_clk      : in  std_logic;
+--      din         : in  std_logic_vector(71 downto 0);
+--      wr_en       : in  std_logic;
+--      rd_en       : in  std_logic;
+--      dout        : out std_logic_vector(17 downto 0);
+--      full        : out std_logic;
+--      almost_full : out std_logic;
+--      empty       : out std_logic;
+--      valid       : out std_logic
+--      );
+--  end component;
 
 
   -- Black Box Attributes
@@ -91,21 +93,50 @@ begin
   fifoDin(35 downto 18) <= frameTxEOF & frameTxEOF & frameTxData(31 downto 16);  --(47 downto 32);
   fifoDin(17 downto 0)  <= frameTxEOF & frameTxEOF & frameTxData(15 downto 0);   --(63 downto 48);
 
+  FifoMux_1: entity work.FifoMux
+     generic map (
+        TPD_G           => TPD_G,
+        GEN_SYNC_FIFO_G => true,
+        BRAM_EN_G       => true,
+        FWFT_EN_G       => true,
+        USE_DSP48_G     => "no",
+        WR_DATA_WIDTH_G => 72,
+        RD_DATA_WIDTH_G => 18,
+        LITTLE_ENDIAN_G => false,
+        ADDR_WIDTH_G    => 9)
+     port map (
+        rst          => sysClkRst,
+        wr_clk       => sysClk,
+        wr_en        => frameTxValid,
+        din          => fifoDin,
+        wr_ack       => open,
+        overflow     => open,
+        prog_full    => open,
+        almost_full  => frameTxAFull,
+        full         => fifoFull,
+        rd_clk       => sysClk,
+        rd_en        => fifoRd,
+        dout         => fifoDout,
+        valid        => fifoValid,
+        underflow    => open,
+        prog_empty   => open,
+        almost_empty => open,
+        empty        => fifoEmpty);
 
   -- Fifo 72 bit write, 18 bit read
-  fifo_72x512_18x2048_fwft_1 : fifo_72x512_18x2048_fwft
-    port map (
-      rst         => sysClkRst,
-      wr_clk      => sysClk,
-      rd_clk      => sysClk,
-      din         => fifoDin,
-      wr_en       => frameTxValid,
-      rd_en       => fifoRd,
-      dout        => fifoDout,
-      full        => fifoFull,
-      almost_full => frameTxAFull,
-      empty       => fifoEmpty,
-      valid       => fifoValid);
+--  fifo_72x512_18x2048_fwft_1 : fifo_72x512_18x2048_fwft
+--    port map (
+--      rst         => sysClkRst,
+--      wr_clk      => sysClk,
+--      rd_clk      => sysClk,
+--      din         => fifoDin,
+--      wr_en       => frameTxValid,
+--      rd_en       => fifoRd,
+--      dout        => fifoDout,
+--      full        => fifoFull,
+--      almost_full => frameTxAFull,
+--      empty       => fifoEmpty,
+--      valid       => fifoValid);
 
   -- Control reads
   fifoRd <= fifoValid and (vcFrameTxReady or (fifoDout(17) and fifoDout(16)));

@@ -157,7 +157,12 @@ architecture KpixLocal of KpixLocal is
       subCount   : unsigned(2 downto 0);
    end record RegType;
 
-   signal r, rin      : RegType;
+   constant REG_INIT_C : RegType := (
+      div        => '0',
+      bunchCount => (others => '0'),
+      subCount   => (others => '0'));
+
+   signal r, rin      : RegType := REG_INIT_C;
    signal regClkRise  : sl;
    signal kpixClkRise : sl;
 
@@ -267,9 +272,7 @@ begin
    process (clk200, rst200) is
    begin
       if (rst200 = '1') then
-         r.div        <= '0'             after DELAY_G;
-         r.bunchCount <= (others => '0') after DELAY_G;
-         r.subCount   <= (others => '0') after DELAY_G;
+         r <= REG_INIT_C after DELAY_G;
       elsif rising_edge(clk200) then
          r <= rin after DELAY_G;
       end if;
@@ -287,13 +290,13 @@ begin
       -- v8_analog_state clock boundary crossing
       -- Ok for now but maybe there's a better way to do this
       if (v8_analog_state = KPIX_ANALOG_SAMP_STATE_C) then
-          if (regClkRise = '1') then
-             v.div := not r.div;
-             if (r.div = '1') then
-                v.bunchCount := r.bunchCount + 1;
-                v.subCount   := (others => '0');
-             end if;
-          end if;
+         if (regClkRise = '1') then
+            v.div := not r.div;
+            if (r.div = '1') then
+               v.bunchCount := r.bunchCount + 1;
+               v.subCount   := (others => '0');
+            end if;
+         end if;
       else
          v.bunchCount := (others => '0');
       end if;
