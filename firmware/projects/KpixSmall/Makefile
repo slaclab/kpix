@@ -2,7 +2,7 @@
 export PROJECT = $(notdir $(PWD))
 
 # List of build core directories. Relative to current directory.
-export CORE_DIRS = $(abspath ../../projects/$(PROJECT)/xil_cores \
+export CORE_DIRS = $(abspath \
 ../../modules/EthClientCore/xil_cores)
 
 include ../../xilinx_common.mk
