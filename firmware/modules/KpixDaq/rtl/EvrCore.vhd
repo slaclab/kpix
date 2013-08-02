@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2013-07-10
--- Last update: 2013-07-31
+-- Last update: 2013-08-01
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -77,7 +77,8 @@ architecture rtl of EvrCore is
        evrConfig        => EVR_CONFIG_INIT_C,
        evrConfigIntfOut => EVR_CONFIG_INTF_OUT_INIT_C);
 
-   signal sysR, sysRin : SysRegType := SYS_REG_INIT_C;
+   signal sysR         : SysRegType := SYS_REG_INIT_C;
+   signal sysRin       : SysRegType;
    signal sysEvrOutInt : EvrOutType;    -- Evr outputs sync'd to sysclk
 
 
@@ -98,8 +99,9 @@ architecture rtl of EvrCore is
        trigHoldEn  => '0',
        evrOut      => EVR_OUT_INIT_C);
 
-   signal mainR, mainRin : MainRegType := MAIN_REG_INIT_C;
-   signal mainEvrConfig  : EvrConfigType;  -- Evr intf refisters sync'd to evr clock
+   signal mainR         : MainRegType := MAIN_REG_INIT_C;
+   signal mainRin       : MainRegType;
+   signal mainEvrConfig : EvrConfigType;  -- Evr intf refisters sync'd to evr clock
 
 
 begin
@@ -168,12 +170,14 @@ begin
       evrConfigIntfOut <= sysR.evrConfigIntfOut;
    end process sysComb;
 
-   sysSeq : process (sysClk, sysRst) is
+   sysSeq : process (sysClk) is
    begin
-      if (sysRst = '1') then
-         sysR <= SYS_REG_INIT_C after TPD_G;
-      elsif (rising_edge(sysClk)) then
-         sysR <= sysRin after TPD_G;
+      if (rising_edge(sysClk)) then
+         if (sysRst = '1') then
+            sysR <= SYS_REG_INIT_C after TPD_G;
+         else
+            sysR <= sysRin after TPD_G;
+         end if;
       end if;
    end process sysSeq;
 
@@ -234,7 +238,7 @@ begin
    -- EVR Event Decoding
    -------------------------------------------------------------------------------------------------
    evrComb : process (mainR, phyIn, mainEvrConfig) is
-      variable v     : MainRegType;
+      variable v : MainRegType;
    begin
       v := mainR;
 
@@ -306,12 +310,14 @@ begin
       
    end process evrComb;
 
-   mainSeq : process (evrRecClk, evrRst) is
+   mainSeq : process (evrRecClk) is
    begin
-      if (evrRst = '1') then
-         mainR <= MAIN_REG_INIT_C after TPD_G;
-      elsif (rising_edge(evrRecClk)) then
-         mainR <= mainRin after TPD_G;
+      if (rising_edge(evrRecClk)) then
+         if (evrRst = '1') then
+            mainR <= MAIN_REG_INIT_C after TPD_G;
+         else
+            mainR <= mainRin after TPD_G;
+         end if;
       end if;
    end process mainSeq;
    

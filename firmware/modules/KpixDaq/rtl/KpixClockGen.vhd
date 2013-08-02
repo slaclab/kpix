@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2013-07-31
+-- Last update: 2013-08-01
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -60,7 +60,8 @@ architecture rtl of KpixClockGen is
       clkSel           => (others => '0'),
       clkDiv           => '0');
 
-   signal r, rin      : RegType := REG_INIT_C;
+   signal r           : RegType := REG_INIT_C;
+   signal rin         : RegType;
    signal extRegsSync : KpixClockGenRegsInType;
    signal kpixClkInt  : sl;
 
@@ -95,12 +96,14 @@ begin
          dout(31 downto 24) => extRegsSync.clkSelIdle,
          dout(43 downto 32) => extRegsSync.clkSelPrecharge);
 
-   seq : process (clk200, rst200) is
+   seq : process (clk200) is
    begin
-      if (rst200 = '1') then
-         r <= REG_INIT_C after DELAY_G;
-      elsif (rising_edge(clk200)) then
-         r <= rin after DELAY_G;
+      if (rising_edge(clk200)) then
+         if (rst200 = '1') then
+            r <= REG_INIT_C after DELAY_G;
+         else
+            r <= rin after DELAY_G;
+         end if;
       end if;
    end process seq;
 

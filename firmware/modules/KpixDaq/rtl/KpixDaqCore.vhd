@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-17
--- Last update: 2013-07-31
+-- Last update: 2013-08-01
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -153,7 +153,7 @@ begin
          TPD_G   => DELAY_G,
          WIDTH_G => 10)
       port map (
-         arst                => sysRst,
+         rst                 => sysRst,
          clk                 => kpixClk,
          dataIn(0)           => kpixConfigRegs.kpixReset,
          dataIn(1)           => kpixConfigRegs.inputEdge,

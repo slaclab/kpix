@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2013-07-31
+-- Last update: 2013-08-01
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -102,7 +102,8 @@ architecture rtl of KpixRegCntl is
       kpixRegCntlOut => VC_REG_SLAVE_IN_INIT_C,
       kpixSerTxOut   => (others => '0'));
 
-   signal r, rin : RegType := REG_INIT_C;
+   signal r   : RegType := REG_INIT_C;
+   signal rin : RegType;
 
    -- Synchonization signals
    signal kpixResetHoldSync  : sl;
@@ -112,7 +113,7 @@ architecture rtl of KpixRegCntl is
    signal startReadoutSync   : sl;
    signal kpixEnableSync     : slv(NUM_KPIX_MODULES_G downto 0);
    signal outputEdgeSync     : sl;
-   signal kpixSerTxOutFall   : slv(NUM_KPIX_MODULES_G downto 0);
+   signal kpixSerTxOutFall   : slv(NUM_KPIX_MODULES_G downto 0) := (others => '0');
 
    -----------------------------------------------------------------------------
    -- sysClk clocked registers
@@ -149,12 +150,14 @@ begin
       sysRin <= v;
    end process sysComb;
 
-   sysSync : process (sysClk, sysRst) is
+   sysSync : process (sysClk) is
    begin
-      if (sysRst = '1') then
-         sysR.kpixResetHold <= '0' after DELAY_G;
-      elsif (rising_edge(sysClk)) then
-         sysR <= sysRin after DELAY_G;
+      if (rising_edge(sysClk)) then
+         if (sysRst = '1') then
+            sysR.kpixResetHold <= '0' after DELAY_G;
+         else
+            sysR <= sysRin after DELAY_G;
+         end if;
       end if;
    end process sysSync;
 
@@ -165,7 +168,7 @@ begin
          INIT_G         => "11")
       port map (
          clk     => kpixClk,
-         aRst    => kpixClkRst,
+         rst     => kpixClkRst,
          dataIn  => sysR.kpixResetHold,
          dataOut => kpixResetHoldSync);
 
@@ -177,7 +180,7 @@ begin
          RST_POLARITY_G => '1')
       port map (
          clk     => sysClk,
-         aRst    => sysRst,
+         rst     => sysRst,
          dataIn  => kpixResetHoldSync,
          dataOut => kpixResetHoldReSync);
 
@@ -215,7 +218,7 @@ begin
          INIT_G         => "0000")
       port map (
          clk     => kpixClk,
-         aRst    => kpixClkRst,
+         rst     => kpixClkRst,
          dataIn  => triggerOut.startAcquire,
          dataOut => startAcquireSync);
 
@@ -227,7 +230,7 @@ begin
          INIT_G         => "00")
       port map (
          clk     => kpixClk,
-         aRst    => kpixClkRst,
+         rst     => kpixClkRst,
          dataIn  => triggerOut.startCalibrate,
          dataOut => startCalibrateSync);
 
@@ -239,7 +242,7 @@ begin
          INIT_G         => "00")
       port map (
          clk     => kpixClk,
-         aRst    => kpixClkRst,
+         rst     => kpixClkRst,
          dataIn  => triggerOut.startReadout,
          dataOut => startReadoutSync);
 
@@ -252,7 +255,7 @@ begin
             INIT_G         => "00")
          port map (
             clk     => kpixClk,
-            aRst    => kpixClkRst,
+            rst     => kpixClkRst,
             dataIn  => kpixDataRxRegsIn(i).enabled,
             dataOut => kpixEnableSync(i));
    end generate GEN_KPIX_ENABLE_SYNC;
@@ -266,32 +269,22 @@ begin
          INIT_G         => "00")
       port map (
          clk     => kpixClk,
-         aRst    => kpixClkRst,
+         rst     => kpixClkRst,
          dataIn  => kpixConfigRegs.outputEdge,
          dataOut => outputEdgeSync);
 
    -------------------------------------------------------------------------------------------------
    -- Main Logic
    -------------------------------------------------------------------------------------------------
-   seq : process (kpixClk, kpixClkRst) is
+   seq : process (kpixClk) is
    begin
-      if (kpixClkRst = '1') then
-         r.state                 <= IDLE_S          after DELAY_G;
-         r.txShiftReg            <= (others => '0') after DELAY_G;
-         r.txShiftCount          <= (others => '0') after DELAY_G;
-         r.txEnable              <= (others => '0') after DELAY_G;
-         r.isAcquire             <= '0'             after DELAY_G;
-         r.kpixRegCntlOut.ack    <= '0'             after DELAY_G;
-         r.kpixRegCntlOut.fail   <= '0'             after DELAY_G;
-         r.kpixRegCntlOut.rdData <= (others => '0') after DELAY_G;
-         r.kpixSerTxOut          <= (others => '0') after DELAY_G;
-      elsif (rising_edge(kpixClk)) then
+      if (rising_edge(kpixClk)) then
          r <= rin after DELAY_G;
       end if;
    end process seq;
 
-   comb : process (r, kpixRegCntlInSync, startAcquireSync, startCalibrateSync, startReadoutSync, kpixResetHoldSync,
-                   kpixEnableSync, kpixRegRxOut, kpixState, outputEdgeSync) is
+   comb : process (kpixClkRst, kpixEnableSync, kpixRegCntlInSync, kpixRegRxOut, kpixState, r,
+                   startAcquireSync, startCalibrateSync, startReadoutSync) is
       variable v                : RegType;
       variable addressedKpixVar : natural;
    begin
@@ -441,6 +434,10 @@ begin
 
       end case;
 
+      if (kpixClkRst = '1') then
+         v := REG_INIT_C;
+      end if;
+
       -- Registers
       rin <= v;
 
@@ -468,12 +465,14 @@ begin
    -------------------------------------------------------------------------------------------------
    -- Optional clocking of serial clock on falling edge
    -------------------------------------------------------------------------------------------------
-   fallingClk : process (kpixClk, kpixClkRst) is
+   fallingClk : process (kpixClk) is
    begin
-      if (kpixClkRst = '1') then
-         kpixSerTxOutFall <= (others => '0') after DELAY_G;
-      elsif (falling_edge(kpixClk)) then
-         kpixSerTxOutFall <= r.kpixSerTxOut after DELAY_G;
+      if (falling_edge(kpixClk)) then
+         if (kpixClkRst = '1') then
+            kpixSerTxOutFall <= (others => '0') after DELAY_G;
+         else
+            kpixSerTxOutFall <= r.kpixSerTxOut after DELAY_G;
+         end if;
       end if;
    end process fallingClk;
 

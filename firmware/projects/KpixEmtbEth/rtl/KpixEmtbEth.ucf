@@ -52,8 +52,6 @@ TIMESPEC TS_sysClk125_evrClk = FROM sysClk125 TO evrClk 10 ns DATAPATHONLY;
 
 #evrClk-clk200
 TIMESPEC TS_evrClk_clk200 = FROM evrClk TO clk200 10 ns DATAPATHONLY;
-TIMESPEC TS_clk200_evrClk = FROM clk200 TO evrClk 10 ns DATAPATHONLY;
-
 
 #kpixClk-sysClk125
 TIMESPEC TS_sysClk125_kpixClk = FROM sysClk125 TO kpixClk 8 ns DATAPATHONLY;
@@ -85,10 +83,10 @@ NET "gtpRefClkP"         LOC = "K4";
 NET "gtpRefClkN"         LOC = "K3";
 
 # PGP Interface
-NET "udpTxP"             LOC = "H2";
-NET "udpTxN"             LOC = "J2";
-NET "udpRxP"             LOC = "J1";
-NET "udpRxN"             LOC = "K1";
+NET "gtpTxP"             LOC = "H2";
+NET "gtpTxN"             LOC = "J2";
+NET "gtpRxP"             LOC = "J1";
+NET "gtpRxN"             LOC = "K1";
 
 # EVR Clock and Interface
 NET "evrRefClkP" LOC = "T4";

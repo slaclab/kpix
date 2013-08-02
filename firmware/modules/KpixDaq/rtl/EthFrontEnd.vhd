@@ -220,9 +220,11 @@ begin
          vcTxIn_locBuffFull  => vcTx0In.locBuffFull,
          cmdSlaveOut         => cmdSlaveOut,
          locClk              => clk200,
-         locAsyncRst         => rst200,
+--         locAsyncRst         => rst200,
+         locSyncRst => rst200,
          vcRxClk             => gtpClk,
-         vcRxAsyncRst        => gtpClkRst);
+--         vcRxAsyncRst        => gtpClkRst);
+         vcRxSyncRst => gtpClkRst);
 
    -- VC0 Tx, Return data
    VcUsBuff64Kpix_1 : entity work.VcUsBuff64Kpix
@@ -239,9 +241,11 @@ begin
          usBuff64In           => usBuff64In,
          usBuff64Out          => usBuff64Out,
          locClk               => gtpClk,
-         locAsyncRst          => gtpClkRst,
+--         locAsyncRst          => gtpClkRst,
+         locSyncRst => gtpClkRst,
          vcTxClk              => gtpClk,
-         vcTxAsyncRst         => gtpClkRst);
+--         vcTxAsyncRst         => gtpClkRst);
+         vcTxSyncRst => gtpClkRst);
 
    -- VC1, Register Slave
    VcRegSlave_1 : entity work.VcRegSlave
@@ -262,11 +266,14 @@ begin
          regSlaveIn    => regSlaveIn,
          regSlaveOut   => regSlaveOut,
          locClk        => gtpClk,
-         locAsyncRst   => gtpClkRst,
+--         locAsyncRst   => gtpClkRst,
+         locSyncRst => gtpClkRst,
          vcTxClk       => gtpClk,
-         vcTxAsyncRst  => gtpClkRst,
+--         vcTxAsyncRst  => gtpClkRst,
+         vcTxSyncRst => gtpClkRst,
          vcRxClk       => gtpClk,
-         vcRxAsyncRst  => gtpClkRst);
+--         vcRxAsyncRst  => gtpClkRst);
+         vcRxSyncRst => gtpClkRst);
 
 end EthFrontEnd;
 

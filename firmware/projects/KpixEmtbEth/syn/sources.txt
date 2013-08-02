@@ -1,101 +1,97 @@
-# VHDL Packages (Must be first)
-
-## StdLib
+# VHDL Packages (Must be first!!)
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/StdRtlPkg.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/ArbiterPkg.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/Code8b10bPkg.vhd"
 
-## KpixDaq
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/FrontEndPkg.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixPkg.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EventBuilderFifoPkg.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixLocalPkg.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixClockGenPkg.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixDataRxPkg.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegCntlPkg.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegRxPkg.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/TriggerPkg.vhd"
+vhdl work "_PROJ_DIR_/../../modules/VcLib/rtl/VcPkg.vhd"
+
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EvrCorePkg.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/TriggerPkg.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixPkg.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixDataRxPkg.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixClockGenPkg.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegRxPkg.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixLocalPkg.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EventBuilderFifoPkg.vhd"
 
-## eth_client
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClientPackage.vhd"
-
-## KpixSmall
-vhdl work "_PROJ_DIR_/rtl/Version.vhd"
-
-
-# Xilinx Cores
-
-## KpixDaq
-
-## eth_client
-
-## KpixSmall
-vhdl work "_PROJ_DIR_/xil_cores/main_dcm.vhd"
-
-
-# RTL Files
-
-## StdLib
-vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/Synchronizer.vhd"
-vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SynchronizerEdge.vhd"
-vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SynchronizerVector.vhd"
-vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SynchronizerFifo.vhd"
-vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/FifoAsync.vhd"
-vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SimpleDualPortRam.vhd"
+# VHDL Modules
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/FifoSync.vhd"
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/RstSync.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/Debouncer.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/Encoder8b10b.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/FifoAsync.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/Arbiter.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/Synchronizer.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/ClkOutBuf.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/Heartbeat.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SynchronizerEdge.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/ClkOutBufSingle.vhd"
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/ClkOutBufDiff.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SynchronizerVector.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/Fifo.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/FifoSyncBuiltIn.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SynchronizerFifo.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/SimpleDualPortRam.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/TrueDualPortRam.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/DspAddSub.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/DspCounter.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/FifoMux.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/Decoder8b10b.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/FifoAsyncBuiltIn.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/CRC32Rtl.vhd"
 
-## KpixDaq
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EthFrontEnd.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/FrontEndRegDecoder.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EventBuilder.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixClockGen.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixDaqCore.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixDataRx.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixLocal.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegCntl.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegRx.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/Trigger.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EthUsBuff64.vhd"
+vhdl work "_PROJ_DIR_/../../modules/VcLib/rtl/VcDsBuff32.vhd"
+vhdl work "_PROJ_DIR_/../../modules/VcLib/rtl/VcDsBuff16.vhd"
+vhdl work "_PROJ_DIR_/../../modules/VcLib/rtl/VcRegSlave.vhd"
+vhdl work "_PROJ_DIR_/../../modules/VcLib/rtl/VcUsBuff32.vhd"
+vhdl work "_PROJ_DIR_/../../modules/VcLib/rtl/VcUsBuff16.vhd"
+vhdl work "_PROJ_DIR_/../../modules/VcLib/rtl/VcUsBuff64.vhd"
+vhdl work "_PROJ_DIR_/../../modules/VcLib/rtl/VcDsBuff64.vhd"
+vhdl work "_PROJ_DIR_/../../modules/VcLib/rtl/VcCmdSlave.vhd"
 
-
-## KpixCore
-vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/analog_control.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/command_control.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/memory_array_control.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/readout_control.vhd"
-vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/reg_rw_32.vhd"
-
-## 8B10B Decoder
-vhdl work "_PROJ_DIR_/../../modules/8b10bCore/rtl/Code8b10bPkg.vhd"
-vhdl work "_PROJ_DIR_/../../modules/8b10bCore/rtl/Decoder8b10b.vhd"
-
-## Fixed latency GTP
-
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/gtp/Pgp2GtpPackage.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/gtp/Pgp2GtpRxRst.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/gtp/Pgp2GtpTxRst.vhd"
+vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/gtp/Pgp2GtpClk.vhd"
 vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/gtp/GtpRxCommaAligner.vhd"
 vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/gtp/GtpTxPhaseAligner.vhd"
 vhdl work "_PROJ_DIR_/../../modules/Pgp2Core/rtl/gtp/Gtp16LowLatCore.vhd"
 
-## Event Receiver
+vhdl work "_PROJ_DIR_/../../modules/EthClientCore/rtl/1g/EthClientUdp.vhd"
+vhdl work "_PROJ_DIR_/../../modules/EthClientCore/rtl/1g/EthArbiter.vhd"
+vhdl work "_PROJ_DIR_/../../modules/EthClientCore/rtl/1g/EthRegSlave.vhd"
+vhdl work "_PROJ_DIR_/../../modules/EthClientCore/rtl/1g/EthClientGtp.vhd"
+vhdl work "_PROJ_DIR_/../../modules/EthClientCore/rtl/1g/EthClientPackage.vhd"
+vhdl work "_PROJ_DIR_/../../modules/EthClientCore/rtl/1g/EthClientGtpRxRst.vhd"
+vhdl work "_PROJ_DIR_/../../modules/EthClientCore/rtl/1g/EthClient.vhd"
+vhdl work "_PROJ_DIR_/../../modules/EthClientCore/rtl/1g/EthClientGtpTxRst.vhd"
+vhdl work "_PROJ_DIR_/../../modules/EthClientCore/rtl/1g/EthCmdSlave.vhd"
+vhdl work "_PROJ_DIR_/../../modules/EthClientCore/rtl/1g/EthClientArp.vhd"
+vhdl work "_PROJ_DIR_/../../modules/EthClientCore/rtl/1g/EthUdpFrame.vhd"
+
+vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/analog_control.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/readout_control.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/memory_array_control.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/reg_rw_32.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixCore/rtl/command_control.vhd"
+
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/Trigger.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EvrCore.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/FrontEndRegDecoder.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixDaqCore.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixDataRx.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EthFrontEnd.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixClockGen.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegRx.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixLocal.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/KpixRegCntl.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EventBuilder.vhd"
 vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/EvrGtp.vhd"
+vhdl work "_PROJ_DIR_/../../modules/KpixDaq/rtl/VcUsBuff64Kpix.vhd"
 
+vhdl work "_PROJ_DIR_/xil_cores/main_dcm.vhd"
 
-
-
-## eth_client
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthArbiter.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClient.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClientArp.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClientGtp.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClientGtpRxRst.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClientGtpTxRst.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthClientUdp.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthCmdSlave.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthRegSlave.vhd"
-vhdl work "_PROJ_DIR_/../../modules/eth_client/rtl/1g/EthUdpFrame.vhd"
-
-## KpixSmall
 vhdl work "_PROJ_DIR_/rtl/KpixEmtbEth.vhd"
+vhdl work "_PROJ_DIR_/rtl/Version.vhd"
 
-
-
+# Verilog Modules

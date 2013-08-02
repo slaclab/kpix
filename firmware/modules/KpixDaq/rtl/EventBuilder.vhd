@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2013-07-31
+-- Last update: 2013-08-01
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -108,7 +108,8 @@ architecture rtl of EventBuilder is
       timestampIn    => (rdEn => '0'),
       ebFifoIn       => (wrData => (others => '0'), wrEn => '0', rdEn => '0'));
 
-   signal r, rin           : RegType := REG_INIT_C;
+   signal r                : RegType := REG_INIT_C;
+   signal rin              : RegType;
    signal startAcquireSync : sl;
    signal kpixClkRise      : sl;
 
@@ -121,7 +122,7 @@ begin
          RST_POLARITY_G => '1')
       port map (
          clk     => sysClk,
-         aRst    => sysRst,
+         rst     => sysRst,
          dataIn  => triggerOut.startAcquire,
          dataOut => startAcquireSync);
 
@@ -131,18 +132,20 @@ begin
          RST_POLARITY_G => '1')
       port map (
          clk         => sysClk,
-         aRst        => sysRst,
+         rst         => sysRst,
          dataIn      => kpixClk,
          dataOut     => open,
          risingEdge  => kpixClkRise,
          fallingEdge => open);
 
-   sync : process (sysClk, sysRst) is
+   sync : process (sysClk) is
    begin
-      if (sysRst = '1') then
-         r <= REG_INIT_C after DELAY_G;
-      elsif (rising_edge(sysClk)) then
-         r <= rin after DELAY_G;
+      if (rising_edge(sysClk)) then
+         if (sysRst = '1') then
+            r <= REG_INIT_C after DELAY_G;
+         else
+            r <= rin after DELAY_G;
+         end if;
       end if;
    end process sync;
 

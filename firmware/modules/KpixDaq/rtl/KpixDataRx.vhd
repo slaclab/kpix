@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2013-07-31
+-- Last update: 2013-08-01
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -118,9 +118,10 @@ architecture rtl of KpixDataRx is
       headerParityError => '0',
       overflowError     => '0');
 
-   signal rxRowAckSync     : slv(NUM_ROW_BUFFERS_G-1 downto 0);
-   signal enabledSync      : sl;
-   signal rxRegs, rxRegsIn : RxRegType := RX_REG_INIT_C;
+   signal rxRowAckSync : slv(NUM_ROW_BUFFERS_G-1 downto 0);
+   signal enabledSync  : sl;
+   signal rxRegs       : RxRegType := RX_REG_INIT_C;
+   signal rxRegsIn     : RxRegType;
 
    ---------------------------------------------------------------------------
    -- Tx controlled Registers
@@ -198,8 +199,9 @@ architecture rtl of KpixDataRx is
    signal overflowErrorRise     : sl;
    signal kpixRegRxOutSys       : KpixRegRxOutType;
 
-   signal txRegs, txRegsIn : TxRegType := TX_REG_INIT_C;
-   signal kpixSerRxInFall  : sl;
+   signal txRegs          : TxRegType := TX_REG_INIT_C;
+   signal txRegsIn        : TxRegType;
+   signal kpixSerRxInFall : sl        := '0';
 
    -----------------------------------------------------------------------------
    -- Functions
@@ -242,12 +244,14 @@ begin
    -- Falling Edge logic
    -- Optionally clock in serial input on falling edge of clock
    --------------------------------------------------------------------------------------------------
-   rxFall : process (kpixClk, kpixClkRst) is
+   rxFall : process (kpixClk) is
    begin
-      if (kpixClkRst = '1') then
-         kpixSerRxInFall <= '0' after DELAY_G;
-      elsif (falling_edge(kpixClk)) then
-         kpixSerRxInFall <= kpixSerRxIn after DELAY_G;
+      if (falling_edge(kpixClk)) then
+         if (kpixClkRst = '1') then
+            kpixSerRxInFall <= '0' after DELAY_G;
+         else
+            kpixSerRxInFall <= kpixSerRxIn after DELAY_G;
+         end if;
       end if;
    end process rxFall;
 
@@ -261,7 +265,7 @@ begin
             RST_POLARITY_G => '1')
          port map (
             clk     => kpixClk,
-            aRst    => kpixClkRst,
+            rst     => kpixClkRst,
             dataIn  => txRegs.txRowAck(i),
             dataOut => rxRowAckSync(i));
    end generate GEN_RX_ROW_ACK_SYNC;
@@ -272,7 +276,7 @@ begin
          RST_POLARITY_G => '1')
       port map (
          clk     => kpixClk,
-         aRst    => kpixClkRst,
+         rst     => kpixClkRst,
          dataIn  => extRegsIn.enabled,
          dataOut => enabledSync);
 
@@ -280,18 +284,19 @@ begin
    -- Rx Logic
    -- Runs on kpixClk
    -----------------------------------------------------------------------------
-   rxSeq : process (kpixClk, kpixClkRst) is
+   rxSeq : process (kpixClk) is
    begin
-      if (kpixClkRst = '1') then
-         rxRegs <= RX_REG_INIT_C after DELAY_G;
-      elsif (rising_edge(kpixClk)) then
-         rxRegs <= rxRegsIn after DELAY_G;
-         if (rxRegs.rxRamWrEn = '1') then
-            ram(to_integer(rxRegs.rxRamWrAddr)) <= rxRegs.rxRamWrData after DELAY_G;
+      if (rising_edge(kpixClk)) then
+         if (kpixClkRst = '1') then
+            rxRegs <= RX_REG_INIT_C after DELAY_G;
+         else
+            rxRegs <= rxRegsIn after DELAY_G;
+            if (rxRegs.rxRamWrEn = '1') then
+               ram(to_integer(rxRegs.rxRamWrAddr)) <= rxRegs.rxRamWrData after DELAY_G;
+            end if;
          end if;
       end if;
    end process rxSeq;
-
 
 
    rxComb : process (enabledSync, kpixConfigRegsKpix, kpixSerRxIn, kpixSerRxInFall, rxRegs, rxRowAckSync) is
@@ -434,7 +439,7 @@ begin
             RST_POLARITY_G => '1')
          port map (
             clk     => sysClk,
-            aRst    => sysRst,
+            rst     => sysRst,
             dataIn  => rxRegs.rxRowReq(i),
             dataOut => txRowReqSync(i));
    end generate TX_ROW_REQ_SYNC;
@@ -445,7 +450,7 @@ begin
          RST_POLARITY_G => '1')
       port map (
          clk         => sysClk,
-         aRst        => sysRst,
+         rst         => sysRst,
          dataIn      => rxRegs.rxBusy,
          dataOut     => open,
          risingEdge  => txRxBusyRise,
@@ -457,7 +462,7 @@ begin
          RST_POLARITY_G => '1')
       port map (
          clk         => sysClk,
-         aRst        => sysRst,
+         rst         => sysRst,
          dataIn      => rxRegs.headerParityError,
          dataOut     => open,
          risingEdge  => headerParityErrorRise,
@@ -469,7 +474,7 @@ begin
          RST_POLARITY_G => '1')
       port map (
          clk         => sysClk,
-         aRst        => sysRst,
+         rst         => sysRst,
          dataIn      => rxRegs.markerError,
          dataOut     => open,
          risingEdge  => markerErrorRise,
@@ -481,7 +486,7 @@ begin
          RST_POLARITY_G => '1')
       port map (
          clk         => sysClk,
-         aRst        => sysRst,
+         rst         => sysRst,
          dataIn      => rxRegs.overflowError,
          dataOut     => open,
          risingEdge  => overflowErrorRise,

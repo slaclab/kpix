@@ -48,6 +48,7 @@ HDL_SRC= $(PWD)/../../../modules/StdLib/rtl/StdRtlPkg.vhd \
          $(PWD)/../../../modules/StdLib/rtl/FifoAsync.vhd \
          $(PWD)/../../../modules/StdLib/rtl/FifoSync.vhd \
          $(PWD)/../../../modules/StdLib/rtl/FifoSyncBuiltIn.vhd \
+         $(PWD)/../../../modules/StdLib/rtl/FifoAsyncBuiltIn.vhd \
          $(PWD)/../../../modules/StdLib/rtl/Fifo.vhd \
          $(PWD)/../../../modules/StdLib/rtl/FifoMux.vhd \
          $(PWD)/../../../modules/StdLib/rtl/SynchronizerFifo.vhd \

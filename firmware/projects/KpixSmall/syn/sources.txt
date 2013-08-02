@@ -38,7 +38,7 @@ vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/DspCounter.vhd"
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/FifoMux.vhd"
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/Decoder8b10b.vhd"
 vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/FifoAsyncBuiltIn.vhd"
-vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/CRC32.vhd"
+vhdl work "_PROJ_DIR_/../../modules/StdLib/rtl/CRC32Rtl.vhd"
 
 vhdl work "_PROJ_DIR_/../../modules/VcLib/rtl/VcDsBuff32.vhd"
 vhdl work "_PROJ_DIR_/../../modules/VcLib/rtl/VcDsBuff16.vhd"

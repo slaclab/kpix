@@ -24,28 +24,19 @@ architecture KpixSmallTb of KpixSmallTb is
 
 begin
 
-   -- Reset generation
-   process 
-   begin
-      fpgaRstL <= '1';
-      wait for (8 ns);
-      fpgaRstL <= '0';
-      wait for (8 ns * 20);
-      fpgaRstL <= '1';
-      wait;
-   end process;
-
-   -- 125Mhz clock
-   process 
-   begin
-      gtpRefClkP <= '0';
-      gtpRefClkN <= '1';
-      wait for (4 ns);
-      gtpRefClkP <= '1';
-      gtpRefClkN <= '0';
-      wait for (4 ns);
-   end process;
-
+   ClkRst_1: entity work.ClkRst
+      generic map (
+         CLK_PERIOD_G      => 8 ns,
+         CLK_DELAY_G       => 0 ns,
+         RST_START_DELAY_G => 0 ns,
+         RST_HOLD_TIME_G   => 500 ns,
+         SYNC_RESET_G      => false)
+      port map (
+         clkP => gtpRefClkP,
+         clkN => gtpRefClkN,
+         rst  => open,
+         rstL => fpgaRstL);
+   
    -- FPGA
    U_KpixSmall : entity KpixSmall port map (
        fpgaRstL        => fpgaRstL,

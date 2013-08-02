@@ -162,7 +162,8 @@ architecture KpixLocal of KpixLocal is
       bunchCount => (others => '0'),
       subCount   => (others => '0'));
 
-   signal r, rin      : RegType := REG_INIT_C;
+   signal r           : RegType := REG_INIT_C;
+   signal rin         : RegType;
    signal regClkRise  : sl;
    signal kpixClkRise : sl;
 
@@ -249,7 +250,7 @@ begin
          TPD_G => DELAY_G)
       port map (
          clk         => clk200,
-         aRst        => rst200,
+         rst         => rst200,
          dataIn      => kpixClk,
          dataOut     => open,
          risingEdge  => kpixClkRise,
@@ -260,7 +261,7 @@ begin
          TPD_G => DELAY_G)
       port map (
          clk         => clk200,
-         aRst        => rst200,
+         rst         => rst200,
          dataIn      => reg_clock,
          dataOut     => open,
          risingEdge  => regClkRise,
@@ -269,12 +270,14 @@ begin
    --------------------------------------------------------------------------------------------------
    -- Generate subCount and bunchCount
    --------------------------------------------------------------------------------------------------
-   process (clk200, rst200) is
+   process (clk200) is
    begin
-      if (rst200 = '1') then
-         r <= REG_INIT_C after DELAY_G;
-      elsif rising_edge(clk200) then
-         r <= rin after DELAY_G;
+      if rising_edge(clk200) then
+         if (rst200 = '1') then
+            r <= REG_INIT_C after DELAY_G;
+         else
+            r <= rin after DELAY_G;
+         end if;
       end if;
    end process;
 

@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2013-07-31
+-- Last update: 2013-08-01
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -55,27 +55,32 @@ architecture rtl of KpixRegRx is
       state        => IDLE_S,
       kpixRegRxOut => KPIX_REG_RX_OUT_INIT_C);
 
-   signal r, rin          : RegType := REG_INIT_C;
-   signal kpixSerRxInFall : sl;
+   signal r               : RegType := REG_INIT_C;
+   signal rin             : RegType;
+   signal kpixSerRxInFall : sl      := '0';
 
 begin
 
    -- Clock serial input on the falling edge to assure clean signal
-   fall : process (kpixClk, kpixClkRst) is
+   fall : process (kpixClk) is
    begin
-      if (kpixClkRst = '1') then
-         kpixSerRxInFall <= '0' after DELAY_G;
-      elsif (falling_edge(kpixClk)) then
-         kpixSerRxInFall <= kpixSerRxIn after DELAY_G;
+      if (falling_edge(kpixClk)) then
+         if (kpixClkRst = '1') then
+            kpixSerRxInFall <= '0' after DELAY_G;
+         else
+            kpixSerRxInFall <= kpixSerRxIn after DELAY_G;
+         end if;
       end if;
    end process fall;
 
-   seq : process (kpixClk, kpixClkRst) is
+   seq : process (kpixClk) is
    begin
-      if (kpixClkRst = '1') then
-         r <= REG_INIT_C after DELAY_G;
-      elsif (rising_edge(kpixClk)) then
-         r <= rin after DELAY_G;
+      if (rising_edge(kpixClk)) then
+         if (kpixClkRst = '1') then
+            r <= REG_INIT_C after DELAY_G;
+         else
+            r <= rin after DELAY_G;
+         end if;
       end if;
    end process seq;
 

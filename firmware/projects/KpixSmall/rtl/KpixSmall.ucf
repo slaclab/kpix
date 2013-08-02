@@ -1,4 +1,4 @@
- #-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 # Title         : 
 # Project       : 
 #-----------------------------------------------------------------------------
@@ -54,9 +54,9 @@ TIMESPEC TS_kpixClk_RF = FROM TG_kpixClk_r to TG_kpixClk_f 8 ns DATAPATHONLY;
 TIMESPEC TS_kpixClk_FR = FROM TG_kpixClk_f to TG_kpixClk_r 8 ns DATAPATHONLY;
 
 # Nets to ignore for timing
-NET "fpgaRstL"      TIG;
-NET "sysRst125" TIG;
-NET "rst200" TIG;
+#NET "fpgaRstL"      TIG;
+#NET "sysRst125" TIG;
+#NET "rst200" TIG;
 
 # Needed to properly handle clk200->kpixClk constraints
 NET "KpixDaqCore_1/KpixClockGen_1/r_clkDiv" TIG;

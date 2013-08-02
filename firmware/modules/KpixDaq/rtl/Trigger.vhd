@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2013-07-31
+-- Last update: 2013-08-01
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -78,7 +78,8 @@ architecture rtl of Trigger is
       readoutCountEnable => '0',
       triggerOut         => TRIGGER_OUT_INIT_C);
 
-   signal r, rin              : RegType := REG_INIT_C;
+   signal r                   : RegType := REG_INIT_C;
+   signal rin                 : RegType;
    signal fifoFull            : sl;
    signal extTriggerRise      : slv(0 to 7);
    signal triggerRegsInSync   : TriggerRegsInType;
@@ -95,7 +96,7 @@ begin
          RST_POLARITY_G => '1')
       port map (
          clk         => clk200,
-         aRst        => rst200,
+         rst         => rst200,
          dataIn      => triggerExtIn.nimA,
          dataOut     => open,
          risingEdge  => extTriggerRise(1),
@@ -107,7 +108,7 @@ begin
          RST_POLARITY_G => '1')
       port map (
          clk         => clk200,
-         aRst        => rst200,
+         rst         => rst200,
          dataIn      => triggerExtIn.nimB,
          dataOut     => open,
          risingEdge  => extTriggerRise(2),
@@ -119,7 +120,7 @@ begin
          RST_POLARITY_G => '1')
       port map (
          clk         => clk200,
-         aRst        => rst200,
+         rst         => rst200,
          dataIn      => triggerExtIn.cmosA,
          dataOut     => open,
          risingEdge  => extTriggerRise(3),
@@ -131,7 +132,7 @@ begin
          RST_POLARITY_G => '1')
       port map (
          clk         => clk200,
-         aRst        => rst200,
+         rst         => rst200,
          dataIn      => triggerExtIn.cmosB,
          dataOut     => open,
          risingEdge  => extTriggerRise(4),
@@ -146,7 +147,7 @@ begin
          RST_POLARITY_G => '1')
       port map (
          clk         => clk200,
-         aRst        => rst200,
+         rst         => rst200,
          dataIn      => evrOut.trigger,
          dataOut     => open,
          risingEdge  => extTriggerRise(7),
@@ -180,20 +181,20 @@ begin
          RST_POLARITY_G => '1')
       port map (
          clk         => clk200,
-         aRst        => rst200,
+         rst         => rst200,
          dataIn      => kpixConfigRegs.autoReadDisable,
          dataOut     => open,
          risingEdge  => autoReadDisableSync,
          fallingEdge => open);
 
-   sync : process (clk200, rst200) is
+   sync : process (clk200) is
    begin
-
       if (rising_edge(clk200)) then
-         r <= rin after DELAY_G;
-      end if;
-      if (rst200 = '1') then
-         r <= REG_INIT_C after DELAY_G;
+         if (rst200 = '1') then
+            r <= REG_INIT_C after DELAY_G;
+         else
+            r <= rin after DELAY_G;
+         end if;
       end if;
    end process sync;
 

@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2013-07-29
+-- Last update: 2013-08-01
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -162,7 +162,8 @@ begin
       generic map (
          TPD_G          => DELAY_G,
          IN_POLARITY_G  => '0',
-         OUT_POLARITY_G => '1')
+         OUT_POLARITY_G => '1',
+         RELEASE_DELAY_G => 5)
       port map (
          clk      => sysClk125,
          asyncRst => dcmLocked,
@@ -173,7 +174,8 @@ begin
       generic map (
          TPD_G          => DELAY_G,
          IN_POLARITY_G  => '0',
-         OUT_POLARITY_G => '1')
+         OUT_POLARITY_G => '1',
+         RELEASE_DELAY_G => 8)
       port map (
          clk      => clk200,
          asyncRst => dcmLocked,
@@ -216,7 +218,10 @@ begin
       port map (
          evrRecClk        => '0',
          evrRst           => '0',
-         phyIn            => (rxData => (others => '0'), rxDataK => (others => '0'), decErr => (others => '0'), dispErr => (others => '0')),
+         phyIn            => (rxData => (others => '0'),
+                              rxDataK => (others => '0'),
+                              decErr => (others => '0'),
+                              dispErr => (others => '0')),
          evrOut           => open,
          sysClk           => sysClk125,
          sysRst           => sysRst125,
