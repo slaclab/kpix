@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2013-07-12
--- Last update: 2013-07-17
+-- Last update: 2013-08-02
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -57,7 +57,7 @@ begin
          IB => gtpRefClkN,
          O  => gtpRefClkIn);
 
-   Gtp16LowLatCore_1 : entity work.Gtp16LowLatCore
+   Gtp16FixedLatCore_1 : entity work.Gtp16FixedLatCore
       generic map (
          TPD_G           => TPD_G,
          SIM_PLL_PERDIV2 => X"0C8",
