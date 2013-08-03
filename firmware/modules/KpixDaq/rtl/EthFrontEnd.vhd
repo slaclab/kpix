@@ -207,6 +207,7 @@ begin
    VcCmdSlave_1 : entity work.VcCmdSlave
       generic map (
          TPD_G           => TPD_G,
+         RST_ASYNC_G     => false,
          RX_LANE_G       => 0,
          DEST_ID_G       => 0,
          DEST_MASK_G     => 1,
@@ -220,16 +221,15 @@ begin
          vcTxIn_locBuffFull  => vcTx0In.locBuffFull,
          cmdSlaveOut         => cmdSlaveOut,
          locClk              => clk200,
---         locAsyncRst         => rst200,
-         locSyncRst => rst200,
+         locRst              => rst200,
          vcRxClk             => gtpClk,
---         vcRxAsyncRst        => gtpClkRst);
-         vcRxSyncRst => gtpClkRst);
+         vcRxRst             => gtpClkRst);
 
    -- VC0 Tx, Return data
    VcUsBuff64Kpix_1 : entity work.VcUsBuff64Kpix
       generic map (
          TPD_G             => TPD_G,
+         RST_ASYNC_G       => false,
          GEN_SYNC_FIFO_G   => true,
          BRAM_EN_G         => true,
          FIFO_ADDR_WIDTH_G => 10)
@@ -241,23 +241,22 @@ begin
          usBuff64In           => usBuff64In,
          usBuff64Out          => usBuff64Out,
          locClk               => gtpClk,
---         locAsyncRst          => gtpClkRst,
-         locSyncRst => gtpClkRst,
+         locRst               => gtpClkRst,
          vcTxClk              => gtpClk,
---         vcTxAsyncRst         => gtpClkRst);
-         vcTxSyncRst => gtpClkRst);
+         vcTxRst              => gtpClkRst);
 
    -- VC1, Register Slave
    VcRegSlave_1 : entity work.VcRegSlave
       generic map (
          RX_LANE_G      => 0,
+         RST_ASYNC_G    => false,
          SYNC_RX_FIFO_G => true,
          BRAM_EN_RX_G   => true,
          TX_LANE_G      => 0,
          SYNC_TX_FIFO_G => true,
          BRAM_EN_TX_G   => true,
          TPD_G          => TPD_G,
-         ETH_MODE_G      => true)
+         ETH_MODE_G     => true)
       port map (
          vcRxOut       => vcRx1Out,
          vcRxCommonOut => vcRxCommonOut,
@@ -266,14 +265,11 @@ begin
          regSlaveIn    => regSlaveIn,
          regSlaveOut   => regSlaveOut,
          locClk        => gtpClk,
---         locAsyncRst   => gtpClkRst,
-         locSyncRst => gtpClkRst,
+         locRst        => gtpClkRst,
          vcTxClk       => gtpClk,
---         vcTxAsyncRst  => gtpClkRst,
-         vcTxSyncRst => gtpClkRst,
+         vcTxRst       => gtpClkRst,
          vcRxClk       => gtpClk,
---         vcRxAsyncRst  => gtpClkRst);
-         vcRxSyncRst => gtpClkRst);
+         vcRxRst       => gtpClkRst);
 
 end EthFrontEnd;
 

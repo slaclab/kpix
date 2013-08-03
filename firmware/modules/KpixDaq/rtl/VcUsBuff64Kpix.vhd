@@ -26,6 +26,7 @@ use work.VcPkg.all;
 entity VcUsBuff64Kpix is
    generic (
       TPD_G              : time                       := 1 ns;
+      RST_ASYNC_G        : boolean                    := false;
       GEN_SYNC_FIFO_G    : boolean                    := false;
       BRAM_EN_G          : boolean                    := true;
       FIFO_ADDR_WIDTH_G  : integer range 4 to 48      := 9;
@@ -46,12 +47,10 @@ entity VcUsBuff64Kpix is
       usBuff64Out          : out VcUsBuff64OutType;
       -- Local clock and resets
       locClk               : in  sl;
-      locSyncRst           : in  sl := '0';
-      locAsyncRst          : in  sl := '0';
+      locRst               : in  sl := '0';
       -- VC Tx Clock And Resets
       vcTxClk              : in  sl;
-      vcTxSyncRst          : in  sl := '0';
-      vcTxAsyncRst         : in  sl := '0');      
+      vcTxRst              : in  sl := '0');      
 end VcUsBuff64Kpix;
 
 architecture rtl of VcUsBuff64Kpix is
@@ -59,11 +58,11 @@ architecture rtl of VcUsBuff64Kpix is
    constant RD_DATA_WIDTH_C : integer := 18;
 
    -- Local Signals
-   signal fifoDin   : slv(71 downto 0);
-   signal fifoDout  : slv(RD_DATA_WIDTH_C-1 downto 0);
-   signal fifoRd    : sl;
-   signal fifoValid : sl;
-   signal fifoEmpty : sl;
+   signal fifoDin      : slv(71 downto 0);
+   signal fifoDout     : slv(RD_DATA_WIDTH_C-1 downto 0);
+   signal fifoRd       : sl;
+   signal fifoValid    : sl;
+   signal fifoEmpty    : sl;
    signal fifoOverflow : sl;
 
 begin
@@ -83,6 +82,7 @@ begin
    FifoMux_1 : entity work.FifoMux
       generic map (
          TPD_G           => TPD_G,
+         RST_ASYNC_G     => RST_ASYNC_G,
          GEN_SYNC_FIFO_G => GEN_SYNC_FIFO_G,
          BRAM_EN_G       => BRAM_EN_G,
          FWFT_EN_G       => true,
@@ -95,8 +95,7 @@ begin
          FULL_THRES_G    => FIFO_FULL_THRES_G,
          EMPTY_THRES_G   => FIFO_EMPTY_THRES_G)
       port map (
-         rst          => locAsyncRst,
-         srst         => locSyncRst,
+         rst          => locRst,
          wr_clk       => locClk,
          wr_en        => usBuff64In.valid,
          din          => fifoDin,
@@ -113,7 +112,7 @@ begin
          prog_empty   => open,
          almost_empty => open,
          empty        => fifoEmpty);
-   
+
    usBuff64Out.overflow <= fifoOverflow;
 
    -- Automatically read when data is valid and VC is ready to receive it and remote buffer is not full
@@ -124,8 +123,8 @@ begin
                    (fifoDout(17) nand fifoDout(16));
 
    vcTxIn.sof <= '1' when fifoDout(17 downto 16) = "10" else '0';
-   vcTxIn.eof  <= '1' when fifoDout(17 downto 16) = "01" else '0';
-   
+   vcTxIn.eof <= '1' when fifoDout(17 downto 16) = "01" else '0';
+
    vcTxIn.eofe <= fifoOverflow;         -- This is crossing a clock boundary and probably doesn't
                                         -- even work
 
