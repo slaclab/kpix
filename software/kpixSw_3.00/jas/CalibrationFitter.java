@@ -99,7 +99,7 @@ public class CalibrationFitter extends AbstractLoopListener implements RecordLis
    }
 
    // Process and store configuration and status information
-   public void processXml ( KpixXMLRecord xml ) {
+   public int processXml ( KpixXMLRecord xml ) {
       try {
 
          Document doc = xml.getParsedXML();
@@ -107,95 +107,21 @@ public class CalibrationFitter extends AbstractLoopListener implements RecordLis
          XPath xpath = xPathfactory.newXPath();
          XPathExpression expr;
          Object result;
-         String enable;
-         String serial;
+         int    ret;
 
          // Extract Configuration
          if ( xml.getRecordType() == KpixRecord.KpixRecordType.CONFIG ) {
 
-            // Find each possible KPIX
-            for (int k=0; k < _kpixCount; k++) {
-               expr   = xpath.compile("/config/cntrlFpga[@index='0']/kpixAsic[@index='" + k + "']/Enabled");
-               result = expr.evaluate(doc, XPathConstants.STRING);
-               enable = String.valueOf(result);
-               expr   = xpath.compile("/config/cntrlFpga[@index='0']/kpixAsic[@index='" + k + "']/SerialNumber");
-               result = expr.evaluate(doc, XPathConstants.STRING);
-               serial = String.valueOf(result);
-               
-               // Kpix is present
-               if ( enable.equals("True") && ! _present[k] ) {
-                  _present[k] = true;
-                  _serial[k]  = serial;
-                  System.out.println("Found kpix " + serial + " at address " + k);
-               }
-            }
-
-            // Get expected injection/trigger times
-            for (int b=0; b < _kpixCount; b++) {
-               expr = xpath.compile("/config/cntrlFpga/kpixAsic/Cal" + b + "Delay");
-               result = expr.evaluate(doc, XPathConstants.STRING);
-               _injectTime[b] = Integer.decode(String.valueOf(result));
-               if ( b != 0 ) _injectTime[b] += _injectTime[b-1] + 4;
-            }
-            _injectTime[4] = 8192;
-            
-            // Min calibrated channel
-            expr = xpath.compile("/config/CalChanMin");
+            // Target channel
+            expr = xpath.compile("/config/UserDataA");
             result = expr.evaluate(doc, XPathConstants.STRING);
-            _minChan = Integer.decode(String.valueOf(result));
-
-            // Max calibrated channel
-            expr = xpath.compile("/config/CalChanMax");
-            result = expr.evaluate(doc, XPathConstants.STRING);
-            _maxChan = Integer.decode(String.valueOf(result));
-
-            // Kpix polarity
-            expr = xpath.compile("/config/cntrlFpga/kpixAsic/CntrlPolarity");
-            result = expr.evaluate(doc, XPathConstants.STRING);
-            _positive = String.valueOf(result).equals("Positive");
-
-            // Is bucket 0 large injection?
-            expr = xpath.compile("/config/cntrlFpga/kpixAsic/CntrlCalibHigh");
-            result = expr.evaluate(doc, XPathConstants.STRING);
-            _b0CalibHigh = String.valueOf(result).equals("True");
-
-            // Min cal dac value
-            expr = xpath.compile("/config/CalDacMin");
-            result = expr.evaluate(doc, XPathConstants.STRING);
-            _calDacMin = Integer.decode(String.valueOf(result));
-
-            // Max cal dac value
-            expr = xpath.compile("/config/CalDacMax");
-            result = expr.evaluate(doc, XPathConstants.STRING);
-            _calDacMax = Integer.decode(String.valueOf(result));
-
-            // Cal dac step value
-            expr = xpath.compile("/config/CalDacStep");
-            result = expr.evaluate(doc, XPathConstants.STRING);
-            _calDacStep = Integer.decode(String.valueOf(result));
+            ret = Integer.decode(String.valueOf(result));
+            return(ret);
          }
-
-         // Extract Status
-         if ( xml.getRecordType() == KpixRecord.KpixRecordType.STATUS ) {
-
-            // Calibration state. Idle, Inject or Baseline
-            expr = xpath.compile("/status/CalState");
-            result = expr.evaluate(doc, XPathConstants.STRING);
-            _calState = String.valueOf(result);
-
-            // Current channel for injection
-            expr = xpath.compile("/status/CalChannel");
-            result = expr.evaluate(doc, XPathConstants.STRING);
-            _calChannel = Integer.decode(String.valueOf(result));
-
-            // Current calibration value for injection
-            expr = xpath.compile("/status/CalDac");
-            result = expr.evaluate(doc, XPathConstants.STRING);
-            _calDac = Integer.decode(String.valueOf(result));
-         } 
       } catch (Exception e) {
          System.out.println("Ignoring XML Error: " + e );
       }
+      return(-1);
    }
 
    /** Return computed injection charge */
