@@ -17,6 +17,7 @@ int main (int argc, char **argv) {
    KpixEvent     event;
    KpixSample  * sample;
    KpixCalibRead calibRead;
+   KpixCalibRead calibReadB;
    uint          x;
    double        mean;
    double        gain;
@@ -26,28 +27,31 @@ int main (int argc, char **argv) {
    string        serialList[32];
    string        serial;
    TH1F        * hist[9];
-   TH1F        * bg[9];
    uint          addr;
    uint          bucket;
    uint          time;
    uint          range;
    TCanvas     * c1;
-   double        minVal[9];
-   double        maxVal[9];
+   double        meanNn;
 
    TApplication theApp("App",NULL,NULL);
    gStyle->SetOptFit(1111);
    gStyle->SetOptStat(111111111);
 
    // Check args
-   if ( argc != 3 ) {
-      cout << "Usage: readExample datafile.bin calibFile.xml" << endl;
+   if ( argc < 3 ) {
+      cout << "Usage: readExample datafile.bin calibFile.xml [baseFile.xml]" << endl;
       return(1);
    }
 
    // Attempt to open  calibration file
-   if ( argc == 3 && calibRead.parse(argv[2]) ) 
-      cout << "Read calibration data from " << argv[2] << endl << endl;
+   calibRead.parse(argv[2]);
+   cout << "Read calibration data from " << argv[2] << endl;
+
+   if ( argc == 4 ) {
+      calibReadB.parse(argv[3]);
+      cout << "Read baseline data from " << argv[3] << endl << endl;
+   }
 
    // Attempt to open data file
    if ( ! dataRead.open(argv[1]) ) {
@@ -60,11 +64,6 @@ int main (int argc, char **argv) {
       tmp.str("");
       tmp << "layer " << dec << x;
       hist[x] = new TH1F(tmp.str().c_str(),tmp.str().c_str(),1000,-500e-15,500e-15);
-      tmp.str("");
-      tmp << "bg " << dec << x;
-      bg[x] = new TH1F(tmp.str().c_str(),tmp.str().c_str(),1000,-500e-15,500e-15);
-      minVal[x] = 500e-15;
-      maxVal[x] = -500e-15;
    }
 
    // Process each event
@@ -100,25 +99,24 @@ int main (int argc, char **argv) {
          if ( sample->getSampleType() == KpixSample::Data ) {
 
             // Get gain and mean for channel/bucket
-            mean = calibRead.baseMean(serial,sample->getKpixChannel(),
+            meanNn = calibReadB.baseFitMean(serial,sample->getKpixChannel(),
                                              sample->getKpixBucket(),
                                              sample->getSampleRange());
+
+            mean = calibRead.baseFitMean(serial,sample->getKpixChannel(),
+                                             sample->getKpixBucket(),
+                                             sample->getSampleRange());
+
             gain = calibRead.calibGain(serial,sample->getKpixChannel(),
                                               sample->getKpixBucket(),
                                               sample->getSampleRange());
 
             // Only show hits that have valid calibration
-            if ( gain != 0 && calibRead.badChannel(serial,sample->getKpixChannel()) == 0 ) {
+            if ( mean > 0 && gain > 3e-15 && calibRead.badChannel(serial,sample->getKpixChannel()) == 0 ) {
                charge = ((double)sample->getSampleValue() - mean) / gain;
 
                // Time cut
-               //if ( time >= 751 && time <= 753) {
-               if ( bucket == 0 && time == 752 ) {
-                  hist[addr]->Fill(charge);
-                  if ( minVal[addr] > charge ) minVal[addr] = charge;
-                  if ( maxVal[addr] < charge ) maxVal[addr] = charge;
-               }
-               if ( time == 762 ) bg[addr]->Fill(charge);
+               if ( range == 0 && bucket == 0 && time == 752 ) hist[addr]->Fill(charge);
             }
          }
       }
@@ -129,13 +127,12 @@ int main (int argc, char **argv) {
 
    for( x=0; x < 9; x++ ) {
       c1->cd(x+1);
-      //hist[x]->Add(bg[x],-20);
-      //hist[x]->GetXaxis()->SetRangeUser(minVal[x],maxVal[x]);
-      hist[x]->GetXaxis()->SetRangeUser(-20e-15,20e-15);
+      hist[x]->GetXaxis()->SetRangeUser(-10e-15,50e-15);
       hist[x]->Draw();
    }
 
    c1->Print("beam_plots.ps");
+   system("ps2pdf beam_plots.ps");
 
    theApp.Run();
 

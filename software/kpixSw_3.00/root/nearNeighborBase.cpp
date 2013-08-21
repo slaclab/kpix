@@ -138,6 +138,7 @@ int main ( int argc, char **argv ) {
    uint                   lastPct;
    uint                   eventCount;
    uint                   x;
+   uint                   y;
    uint                   kpix;
    uint                   channel;
    uint                   bucket;
@@ -147,14 +148,19 @@ int main ( int argc, char **argv ) {
    uint                   range;
    size_t                 filePos;
    size_t                 fileSize;
+   TH1F                 * hist;
    TH1F                 * histA[9];
    TH1F                 * histB[9];
+   TH1F                 * histC[9];
    TCanvas              * c1;
    TCanvas              * c2;
+   TCanvas              * c3;
    double                 minValA[9];
    double                 maxValA[9];
    double                 minValB[9];
    double                 maxValB[9];
+   double                 minValC[9];
+   double                 maxValC[9];
    stringstream           tmp;
    string                 serialList[9];
    char                   temp[200];
@@ -166,6 +172,12 @@ int main ( int argc, char **argv ) {
    double                 gainTar;
    int                    bad;
    int                    badTar;
+   double                 base;
+   string                 outXml;
+   ofstream               xml;
+   char                   tstr[200];
+   struct tm              *timeinfo;
+   time_t                 tme;
 
    // Init structure
    for (kpix=0; kpix < 9; kpix++) {
@@ -250,8 +262,9 @@ int main ( int argc, char **argv ) {
                   gain = calibRead.calibGain(serialList[kpix],channel,bucket,range);
                   bad  = calibRead.badChannel(serialList[kpix],channel);
 
-                  if ( (gainTar > 3e15) && (gain > 3e15) && !badTar && !bad && goodChannel(kpix,calChannel) && goodChannel(kpix,channel) ) 
+                  if ( (gainTar > 3e15) && (gain > 3e15) && !badTar && !bad && goodChannel(kpix,calChannel) && goodChannel(kpix,channel) ) {
                      chanData[kpix][channel]->addBasePoint(value);
+                  }
                }
             }
          }
@@ -271,16 +284,30 @@ int main ( int argc, char **argv ) {
    // Close file
    dataRead.close();
 
-   c1 = new TCanvas("c1","c1");
-   c2 = new TCanvas("c2","c2");
-   c1->Divide(3,3,0.01,0.01);
-   c2->Divide(3,3,0.01,0.01);
+   tmp.str("");
+   tmp << argv[1] << ".xml";
+   outXml = tmp.str();
+
+   // Open xml file
+   xml.open(outXml.c_str(),ios::out | ios::trunc);
+   xml << "<calibrationData>" << endl;
+
+   // Add notes
+   xml << "   <sourceFile>" << argv[2] << "</sourceFile>" << endl;
+   xml << "   <user>" <<  getlogin() << "</user>" << endl;
+
+   time(&tme);
+   timeinfo = localtime(&tme);
+   strftime(tstr,200,"%Y_%m_%d_%H_%M_%S",timeinfo);
+   xml << "   <timestamp>" << tstr << "</timestamp>" << endl;
 
    // Process channels
    for ( kpix=0; kpix < 9; kpix++ ) {
+      xml << "   <kpixAsic id=\"" << serialList[kpix] << "\">" << endl;
+
       tmp.str("");
       tmp << "base diff adc " << dec << kpix << " " << RemovePath(argv[1]);
-      histA[kpix] = new TH1F(tmp.str().c_str(),tmp.str().c_str(),16384,8191,8191);
+      histA[kpix] = new TH1F(tmp.str().c_str(),tmp.str().c_str(),16384,-8191,8191);
       minValA[kpix] = 8192;
       maxValA[kpix] = -8192;
 
@@ -290,14 +317,32 @@ int main ( int argc, char **argv ) {
       minValB[kpix] = 500e-15;
       maxValB[kpix] = -500e-15;
 
+      tmp.str("");
+      tmp << "base adc " << dec << kpix << " " << RemovePath(argv[1]);
+      histC[kpix] = new TH1F(tmp.str().c_str(),tmp.str().c_str(),16384,-8191,8191);
+      minValC[kpix] = 8192;
+      maxValC[kpix] = -8192;
+
       for (x=0; x < 1024; x++ ) {
          gain = calibRead.calibGain(serialList[kpix],x,0,0);
          bad  = calibRead.badChannel(serialList[kpix],x);
 
-         if ( gain > 3e15 && !bad ) {
-
+         if ( gain > 3e15 && !bad && chanData[kpix][x]->baseCount > 0 ) {
             chanData[kpix][x]->computeBase();
-            diff = chanData[kpix][x]->baseFitMean - calibRead.baseFitMean(serialList[kpix],x,0,0);
+
+            tmp.str("");
+            tmp << "hist_" << serialList[kpix] << "_c" << dec << setw(4) << setfill('0') << x;
+            hist = new TH1F(tmp.str().c_str(),tmp.str().c_str(),8192,0,8192);
+
+            for (y=0; y < 8192; y++) hist->SetBinContent(y+1,chanData[kpix][x]->baseData[y]);
+            hist->GetXaxis()->SetRangeUser(chanData[kpix][x]->baseMin,
+                                           chanData[kpix][x]->baseMax);
+            hist->Fit("gaus","q");
+
+            base = 0;
+            base = hist->GetFunction("gaus")->GetParameter(1);
+
+            diff = base - calibRead.baseFitMean(serialList[kpix],x,0,0);
             gain = calibRead.calibGain(serialList[kpix],x,0,0);
 
             diffCharge = diff / gain;
@@ -309,31 +354,69 @@ int main ( int argc, char **argv ) {
             histB[kpix]->Fill(diffCharge);
             if ( diffCharge > maxValB[kpix] ) maxValB[kpix] = diffCharge;
             if ( diffCharge < minValB[kpix] ) minValB[kpix] = diffCharge;
+
+            histC[kpix]->Fill(base);
+            if ( base > maxValC[kpix] ) maxValC[kpix] = base;
+            if ( base < minValC[kpix] ) minValC[kpix] = base;
+
+            if ( base > 50 && base < 300 ) {
+               xml << "      <Channel id=\"" << x << "\">" << endl;
+               xml << "         <Bucket id=\"0\">" << endl;
+               xml << "            <Range id=\"0\">" << endl;
+               xml << "               <BaseFitMean>" << base << "</BaseFitMean>" << endl;
+               xml << "            </Range>" << endl;
+               xml << "         </Bucket>" << endl;
+               xml << "      </Channel>" << endl;
+            }
          }
       }
+      xml << "   </kpixAsic>" << endl;
+   }
+   xml << "</calibrationData>" << endl;
+   xml.close();
+   cout << "Wrote xml data to " << outXml << endl;
 
-      c1->cd(kpix+1)->SetLogy();
-      minValA[kpix] -= 10;
-      maxValA[kpix] += 10;
+   c1 = new TCanvas("c1","c1");
+   c2 = new TCanvas("c2","c2");
+   c3 = new TCanvas("c3","c3");
+   c1->Divide(3,3,0.01,0.01);
+   c2->Divide(3,3,0.01,0.01);
+   c3->Divide(3,3,0.01,0.01);
+
+   // Process channels
+   for ( kpix=0; kpix < 9; kpix++ ) {
+
+      //c1->cd(kpix+1)->SetLogy();
+      c1->cd(kpix+1);
       histA[kpix]->GetXaxis()->SetRangeUser(minValA[kpix],maxValA[kpix]);
       histA[kpix]->Draw();
 
-      c2->cd(kpix+1)->SetLogy();
-      minValB[kpix] -= 10;
-      maxValB[kpix] += 10;
+      //c2->cd(kpix+1)->SetLogy();
+      c2->cd(kpix+1);
       histB[kpix]->GetXaxis()->SetRangeUser(minValB[kpix],maxValB[kpix]);
+      histB[kpix]->Fit("gaus","q");
       histB[kpix]->Draw();
+
+      //c3->cd(kpix+1)->SetLogy();
+      c3->cd(kpix+1);
+      histC[kpix]->GetXaxis()->SetRangeUser(minValC[kpix],maxValC[kpix]);
+      histC[kpix]->Draw();
    }
 
-   sprintf(temp,"%s_adc.ps",RemovePath(argv[1]).c_str());
-   c1->Print(temp);
-   sprintf(temp,"ps2pdf %s_adc.ps",RemovePath(argv[1]).c_str());
-   system(temp);
+   //sprintf(temp,"%s_adc.ps",RemovePath(argv[1]).c_str());
+   //c1->Print(temp);
+   //sprintf(temp,"ps2pdf %s_adc.ps",RemovePath(argv[1]).c_str());
+   //system(temp);
 
    sprintf(temp,"%s_charge.ps",RemovePath(argv[1]).c_str());
    c2->Print(temp);
    sprintf(temp,"ps2pdf %s_charge.ps",RemovePath(argv[1]).c_str());
    system(temp);
+
+   //sprintf(temp,"%s_base.ps",RemovePath(argv[1]).c_str());
+   //c3->Print(temp);
+   //sprintf(temp,"ps2pdf %s_base.ps",RemovePath(argv[1]).c_str());
+   //system(temp);
 
    theApp.Run();
 
