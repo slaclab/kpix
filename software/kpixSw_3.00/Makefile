@@ -4,7 +4,7 @@ DEF    := -DMAKE_SW_VERSION=\"kpixSw_3.04\"
 BIN    := $(PWD)/bin
 OBJ    := $(PWD)/.obj
 CFLAGS := -Wall `xml2-config --cflags` -I$(PWD)/generic -I$(PWD)/kpix -I$(PWD)/offline
-LFLAGS := `xml2-config --libs` -pthread -lrt
+LFLAGS := `xml2-config --libs` -pthread -lrt -lbz2
 
 # Generic Sources
 GEN_DIR := $(PWD)/generic

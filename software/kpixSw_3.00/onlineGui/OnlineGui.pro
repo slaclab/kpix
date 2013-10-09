@@ -6,4 +6,4 @@ SOURCES  = ../generic/DataRead.cpp ../generic/Data.cpp ../kpix/KpixEvent.cpp ../
 TARGET   = ../bin/onlineGui
 QT       += network xml
 INCLUDEPATH += ../generic/ ../kpix/ ${QWTDIR}/include ${QWTDIR} /usr/include/libxml2
-LIBS        += -L${QWTDIR}/lib -lqwt -lxml2 -lz -lm
+LIBS        += -L${QWTDIR}/lib -lqwt -lxml2 -lz -lm -lbz2
