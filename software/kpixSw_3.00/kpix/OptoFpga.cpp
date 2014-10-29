@@ -343,8 +343,8 @@ void OptoFpga::readStatus ( ) {
    getVariable("ParityError")->setInt(getRegister("ParityError")->get());
 
    // Sub devices
-   Device::readStatus();
    REGISTER_UNLOCK
+   Device::readStatus();
 }
 
 // Method to read configuration registers and update variables
@@ -405,8 +405,8 @@ void OptoFpga::readConfig ( ) {
    getVariable("RunEnable")->setInt(getRegister("RunEnable")->get());
 
    // Sub devices
-   Device::readConfig();
    REGISTER_UNLOCK
+   Device::readConfig();
 }
 
 // Method to write configuration registers
@@ -468,8 +468,8 @@ void OptoFpga::writeConfig ( bool force ) {
    writeRegister(getRegister("RunEnable"),force);
 
    // Sub devices
-   Device::writeConfig(force);
    REGISTER_UNLOCK
+   Device::writeConfig(force);
 }
 
 // Verify hardware state of configuration
@@ -484,7 +484,7 @@ void OptoFpga::verifyConfig ( ) {
    verifyRegister(getRegister("ExternalRun"));
    verifyRegister(getRegister("RunEnable"));
 
-   Device::verifyConfig();
    REGISTER_UNLOCK
+   Device::verifyConfig();
 }
 

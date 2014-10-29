@@ -373,9 +373,10 @@ void ConFpga::readStatus ( ) {
    readRegister(getRegister("EvrOffsetCount"));
    getVariable("EvrOffsetCount")->setInt(getRegister("EvrOffsetCount")->get());
    
+   REGISTER_UNLOCK
+
    // Sub devices
    Device::readStatus();
-   REGISTER_UNLOCK
 }
 
 // Method to read configuration registers and update variables
@@ -433,8 +434,8 @@ void ConFpga::readConfig ( ) {
    getVariable("EvrOpCode")->setInt(evrIdx);
 
    // Sub devices
-   Device::readConfig();
    REGISTER_UNLOCK
+   Device::readConfig();
 }
 
 // Method to write configuration registers
@@ -504,8 +505,8 @@ void ConFpga::writeConfig ( bool force ) {
    }
 
    // Sub devices
-   Device::writeConfig(force);
    REGISTER_UNLOCK
+   Device::writeConfig(force);
 }
 
 // Verify hardware state of configuration
@@ -534,7 +535,7 @@ void ConFpga::verifyConfig ( ) {
       verifyRegister(getRegister(tmp.str()));
    }
 
-   Device::verifyConfig();
    REGISTER_UNLOCK
+   Device::verifyConfig();
 }
 

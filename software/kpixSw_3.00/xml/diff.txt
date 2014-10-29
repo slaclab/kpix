@@ -1,62 +1,82 @@
-5c5
-<       <CalDacCount>16</CalDacCount>
+105,108c105,108
+<             <TimeOffsetNullOff>9800</TimeOffsetNullOff>
+<             <TimeThreshOff>9900</TimeThreshOff>
+<             <TimeResetOff>10000</TimeResetOff>
+<             <TimeBunchClkDelay>30200</TimeBunchClkDelay>
 ---
->       <CalDacCount>4</CalDacCount>
-8c8
-<       <CalDacStep>32</CalDacStep>
+>             <TimeOffsetNullOff>5000</TimeOffsetNullOff>
+>             <TimeThreshOff>5300</TimeThreshOff>
+>             <TimeResetOff>5600</TimeResetOff>
+>             <TimeBunchClkDelay>7200</TimeBunchClkDelay>
+120c120
+<             <SerialNumber>00</SerialNumber>
 ---
->       <CalDacStep>4</CalDacStep>
-34c34
-<             <Cal0Delay>1000</Cal0Delay>
+>             <SerialNumber>1015</SerialNumber>
+124c124
+<             <SerialNumber>01</SerialNumber>
 ---
->             <Cal0Delay>2000</Cal0Delay>
-38c38
-<             <CalCount>1</CalCount>
+>             <SerialNumber>1012</SerialNumber>
+128c128
+<             <SerialNumber>02</SerialNumber>
 ---
->             <CalCount>4</CalCount>
-49c49
-<            <CntrlForceTrigSource>Disable</CntrlForceTrigSource>  <!-- bit  4 -->
+>             <SerialNumber>1013</SerialNumber>
+132c132
+<             <SerialNumber>03</SerialNumber>
 ---
->            <CntrlForceTrigSource>Internal</CntrlForceTrigSource> <!-- bit  4 -->
-51c51
-<            <CntrlHoldTime>64x</CntrlHoldTime>                    <!-- bit  8-10 -->
+>             <SerialNumber>1011</SerialNumber>
+136c136
+<             <SerialNumber>04</SerialNumber>
 ---
->            <CntrlHoldTime>64x</CntrlHoldTime>                    <!-- bit 8-10 -->
-60,62c60,62
-<            <CntrlTrigDisable>False</CntrlTrigDisable>            <!-- bit ? -->
-<             <Chan_0000_0031>CCCCCCCC AAAAADDD CCCCCCCC CCCCCCCC</Chan_0000_0031>
-<             <Chan_0032_0063>CCCCCCCC ADAAAAAA AAAAAADD CCCCCCCC</Chan_0032_0063>
+>             <SerialNumber>1016</SerialNumber>
+140c140
+<             <SerialNumber>05</SerialNumber>
 ---
->             <CntrlTrigDisable>True</CntrlTrigDisable>            <!-- bit ? -->
->             <Chan_0000_0031>CCCCCCCC CCCCCCCC CCCCCCCC CCCCCCCC</Chan_0000_0031>
->             <Chan_0032_0063>CCCCCCCC CCCCCCCC CCCCCCCC CCCCCCCC</Chan_0032_0063>
-69c69
-<             <Chan_0256_0287>DDDDAAAA ADDDDAAA CCCCCCCC AAAADDDD</Chan_0256_0287>
+>             <SerialNumber>1017</SerialNumber>
+144c144
+<             <SerialNumber>06</SerialNumber>
 ---
->             <Chan_0256_0287>CCCCCCCC CCCCCCCC CCCCCCCC CCCCCCCC</Chan_0256_0287>
-84c84
-<             <Chan_0736_0767>DDDDAAAA ADDDDAAA CCCCCCCC AAAADDDD</Chan_0736_0767>
+>             <SerialNumber>1018</SerialNumber>
+148c148
+<             <SerialNumber>07</SerialNumber>
 ---
->             <Chan_0736_0767>CCCCCCCC CCCCCCCC CCCCCCCC CCCCCCCC</Chan_0736_0767>
-91,92c91,92
-<             <Chan_0960_0991>CCCCCCCC CCCCCCCC AAAAAADD CCCCCCCC</Chan_0960_0991>
-<             <Chan_0992_1023>CCCCCCCC AAAAADDD CCCCCCCC CCCCCCCC</Chan_0992_1023>
+>             <SerialNumber>1019</SerialNumber>
+152c152
+<             <SerialNumber>08</SerialNumber>
 ---
->             <Chan_0960_0991>CCCCCCCC CCCCCCCC CCCCCCCC CCCCCCCC</Chan_0960_0991>
->             <Chan_0992_1023>CCCCCCCC CCCCCCCC CCCCCCCC CCCCCCCC</Chan_0992_1023>
-96c96
-<             <DacRampThresh>224</DacRampThresh>
+>             <SerialNumber>1022</SerialNumber>
+156c156
+<             <SerialNumber>09</SerialNumber>
 ---
->             <DacRampThresh>240</DacRampThresh>
-106d105
-<             <TimeResetOff>7800</TimeResetOff>
-108a108
->             <TimeResetOff>7800</TimeResetOff>
-121,122d120
-<             <Chan_0000_0031>AAADDAAA DAAAADDD AAAAADAA DADAAAAA</Chan_0000_0031>
-<             <Chan_0032_0063>DAAAAADA ADAAADAD ADAAAADD ADDADDAD</Chan_0032_0063>
-131d128
-<             <Chan_0992_1023>CCCCCCCC AAAAADDD ADAAAAAA CCCCCCCC</Chan_0992_1023>
-152,153d148
-<             <Chan_0000_0031>CCCCCCCC AAAAADDD AAADAAAA AAADAAAA</Chan_0000_0031>
-<             <Chan_0032_0063>CCCCCCCC ADDAAAAA ADAADADD ADAAAAAA</Chan_0032_0063>
+>             <SerialNumber>0</SerialNumber>
+160c160
+<             <SerialNumber>10</SerialNumber>
+---
+>             <SerialNumber>0</SerialNumber>
+164c164
+<             <SerialNumber>11</SerialNumber>
+---
+>             <SerialNumber>C0012</SerialNumber>
+168c168
+<             <SerialNumber>12</SerialNumber>
+---
+>             <SerialNumber>0</SerialNumber>
+172c172
+<             <SerialNumber>13</SerialNumber>
+---
+>             <SerialNumber>C0014</SerialNumber>
+176c176
+<             <SerialNumber>14</SerialNumber>
+---
+>             <SerialNumber>0</SerialNumber>
+180c180
+<             <SerialNumber>15</SerialNumber>
+---
+>             <SerialNumber>C0013</SerialNumber>
+184c184
+<             <SerialNumber>16</SerialNumber>
+---
+>             <SerialNumber>0</SerialNumber>
+188c188
+<             <SerialNumber>17</SerialNumber>
+---
+>             <SerialNumber>C0011</SerialNumber>

@@ -53,7 +53,7 @@
             <CntrlForceTrigSource>Disable</CntrlForceTrigSource>   <!-- bit  4 -->
             <CntrlCalSource>Internal</CntrlCalSource>                <!-- bit  6 -->
             <CntrlHoldTime>64x</CntrlHoldTime>                      <!-- bit  8-10 -->
-            <CntrlCalibHigh>False</CntrlCalibHigh>                  <!-- bit 11 -->
+            <CntrlCalibHigh>True</CntrlCalibHigh>                  <!-- bit 11 -->
             <CntrlShortIntEn>False</CntrlShortIntEn>                <!-- bit 12 -->
             <CntrlForceLowGain>False</CntrlForceLowGain>            <!-- bit 13 -->
             <CntrlLeakNullDisable>True</CntrlLeakNullDisable>       <!-- bit 14 -->
@@ -94,11 +94,11 @@
             <Chan_0928_0959>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0928_0959>
             <Chan_0960_0991>AAAAAAAA AAAAAAAA AAAAAADD AAAAAAAA</Chan_0960_0991>
             <Chan_0992_1023>AAAAAAAA AAAAADDD AAAAAAAA AAAAAAAA</Chan_0992_1023>
-            <DacCalibration>150</DacCalibration>
+            <DacCalibration>240</DacCalibration>
             <DacDefaultAnalog>189</DacDefaultAnalog>
             <DacEventThreshold>80</DacEventThreshold>
             <DacRampThresh>240</DacRampThresh>
-            <DacRangeThreshold>90</DacRangeThreshold>
+            <DacRangeThreshold>60</DacRangeThreshold>
             <DacShaperBias>120</DacShaperBias>
             <DacThresholdA>240</DacThresholdA>
             <DacPreThresholdA>0</DacPreThresholdA>

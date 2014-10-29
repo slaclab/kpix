@@ -10,9 +10,11 @@ void calibShow ( char * file, char * serial, int channel, int bucket, int range 
    c = new TCanvas;
 
    sprintf(buffer,"calib_%s_c%0.4i_b%i_r%i",serial,channel,bucket,range);
+   cout << "Reading " << buffer << endl;
    f->GetObject(buffer,g);
 
    sprintf(buffer,"resid_%s_c%0.4i_b%i_r%i",serial,channel,bucket,range);
+   cout << "Reading " << buffer << endl;
    f->GetObject(buffer,r);
 
    c->Divide(1,2,0.01,0.01);

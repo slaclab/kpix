@@ -94,7 +94,7 @@ const bool goodChannel ( uint kpix, uint channel ) {
 // Process the data
 int main ( int argc, char **argv ) {
    DataRead               dataRead;
-   KpixCalibRead          calibRead;
+   KpixCalibRead          calibRead[2];
    KpixEvent              event;
    KpixSample             *sample;
    uint                   calChannel;
@@ -113,12 +113,8 @@ int main ( int argc, char **argv ) {
    size_t                 fileSize;
    TH1F                 * histA[9];
    TH1F                 * histB[9];
-   TH1F                 * histC[9];
-   TH1F                 * histD[9];
    TCanvas              * c1;
    TCanvas              * c2;
-   TCanvas              * c3;
-   TCanvas              * c4;
    uint                   minVal[9];
    uint                   maxVal[9];
    double                 minValC[9];
@@ -137,6 +133,7 @@ int main ( int argc, char **argv ) {
    double                 meanTar;
    double                 charge;
    uint                   lowRangeCnt;
+   uint                   highRangeCnt;
    bool                   filterBad;
    bool                   foundBad;
    char                   temp[200];
@@ -146,15 +143,18 @@ int main ( int argc, char **argv ) {
    gStyle->SetOptStat(111111111);
 
    // Data file is the first and only arg
-   if ( argc != 4 ) {
-      cout << "Usage: injectTestRead data_file calib_file filter_bad\n";
+   if ( argc != 3 ) {
+      cout << "Usage: injectTestRead data_file ilter_bad\n";
       return(1);
    }
-   filterBad = atoi(argv[3]);
+   filterBad = atoi(argv[2]);
 
    // Attempt to open  calibration file
-   if ( calibRead.parse(argv[2]) ) 
-      cout << "Read calibration data from " << argv[2] << endl << endl;
+   cout << "Parsing calibrations 1" << endl;
+   calibRead[0].parse("/u1/w_si/samples/2013_07_25_23_37_09.bin");
+   cout << "Parsing calibrations 2" << endl;
+   calibRead[1].parse("/u1/w_si/samples/2013_07_26_01_30_53.bin");
+   cout << "Done Parsing calibrations" << endl;
 
    // Open data file
    if ( ! dataRead.open(argv[1]) ) {
@@ -174,18 +174,6 @@ int main ( int argc, char **argv ) {
       histB[x] = new TH1F(tmp.str().c_str(),tmp.str().c_str(),8192,0,8191);
       minVal[x] = 8192;
       maxVal[x] = 0;
-
-      tmp.str("");
-      tmp << "in phase charge layer " << dec << x << " " << RemovePath(argv[1]);
-      histC[x] = new TH1F(tmp.str().c_str(),tmp.str().c_str(),1000,-500e-15,500e-15);
-      minValC[x] = 500e-15;
-      maxValC[x] = -500e-15;
-
-      tmp.str("");
-      tmp << "out of phase charge layer " << dec << x << " " << RemovePath(argv[1]);
-      histD[x] = new TH1F(tmp.str().c_str(),tmp.str().c_str(),1000,-500e-15,500e-15);
-      minValD[x] = 500e-15;
-      maxValD[x] = -500e-15;
    }
 
    //////////////////////////////////////////
@@ -200,6 +188,7 @@ int main ( int argc, char **argv ) {
    lastPct          = 100;
    eventCount       = 0;
    lowRangeCnt      = 0;
+   highRangeCnt     = 0;
 
    cout << "\rReading File: 0 %" << flush;
 
@@ -238,18 +227,20 @@ int main ( int argc, char **argv ) {
          if ( type == KpixSample::Data ) {
 
             if ( range == 1 ) lowRangeCnt++;
+            else highRangeCnt++;
 
             // Get gain and mean for target channel
-            meanTar = calibRead.baseMean(serial,calChannel,0,0);
-            gainTar = calibRead.calibGain(serial,calChannel,0,0);
-            badTar  = calibRead.badChannel(serial,calChannel);
+            meanTar = calibRead[range].baseMean(serial,calChannel,0,range);
+            gainTar = calibRead[range].calibGain(serial,calChannel,0,range);
+            badTar  = calibRead[0].badChannel(serial,calChannel);
 
             // Get gain and mean for channel/bucket
-            mean = calibRead.baseMean(serial,channel,bucket,range);
-            gain = calibRead.calibGain(serial,channel,bucket,range);
-            bad  = calibRead.badChannel(serial,channel);
+            mean = calibRead[range].baseMean(serial,channel,bucket,range);
+            gain = calibRead[range].calibGain(serial,channel,bucket,range);
+            bad  = calibRead[0].badChannel(serial,channel);
 
-            foundBad = (gainTar < 3e15) || (gain < 3e15) || badTar || bad || !goodChannel(kpix,calChannel) || !goodChannel(kpix,channel);
+            //foundBad = (gainTar < 3e15) || (gain < 3e15) || badTar || bad || !goodChannel(kpix,calChannel) || !goodChannel(kpix,channel);
+            foundBad = badTar || bad || !goodChannel(kpix,calChannel) || !goodChannel(kpix,channel);
 
             // Only process if target channel is good and and crosstalk channel is good
             if ( !filterBad || !foundBad ) {
@@ -265,19 +256,6 @@ int main ( int argc, char **argv ) {
                   if ( gain != 0 && bad == 0 ) {
                      charge = ((double)value - mean) / gain;
 
-                     // In time hits
-                     if ( tstamp <= 755 ) {
-                        histC[kpix]->Fill(charge);
-                        if ( minValC[kpix] > charge ) minValC[kpix] = charge;
-                        if ( maxValC[kpix] < charge ) maxValC[kpix] = charge;
-                     }
-
-                     // Out of time hits
-                     else {
-                        histD[kpix]->Fill(charge);
-                        if ( minValD[kpix] > charge ) minValD[kpix] = charge;
-                        if ( maxValD[kpix] < charge ) maxValD[kpix] = charge;
-                     }
                   }
                }
             }
@@ -295,18 +273,15 @@ int main ( int argc, char **argv ) {
    }
    cout << "\rReading File: Done.               " << endl;
    cout << "Low Range Count = " << dec << lowRangeCnt << endl;
+   cout << "High Range Count = " << dec << highRangeCnt << endl;
 
    // Close file
    dataRead.close();
 
    c1 = new TCanvas("c1","c1");
    c2 = new TCanvas("c2","c2");
-   c3 = new TCanvas("c3","c3");
-   c4 = new TCanvas("c4","c4");
    c1->Divide(3,3,0.01,0.01);
    c2->Divide(3,3,0.01,0.01);
-   c3->Divide(3,3,0.01,0.01);
-   c4->Divide(3,3,0.01,0.01);
 
    for( x=0; x < 9; x++ ) {
 
@@ -321,14 +296,6 @@ int main ( int argc, char **argv ) {
       c2->cd(x+1)->SetLogy();
       histB[x]->GetXaxis()->SetRangeUser(750,850);
       histB[x]->Draw();
-
-      c3->cd(x+1)->SetLogy();
-      histC[x]->GetXaxis()->SetRangeUser(minValC[x],maxValC[x]);
-      histC[x]->Draw();
-
-      c4->cd(x+1)->SetLogy();
-      histD[x]->GetXaxis()->SetRangeUser(minValD[x],maxValD[x]);
-      histD[x]->Draw();
    }
 
    sprintf(temp,"%s_filt%i_all.ps",RemovePath(argv[1]).c_str(),filterBad);
@@ -339,16 +306,6 @@ int main ( int argc, char **argv ) {
    sprintf(temp,"%s_filt%i_zoom.ps",RemovePath(argv[1]).c_str(),filterBad);
    c2->Print(temp);
    sprintf(temp,"ps2pdf %s_filt%i_zoom.ps",RemovePath(argv[1]).c_str(),filterBad);
-   system(temp);
-
-   sprintf(temp,"%s_filt%i_intime.ps",RemovePath(argv[1]).c_str(),filterBad);
-   c3->Print(temp);
-   sprintf(temp,"ps2pdf %s_filt%i_intime.ps",RemovePath(argv[1]).c_str(),filterBad);
-   system(temp);
-
-   sprintf(temp,"%s_filt%i_outtime.ps",RemovePath(argv[1]).c_str(),filterBad);
-   c4->Print(temp);
-   sprintf(temp,"ps2pdf %s_filt%i_outtime.ps",RemovePath(argv[1]).c_str(),filterBad);
    system(temp);
 
    theApp.Run();

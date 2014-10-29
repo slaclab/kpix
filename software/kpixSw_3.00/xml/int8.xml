@@ -28,7 +28,7 @@
          <KpixInputEdge>Falling Edge</KpixInputEdge>
          <KpixOutputEdge>Rising Edge</KpixOutputEdge>
          <TrigSource>None</TrigSource>
-	      <TimestampSource>NimA</TimestampSource>
+	 <TimestampSource>None</TimestampSource>
          <kpixAsic>
             <BunchClockCount>1812</BunchClockCount>
             <Cal0Delay>600</Cal0Delay>
@@ -37,27 +37,27 @@
             <Cal3Delay>200</Cal3Delay>
             <CalCount>4</CalCount>
             <CfgAutoReadDisable>False</CfgAutoReadDisable>
+            <CfgAutoStatusReadEn>True</CfgAutoStatusReadEn>
             <CfgForceTemp>False</CfgForceTemp>
             <CfgDisableTemp>False</CfgDisableTemp>
-            <CfgAutoStatusReadEn>True</CfgAutoStatusReadEn>
+            <CntrlDisPerReset>True</CntrlDisPerReset>             <!-- 0-->
+            <CntrlEnDcReset>True</CntrlEnDcReset>                 <!-- 1-->
+            <CntrlHighGain>False</CntrlHighGain>                  <!-- 2-->
+            <CntrlNearNeighbor>False</CntrlNearNeighbor>          <!-- 3-->
+            <CntrlForceTrigSource>Disable</CntrlForceTrigSource>  <!-- 4-->
+            <CntrlCalSource>Disable</CntrlCalSource>              <!-- 6-->
+            <CntrlHoldTime>64x</CntrlHoldTime>                    <!-- 8-10-->
+            <CntrlCalibHigh>False</CntrlCalibHigh>                <!--11-->
+            <CntrlShortIntEn>False</CntrlShortIntEn>              <!--12-->
+            <CntrlForceLowGain>False</CntrlForceLowGain>          <!--13-->
+            <CntrlLeakNullDisable>True</CntrlLeakNullDisable>     <!--14-->
+            <CntrlPolarity>Positive</CntrlPolarity>               <!--15-->
+            <CntrlDisPwrCycle>False</CntrlDisPwrCycle>            <!--24-->
+            <CntrlFeCurr>31uA</CntrlFeCurr>                       <!--25-27-->
             <CfgTestDataEn>False</CfgTestDataEn>
             <CntrlDiffTime>Half</CntrlDiffTime>
-            <CntrlDisPerReset>True</CntrlDisPerReset>               <!-- bit  0 -->
-            <CntrlEnDcReset>True</CntrlEnDcReset>                   <!-- bit  1 -->
-            <CntrlHighGain>False</CntrlHighGain>                    <!-- bit  2 -->
-            <CntrlNearNeighbor>False</CntrlNearNeighbor>            <!-- bit  3 -->
-            <CntrlForceTrigSource>Disable</CntrlForceTrigSource>   <!-- bit  4 -->
-            <CntrlCalSource>Disable</CntrlCalSource>                <!-- bit  6 -->
-            <CntrlHoldTime>64x</CntrlHoldTime>                      <!-- bit  8-10 -->
-            <CntrlCalibHigh>False</CntrlCalibHigh>                  <!-- bit 11 -->
-            <CntrlShortIntEn>False</CntrlShortIntEn>                <!-- bit 12 -->
-            <CntrlForceLowGain>False</CntrlForceLowGain>            <!-- bit 13 -->
-            <CntrlLeakNullDisable>True</CntrlLeakNullDisable>       <!-- bit 14 -->
-            <CntrlPolarity>Positive</CntrlPolarity>                 <!-- bit 15 -->
-            <CntrlDisPwrCycle>False</CntrlDisPwrCycle>              <!-- bit 24 -->
-            <CntrlFeCurr>31uA</CntrlFeCurr>                         <!-- bit 25-27 -->
-            <CntrlMonSource>None</CntrlMonSource>                   <!-- bit ? -->
-            <CntrlTrigDisable>False</CntrlTrigDisable>              <!-- bit ? -->
+            <CntrlMonSource>None</CntrlMonSource>
+            <CntrlTrigDisable>False</CntrlTrigDisable>
             <Chan_0000_0031>AAAAAAAA AAAAADDD AAAAAAAA AAAAAAAA</Chan_0000_0031>
             <Chan_0032_0063>AAAAAAAA ADAAAAAA AAAAAADD AAAAAAAA</Chan_0032_0063>
             <Chan_0064_0095>AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA</Chan_0064_0095>
@@ -99,17 +99,16 @@
             <DacThresholdA>240</DacThresholdA>
             <DacThresholdB>0</DacThresholdB>
             <Enabled>False</Enabled>
-            <SerialNumber>0</SerialNumber>
             <TimeLeakageNullOff>5</TimeLeakageNullOff>
             <TimeResetOn>46</TimeResetOn>
             <TimePowerUpOn>46</TimePowerUpOn>
-            <TimeResetOff>5600</TimeResetOff>
             <TimeOffsetNullOff>5000</TimeOffsetNullOff>
             <TimeThreshOff>5300</TimeThreshOff>
-            <TrigInhibitOff>500</TrigInhibitOff>
-            <TimeDeselDelay>91</TimeDeselDelay>
+            <TimeResetOff>5600</TimeResetOff>
             <TimeBunchClkDelay>7200</TimeBunchClkDelay>
-           <TimeDigitizeDelay>143</TimeDigitizeDelay>
+            <TimeDeselDelay>91</TimeDeselDelay>
+            <TimeDigitizeDelay>143</TimeDigitizeDelay>
+            <TrigInhibitOff>500</TrigInhibitOff>
             <Version>0xa</Version>
          </kpixAsic>
       </cntrlFpga>
@@ -132,29 +131,29 @@
             <SerialNumber>1013</SerialNumber>
          </kpixAsic>
          <kpixAsic index="3">
-            <Enabled>True</Enabled>
+            <Enabled>False</Enabled>
             <SerialNumber>1011</SerialNumber>
          </kpixAsic>
          <kpixAsic index="4">
-            <Enabled>True</Enabled>
+            <Enabled>False</Enabled>
             <SerialNumber>1016</SerialNumber>
          </kpixAsic>
          <kpixAsic index="5">
-            <Enabled>True</Enabled>
+            <Enabled>False</Enabled>
             <SerialNumber>1017</SerialNumber>
          </kpixAsic>
          <kpixAsic index="6">
-            <Enabled>True</Enabled>
+            <Enabled>False</Enabled>
             <SerialNumber>1018</SerialNumber>
          </kpixAsic>
          <kpixAsic index="7">
-            <Enabled>True</Enabled>
+            <Enabled>False</Enabled>
             <Chan_0000_0031>AAAAAAAA AAAAADDD AAADAAAA AAADAAAA</Chan_0000_0031>
             <Chan_0032_0063>AAAAAAAA ADDAAAAA ADAADADD ADAAAAAA</Chan_0032_0063>
             <SerialNumber>1019</SerialNumber>
          </kpixAsic>
          <kpixAsic index="8">
-            <Enabled>True</Enabled>
+            <Enabled>False</Enabled>
             <SerialNumber>1022</SerialNumber>
          </kpixAsic>
          <kpixAsic index="31">

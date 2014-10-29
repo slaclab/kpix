@@ -242,10 +242,10 @@ void OptoFpgaLink::ioHandler() {
 
             // Setup mask values
             maskRx = (0x1 << type);
-            mask   = (dataMask_ & 0xF);
+            mask   = (dataSource_ & 0xF);
 
             // Check for data packet, adjust to 32-bit length
-            if ( (maskRx & dataMask_) != 0 ) {
+            if ( (maskRx & dataSource_) != 0 ) {
                if ( (rxRet % 2) != 0 ) dataSize = (rxRet + 1) / 2;
                else dataSize = rxRet / 2;
                rxData = new Data(rxBuff,dataSize);
