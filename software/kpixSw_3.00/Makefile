@@ -1,16 +1,24 @@
 # Variables
-CC     := g++
+CC     := g++ -g
 DEF    := -DMAKE_SW_VERSION=\"kpixSw_3.04\"
 BIN    := $(PWD)/bin
 OBJ    := $(PWD)/.obj
-CFLAGS := -Wall `xml2-config --cflags` -I$(PWD)/generic -I$(PWD)/kpix -I$(PWD)/offline
-LFLAGS := `xml2-config --libs` -pthread -lrt -lbz2
+#XMLC   := /afs/slac/g/reseng/libraries/libxml2/bin/xml2-config
+XMLC   := xml2-config
+CFLAGS := -Wall `$(XMLC) --cflags` -I$(PWD)/generic -I$(PWD)/kpix -I$(PWD)/offline -I$(PWD)/deviceLib
+LFLAGS := `$(XMLC) --libs` -pthread -lrt -lbz2
 
 # Generic Sources
 GEN_DIR := $(PWD)/generic
 GEN_SRC := $(wildcard $(GEN_DIR)/*.cpp)
 GEN_HDR := $(wildcard $(GEN_DIR)/*.h)
 GEN_OBJ := $(patsubst $(GEN_DIR)/%.cpp,$(OBJ)/%.o,$(GEN_SRC))
+
+# Device Lib Sources
+DEV_DIR := $(PWD)/deviceLib
+DEV_SRC := $(wildcard $(DEV_DIR)/*.cpp)
+DEV_HDR := $(wildcard $(DEV_DIR)/*.h)
+DEV_OBJ := $(patsubst $(DEV_DIR)/%.cpp,$(OBJ)/%.o,$(DEV_SRC))
 
 # Kpix Sources
 KPX_DIR := $(PWD)/kpix
@@ -24,7 +32,7 @@ UTL_SRC := $(wildcard $(UTL_DIR)/*.cpp)
 UTL_BIN := $(patsubst $(UTL_DIR)/%.cpp,$(BIN)/%,$(UTL_SRC))
 
 # Default
-all: dir $(GEN_OBJ) $(KPX_OBJ) $(UTL_BIN) gui ana online pylibs
+all: dir $(GEN_OBJ) $(DEV_OBJ) $(KPX_OBJ) $(UTL_BIN) gui ana online pylibs
 
 # Object directory
 dir:
@@ -45,12 +53,16 @@ endif
 $(OBJ)/%.o: $(GEN_DIR)/%.cpp $(GEN_DIR)/%.h
 	$(CC) -c $(CFLAGS) $(DEF) -o $@ $<
 
+# Compile Generic Sources
+$(OBJ)/%.o: $(DEV_DIR)/%.cpp $(DEV_DIR)/%.h
+	$(CC) -c $(CFLAGS) $(DEF) -o $@ $<
+
 # Compile Tracker Sources
 $(OBJ)/%.o: $(KPX_DIR)/%.cpp $(KPX_DIR)/%.h
 	$(CC) -c $(CFLAGS) $(DEF) -o $@ $<
 
 # Comile utilities
-$(BIN)/%: $(UTL_DIR)/%.cpp $(GEN_OBJ) $(KPX_OBJ)
+$(BIN)/%: $(UTL_DIR)/%.cpp $(GEN_OBJ) $(DEV_OBJ) $(KPX_OBJ)
 	$(CC) $(CFLAGS) $(DEF) $(OBJ)/* -o $@ $< $(LFLAGS) 
 
 # root

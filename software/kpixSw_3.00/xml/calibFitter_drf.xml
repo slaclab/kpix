@@ -1,7 +1,7 @@
 <config>
 
-   <FindBadMeanHist>1</FindBadMeanHist>
-   <FindBadMeanFit>1</FindBadMeanFit>
+   <FindBadMeanHist>0</FindBadMeanHist>
+   <FindBadMeanFit>0</FindBadMeanFit>
    <GoodMeanMinR0>100</GoodMeanMinR0>
    <GoodMeanMaxR0>400</GoodMeanMaxR0>
    <GoodMeanMinR1>100</GoodMeanMinR1>
@@ -10,7 +10,7 @@
    <FindBadMeanChisq>0</FindBadMeanChisq>
    <GoodMeanChisqMax>0</GoodMeanChisqMax>
 
-   <FindBadGainFit>1</FindBadGainFit>
+   <FindBadGainFit>0</FindBadGainFit>
    <GoodGainMinR0>2.0e15</GoodGainMinR0>
    <GoodGainMaxR0>7.0e15</GoodGainMaxR0>
    <GoodGainMinR1>1.0e14</GoodGainMinR1>
