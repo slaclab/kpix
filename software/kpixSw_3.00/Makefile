@@ -1,6 +1,6 @@
 # Variables
 CC     := g++ -g
-DEF    := -DMAKE_SW_VERSION=\"kpixSw_3.04\"
+DEF    := -DMAKE_SW_VERSION=\"kpixSw_3.10\"
 BIN    := $(PWD)/bin
 OBJ    := $(PWD)/.obj
 #XMLC   := /afs/slac/g/reseng/libraries/libxml2/bin/xml2-config
