@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2013-08-01
+-- Last update: 2016-09-19
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ end entity Trigger;
 
 architecture rtl of Trigger is
 
-   constant CLOCKS_PER_USEC_C : natural := 1000 / CLOCK_PERIOD_G;
+   constant CLOCKS_PER_USEC_C : natural := 100 / CLOCK_PERIOD_G;
 
    type RegType is record
       autoReadDisable    : sl;
