@@ -14,7 +14,7 @@
 ##-----------------------------------------------------------------------------
 
 # Set Default Output
-SIM_DIR=$(PWD)/../../../build/KpixEmtbEthSim
+SIM_DIR=/dev/shm/bareese/build/KpixSmallTb
 
 # Analog netlist
 ANA_NET = kpix_c.cir
@@ -93,7 +93,8 @@ HDL_SRC= $(PWD)/../../../modules/StdLib/rtl/StdRtlPkg.vhd \
 	 $(PWD)/../../../modules/gen_daq/simlink/SimLinkRx.vhd \
 	 $(PWD)/../../../modules/gen_daq/simlink/SimLinkTx.vhd \
          $(PWD)/../../../modules/StdLib/tb/ClkRst.vhd \
-	 $(PWD)/KpixSmallTb.vhd
+	 $(PWD)/KpixSmallTb.vhd \
+	 $(PWD)/KpixSmallAnalogTb.vhd
 
 # Verilog Source Files
 VLOG = $(PWD)/../../../modules/KpixCore/sim/Kpix.v 
@@ -138,7 +139,7 @@ syn_setup:
 # Analog simulation files
 ana_files:
 	@rm -f $(SIM_DIR)/sim_src
-	@cp $(PWD)/../netlists/$(ANA_NET).gz  $(SIM_DIR)
+	@cp $(PWD)/../../../../netlists/$(ANA_NET).gz  $(SIM_DIR)
 	@cp $(ANA_INC)                        $(SIM_DIR)
 	@gzip -df $(SIM_DIR)/*.gz
 
