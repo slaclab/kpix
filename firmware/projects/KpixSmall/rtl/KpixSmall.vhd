@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2013-07-17
+-- Last update: 2016-11-02
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -72,6 +72,7 @@ architecture rtl of KpixSmall is
    signal clk200        : sl;
    signal rst200        : sl;
    signal dcmLocked     : sl;
+   signal dcmRst : sl;
 
    -- Front End Signals
    signal frontEndRegCntlIn  : FrontEndRegCntlInType;
@@ -150,11 +151,23 @@ begin
          I => gtpRefClkOut,
          O => gtpRefClkBufg);
 
+   -- Synchronize sysRst125
+   DcmRstSyncInst : entity work.RstSync
+      generic map (
+         TPD_G          => DELAY_G,
+         IN_POLARITY_G  => '1',
+         OUT_POLARITY_G => '1',
+         RELEASE_DELAY_G => 4)
+      port map (
+         clk      => gtpRefClkBufg,
+         asyncRst => fpgaRst,
+         syncRst  => dcmRst);
+   
    -- Generate clocks
    main_dcm_1 : main_dcm
       port map (
          CLKIN_IN   => gtpRefClkBufg,
-         RST_IN     => fpgaRst,
+         RST_IN     => dcmRst,
          CLKFX_OUT  => clk200,
          CLK0_OUT   => sysClk125,
          LOCKED_OUT => dcmLocked);
