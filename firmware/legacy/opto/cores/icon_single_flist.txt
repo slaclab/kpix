@@ -1,8 +1,0 @@
-# Output products list for <icon_single>
-icon_single.ncf
-icon_single.ngc
-icon_single.vhd
-icon_single.vho
-icon_single.xco
-icon_single_flist.txt
-icon_single_xmdf.tcl
