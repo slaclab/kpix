@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 -- Title      : 
 -------------------------------------------------------------------------------
--- File       : AtlasChess2FebEthCore.vhd
+-- File       : DesyTrackerEthCore.vhd
 -- Author     : Larry Ruckman  <ruckman@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2016-06-02
@@ -11,11 +11,11 @@
 -------------------------------------------------------------------------------
 -- Description: 
 -------------------------------------------------------------------------------
--- This file is part of 'ATLAS CHESS2 DEV'.
+-- This file is part of 'KPIX'
 -- It is subject to the license terms in the LICENSE.txt file found in the 
 -- top-level directory of this distribution and at: 
 --    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
--- No part of 'ATLAS CHESS2 DEV', including this file, 
+-- No part of 'KPIX', including this file, 
 -- may be copied, modified, propagated, or distributed except according to 
 -- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
@@ -28,7 +28,6 @@ use work.AxiLitePkg.all;
 use work.AxiStreamPkg.all;
 use work.SsiPkg.all;
 use work.EthMacPkg.all;
-use work.AtlasChess2FebPkg.all;
 use work.Pgp2bPkg.all;
 
 library unisim;
@@ -36,40 +35,28 @@ use unisim.vcomponents.all;
 
 entity AtlasChess2FebEthCore is
    generic (
-      TPD_G            : time             := 1 ns;
-      DEV_G            : boolean          := true;         -- true = Adds non-RSSI on port 8193
-      DHCP_G           : boolean          := true;         -- true = DHCP, false = static address
-      IP_ADDR_G        : slv(31 downto 0) := x"0A01A8C0";  -- 192.168.1.10 (before DHCP)
-      AXI_ERROR_RESP_G : slv(1 downto 0)  := AXI_RESP_DECERR_C);        
+      TPD_G     : time             := 1 ns;
+      DHCP_G    : boolean          := true;          -- true = DHCP, false = static address
+      IP_ADDR_G : slv(31 downto 0) := x"0A01A8C0");  -- 192.168.1.10 (before DHCP)
    port (
       -- Reference Clock and Reset
-      refclk200MHz     : out sl;
-      refRst200MHz     : out sl;
-      -- AXI-Lite Interface   
-      axilClk          : out sl;
-      axilRst          : out sl;
+      clk200           : out sl;
+      rst200           : out sl;
+      -- AXI-Lite Interface (clk200 domain)
       mAxilReadMaster  : out AxiLiteReadMasterType;
       mAxilReadSlave   : in  AxiLiteReadSlaveType;
       mAxilWriteMaster : out AxiLiteWriteMasterType;
       mAxilWriteSlave  : in  AxiLiteWriteSlaveType;
-      -- Streaming CHESS2 Data (axilClk domain)
+      -- Streaming Data (clk200 domain)
       sAxisMaster      : in  AxiStreamMasterType;
       sAxisSlave       : out AxiStreamSlaveType;
-      -- MB Interface (axilClk domain)
-      mbTxMaster       : in  AxiStreamMasterType;
-      mbTxSlave        : out AxiStreamSlaveType;
-      -- Emulate PGP Timing Interface
-      pgpTxIn          : in  Pgp2bTxInType;
-      pgpTxOut         : out Pgp2bTxOutType;
-      pgpRxIn          : in  Pgp2bRxInType;
-      pgpRxOut         : out Pgp2bRxOutType;
       -- Eth/RSSI Status
       phyReady         : out sl;
       rssiStatus       : out slv(6 downto 0);
-      axilReadMaster   : in  AxiLiteReadMasterType;
-      axilReadSlave    : out AxiLiteReadSlaveType;
-      axilWriteMaster  : in  AxiLiteWriteMasterType;
-      axilWriteSlave   : out AxiLiteWriteSlaveType;
+      sAxilReadMaster  : in  AxiLiteReadMasterType;
+      sAxilReadSlave   : out AxiLiteReadSlaveType;
+      sAxilWriteMaster : in  AxiLiteWriteMasterType;
+      sAxilWriteSlave  : out AxiLiteWriteSlaveType;
       -- GbE Ports
       gtClkP           : in  sl;
       gtClkN           : in  sl;
@@ -81,13 +68,8 @@ end AtlasChess2FebEthCore;
 
 architecture mapping of AtlasChess2FebEthCore is
 
-   constant SERVER_SIZE_C  : positive                  := ite(DEV_G, 2, 1);
-   constant SERVER_PORTS_C : PositiveArray(1 downto 0) := (0 => 8192, 1 => 8193);
-   constant AXIL_CROSSBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(0 downto 0) := (
-      0               => (
-         baseAddr     => x"00000000",
-         addrBits     => 31,
-         connectivity => x"FFFF"));    
+   constant SERVER_SIZE_C  : positive                  := 1;
+   constant SERVER_PORTS_C : PositiveArray(1 downto 0) := (0 => 8192);
 
    constant RSSI_SIZE_C   : positive                                     := 3;
    constant AXIS_CONFIG_C : AxiStreamConfigArray(RSSI_SIZE_C-1 downto 0) := (others => ssiAxiStreamConfig(4));
@@ -124,7 +106,7 @@ architecture mapping of AtlasChess2FebEthCore is
    signal mAxilWriteSlaves  : AxiLiteWriteSlaveArray(SERVER_SIZE_C-1 downto 0);
 
    signal pgpRxTrig : Pgp2bRxOutType := PGP2B_RX_OUT_INIT_C;
-   
+
 begin
 
    axilClk <= ethClk;
@@ -149,7 +131,7 @@ begin
          IB    => gtClkN,
          CEB   => '0',
          ODIV2 => gtClkDiv2,
-         O     => open);    
+         O     => open);
 
    U_BUFG : BUFG
       port map (
@@ -164,7 +146,7 @@ begin
          TPD_G => TPD_G)
       port map (
          clk    => refClk,
-         rstOut => refRst);   
+         rstOut => refRst);
 
    ----------------
    -- Clock Manager
@@ -193,7 +175,7 @@ begin
          clkOut(2) => refclk200MHz,
          rstOut(0) => ethRst,
          rstOut(1) => ethRstDiv2,
-         rstOut(2) => refRst200MHz); 
+         rstOut(2) => refRst200MHz);
 
    -------------------------
    -- GigE Core for KINTEX-7
@@ -222,7 +204,7 @@ begin
          gtTxP       => gtTxP,
          gtTxN       => gtTxN,
          gtRxP       => gtRxP,
-         gtRxN       => gtRxN);          
+         gtRxN       => gtRxN);
 
    ----------------------
    -- IPv4/ARP/UDP Engine
@@ -257,7 +239,7 @@ begin
          ibServerSlaves  => ibServerSlaves,
          -- Clock and Reset
          clk             => ethClk,
-         rst             => ethRst); 
+         rst             => ethRst);
 
    ------------------------------------------
    -- Software's RSSI Server Interface @ 8192
@@ -265,13 +247,13 @@ begin
    U_RssiServer : entity work.RssiCoreWrapper
       generic map (
          TPD_G               => TPD_G,
+         APP_ILEAVE_EN_G     => true,
          MAX_SEG_SIZE_G      => 1024,
          SEGMENT_ADDR_SIZE_G => 7,
-         APP_STREAMS_G       => RSSI_SIZE_C,
+         APP_STREAMS_G       => 2,
          APP_STREAM_ROUTES_G => (
             0                => X"00",
-            1                => X"01",
-            2                => X"02"),
+            1                => X"01"),
          CLK_FREQUENCY_G     => 125.0E+6,
          TIMEOUT_UNIT_G      => 1.0E-3,  -- In units of seconds
          SERVER_G            => true,
@@ -304,26 +286,20 @@ begin
          axilWriteMaster   => axilWriteMaster,
          axilWriteSlave    => axilWriteSlave,
          -- Internal statuses
-         statusReg_o       => rssiStatus);         
+         statusReg_o       => rssiStatus);
 
    ---------------------------------------
    -- TDEST = 0x0: Register access control   
    ---------------------------------------
-   U_SRPv0 : entity work.SrpV0AxiLite
+   U_SRPv3 : entity work.SrpV3AxiLite
       generic map (
          TPD_G               => TPD_G,
-         RESP_THOLD_G        => 1,
          SLAVE_READY_EN_G    => true,
-         EN_32BIT_ADDR_G     => true,
-         BRAM_EN_G           => true,
-         XIL_DEVICE_G        => "7SERIES",
          USE_BUILT_IN_G      => false,
-         ALTERA_SYN_G        => false,
-         ALTERA_RAM_G        => "M9K",
          GEN_SYNC_FIFO_G     => true,
          FIFO_ADDR_WIDTH_G   => 9,
          FIFO_PAUSE_THRESH_G => 2**8,
-         AXI_STREAM_CONFIG_G => AXIS_CONFIG_C(0))            
+         AXI_STREAM_CONFIG_G => EMAC_AXIS_CONFIG_C)
       port map (
          -- Streaming Slave (Rx) Interface (sAxisClk domain) 
          sAxisClk            => ethClk,
@@ -336,101 +312,21 @@ begin
          mAxisMaster         => rssiIbMasters(0),
          mAxisSlave          => rssiIbSlaves(0),
          -- AXI Lite Bus (axiLiteClk domain)
-         axiLiteClk          => ethClk,
-         axiLiteRst          => ethRst,
-         mAxiLiteReadMaster  => mAxilReadMasters(0),
-         mAxiLiteReadSlave   => mAxilReadSlaves(0),
-         mAxiLiteWriteMaster => mAxilWriteMasters(0),
-         mAxiLiteWriteSlave  => mAxilWriteSlaves(0));       
+         axiLiteClk          => clk200,
+         axiLiteRst          => rst200,
+         mAxiLiteReadMaster  => mAxilReadMaster,
+         mAxiLiteReadSlave   => mAxilReadSlave,
+         mAxiLiteWriteMaster => mAxilWriteMaster,
+         mAxiLiteWriteSlave  => mAxilWriteSlave);
 
    -----------------------------------------------------
-   -- TDEST = 0x1: Streaming CHESS2 Data Interface  
-   -- TDEST = 0x1: Emulate PGP's non-VC Timing Interface  
+   -- TDEST = 0x1: Streaming Data
+   -- Will need FIFO here probably
    -----------------------------------------------------
-   rssiIbMasters(1)   <= sAxisMaster;
-   sAxisSlave         <= rssiIbSlaves(1);
-   rssiObSlaves(1)    <= AXI_STREAM_SLAVE_FORCE_C;  -- always ready
-   pgpRxTrig.opCodeEn <= rssiObMasters(1).tValid and rssiObMasters(1).tLast;
-   pgpRxTrig.opCode   <= rssiObMasters(1).tData(7 downto 0);
-
-   ----------------------------
-   -- TDEST = 0x2: MB Interface  
-   ----------------------------
-   rssiIbMasters(2) <= mbTxMaster;
-   mbTxSlave        <= rssiIbSlaves(2);
-   rssiObSlaves(2)  <= AXI_STREAM_SLAVE_FORCE_C;  -- Blowoff unused stream
-
-   -----------------------------------      
-   -- Bypass non-RSSI Development Path 
-   -----------------------------------      
-   BYP_DEBUG_SRP : if (DEV_G = false) generate
-      
-      mAxilReadMaster     <= mAxilReadMasters(0);
-      mAxilReadSlaves(0)  <= mAxilReadSlave;
-      mAxilWriteMaster    <= mAxilWriteMasters(0);
-      mAxilWriteSlaves(0) <= mAxilWriteSlave;
-      
-   end generate;
-
-   ----------------------------
-   -- Non-RSSI Development Path 
-   ----------------------------   
-   GEN_DEBUG_SRP : if (DEV_G = true) generate
-      
-      U_SRPv0_Debug : entity work.SrpV0AxiLite
-         generic map (
-            TPD_G               => TPD_G,
-            RESP_THOLD_G        => 1,
-            SLAVE_READY_EN_G    => true,
-            EN_32BIT_ADDR_G     => true,
-            BRAM_EN_G           => true,
-            XIL_DEVICE_G        => "7SERIES",
-            USE_BUILT_IN_G      => false,
-            ALTERA_SYN_G        => false,
-            ALTERA_RAM_G        => "M9K",
-            GEN_SYNC_FIFO_G     => true,
-            FIFO_ADDR_WIDTH_G   => 9,
-            FIFO_PAUSE_THRESH_G => 2**8,
-            AXI_STREAM_CONFIG_G => EMAC_AXIS_CONFIG_C)            
-         port map (
-            -- Streaming Slave (Rx) Interface (sAxisClk domain) 
-            sAxisClk            => ethClk,
-            sAxisRst            => ethRst,
-            sAxisMaster         => obServerMasters(1),
-            sAxisSlave          => obServerSlaves(1),
-            -- Streaming Master (Tx) Data Interface (mAxisClk domain)
-            mAxisClk            => ethClk,
-            mAxisRst            => ethRst,
-            mAxisMaster         => ibServerMasters(1),
-            mAxisSlave          => ibServerSlaves(1),
-            -- AXI Lite Bus (axiLiteClk domain)
-            axiLiteClk          => ethClk,
-            axiLiteRst          => ethRst,
-            mAxiLiteReadMaster  => mAxilReadMasters(1),
-            mAxiLiteReadSlave   => mAxilReadSlaves(1),
-            mAxiLiteWriteMaster => mAxilWriteMasters(1),
-            mAxiLiteWriteSlave  => mAxilWriteSlaves(1));        
+   rssiIbMasters(1) <= sAxisMaster;
+   sAxisSlave       <= rssiIbSlaves(1);
+   rssiObSlaves(1)  <= AXI_STREAM_SLAVE_FORCE_C;  -- always ready
 
 
-      U_XBAR : entity work.AxiLiteCrossbar
-         generic map (
-            TPD_G              => TPD_G,
-            DEC_ERROR_RESP_G   => AXI_ERROR_RESP_G,
-            NUM_SLAVE_SLOTS_G  => 2,
-            NUM_MASTER_SLOTS_G => 1,
-            MASTERS_CONFIG_G   => AXIL_CROSSBAR_CONFIG_C)
-         port map (
-            axiClk              => ethClk,
-            axiClkRst           => ethRst,
-            sAxiWriteMasters    => mAxilWriteMasters,
-            sAxiWriteSlaves     => mAxilWriteSlaves,
-            sAxiReadMasters     => mAxilReadMasters,
-            sAxiReadSlaves      => mAxilReadSlaves,
-            mAxiWriteMasters(0) => mAxilWriteMaster,
-            mAxiWriteSlaves(0)  => mAxilWriteSlave,
-            mAxiReadMasters(0)  => mAxilReadMaster,
-            mAxiReadSlaves(0)   => mAxilReadSlave);   
 
-   end generate;
-   
 end mapping;
