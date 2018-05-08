@@ -281,10 +281,10 @@ begin
          -- AXI-Lite Interface
          axiClk_i          => ethClk,
          axiRst_i          => ethRst,
-         axilReadMaster    => axilReadMaster,
-         axilReadSlave     => axilReadSlave,
-         axilWriteMaster   => axilWriteMaster,
-         axilWriteSlave    => axilWriteSlave,
+         axilReadMaster    => sAxilReadMaster,
+         axilReadSlave     => sAxilReadSlave,
+         axilWriteMaster   => sAxilWriteMaster,
+         axilWriteSlave    => sAxilWriteSlave,
          -- Internal statuses
          statusReg_o       => rssiStatus);
 
