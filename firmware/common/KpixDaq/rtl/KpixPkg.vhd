@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-10
--- Last update: 2013-07-31
+-- Last update: 2018-05-09
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -52,7 +52,7 @@ package KpixPkg is
    constant KPIX_READOUT_CMD_ID_REV_C   : slv(0 to 6)     := "1000000";  -- Reversed
 
    -- Configuration Registers
-   type KpixConfigRegsType is record
+   type KpixConfigType is record
       kpixReset       : sl;
       inputEdge       : sl;
       outputEdge      : sl;
@@ -61,13 +61,22 @@ package KpixPkg is
       autoReadDisable : sl;
    end record KpixConfigRegsType;
 
-   constant KPIX_CONFIG_REGS_INIT_C : KpixConfigRegsType := (
+   constant KPIX_CONFIG_INIT_C : KpixConfigRegsType := (
       kpixReset       => '0',
       inputEdge       => '0',
       outputEdge      => '0',
       rawDataMode     => '0',
       numColumns      => "11111",
       autoReadDisable => '0');
+
+   constant TIMESTAMP_AXIS_CONFIG_C : AxiStreamConfigType := (
+      TSTRB_EN_C    => false,
+      TDATA_BYTES_C => 2,
+      TDEST_BITS_C  => 0,
+      TID_BITS_C    => 0,
+      TKEEP_MODE_C  => TKEEP_FIXED_C,
+      TUSER_BITS_C  => 0,
+      TUSER_MODE_C  => TUSER_NONE_C);
 
 
 end package KpixPkg;
