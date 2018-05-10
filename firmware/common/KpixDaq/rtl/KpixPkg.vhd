@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-10
--- Last update: 2018-05-09
+-- Last update: 2018-05-10
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -52,22 +52,35 @@ package KpixPkg is
    constant KPIX_READOUT_CMD_ID_REV_C   : slv(0 to 6)     := "1000000";  -- Reversed
 
    -- Configuration Registers
-   type KpixConfigType is record
+   type SysConfigType is record
       kpixReset       : sl;
       inputEdge       : sl;
       outputEdge      : sl;
       rawDataMode     : sl;
       numColumns      : slv(4 downto 0);
       autoReadDisable : sl;
-   end record KpixConfigRegsType;
+   end record;
 
-   constant KPIX_CONFIG_INIT_C : KpixConfigRegsType := (
+   constant SYS_CONFIG_INIT_C : SysConfigType := (
       kpixReset       => '0',
       inputEdge       => '0',
       outputEdge      => '0',
       rawDataMode     => '0',
       numColumns      => "11111",
       autoReadDisable => '0');
+
+   type AcquisitionControlType is record
+      trigger        : sl;
+      startAcquire   : sl;
+      startCalibrate : sl;
+      startReadout   : sl;
+   end record TriggerOutType;
+
+   constant ACQUISITION_CONTROL_INIT_C : AcquisitionControlType := (
+      trigger        => '0',
+      startAcquire   => '0',
+      startCalibrate => '0',
+      startReadout   => '0');
 
    constant TIMESTAMP_AXIS_CONFIG_C : AxiStreamConfigType := (
       TSTRB_EN_C    => false,
