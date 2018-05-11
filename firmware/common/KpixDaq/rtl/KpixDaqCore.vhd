@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-17
--- Last update: 2013-08-01
+-- Last update: 2018-05-10
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -16,8 +16,11 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+
 use work.StdRtlPkg.all;
-use work.VcPkg.all;
+use work.AxiLitePkg.all;
+use work.AxiStreamPkg.all;
+
 use work.EventBuilderFifoPkg.all;
 use work.KpixPkg.all;
 use work.KpixDataRxPkg.all;
@@ -28,7 +31,7 @@ use work.KpixClockGenPkg.all;
 use work.EvrCorePkg.all;
 
 entity KpixDaqCore is
-   
+
    generic (
       DELAY_G            : time    := 1 ns;
       NUM_KPIX_MODULES_G : natural := 4);
@@ -39,28 +42,22 @@ entity KpixDaqCore is
       clk200 : in sl;                   -- Used by KpixClockGen
       rst200 : in sl;
 
-      -- Front End Interface (Generic. Could be Ethernet, PGP or other)
-      cmdSlaveOut : in  VcCmdSlaveOutType;
-      regSlaveIn  : out VcRegSlaveInType;
-      regSlaveOut : in  VcRegSlaveOutType;
-      usBuff64In  : out VcUsBuff64InType;
-      usBuff64Out : in  VcUsBuff64OutType;
+      -- AXI-Lite interface for registers
+      axilReadMaster  : in  AxiLiteReadMasterType;
+      axilReadSlave   : out AxiLiteReadSlaveType;
+      axilWriteMaster : in  AxiLiteWriteMasterType;
+      axilWriteSlave  : out AxiLiteWriteSlaveType;
 
-      softwareReset : out sl;
+      -- Acquired Data Streaming interface
+      mAxisMaster : out AxiStreamMasterType;
+      mAxisSlave  : in  AxiStreamSlaveType;
+      mAxisCtrl   : in  AxiStreamCtrlType;
+
 
       -- Trigger interface
-      triggerExtIn : in TriggerExtInType;
-
-      -- EVR Interface
-      evrOut    : in EvrOutType;
-      sysEvrOut : in EvrOutType;
-
-      -- Interface to (possibly) external EventBuilder FIFO
-      ebFifoOut : in  EventBuilderFifoOutType;
-      ebFifoIn  : out EventBuilderFifoInType;
-
-      debugOutA : out sl;
-      debugOutB : out sl;
+      triggerExtIn : in  TriggerExtInType;
+      debugOutA    : out sl;
+      debugOutB    : out sl;
 
       -- Interface to KPiX modules
       kpixClkOut     : out sl;
@@ -74,24 +71,33 @@ end entity KpixDaqCore;
 
 architecture rtl of KpixDaqCore is
 
+   constant AXIL_CROSSBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXIL_MASTERS_C-1 downto 0) := (
+      SYS_INDEX_C     => (
+         baseAddr     => SYS_ADDR_C,
+         addrBits     => 20,
+         connectivity => X"FFFF"),
+      DAC_INDEX_C     => (
+         baseAddr     => DAC_ADDR_C,
+         addrBits     => 20,
+         connectivity => X"FFFF"));
+
+   signal locAxilWriteMaster : AxiLiteWriteMasterArray();
+
+
    -- Clock and reset for kpix clocked modules
    signal kpixClk    : sl;
    signal kpixClkRst : sl;
 
-   signal kpixRegCntlIn  : VcRegSlaveOutType;  --FrontEndRegCntlOutType;
-   signal kpixRegCntlOut : VcRegSlaveInType;   --FrontEndRegCntlInType;
 
    -- Front end accessible registers
-   signal kpixClockGenRegsIn : KpixClockGenRegsInType;
-   signal triggerRegsIn      : TriggerRegsInType;
-   signal kpixConfigRegs     : KpixConfigRegsType;
-   signal kpixConfigRegsKpix : KpixConfigRegsType;  -- KpixConfigRegs sync'd to kpixClk
-   signal kpixDataRxRegsIn   : KpixDataRxRegsInArray(NUM_KPIX_MODULES_G-1 downto 0);
-   signal kpixDataRxRegsOut  : KpixDataRxRegsOutArray(NUM_KPIX_MODULES_G-1 downto 0);
-   signal kpixLocalRegsIn    : KpixLocalRegsInType;
+   signal kpixConfig : KpixConfigType;
+
+   signal kpixDataRxRegsIn  : KpixDataRxRegsInArray(NUM_KPIX_MODULES_G-1 downto 0);
+   signal kpixDataRxRegsOut : KpixDataRxRegsOutArray(NUM_KPIX_MODULES_G-1 downto 0);
+   signal kpixLocalRegsIn   : KpixLocalRegsInType;
 
    -- Triggers
-   signal triggerOut : TriggerOutType;
+   signal acqusitionControl : AcquisitionControlType;
 
    -- KPIX Rx Data Interface (with Event Builder)
    signal kpixDataRxOut : KpixDataRxOutArray(NUM_KPIX_MODULES_G-1 downto 0);
@@ -102,109 +108,102 @@ architecture rtl of KpixDaqCore is
    signal kpixRegRxOut : KpixRegRxOutArray(NUM_KPIX_MODULES_G downto 0);
 
    -- KPIX Local signals
-   signal kpixState    : KpixStateOutType;
-   signal sysKpixState : KpixStateOutType;
+   signal kpixState : KpixStateOutType;
 
    -- Timestamp interface to EventBuilder
-   signal timestampIn  : TimestampInType;
-   signal timestampOut : TimestampOutType;
+   signal timestampAxisMaster : AxiStreamMasterType;
+   signal timestampAxisSlave  : AxiStreamSlaveType;
 
    -- Internal Kpix Signals
    -- One extra for internal kpix
    signal intKpixResetOut : sl;
    signal intKpixSerTxOut : slv(NUM_KPIX_MODULES_G downto 0);
    signal intKpixSerRxIn  : slv(NUM_KPIX_MODULES_G downto 0);
-   
+
 begin
 
    kpixClkOut <= kpixClk;
 
 
-   --------------------------------------------------------------------------------------------------
-   -- Decode local register accesses
-   -- Pass KPIX register accesses to KpixRegCntl
-   --------------------------------------------------------------------------------------------------
-   FrontEndRegDecoder_1 : entity work.FrontEndRegDecoder
+   U_XBAR : entity work.AxiLiteCrossbar
       generic map (
-         DELAY_G            => DELAY_G,
-         NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
+         TPD_G              => TPD_G,
+         NUM_SLAVE_SLOTS_G  => 1,
+         NUM_MASTER_SLOTS_G => NUM_AXIL_MASTERS_C,
+         MASTERS_CONFIG_G   => AXIL_CROSSBAR_CONFIG_C)
       port map (
-         sysClk             => sysClk,
-         sysRst             => sysRst,
-         regSlaveOut        => regSlaveOut,
-         regSlaveIn         => regSlaveIn,
-         softwareReset      => softwareReset,
-         kpixRegCntlOut     => kpixRegCntlOut,
-         kpixRegCntlIn      => kpixRegCntlIn,
-         triggerRegsIn      => triggerRegsIn,
-         kpixConfigRegs     => kpixConfigRegs,
-         kpixClockGenRegsIn => kpixClockGenRegsIn,
-         kpixLocalRegsIn    => kpixLocalRegsIn,
-         kpixDataRxRegsIn   => kpixDataRxRegsIn,
-         kpixDataRxRegsOut  => kpixDataRxRegsOut);
+         axiClk              => clk200,
+         axiClkRst           => rst200,
+         sAxiWriteMasters(0) => axilWriteMaster,
+         sAxiWriteSlaves(0)  => axilWriteSlave,
+         sAxiReadMasters(0)  => axilReadMaster,
+         sAxiReadSlaves(0)   => axilReadSlave,
+         mAxiWriteMasters    => locAxilWriteMasters,
+         mAxiWriteSlaves     => locAxilWriteSlaves,
+         mAxiReadMasters     => locAxilReadMasters,
+         mAxiReadSlaves      => locAxilReadSlaves);
+
+
 
    -------------------------------------------------------------------------------------------------
-   -- Sync kpixConfigRegs to KpixClk
-   -- numColumns is the only bus, at it is set at start of run and never changes, so don't need
-   -- the whole SynchronizerFifo. Simple synchronizer is sufficient
+   -- System level configuration registers
    -------------------------------------------------------------------------------------------------
-   SynchronizerVector_1 : entity work.SynchronizerVector
+   U_KpixConfig_1 : entity work.KpixConfig
       generic map (
-         TPD_G   => DELAY_G,
-         WIDTH_G => 10)
+         TPD_G => TPD_G)
       port map (
-         rst                 => sysRst,
-         clk                 => kpixClk,
-         dataIn(0)           => kpixConfigRegs.kpixReset,
-         dataIn(1)           => kpixConfigRegs.inputEdge,
-         dataIn(2)           => kpixConfigRegs.outputEdge,
-         dataIn(3)           => kpixConfigRegs.rawDataMode,
-         dataIn(8 downto 4)  => kpixConfigRegs.numColumns,
-         dataIn(9)           => kpixConfigRegs.autoReadDisable,
-         dataOut(0)          => kpixConfigRegsKpix.kpixReset,
-         dataOut(1)          => kpixConfigRegsKpix.inputEdge,
-         dataOut(2)          => kpixConfigRegsKpix.outputEdge,
-         dataOut(3)          => kpixConfigRegsKpix.rawDataMode,
-         dataOut(8 downto 4) => kpixConfigRegsKpix.numColumns,
-         dataOut(9)          => kpixConfigRegsKpix.autoReadDisable);
+         clk200          => clk200,                              -- [in]
+         rst200          => rst200,                              -- [in]
+         axilReadMaster  => locAxilReadMasters(AXIL_CONFIG_C),   -- [in]
+         axilReadSlave   => locAxilReadSlaves(AXIL_CONFIG_C),    -- [out]
+         axilWriteMaster => locAxilWriteMasters(AXIL_CONFIG_C),  -- [in]
+         axilWriteSlave  => locAxilWriteSlaves(AXIL_CONFIG_C),   -- [out]
+         kpixConfig      => kpixConfig);                         -- [out]
+
 
    --------------------------------------------------------------------------------------------------
    -- Generate the KPIX Clock
    --------------------------------------------------------------------------------------------------
-   KpixClockGen_1 : entity work.KpixClockGen
+   U_KpixClockGen_1 : entity work.KpixClockGen
       generic map (
-         DELAY_G => DELAY_G)
+         TPD_G => TPD_G)
       port map (
-         sysClk     => sysClk,
-         sysRst     => sysRst,
-         extRegsIn  => kpixClockGenRegsIn,
-         clk200     => clk200,
-         rst200     => rst200,
-         triggerOut => triggerOut,
-         kpixState  => kpixState,
-         kpixClk    => kpixClk,
-         kpixClkRst => kpixClkRst);
+         clk200          => clk200,                                 -- [in]
+         rst200          => rst200,                                 -- [in]
+         axilReadMaster  => locAxilReadMasters(AXIL_CLOCK_GEN_C),   -- [in]
+         axilReadSlave   => locAxilReadSlaves(AXIL_CLOCK_GEN_C),    -- [out]
+         axilWriteMaster => locAxilWriteMasters(AXIL_CLOCK_GEN_C),  -- [in]
+         axilWriteSlave  => locAxilWriteSlaves(AXIL_CLOCK_GEN_C),   -- [out]
+         startAcquire    => startAcquire,                           -- [in]
+         kpixState       => kpixState,                              -- [in]
+         kpixClk         => kpixClk,                                -- [out]
+         kpixClkRst      => kpixClkRst,                             -- [out]
+         kpixClkPreRise  => kpixClkPreRise,                         -- [out]
+         kpixClkPreFall  => kpixClkPreFall,                         -- [out]
+         kpixClkSample   => kpixClkSample);                         -- [out]
 
    --------------------------------------------------------------------------------------------------
    -- Trigger generator
    --------------------------------------------------------------------------------------------------
-   Trigger_1 : entity work.Trigger
+   U_Trigger_1 : entity work.Trigger
       generic map (
-         DELAY_G => DELAY_G)
+         TPD_G          => TPD_G,
+         CLOCK_PERIOD_G => CLOCK_PERIOD_G)
       port map (
-         clk200         => clk200,
-         rst200         => rst200,
-         triggerExtIn   => triggerExtIn,
-         evrOut         => evrOut,
-         kpixState      => kpixState,
-         cmdSlaveOut    => cmdSlaveOut,
-         triggerOut     => triggerOut,
-         sysClk         => sysClk,
-         sysRst         => sysRst,
-         triggerRegsIn  => triggerRegsIn,
-         kpixConfigRegs => kpixConfigRegs,
-         timestampIn    => timestampIn,
-         timestampOut   => timestampOut);
+         clk200              => clk200,                               -- [in]
+         rst200              => rst200,                               -- [in]
+         axilReadMaster      => locAxilReadMasters(AXIL_TRIGGER_C),   -- [in]
+         axilReadSlave       => locAxilReadSlaves(AXIL_TRIGGER_C),    -- [out]
+         axilWriteMaster     => locAxilWriteMasters(AXIL_TRIGGER_C),  -- [in]
+         axilWriteSlave      => locAxilWriteSlaves(AXIL_TRIGGER_C),   -- [out]
+         kpixConfig          => kpixConfig,                           -- [in]
+         extTriggers         => extTriggers,                          -- [in]
+         opCode              => opCode,                               -- [in]
+         opCodeEn            => opCodeEn,                             -- [in]
+         kpixState           => kpixState,                            -- [in]
+         triggerOut          => triggerOut,                           -- [out]
+         timestampAxisMaster => timestampAxisMaster,                  -- [out]
+         timestampAxisSlave  => timestampAxisSlave);                  -- [in]
 
    kpixTriggerOut <= triggerOut.trigger;
 

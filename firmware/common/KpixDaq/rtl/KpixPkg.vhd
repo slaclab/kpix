@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-10
--- Last update: 2018-05-10
+-- Last update: 2018-05-11
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -91,5 +91,19 @@ package KpixPkg is
       TUSER_BITS_C  => 0,
       TUSER_MODE_C  => TUSER_NONE_C);
 
+   constant RX_DATA_AXIS_CONFIG_C : AxiStreamConfigType := (
+      TSTRB_EN_C    => false,
+      TDATA_BYTES_C => 8,
+      TDEST_BITS_C  => 0,
+      TID_BITS_C    => 0,
+      TKEEP_MODE_C  => TKEEP_FIXED_C,
+      TUSER_BITS_C  => 0,
+      TUSER_MODE_C  => TUSER_NONE_C);
 
+   constant EB_DATA_AXIS_CONFIG_C : AxiStreamConfigType :=
+      ssiAxiStreamConfig(
+         dataBytes => 8,
+         tKeepMode => TKEEP_FIXED_C,
+         tDestBits => 0);
+   
 end package KpixPkg;

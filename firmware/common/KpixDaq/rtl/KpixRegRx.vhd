@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2013-08-01
+-- Last update: 2018-05-10
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -22,18 +22,19 @@ use work.KpixPkg.all;
 use work.KpixRegRxPkg.all;
 
 entity KpixRegRx is
-   
+
    generic (
-      DELAY_G   : time    := 1 ns;      -- Simulation register delay
+      TPD_G     : time    := 1 ns;      -- Simulation register delay
       KPIX_ID_G : natural := 0);
    port (
-      kpixClk    : in sl;
-      kpixClkRst : in sl;
-
-      kpixConfigRegsKpix : in KpixConfigRegsType;
-      kpixSerRxIn        : in sl;       -- Serial Data from KPIX
-
-      kpixRegRxOut : out KpixRegRxOutType
+      clk200         : in  sl;
+      rst200         : in  sl;
+      sysConfig      : in  SysConfigType;
+      -- Kpix clock info
+      kpixClkPreRise : in  sl;
+      kpixClkPreFall : in  sl;
+      kpixSerRxIn    : in  sl;          -- Serial Data from KPIX      
+      kpixRegRxOut   : out KpixRegRxOutType
       );
 
 end entity KpixRegRx;
@@ -85,97 +86,86 @@ begin
    end process seq;
 
    comb : process (r, kpixConfigRegsKpix, kpixSerRxInFall, kpixSerRxIn)is
-      variable rVar : RegType;
+      variable v : RegType;
    begin
-      rVar := r;
+      v := r;
 
-      if (kpixConfigRegsKpix.inputEdge = '0') then
-         rVar.shiftReg := r.shiftReg(1 to KPIX_NUM_TX_BITS_C) & kpixSerRxIn;
-      else
-         rVar.shiftReg := r.shiftReg(1 to KPIX_NUM_TX_BITS_C) & kpixSerRxInFall;
-      end if;
+      if (kpixClkPreFall = '1') then
 
-      rVar.shiftCount := r.shiftCount + 1;
+         v.shiftReg              := r.shiftReg(1 to KPIX_NUM_TX_BITS_C) & kpixSerRxIn;
+         v.shiftCount            := r.shiftCount + 1;
+         v.kpixRegRxOut.regValid := '0';
 
-      rVar.kpixRegRxOut.regValid := '0';
+         case (r.state) is
+            when IDLE_S =>
+               v.shiftCount := (others => '0');
+               if (r.shiftReg(KPIX_NUM_TX_BITS_C) = '1') then
+                  -- Got start bit
+                  v.state := CHECK_TYPE_S;
+               end if;
 
-
-      case (r.state) is
-         when IDLE_S =>
-            rVar.shiftCount := (others => '0');
-            if (r.shiftReg(KPIX_NUM_TX_BITS_C) = '1') then
-               -- Got start bit
-               rVar.state := CHECK_TYPE_S;
-            end if;
-
-         when CHECK_TYPE_S =>
-            -- Wait for marker and header.
-            -- Determine if data frame or register access
-            if (r.shiftCount = 7) then
-               -- Valid frame
-               if (r.shiftReg(41 to 44) = KPIX_MARKER_C) then
-                  -- Command/Rsp Frame
-                  if (r.shiftReg(45) = KPIX_CMD_RSP_FRAME_C) then
-                     -- Register access
-                     if (r.shiftReg(46) = KPIX_REG_ACCESS_C and
-                         r.shiftReg(47) = KPIX_READ_C) then
-                        -- This is what we are looking for
-                        rVar.state := REG_RSP_S;
+            when CHECK_TYPE_S =>
+               -- Wait for marker and header.
+               -- Determine if data frame or register access
+               if (r.shiftCount = 7) then
+                  -- Valid frame
+                  if (r.shiftReg(41 to 44) = KPIX_MARKER_C) then
+                     -- Command/Rsp Frame
+                     if (r.shiftReg(45) = KPIX_CMD_RSP_FRAME_C) then
+                        -- Register access
+                        if (r.shiftReg(46) = KPIX_REG_ACCESS_C and
+                            r.shiftReg(47) = KPIX_READ_C) then
+                           -- This is what we are looking for
+                           v.state := REG_RSP_S;
+                        else
+                           v.state := BURN_CMD_RSP_FRAME_S;
+                        end if;
                      else
-                        rVar.state := BURN_CMD_RSP_FRAME_S;
+                        -- Data frame
+                        v.state := BURN_DATA_FRAME_S;
                      end if;
                   else
-                     -- Data frame
-                     rVar.state := BURN_DATA_FRAME_S;
+                     -- Invalid frame, just burn a whole data frame
+                     v.state := BURN_DATA_FRAME_S;
                   end if;
-               else
-                  -- Invalid frame, just burn a whole data frame
-                  rVar.state := BURN_DATA_FRAME_S;
                end if;
-            end if;
-            
-         when REG_RSP_S =>
-            if (r.shiftCount = KPIX_NUM_TX_BITS_C) then
-               rVar.state := IDLE_S;
---          if (r.shiftReg(KPIX_MARKER_RANGE_C) = KPIX_MARKER_C and
---              r.shiftReg(KPIX_FRAME_TYPE_INDEX_C) = KPIX_CMD_RSP_FRAME_C and
---              r.shiftReg(KPIX_ACCESS_TYPE_INDEX_C) = KPIX_REG_ACCESS_C and
---              r.shiftReg(KPIX_WRITE_INDEX_C) = KPIX_READ_C) then
 
-               if (bitReverse(r.shiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C)) = KPIX_TEMP_REG_ADDR_C and
-                   rVar.kpixRegRxOut.regParityErr = '0') then
-                  -- Output Temperature, temp is last 8 bits (reversed and gray encoded.)
-                  rVar.kpixRegRxOut.temperature := bitReverse(r.shiftReg(39 to 46));
---            rVar.kpixRegRxOut.temperature := grayDecode(rVar.kpixRegRxOut.temperature);
-                  rVar.kpixRegRxOut.tempCount   := slv(unsigned(r.kpixRegRxOut.tempCount) + 1);
-               else
-                  -- Valid register read response received
-                  rVar.kpixRegRxOut.regValid := '1';
+            when REG_RSP_S =>
+               if (r.shiftCount = KPIX_NUM_TX_BITS_C) then
+                  v.state := IDLE_S;
+                  if (bitReverse(r.shiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C)) = KPIX_TEMP_REG_ADDR_C and
+                      v.kpixRegRxOut.regParityErr = '0') then
+                     -- Output Temperature, temp is last 8 bits (reversed and gray encoded.)
+                     v.kpixRegRxOut.temperature := bitReverse(r.shiftReg(39 to 46));
+                     v.kpixRegRxOut.tempCount   := slv(unsigned(r.kpixRegRxOut.tempCount) + 1);
+                  else
+                     -- Valid register read response received
+                     v.kpixRegRxOut.regValid := '1';
+                  end if;
                end if;
---          end if;
-            end if;
 
-         when BURN_CMD_RSP_FRAME_S =>
-            if (r.shiftCount = KPIX_NUM_TX_BITS_C) then
-               rVar.state := IDLE_S;
-            end if;
+            when BURN_CMD_RSP_FRAME_S =>
+               if (r.shiftCount = KPIX_NUM_TX_BITS_C) then
+                  v.state := IDLE_S;
+               end if;
 
-         when BURN_DATA_FRAME_S =>
-            if (r.shiftCount = 463) then
-               rVar.state := IDLE_S;
-            end if;
-            
-      end case;
+            when BURN_DATA_FRAME_S =>
+               if (r.shiftCount = 463) then
+                  v.state := IDLE_S;
+               end if;
 
-      if (rVar.kpixRegRxOut.regValid = '1') then
-         rVar.kpixRegRxOut.regData      := bitReverse(r.shiftReg(KPIX_DATA_RANGE_C));
-         rVar.kpixRegRxOut.regAddr      := bitReverse(r.shiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C));
-         -- Parity should be even so oddParity = error
-         rVar.kpixRegRxOut.regParityErr := oddParity(r.shiftReg(KPIX_FULL_HEADER_RANGE_C)) or
+         end case;
+
+         if (v.kpixRegRxOut.regValid = '1') then
+            v.kpixRegRxOut.regData      := bitReverse(r.shiftReg(KPIX_DATA_RANGE_C));
+            v.kpixRegRxOut.regAddr      := bitReverse(r.shiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C));
+            -- Parity should be even so oddParity = error
+            v.kpixRegRxOut.regParityErr := oddParity(r.shiftReg(KPIX_FULL_HEADER_RANGE_C)) or
                                            oddParity(r.shiftReg(KPIX_FULL_DATA_RANGE_C));
+         end if;
       end if;
 
-      rin          <= rVar;
+      rin          <= v;
       kpixRegRxOut <= r.kpixRegRxOut;
    end process comb;
 

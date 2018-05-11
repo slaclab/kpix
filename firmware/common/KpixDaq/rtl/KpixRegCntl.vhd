@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2018-05-10
+-- Last update: 2018-05-11
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -24,7 +24,7 @@ use work.StdRtlPkg.all;
 
 use work.KpixPkg.all;
 use work.KpixLocalPkg.all;
-use work.TriggerPkg.all;
+use work.KpixRegRxPkg.all;
 
 entity KpixRegCntl is
 
@@ -166,14 +166,6 @@ begin
          if (r.kpixResetLatch = '1' and r.kpixResetOut = '1') then
             v.kpixResetLatch := '0';
          end if;
-
---          if (r.startReadoutLatch = '1') then
---             v.startReadoutLatch := '0';
---          end if;
-
---          if (r.startAcquireLatch = '1') then
---             v.startAcquireLatch := '0';
---          end if;
 
 
          case (r.state) is
@@ -324,10 +316,10 @@ begin
       rin <= v;
 
       -- Outputs
-      kpixResetOut <= r.kpixResetOut;
-      axilReadSlave <= r.axilReadSlave;
+      kpixResetOut   <= r.kpixResetOut;
+      axilReadSlave  <= r.axilReadSlave;
       axilWriteSlave <= r.axilWriteSlave;
-      kpixSerTxOut <= r.kpixSerTxOut;
+      kpixSerTxOut   <= r.kpixSerTxOut;
 
    end process comb;
 
@@ -337,5 +329,20 @@ begin
          r <= rin after TPD_G;
       end if;
    end process seq;
+
+   RX_GEN : for i in range NUM_KPIX_MODULES_G downto 0 generate
+      U_KpixRegRx_1 : entity work.KpixRegRx
+         generic map (
+            TPD_G     => TPD_G,
+            KPIX_ID_G => i)
+         port map (
+            clk200         => clk200,            -- [in]
+            rst200         => rst200,            -- [in]
+            sysConfig      => sysConfig,         -- [in]
+            kpixClkPreRise => kpixClkPreRise,    -- [in]
+            kpixClkPreFall => kpixClkPreFall,    -- [in]
+            kpixSerRxIn    => kpixSerRxIn(i),    -- [in]
+            kpixRegRxOut   => kpixRegRxOut(i));  -- [out]
+   end generate RX_GEN;
 
 end architecture rtl;
