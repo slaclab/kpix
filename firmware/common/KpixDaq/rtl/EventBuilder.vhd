@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2018-05-11
+-- Last update: 2018-05-16
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -21,6 +21,7 @@ use ieee.std_logic_unsigned.all;
 
 use work.StdRtlPkg.all;
 use work.AxiStreamPkg.all;
+use work.SsiPkg.all;
 
 use work.KpixPkg.all;
 use work.KpixLocalPkg.all;
@@ -39,13 +40,13 @@ entity EventBuilder is
       sysConfig : in SysConfigType;
 
       -- Trigger Interface
-      acquisitionControl : in AcquisitionControlType;
+      acqControl : in AcquisitionControlType;
 
       -- Kpix Local Interface
       kpixState : in KpixStateOutType;
 
       -- Kpix clock info
-      kpixClkRise : in sl;
+      kpixClkPreRise : in sl;
 
       -- Trigger Timestamp Interface
       timestampAxisMaster : in  AxiStreamMasterType;
@@ -72,7 +73,6 @@ architecture rtl of EventBuilder is
       WAIT_DIGITIZE_S,
       READ_TIMESTAMPS_S,
       WAIT_READOUT_S,
-      CHECK_BUSY_S,
       GATHER_DATA_S);
 
    type RegType is record
@@ -109,7 +109,8 @@ architecture rtl of EventBuilder is
 
 begin
 
-   comb : process (ebAxisCtrl, kpixDataRxMasters, kpixState, r, rin, sysConfig, timestampAxisMaster) is
+   comb : process (acqControl, ebAxisCtrl, kpixDataRxMasters, kpixState, r, rst200, sysConfig,
+                   timestampAxisMaster) is
       variable v              : RegType;
       variable kpixCounterInt : integer;
 
@@ -122,7 +123,7 @@ begin
       ------------------------------------------------------------------------------------------------
       -- Latch trigger
       v.timestampCount := r.timestampCount + 1;
-      if (r.newAcquire = '0' and acqusitionControl.startAcquire = '1' and r.state = WAIT_ACQUIRE_S) then
+      if (r.newAcquire = '0' and acqControl.startAcquire = '1' and r.state = WAIT_ACQUIRE_S) then
          v.timestamp   := r.timestampCount;
          v.eventNumber := r.eventNumber + 1;
          v.newAcquire  := '1';
@@ -146,7 +147,7 @@ begin
       if (r.kpixCounter = NUM_KPIX_MODULES_G-1) then
          v.kpixCounter := (others => '0');
       end if;
-      kpixCounterInt <= conv_integer(r.kpixCounter);
+      kpixCounterInt := conv_integer(r.kpixCounter);
 
       -- Reset ack when valid falls
 --       for i in NUM_KPIX_MODULES_G-1 downto 0 loop
@@ -168,7 +169,7 @@ begin
 
          when WRITE_HEADER_S =>
             v.counter           := r.counter + 1;
-            v.ebAxisCtrl.tValid := '1';
+            v.ebAxisMaster.tValid := '1';
             -- Place EVR data in header if it is the acqusition trigger source
 --               if (triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_EVR_C and r.counter = 0) then
 --                  writeFifo(evrOut.offset & evrOut.seconds);
@@ -242,10 +243,10 @@ begin
 
             -- kpixCounter increments every clock.
             -- Check to see if the KpixDataRx module selected by kpixCounter has data.
-            if (kpixDataRxMasters(kpixCounterInt).valid = '1') then
+            if (kpixDataRxMasters(kpixCounterInt).tvalid = '1') then
                v.kpixDataRxSlaves(kpixCounterInt).tReady := '1';
                v.ebAxisMaster.tValid                     := '1';
-               v.ebAxisMaster.tData(63 downto 0)         := kpixDataRxMasters(kpixCounterInt).data(63 downto 0);
+               v.ebAxisMaster.tData(63 downto 0)         := kpixDataRxMasters(kpixCounterInt).tdata(63 downto 0);
 
                if (kpixDataRxMasters(kpixCounterInt).tLast = '1') then
                   v.dataDone(kpixCounterInt) := '1';
@@ -264,7 +265,7 @@ begin
       timestampAxisSlave <= v.timestampAxisSlave;
       kpixDataRxSlaves   <= v.kpixDataRxSlaves;
 
-      if (rst200) then
+      if (rst200 = '1') then
          v := REG_INIT_C;
       end if;
 

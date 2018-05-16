@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2018-05-11
+-- Last update: 2018-05-16
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -21,6 +21,7 @@ use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
 use work.StdRtlPkg.all;
+use work.AxiLitePkg.all;
 
 use work.KpixPkg.all;
 use work.KpixLocalPkg.all;
@@ -33,8 +34,11 @@ entity KpixRegCntl is
       NUM_KPIX_MODULES_G : natural := 4);
 
    port (
-      clk200 : in sl;
-      rst200 : in sl;
+      clk200         : in sl;
+      rst200         : in sl;
+      -- Kpix clock info
+      kpixClkPreRise : in sl;
+      kpixClkPreFall : in sl;
 
       -- AXI-Lite interface for registers
       axilReadMaster  : in  AxiLiteReadMasterType;
@@ -42,35 +46,31 @@ entity KpixRegCntl is
       axilWriteMaster : in  AxiLiteWriteMasterType;
       axilWriteSlave  : out AxiLiteWriteSlaveType;
 
-
       -- Interface with internal registers
       sysConfig : in SysConfigType;
-
-      -- Kpix clock info
-      kpixClkPreRise : in sl;
-      kpixClkPreFall : in sl;
 
       -- Interface with local KPIX
       kpixState : in KpixStateOutType;
 
       -- Interface with start/trigger module
-      acqusitionControl : in AcquisitionControlType;
+      acqControl : in AcquisitionControlType;
 
       -- Serial outout to KPIX modules
       kpixSerTxOut : out slv(NUM_KPIX_MODULES_G downto 0);
-      kpixSerTxIn  : out slv(NUM_KPIX_MODULES_G downto 0);  -- This should be synchronized to clk200
-                                                            -- externally
-      kpixResetOut : out sl
-      );
+      kpixSerRxIn  : in  slv(NUM_KPIX_MODULES_G downto 0);  -- This should be synchronized to clk200 externally
+      kpixResetOut : out sl;
+
+      temperature : out Slv8Array(NUM_KPIX_MODULES_G-1 downto 0);
+      tempCount   : out Slv12Array(NUM_KPIX_MODULES_G-1 downto 0));
 
 end entity KpixRegCntl;
 
 architecture rtl of KpixRegCntl is
 
-   subtype REG_ADDR_RANGE_C is natural range 6 downto 0;
-   subtype KPIX_ADDR_RANGE_C is natural range 15 downto 8;
-   subtype VALID_KPIX_ADDR_RANGE_C is natural range 8+log2(NUM_KPIX_MODULES_G) downto 8;
-   subtype INVALID_KPIX_ADDR_RANGE_C is natural range 15 downto VALID_KPIX_ADDR_RANGE_C'high+1;
+   subtype REG_ADDR_RANGE_C is natural range 8 downto 2;
+   subtype KPIX_ADDR_RANGE_C is natural range 17 downto 11;
+--   subtype VALID_KPIX_ADDR_RANGE_C is natural range 8+log2(NUM_KPIX_MODULES_G) downto 8;
+--   subtype INVALID_KPIX_ADDR_RANGE_C is natural range 15 downto VALID_KPIX_ADDR_RANGE_C'high+1;
 
    constant DATA_WAIT_CYCLES_C  : natural := 255;
    constant WRITE_WAIT_CYCLES_C : natural := 20;
@@ -83,14 +83,12 @@ architecture rtl of KpixRegCntl is
 
    type RegType is record
       -- Internal registers
-      state             : StateType;    -- State machine state
-      txShiftReg        : slv(0 to KPIX_NUM_TX_BITS_C-1);  -- Range direction matches documentation
-      txShiftCount      : slv(log2(KPIX_NUM_TX_BITS_C)+1 downto 0);  -- Counter for shifting
-      txEnable          : slv(NUM_KPIX_MODULES_G downto 0);  -- Enables for each serial outpus
-      isAcquire         : sl;
-      kpixResetLatch    : sl;
-      startReadoutLatch : sl;
-      startAcquireLatch : sl;
+      state          : StateType;       -- State machine state
+      txShiftReg     : slv(0 to KPIX_NUM_TX_BITS_C-1);  -- Range direction matches documentation
+      txShiftCount   : slv(log2(KPIX_NUM_TX_BITS_C)+1 downto 0);  -- Counter for shifting
+      txEnable       : slv(NUM_KPIX_MODULES_G downto 0);          -- Enables for each serial outpus
+      isAcquire      : sl;
+      kpixResetLatch : sl;
 
       -- Output Registers
       axilReadSlave  : AxiLiteReadSlaveType;
@@ -100,24 +98,21 @@ architecture rtl of KpixRegCntl is
    end record RegType;
 
    constant REG_INIT_C : RegType := (
-      state             => IDLE_S,
-      txShiftReg        => (others => '0'),
-      txShiftCount      => (others => '0'),
-      txEnable          => (others => '0'),
-      isAcquire         => '0',
-      kpixResetLatch    => '0',
-      startReadoutLatch => '0',
-      startAcquireLatch => '0',
-      axilReadSlave     => AXI_LITE_READ_SLAVE_INIT_C,
-      axilWriteSlave    => AXI_LITE_WRITE_SLAVE_INIT_C,
-      kpixSerTxOut      => (others => '0'),
-      kpixResetOut      => '0');
+      state          => IDLE_S,
+      txShiftReg     => (others => '0'),
+      txShiftCount   => (others => '0'),
+      txEnable       => (others => '0'),
+      isAcquire      => '0',
+      kpixResetLatch => '0',
+      axilReadSlave  => AXI_LITE_READ_SLAVE_INIT_C,
+      axilWriteSlave => AXI_LITE_WRITE_SLAVE_INIT_C,
+      kpixSerTxOut   => (others => '0'),
+      kpixResetOut   => '0');
 
    signal r   : RegType := REG_INIT_C;
    signal rin : RegType;
 
    signal kpixRegRxOut : KpixRegRxOutArray(NUM_KPIX_MODULES_G downto 0);
-
 
 begin
 
@@ -125,8 +120,8 @@ begin
    -------------------------------------------------------------------------------------------------
    -- Main Logic
    -------------------------------------------------------------------------------------------------
-   comb : process (axilReadMaster, axilWriteMaster, kpixClkPreRise, kpixRegRxOut, kpixState, r,
-                   rst200, sysConfig) is
+   comb : process (acqControl, axilReadMaster, axilWriteMaster, kpixClkPreRise, kpixRegRxOut,
+                   kpixState, r, rst200, sysConfig) is
       variable v                : RegType;
       variable addressedKpixVar : natural;
       variable axiStatus        : AxiLiteStatusType;
@@ -155,6 +150,9 @@ begin
       axiAddr := ite(axiStatus.writeEnable = '1', axilWriteMaster.awaddr,
                      ite(axiStatus.readEnable = '1', axilReadMaster.araddr, X"00000000"));
 
+      addressedKpixVar := conv_integer(axiAddr(KPIX_ADDR_RANGE_C));
+
+
       -- Do most everything to coincide with rising edge of clock      
       if (kpixClkPreRise = '1') then
 
@@ -162,7 +160,7 @@ begin
          v.kpixSerTxOut := (others => '0');
 
          -- This holds the reset for 2 kpixClk cycles
-         v.kpixResetOut := kpixResetLatch;
+         v.kpixResetOut := r.kpixResetLatch;
          if (r.kpixResetLatch = '1' and r.kpixResetOut = '1') then
             v.kpixResetLatch := '0';
          end if;
@@ -174,6 +172,14 @@ begin
                v.txEnable     := (others => '0');
 
                if (axiReq = '1') then
+                  if (addressedKpixVar > NUM_KPIX_MODULES_G) then
+                     if (axiStatus.writeEnable = '1') then
+                        axiSlaveWriteResponse(v.axilWriteSlave, AXI_RESP_DECERR_C);
+                     else
+                        axiSlaveReadResponse(v.axilReadSlave, AXI_RESP_DECERR_C);
+                     end if;
+
+                  end if;
                   -- Register access, format output word
                   v.txShiftReg                               := (others => '0');  -- Simplifies parity calc
                   v.txShiftReg(KPIX_MARKER_RANGE_C)          := KPIX_MARKER_C;
@@ -181,20 +187,20 @@ begin
                   v.txShiftReg(KPIX_ACCESS_TYPE_INDEX_C)     := KPIX_REG_ACCESS_C;
                   v.txShiftReg(KPIX_WRITE_INDEX_C)           := axiStatus.writeEnable;
                   v.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := bitReverse(axiAddr(REG_ADDR_RANGE_C));
-                  v.txShiftReg(KPIX_DATA_RANGE_C)            := bitReverse(axiWriteMaster.wdata);
+                  v.txShiftReg(KPIX_DATA_RANGE_C)            := bitReverse(axilWriteMaster.wdata);
                   if (axiStatus.readEnable = '1') then  -- Override data field with 0s of doing a read
                      v.txShiftReg(KPIX_DATA_RANGE_C) := (others => '0');
                   end if;
                   v.txShiftReg(KPIX_HEADER_PARITY_INDEX_C) := '0';
                   v.txShiftReg(KPIX_DATA_PARITY_INDEX_C)   := '0';
                   v.txShiftCount                           := (others => '0');
-                  addressedKpixVar                         := conv_integer(axiAddr(VALID_KPIX_ADDR_RANGE_C)));
-                  v.txEnable                               := (others => '0');
-                  v.txEnable(addressedKpixVar)             := '1';
-                  v.isAcquire                              := '0';
-                  v.state                                  := PARITY_S;
 
-               elsif (acquisitionControl.startReadout = '1') then
+                  v.txEnable                   := (others => '0');
+                  v.txEnable(addressedKpixVar) := '1';
+                  v.isAcquire                  := '0';
+                  v.state                      := PARITY_S;
+
+               elsif (acqControl.startReadout = '1') then
                   -- Start a readout (only used with autoReadDisable)
                   v.txShiftReg                               := (others => '0');
                   v.txShiftReg(KPIX_MARKER_RANGE_C)          := KPIX_MARKER_C;
@@ -211,7 +217,7 @@ begin
                   v.txEnable                                 := sysConfig.kpixEnable;
                   v.txEnable(NUM_KPIX_MODULES_G)             := '1';  -- Always enable internal kpix
 
-               elsif (acquisitionControl.startAcquire = '1') then
+               elsif (acqControl.startAcquire = '1') then
                   -- Start an acquisition
                   v.txShiftReg                               := (others => '0');
                   v.txShiftReg(KPIX_MARKER_RANGE_C)          := KPIX_MARKER_C;
@@ -228,7 +234,7 @@ begin
                   -- Send acquire only to enabled kpix asics.
                   v.txEnable                                 := sysConfig.kpixEnable;
                   v.txEnable(NUM_KPIX_MODULES_G)             := '1';  -- Always enable internal kpix
-                  if (acquisitionControl.startCalibrate = '1') then
+                  if (acqControl.startCalibrate = '1') then
                      v.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := KPIX_CALIBRATE_CMD_ID_REV_C;
                   end if;
                end if;
@@ -278,29 +284,29 @@ begin
                -- Keeps KPIX from being overwhelmed
                v.txShiftCount := r.txShiftCount + 1;
                if (r.txShiftCount = WRITE_WAIT_CYCLES_C) then
-                  v.kpixRegCntlOut.ack := '1';
-                  v.state              := WAIT_RELEASE_S;
+                  axiSlaveWriteResponse(v.axilWriteSlave, AXI_RESP_OK_C);
+                  v.state := IDLE_S;
                end if;
 
             when READ_WAIT_S =>
                -- Wait for read response
                -- Timeout and fail after defined number of cycles
-               v.txShiftCount   := r.txShiftCount + 1;
-               addressedKpixVar := conv_integer(axiReadMaster.araddr(VALID_KPIX_ADDR_RANGE_C));
+               v.txShiftCount := r.txShiftCount + 1;
+--               addressedKpixVar := conv_integer(axilReadMaster.araddr(VALID_KPIX_ADDR_RANGE_C));
                if (kpixRegRxOut(addressedKpixVar).regValid = '1' and
-                   kpixRegRxOut(addressedKpixVar).regAddr = axiReadMaster.araddr(REG_ADDR_RANGE_C)) then  -- REG_ADDR_RANGE_C
+                   kpixRegRxOut(addressedKpixVar).regAddr = axilReadMaster.araddr(REG_ADDR_RANGE_C)) then  -- REG_ADDR_RANGE_C
                   -- Only ack when kpix id and reg addr is the same as tx'd
-                  v.axilReadMaster.rdata := kpixRegRxOut(addressedKpixVar).regData;
+                  v.axilReadSlave.rdata := kpixRegRxOut(addressedKpixVar).regData;
 
                   if (kpixRegRxOut(addressedKpixVar).regParityErr = '1') then
-                     axiSlaveReadResponse(v.axiReadSlave, AXI_RESP_SLVERR_C);
+                     axiSlaveReadResponse(v.axilReadSlave, AXI_RESP_SLVERR_C);
                   else
-                     axiSlaveReadResponse(v.axiReadSlave, AXI_RESP_OK_C);
+                     axiSlaveReadResponse(v.axilReadSlave, AXI_RESP_OK_C);
                   end if;
                   v.state := IDLE_S;
 
                elsif (r.txShiftCount = READ_WAIT_CYCLES_C) then
-                  axiSlaveReadResponse(v.axiReadSlave, AXI_RESP_SLVERR_C);
+                  axiSlaveReadResponse(v.axilReadSlave, AXI_RESP_SLVERR_C);
                   v.state := IDLE_S;
                end if;
 
@@ -330,7 +336,7 @@ begin
       end if;
    end process seq;
 
-   RX_GEN : for i in range NUM_KPIX_MODULES_G downto 0 generate
+   RX_GEN : for i in NUM_KPIX_MODULES_G downto 0 generate
       U_KpixRegRx_1 : entity work.KpixRegRx
          generic map (
             TPD_G     => TPD_G,
@@ -344,5 +350,11 @@ begin
             kpixSerRxIn    => kpixSerRxIn(i),    -- [in]
             kpixRegRxOut   => kpixRegRxOut(i));  -- [out]
    end generate RX_GEN;
+
+   TEMPERATURE_GEN : for i in NUM_KPIX_MODULES_G-1 downto 0 generate
+      temperature(i) <= kpixRegRxOut(i).temperature;
+      tempCount(i)   <= kpixRegRxOut(i).tempCount;
+   end generate;
+
 
 end architecture rtl;

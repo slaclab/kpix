@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-10
--- Last update: 2018-05-11
+-- Last update: 2018-05-16
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -16,7 +16,10 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+
 use work.StdRtlPkg.all;
+use work.AxiStreamPkg.all;
+use work.SsiPkg.all;
 
 package KpixPkg is
 
@@ -53,21 +56,27 @@ package KpixPkg is
 
    -- Configuration Registers
    type SysConfigType is record
+      kpixEnable      : slv(31 downto 0);
       kpixReset       : sl;
       inputEdge       : sl;
       outputEdge      : sl;
       rawDataMode     : sl;
       numColumns      : slv(4 downto 0);
       autoReadDisable : sl;
+      debugASel       : slv(4 downto 0);
+      debugBSel       : slv(4 downto 0);
    end record;
 
    constant SYS_CONFIG_INIT_C : SysConfigType := (
+      kpixEnable      => (others => '0'),
       kpixReset       => '0',
       inputEdge       => '0',
       outputEdge      => '0',
       rawDataMode     => '0',
       numColumns      => "11111",
-      autoReadDisable => '0');
+      autoReadDisable => '0',
+      debugASel       => (others => '0'),
+      debugBSel       => (others => '0'));
 
    type AcquisitionControlType is record
       trigger        : sl;
@@ -105,5 +114,5 @@ package KpixPkg is
          dataBytes => 8,
          tKeepMode => TKEEP_FIXED_C,
          tDestBits => 0);
-   
+
 end package KpixPkg;

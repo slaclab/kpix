@@ -52,7 +52,7 @@ architecture rtl of SysConfig is
    end record;
 
    constant REG_INIT_C : RegType := (
-      kpixConfig     => KPIX_CONFIG_INIT_C,
+      config         => SYS_CONFIG_INIT_C,
       axilWriteSlave => AXI_LITE_WRITE_SLAVE_INIT_C,
       axilReadSlave  => AXI_LITE_READ_SLAVE_INIT_C);
 
@@ -66,6 +66,8 @@ begin
       variable axilEp : AxiLiteEndpointType;
    begin
       v := r;
+
+      v.config.kpixReset := '0';
       ----------------------------------------------------------------------------------------------
       -- AXI Lite registers
       ----------------------------------------------------------------------------------------------
@@ -77,10 +79,13 @@ begin
       axiSlaveRegister(axilEp, X"04", 2, v.config.rawDataMode);
       axiSlaveRegister(axilEp, X"04", 3, v.config.autoReadDisable);
       axiSlaveRegister(axilEp, X"04", 4, v.config.numColumns);
+      axiSlaveRegister(axilEp, X"08", 0, v.config.kpixEnable);
+      axiSlaveRegister(axilEp, X"0C", 0, v.config.debugASel);
+      axiSlaveRegister(axilEp, X"0C", 5, v.config.debugBSel);
 
-      axiSlaveDefault(axilEp, v.axiWriteSlave, v.axiReadSlave, AXI_RESP_DECERR_C);
+      axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
 
-      if (rst200) then
+      if (rst200 = '1') then
          v := REG_INIT_C;
       end if;
 

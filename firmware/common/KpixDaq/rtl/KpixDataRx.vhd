@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2018-05-11
+-- Last update: 2018-05-15
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -21,11 +21,10 @@ use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
 use work.StdRtlPkg.all;
+use work.AxiLitePkg.all;
+use work.AxiStreamPkg.all;
 
 use work.KpixPkg.all;
-
-use work.KpixDataRxPkg.all;
-use work.KpixRegRxPkg.all;
 
 entity KpixDataRx is
 
@@ -35,20 +34,21 @@ entity KpixDataRx is
       NUM_ROW_BUFFERS_G : natural := 4);    -- Number of row buffers (power of 2)
 
    port (
-
-      kpixRegRxOut : in KpixRegRxOutType;  -- For Temperature
-
-      clk200           : in  sl;                  -- Clock for Tx (EventBuilder interface)
+      clk200           : in  sl;                 -- Clock for Tx (EventBuilder interface)
       rst200           : in  sl;
       -- System config
       sysConfig        : in  SysConfigType;
       -- Serial input
-      kpixSerRxIn      : in  sl;                  -- Serial Data from KPIX      
+      kpixClkPreFall : in sl;
+      kpixSerRxIn      : in  sl;                 -- Serial Data from KPIX      
       -- AXI-Lite interface for registers
       axilReadMaster   : in  AxiLiteReadMasterType;
       axilReadSlave    : out AxiLiteReadSlaveType;
       axilWriteMaster  : in  AxiLiteWriteMasterType;
       axilWriteSlave   : out AxiLiteWriteSlaveType;
+      -- Temperature from kpix register block
+      temperature      : in  slv(7 downto 0);
+      tempCount        : in  slv(11 downto 0);
       -- Stream interface to event builder
       kpixDataRxMaster : out AxiStreamMasterType;
       kpixDataRxSlave  : in  AxiStreamSlaveType  -- From EventBuilder
@@ -75,7 +75,7 @@ architecture rtl of KpixDataRx is
    -----------------------------------------------------------------------------
    -- RAM
    -----------------------------------------------------------------------------
-   signal txRamAddr   : slv(RAM_ADDR_WIDTH_C-1 downto 0);
+   signal txRamRdAddr   : slv(RAM_ADDR_WIDTH_C-1 downto 0);
    signal txRamRdData : slv(RAM_DATA_WIDTH_C-1 downto 0);
 
    ---------------------------------------------------------------------------
@@ -126,7 +126,7 @@ architecture rtl of KpixDataRx is
       timestamp    => (others => '0'),
       adc          => (others => '0'));
 
-   type RxRegType is record
+   type RegType is record
       axilReadSlave          : AxiLiteReadSlaveType;
       axilWriteSlave         : AxiLiteWriteSlaveType;
       enabled                : sl;
@@ -162,7 +162,7 @@ architecture rtl of KpixDataRx is
       kpixDataRxMaster       : AxiStreamMasterType;
    end record;
 
-   constant RX_REG_INIT_C : RxRegType := (
+   constant REG_INIT_C : RegType := (
       axilReadSlave          => AXI_LITE_READ_SLAVE_INIT_C,
       axilWriteSlave         => AXI_LITE_WRITE_SLAVE_INIT_C,
       enabled                => '0',
@@ -194,8 +194,8 @@ architecture rtl of KpixDataRx is
       txRowAck               => (others => '0'),
       kpixDataRxMaster       => axiStreamMasterInit(RX_DATA_AXIS_CONFIG_C));
 
-   signal r   : RxRegType := RX_REG_INIT_C;
-   signal rin : RxRegType;
+   signal r   : RegType := REG_INIT_C;
+   signal rin : RegType;
 
    -----------------------------------------------------------------------------
    -- Functions
@@ -220,17 +220,7 @@ architecture rtl of KpixDataRx is
       return retVar;
    end function formatSample;
 
-   -- Format a temperature sample into a 64 bit slv for transmission.
-   function formatTemperature (temp : KpixRegRxOutType) return slv is
-      variable retVar : slv(63 downto 0) := (others => '0');
-   begin
-      retVar(63 downto 60) := TEMP_SAMPLE_C;
-      retVar(59 downto 48) := toSlv(KPIX_ID_G, 12);
-      retVar(31 downto 24) := temp.tempCount(7 downto 0);
-      retVar(23 downto 16) := temp.temperature;
-      retVar(7 downto 0)   := grayDecode(temp.temperature);
-      return retVar;
-   end function formatTemperature;
+
 
 begin
 
@@ -239,8 +229,8 @@ begin
          TPD_G        => TPD_G,
          BRAM_EN_G    => true,
          DOB_REG_G    => false,         -- I think
-         DATA_WIDTH_G => RAM_DATA_WIDTH_G,
-         ADDR_WIDTH_G => RAM_ADDR_WIDTH_G)
+         DATA_WIDTH_G => RAM_DATA_WIDTH_C,
+         ADDR_WIDTH_G => RAM_ADDR_WIDTH_C)
       port map (
          clka  => clk200,               -- [in]
          wea   => r.rxRamWrEn,          -- [in]
@@ -252,8 +242,11 @@ begin
          doutb => txRamRdData);         -- [out]
 
 
-   comb : process (enabledSync, kpixConfigRegsKpix, kpixSerRxIn, kpixSerRxInFall, rxRegs, rxRowAckSync) is
-      variable v : RxRegType;
+   comb : process (axilReadMaster, axilWriteMaster, kpixClkPreFall, kpixDataRxSlave, kpixSerRxIn, r,
+                   rst200, sysConfig, tempCount, temperature, txRamRdData) is
+      variable v      : RegType;
+      variable axilEp : AxiLiteEndpointType;
+
    begin
       v := r;
 
@@ -263,12 +256,12 @@ begin
       axiSlaveWaitTxn(axilEp, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
 
 --      axiSlaveRegister(axilEp, X"00", 0, v.enabled);
-      axiSlaveRegister(axilEp, x"10", 0, v.headerParityErrorCount, X"0000");
-      axiSlaveRegister(axilEp, x"14", 0, v.markerErrorCount, X"0000");
-      axiSlaveRegister(axilEp, X"18", 0, v.overflowErrorCount, X"0000");
-      axiSlaveRegister(axilEp, X"1C", 0, v.dataParityErrorCount, X"0000");
+      axiSlaveRegister(axilEp, x"00", 0, v.headerParityErrorCount, X"0000");
+      axiSlaveRegister(axilEp, x"04", 0, v.markerErrorCount, X"0000");
+      axiSlaveRegister(axilEp, X"08", 0, v.overflowErrorCount, X"0000");
+      axiSlaveRegister(axilEp, X"0C", 0, v.dataParityErrorCount, X"0000");
 
-      axiSlaveDefault(axilEp, v.axiWriteSlave, v.axiReadSlave, AXI_RESP_DECERR_C);
+      axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
 
       axilWriteSlave <= r.axilWriteSlave;
       axilReadSlave  <= r.axilReadSlave;
@@ -288,7 +281,7 @@ begin
          case (r.rxState) is
             when RX_IDLE_S =>
                -- Wait for start bit
-               if (r.rxShiftData(SHIFT_REG_LENGTH_C-1) = '1' and sysCOnfig.kpixEnable(KPIX_ID_G) = '1') then
+               if (r.rxShiftData(SHIFT_REG_LENGTH_C-1) = '1' and sysConfig.kpixEnable(KPIX_ID_G) = '1') then
                   v.rxShiftCount := (others => '0');
                   v.rxState      := RX_HEADER_S;
                end if;
@@ -401,9 +394,9 @@ begin
       -- Trip busy output high whenever rxBusy rises
       -- Will be left high until last sample from kpix is processed
       -- (in TX_TEMP_S state)
-      if (txRxBusyRise = '1') then
-         v.kpixDataRxOut.busy := '1';
-      end if;
+--       if (txRxBusyRise = '1') then
+--          v.kpixDataRxOut.busy := '1';
+--       end if;
 
 
       -- Each run through the states and back to idle processes one "row"
@@ -429,7 +422,7 @@ begin
 --              and  r.txRowAck(conv_integer(r.txRowBuffer)) = '0') then
                -- Assert offset of Count
                v.txColumnOffset     := r.txColumnOffset + 1;  -- "0000"
-               v.kpixDataRxOut.busy := '1';  -- Should already be busy from rxBusy trigger but whatever
+               --v.kpixDataRxOut.busy := '1';  -- Should already be busy from rxBusy trigger but whatever
                v.txState            := TX_ROW_ID_S;
             end if;
 
@@ -465,7 +458,7 @@ begin
                   v.txSample.badCountFlag := '1';
             end case;
 
-            if (oddParity(txRamRdData(13 downto 0))) then
+            if (oddParity(txRamRdData(13 downto 0)) = '1') then
                v.dataParityErrorCount := r.dataParityErrorCount + 1;
             end if;
 
@@ -479,7 +472,7 @@ begin
             -- And if there are any columns left in the row buffer to process
 
             if ((r.txValidBuckets(conv_integer(r.txBucketCount(1 downto 0))) = '1' or
-                 kpixConfigRegs.rawDataMode = '1') and
+                 sysConfig.rawDataMode = '1') and
                 r.txBucketCount(2) = '0') then  -- Bucket count hasn't rolled over
 
                -- Buckets remain
@@ -492,7 +485,7 @@ begin
                v.txSample.bucket     := r.txBucketCount(1 downto 0);
                v.txSample.emptyBit   := not r.txValidBuckets(conv_integer(r.txBucketCount(1 downto 0)));
 
-               if (oddParity(txRamRdData(13 downto 0))) then
+               if (oddParity(txRamRdData(13 downto 0)) = '1') then
                   v.dataParityErrorCount := r.dataParityErrorCount + 1;
                end if;
 
@@ -502,7 +495,7 @@ begin
                v.txColumnCount  := r.txColumnCount + 1;
                v.txColumnOffset := "0000";      -- Make this a constant
                v.txState        := TX_NXT_COL_S;
-               if (r.txColumnCount = kpixConfigRegs.numColumns) then
+               if (r.txColumnCount = sysConfig.numColumns) then
                   -- Done with row, mark row buffer clear.
                   -- increment row buffer and go all the way back
                   v.rxRowReq(conv_integer(r.txRowBuffer)) := '0';
@@ -517,7 +510,7 @@ begin
          when TX_ADC_DATA_S =>
             -- Read ADC value from ram
             -- This happens up to 4 times depending on txValidBuckets
-            if (oddParity(txRamRdData(13 downto 0))) then
+            if (oddParity(txRamRdData(13 downto 0)) = '1') then
                v.dataParityErrorCount := r.dataParityErrorCount + 1;
             end if;
             v.txSample.adc  := grayDecode(txRamRdData(12 downto 0));
@@ -528,7 +521,7 @@ begin
             -- Put out sample and wait for ack
             v.kpixDataRxMaster.tdata(63 downto 0) := formatSample(r.txSample);
             v.kpixDataRxMaster.tvalid             := '1';
-            if (r, kpixDataRxMaster.tValid = '1' and kpixDataRxSlave.tready = '1') then
+            if (r.kpixDataRxMaster.tValid = '1' and kpixDataRxSlave.tready = '1') then
                v.kpixDataRxMaster.tvalid := '0';
                v.kpixDataRxmaster.tlast  := '0';
                v.txColumnOffset          := r.txColumnOffset + 1;  -- Timestamp of next bucket
@@ -542,19 +535,24 @@ begin
             v.txState        := TX_TIMESTAMP_S;
 
          when TX_TEMP_S =>
-            v.kpixDataRxMaster.tdata(63 downto 0) := formatTemperature(kpixRegRxOut);
-            v.kpixDataRxMaster.tvalid             := '1';
-            v.kpixDataRxMaster.tlast              := '1';
+            v.kpixDataRxMaster.tdata(63 downto 60) := TEMP_SAMPLE_C;
+            v.kpixDataRxMaster.tdata(59 downto 48) := toSlv(KPIX_ID_G, 12);
+            v.kpixDataRxMaster.tdata(31 downto 24) := tempCount(7 downto 0);
+            v.kpixDataRxMaster.tdata(23 downto 16) := temperature;
+            v.kpixDataRxMaster.tdata(7 downto 0)   := grayDecode(temperature);
+            v.kpixDataRxMaster.tvalid              := '1';
+            v.kpixDataRxMaster.tlast               := '1';
             if (r.kpixDataRxMaster.tvalid = '1' and kpixDataRxSlave.tready = '1') then
                v.kpixDataRxMaster.tvalid := '0';
                v.kpixDataRxMaster.tlast  := '0';
-               v.kpixDataRxMaster.busy   := '0';
+--               v.kpixDataRxMaster.busy   := '0';
                v.txState                 := TX_CLEAR_S;
             end if;
       end case;
 
-      -- Error Counts
-
+      if (rst200 = '1') then
+         v := REG_INIT_C;
+      end if;
 
       -- Registers
       rin <= v;
@@ -565,5 +563,12 @@ begin
       kpixDataRxMaster <= r.kpixDataRxMaster;
 
    end process;
+   
+   seq : process (clk200) is
+   begin
+      if (rising_edge(clk200)) then
+         r <= rin after TPD_G;
+      end if;
+   end process seq;
 
 end architecture rtl;

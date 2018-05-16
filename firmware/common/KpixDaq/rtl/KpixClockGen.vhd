@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2018-05-09
+-- Last update: 2018-05-16
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -20,9 +20,9 @@ use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
 use work.StdRtlPkg.all;
+use work.AxiLitePkg.all;
 
---use work.KpixClockGenPkg.all;
-use work.TriggerPkg.all;
+use work.kpixPkg.all;
 use work.KpixLocalPkg.all;
 
 library UNISIM;
@@ -43,12 +43,11 @@ entity KpixClockGen is
       axilWriteMaster : in  AxiLiteWriteMasterType;
       axilWriteSlave  : out AxiLiteWriteSlaveType;
 
-      startAcquire : in sl;
-      kpixState    : in KpixStateOutType;
+      acqControl : in AcquisitionControlType;
+      kpixState  : in KpixStateOutType;
 
       -- Generated Kpix clock and various enable strobes
       kpixClk        : out sl;
-      kpixClkRst     : out sl;
       kpixClkPreRise : out sl;
       kpixClkPreFall : out sl;
       kpixClkSample  : out sl);
@@ -77,8 +76,8 @@ architecture rtl of KpixClockGen is
       axilReadSlave    : AxiLiteReadSlaveType;
       -- Logic registers
       startAcquireLast : sl;
-      divCount         : unsigned(11 downto 0);
-      clkSel           : unsigned(11 downto 0);
+      divCount         : slv(11 downto 0);
+      clkSel           : slv(11 downto 0);
       clkDiv           : sl;
       preRise          : sl;
       preFall          : sl;
@@ -118,7 +117,7 @@ begin
    end process seq;
 
 
-   comb : process (axilReadMaster, axilWriteMaster, kpixState, r, rst200, triggerOut) is
+   comb : process (acqControl, axilReadMaster, axilWriteMaster, kpixState, r, rst200) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
    begin
@@ -137,11 +136,11 @@ begin
       axiSlaveRegister(axilEp, X"14", 0, v.sampleDelay);
       axiSlaveRegister(axilEp, X"14", 31, v.sampleOnRise);
 
-      axiSlaveDefault(axilEp, v.axiWriteSlave, v.axiReadSlave, AXI_RESP_DECERR_C);
+      axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
       ----------------------------------------------------------------------------------------------
       -- Clock generation
       ----------------------------------------------------------------------------------------------
-      v.startAcquireLast := startAcquire;
+      v.startAcquireLast := acqControl.startAcquire;
       v.preRise          := '0';
       v.preFall          := '0';
       v.sample           := '0';
@@ -183,7 +182,7 @@ begin
       end if;
 
       -- startAcquire effectively resets kpix clock to ensure fixed time between acquire pulse and command
-      if (startAcquire = '1' and r.startAcquireLast = '0') then
+      if (acqControl.startAcquire = '1' and r.startAcquireLast = '0') then
          v.divCount := (others => '0');
          v.clkDiv   := '0';
       end if;
@@ -207,18 +206,6 @@ begin
    KPIX_CLK_BUFG : BUFG
       port map (
          I => r.clkDiv,
-         O => kpixClkInt);
-   kpixClk <= kpixClkInt;
-
-   -- Synchronize rst200 to KpixClk to create kpixClkRst
-   RstSync_1 : entity work.RstSync
-      generic map (
-         TPD_G          => DELAY_G,
-         IN_POLARITY_G  => '1',
-         OUT_POLARITY_G => '1')         -- Active high reset
-      port map (
-         clk      => kpixClkInt,
-         asyncRst => rst200,
-         syncRst  => kpixClkRst);
+         O => kpixClk);
 
 end architecture rtl;

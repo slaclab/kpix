@@ -20,6 +20,8 @@ use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
 use work.StdRtlPkg.all;
+use work.AxiLitePkg.all;
+use work.AxiStreamPkg.all;
 
 use work.KpixLocalPkg.all;
 use work.KpixPkg.all;
@@ -50,7 +52,7 @@ entity AcquisitionControl is
       kpixState : in KpixStateOutType;  -- kpixClk
 
       -- Outputs
-      acquisitionControl : out AcquisitionControlType;
+      acqControl : out AcquisitionControlType;
 
       -- Timestamp interface to event builder
       timestampAxisMaster : out AxiStreamMasterType;
@@ -60,14 +62,17 @@ end entity AcquisitionControl;
 
 architecture rtl of AcquisitionControl is
 
-   constant CLOCKS_PER_USEC_C : natural := integer(100 / CLOCK_PERIOD_G);  -- 1000?
+   constant CLOCKS_PER_USEC_C : natural := 20; --integer(100 / CLOCK_PERIOD_G);  -- 1000?
 
    type RegType is record
       -- Config regs
       extTriggerSrc      : slv(2 downto 0);
+      extTriggerEn       : sl;
       extTimestampSrc    : slv(2 downto 0);
+      extTimestampEn     : sl;
       extAcquisitionSrc  : slv(2 downto 0);
-      acquisitionSw      : sl;
+      extAcquisitionEn   : sl;
+      swAcquisition      : sl;
       calibrate          : sl;
       axilWriteSlave     : AxiLiteWriteSlaveType;
       axilReadSlave      : AxiLiteReadSlaveType;
@@ -81,14 +86,17 @@ architecture rtl of AcquisitionControl is
       readoutCounter     : slv(7 downto 0);
       readoutCountEnable : sl;
       -- Outputs
-      acquisitionControl : AcquisitionControlOutType;
+      acqControl         : AcquisitionControlType;
    end record;
 
    constant REG_INIT_C : RegType := (
       extTriggerSrc      => (others => '0'),
+      extTriggerEn       => '0',
       extTimestampSrc    => (others => '0'),
+      extTimestampEn     => '0',
       extAcquisitionSrc  => (others => '0'),
-      acquisitionSw      => '1',
+      extAcquisitionEn   => '0',
+      swAcquisition      => '0',
       calibrate          => '0',
       axilWriteSlave     => AXI_LITE_WRITE_SLAVE_INIT_C,
       axilReadSlave      => AXI_LITE_READ_SLAVE_INIT_C,
@@ -100,7 +108,7 @@ architecture rtl of AcquisitionControl is
       readoutPending     => '0',
       readoutCounter     => (others => '0'),
       readoutCountEnable => '0',
-      acquisitionControl => TRIGGER_OUT_INIT_C);
+      acqControl         => ACQUISITION_CONTROL_INIT_C);
 
    signal r   : RegType := REG_INIT_C;
    signal rin : RegType;
@@ -128,19 +136,19 @@ begin
    sync : process (clk200) is
    begin
       if (rising_edge(clk200)) then
-         r <= rin after DELAY_G;
+         r <= rin after TPD_G;
       end if;
    end process sync;
 
 
-   comb : process (axilReadMaster, axilWriteMaster, axisCtrl, extTriggerRise, kpixState, opCode,
-                   opCodeEn, r, rst200, sysConfig, triggerRegsInSync) is
+   comb : process (axilReadMaster, axilWriteMaster, axisCtrl, extTriggerRise, kpixState, r, rst200,
+                   sysConfig) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
    begin
       v := r;
 
-      v.swAcquisition = '0';
+      v.swAcquisition := '0';
 
       ----------------------------------------------------------------------------------------------
       -- AXI Lite
@@ -152,11 +160,11 @@ begin
       axiSlaveRegister(axilEp, X"08", 0, v.extAcquisitionSrc);
       axiSlaveRegister(axilEp, X"0C", 0, v.extTriggerEn);
       axiSlaveRegister(axilEp, X"0C", 1, v.extTimestampEn);
-      axiSlaveRegister(axilEp, X"0C", 2, v.extAcqusitionEn);
+      axiSlaveRegister(axilEp, X"0C", 2, v.extAcquisitionEn);
       axiSlaveRegister(axilEp, X"10", 0, v.calibrate);
       axiSlaveRegister(axilEp, X"14", 0, v.swAcquisition);
 
-      axiSlaveDefault(axilEp, v.axiWriteSlave, v.axiReadSlave, AXI_RESP_DECERR_C);
+      axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
 
       ------------------------------------------------------------------------------------------------
       -- External Trigger
@@ -165,17 +173,17 @@ begin
           extTriggerRise(conv_integer(r.extTriggerSrc)) = '1' and
           kpixState.analogState = KPIX_ANALOG_SAMP_STATE_C and
           kpixState.trigInhibit = '0') then
-         v.acquisitionControl.trigger := '1';
-         v.triggerCountEnable         := '1';
-         v.triggerCounter             := (others => '0');
+         v.acqControl.trigger := '1';
+         v.triggerCountEnable := '1';
+         v.triggerCounter     := (others => '0');
       end if;
 
       if (r.triggerCountEnable = '1') then
          v.triggerCounter := r.triggerCounter + 1;
          if (r.triggerCounter = CLOCKS_PER_USEC_C) then
-            v.triggerCounter             := (others => '0');
-            v.triggerCountEnable         := '0';
-            v.acquisitionControl.trigger := '0';
+            v.triggerCounter     := (others => '0');
+            v.triggerCountEnable := '0';
+            v.acqControl.trigger := '0';
          end if;
       end if;
 
@@ -200,18 +208,18 @@ begin
       if (kpixState.analogState = KPIX_ANALOG_IDLE_STATE_C and
           kpixState.readoutState = KPIX_READOUT_IDLE_STATE_C and
           r.readoutPending = '1') then
-         v.readoutPending                  := '0';
-         v.acquisitionControl.startReadout := '1';
-         v.readoutCountEnable              := '1';
-         v.readoutCounter                  := (others => '0');
+         v.readoutPending          := '0';
+         v.acqControl.startReadout := '1';
+         v.readoutCountEnable      := '1';
+         v.readoutCounter          := (others => '0');
       end if;
 
       if (r.readoutCountEnable = '1') then
          v.readoutCounter := r.readoutCounter + 1;
          if (uAnd(slv(r.readoutCounter)) = '1') then
-            v.readoutCounter                  := (others => '0');
-            v.readoutCountEnable              := '0';
-            v.acquisitionControl.startReadout := '0';
+            v.readoutCounter          := (others => '0');
+            v.readoutCountEnable      := '0';
+            v.acqControl.startReadout := '0';
          end if;
       end if;
 
@@ -221,21 +229,21 @@ begin
       -- Selected by Front End Register triggerRegsIn.acquisitionSrc
       ------------------------------------------------------------------------------------------------
       if ((r.swAcquisition = '1') or
-           (r.extTriggerEn = '1' and extTriggerRise(conv_integer(r.extAcquisitionSrc)) = '1'))
+          (r.extAcquisitionEn = '1' and extTriggerRise(conv_integer(r.extAcquisitionSrc)) = '1'))
       then
-         v.acquisitionControl.startAcquire   := '1';
-         v.acquisitionControl.startCalibrate := r.calibrate;
-         v.startCountEnable                  := '1';
-         v.startCounter                      := (others => '0');
+         v.acqControl.startAcquire   := '1';
+         v.acqControl.startCalibrate := r.calibrate;
+         v.startCountEnable          := '1';
+         v.startCounter              := (others => '0');
       end if;
 
       if (r.startCountEnable = '1') then
          v.startCounter := r.startCounter + 1;
          if (uAnd(slv(r.startCounter)) = '1') then
-            v.startCounter                      := (others => '0');
-            v.startCountEnable                  := '0';
-            v.acquisitionControl.startAcquire   := '0';
-            v.acquisitionControl.startCalibrate := '0';
+            v.startCounter              := (others => '0');
+            v.startCountEnable          := '0';
+            v.acqControl.startAcquire   := '0';
+            v.acqControl.startCalibrate := '0';
          end if;
       end if;
 
@@ -246,9 +254,9 @@ begin
       rin <= v;
 
       -- Outputs
-      axilReadSlave      <= r.axilReadSlave;
-      axilWriteSlave     <= r.axilWriteSlave;
-      acquisitionControl <= r.acquisitionControl;
+      axilReadSlave  <= r.axilReadSlave;
+      axilWriteSlave <= r.axilWriteSlave;
+      acqControl     <= r.acqControl;
    end process comb;
 
    axisMaster.tValid             <= r.timestampFifoWrEn;

@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2018-05-10
+-- Last update: 2018-05-16
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -16,9 +16,13 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
+
 use work.StdRtlPkg.all;
+
 use work.KpixPkg.all;
+
 use work.KpixRegRxPkg.all;
 
 entity KpixRegRx is
@@ -45,7 +49,7 @@ architecture rtl of KpixRegRx is
 
    type RegType is record
       shiftReg     : slv(0 to KPIX_NUM_TX_BITS_C);
-      shiftCount   : unsigned(log2(463)-1 downto 0);
+      shiftCount   : slv(log2(463)-1 downto 0);
       state        : StateType;
       kpixRegRxOut : KpixRegRxOutType;
    end record RegType;
@@ -62,30 +66,7 @@ architecture rtl of KpixRegRx is
 
 begin
 
-   -- Clock serial input on the falling edge to assure clean signal
-   fall : process (kpixClk) is
-   begin
-      if (falling_edge(kpixClk)) then
-         if (kpixClkRst = '1') then
-            kpixSerRxInFall <= '0' after DELAY_G;
-         else
-            kpixSerRxInFall <= kpixSerRxIn after DELAY_G;
-         end if;
-      end if;
-   end process fall;
-
-   seq : process (kpixClk) is
-   begin
-      if (rising_edge(kpixClk)) then
-         if (kpixClkRst = '1') then
-            r <= REG_INIT_C after DELAY_G;
-         else
-            r <= rin after DELAY_G;
-         end if;
-      end if;
-   end process seq;
-
-   comb : process (r, kpixConfigRegsKpix, kpixSerRxInFall, kpixSerRxIn)is
+   comb : process (kpixClkPreFall, kpixSerRxIn, r, rst200)is
       variable v : RegType;
    begin
       v := r;
@@ -137,7 +118,7 @@ begin
                       v.kpixRegRxOut.regParityErr = '0') then
                      -- Output Temperature, temp is last 8 bits (reversed and gray encoded.)
                      v.kpixRegRxOut.temperature := bitReverse(r.shiftReg(39 to 46));
-                     v.kpixRegRxOut.tempCount   := slv(unsigned(r.kpixRegRxOut.tempCount) + 1);
+                     v.kpixRegRxOut.tempCount   := r.kpixRegRxOut.tempCount + 1;
                   else
                      -- Valid register read response received
                      v.kpixRegRxOut.regValid := '1';
@@ -165,8 +146,20 @@ begin
          end if;
       end if;
 
+      if (rst200 = '1') then
+         v := REG_INIT_C;
+      end if;
+
       rin          <= v;
       kpixRegRxOut <= r.kpixRegRxOut;
+      
    end process comb;
-
+   
+   seq : process (clk200) is
+   begin
+      if (rising_edge(clk200)) then
+         r <= rin after TPD_G;
+      end if;
+   end process seq;
+   
 end architecture rtl;

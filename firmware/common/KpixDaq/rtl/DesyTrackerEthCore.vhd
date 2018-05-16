@@ -22,18 +22,21 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
 
 use work.StdRtlPkg.all;
 use work.AxiLitePkg.all;
 use work.AxiStreamPkg.all;
 use work.SsiPkg.all;
 use work.EthMacPkg.all;
-use work.Pgp2bPkg.all;
+
+use work.KpixPkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
 
-entity AtlasChess2FebEthCore is
+entity DesyTrackerEthCore is
    generic (
       TPD_G     : time             := 1 ns;
       DHCP_G    : boolean          := true;          -- true = DHCP, false = static address
@@ -48,8 +51,9 @@ entity AtlasChess2FebEthCore is
       mAxilWriteMaster : out AxiLiteWriteMasterType;
       mAxilWriteSlave  : in  AxiLiteWriteSlaveType;
       -- Streaming Data (clk200 domain)
-      sAxisMaster      : in  AxiStreamMasterType;
-      sAxisSlave       : out AxiStreamSlaveType;
+      ebAxisMaster     : in  AxiStreamMasterType;
+      ebAxisSlave      : out AxiStreamSlaveType;
+      ebAxisCtrl       : out AxiStreamCtrlType;
       -- Eth/RSSI Status
       phyReady         : out sl;
       rssiStatus       : out slv(6 downto 0);
@@ -64,15 +68,15 @@ entity AtlasChess2FebEthCore is
       gtRxN            : in  sl;
       gtTxP            : out sl;
       gtTxN            : out sl);
-end AtlasChess2FebEthCore;
+end DesyTrackerEthCore;
 
-architecture mapping of AtlasChess2FebEthCore is
+architecture mapping of DesyTrackerEthCore is
 
    constant SERVER_SIZE_C  : positive                  := 1;
-   constant SERVER_PORTS_C : PositiveArray(1 downto 0) := (0 => 8192);
+   constant SERVER_PORTS_C : PositiveArray(0 downto 0) := (0 => 8192);
 
-   constant RSSI_SIZE_C   : positive                                     := 3;
-   constant AXIS_CONFIG_C : AxiStreamConfigArray(RSSI_SIZE_C-1 downto 0) := (others => ssiAxiStreamConfig(4));
+   constant RSSI_SIZE_C   : positive                                     := 2;
+   constant AXIS_CONFIG_C : AxiStreamConfigArray(RSSI_SIZE_C-1 downto 0) := (others => ssiAxiStreamConfig(8));
 
    signal gtClkDiv2  : sl;
    signal refClk     : sl;
@@ -81,6 +85,8 @@ architecture mapping of AtlasChess2FebEthCore is
    signal ethRst     : sl;
    signal ethClkDiv2 : sl;
    signal ethRstDiv2 : sl;
+   signal locClk200  : sl;
+   signal locRst200  : sl;
 
    signal efuse    : slv(31 downto 0);
    signal localMac : slv(47 downto 0);
@@ -105,12 +111,12 @@ architecture mapping of AtlasChess2FebEthCore is
    signal mAxilWriteMasters : AxiLiteWriteMasterArray(SERVER_SIZE_C-1 downto 0);
    signal mAxilWriteSlaves  : AxiLiteWriteSlaveArray(SERVER_SIZE_C-1 downto 0);
 
-   signal pgpRxTrig : Pgp2bRxOutType := PGP2B_RX_OUT_INIT_C;
+--   signal pgpRxTrig : Pgp2bRxOutType := PGP2B_RX_OUT_INIT_C;
 
 begin
 
-   axilClk <= ethClk;
-   axilRst <= ethRst;
+   clk200 <= locClk200;
+   rst200 <= locRst200;
 
    --------------------
    -- Local MAC Address
@@ -172,10 +178,10 @@ begin
          rstIn     => refRst,
          clkOut(0) => ethClk,
          clkOut(1) => ethClkDiv2,
-         clkOut(2) => refclk200MHz,
+         clkOut(2) => locClk200,
          rstOut(0) => ethRst,
          rstOut(1) => ethRstDiv2,
-         rstOut(2) => refRst200MHz);
+         rstOut(2) => locRst200);
 
    -------------------------
    -- GigE Core for KINTEX-7
@@ -295,37 +301,60 @@ begin
       generic map (
          TPD_G               => TPD_G,
          SLAVE_READY_EN_G    => true,
-         USE_BUILT_IN_G      => false,
-         GEN_SYNC_FIFO_G     => true,
-         FIFO_ADDR_WIDTH_G   => 9,
-         FIFO_PAUSE_THRESH_G => 2**8,
-         AXI_STREAM_CONFIG_G => EMAC_AXIS_CONFIG_C)
+         GEN_SYNC_FIFO_G     => false,
+         AXIL_CLK_FREQ_G     => 200.0e6,
+         AXI_STREAM_CONFIG_G => AXIS_CONFIG_C(0))
       port map (
          -- Streaming Slave (Rx) Interface (sAxisClk domain) 
-         sAxisClk            => ethClk,
-         sAxisRst            => ethRst,
-         sAxisMaster         => rssiObMasters(0),
-         sAxisSlave          => rssiObSlaves(0),
+         sAxisClk         => ethClk,
+         sAxisRst         => ethRst,
+         sAxisMaster      => rssiObMasters(0),
+         sAxisSlave       => rssiObSlaves(0),
          -- Streaming Master (Tx) Data Interface (mAxisClk domain)
-         mAxisClk            => ethClk,
-         mAxisRst            => ethRst,
-         mAxisMaster         => rssiIbMasters(0),
-         mAxisSlave          => rssiIbSlaves(0),
-         -- AXI Lite Bus (axiLiteClk domain)
-         axiLiteClk          => clk200,
-         axiLiteRst          => rst200,
-         mAxiLiteReadMaster  => mAxilReadMaster,
-         mAxiLiteReadSlave   => mAxilReadSlave,
-         mAxiLiteWriteMaster => mAxilWriteMaster,
-         mAxiLiteWriteSlave  => mAxilWriteSlave);
+         mAxisClk         => ethClk,
+         mAxisRst         => ethRst,
+         mAxisMaster      => rssiIbMasters(0),
+         mAxisSlave       => rssiIbSlaves(0),
+         -- AXI Lite Bus (axilClk domain)
+         axilClk          => locClk200,
+         axilRst          => locRst200,
+         mAxilReadMaster  => mAxilReadMaster,
+         mAxilReadSlave   => mAxilReadSlave,
+         mAxilWriteMaster => mAxilWriteMaster,
+         mAxilWriteSlave  => mAxilWriteSlave);
 
    -----------------------------------------------------
    -- TDEST = 0x1: Streaming Data
    -- Will need FIFO here probably
    -----------------------------------------------------
-   rssiIbMasters(1) <= sAxisMaster;
-   sAxisSlave       <= rssiIbSlaves(1);
-   rssiObSlaves(1)  <= AXI_STREAM_SLAVE_FORCE_C;  -- always ready
+   U_AxiStreamFifoV2_1 : entity work.AxiStreamFifoV2
+      generic map (
+         TPD_G               => TPD_G,
+         INT_PIPE_STAGES_G   => 1,
+         PIPE_STAGES_G       => 1,
+         SLAVE_READY_EN_G    => false,
+         VALID_THOLD_G       => 1,
+         VALID_BURST_MODE_G  => false,
+         BRAM_EN_G           => true,
+         USE_BUILT_IN_G      => false,
+         GEN_SYNC_FIFO_G     => false,
+         FIFO_ADDR_WIDTH_G   => 12,
+         FIFO_FIXED_THRESH_G => true,
+         FIFO_PAUSE_THRESH_G => 2**12-8,
+         SLAVE_AXI_CONFIG_G  => EB_DATA_AXIS_CONFIG_C,
+         MASTER_AXI_CONFIG_G => AXIS_CONFIG_C(1))
+      port map (
+         sAxisClk    => locClk200,            -- [in]
+         sAxisRst    => locRst200,            -- [in]
+         sAxisMaster => ebAxisMaster,      -- [in]
+         sAxisSlave  => ebAxisSlave,       -- [out]
+         sAxisCtrl   => ebAxisCtrl,        -- [out]
+         mAxisClk    => ethClk,            -- [in]
+         mAxisRst    => ethRst,            -- [in]
+         mAxisMaster => rssiIbMasters(1),  -- [out]
+         mAxisSlave  => rssiIbSlaves(1));  -- [in]
+
+   rssiObSlaves(1) <= AXI_STREAM_SLAVE_FORCE_C;  -- always ready
 
 
 
