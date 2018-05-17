@@ -140,6 +140,8 @@ architecture rtl of DesyTracker is
    signal ebAxisSlave  : AxiStreamSlaveType;
    signal ebAxisCtrl   : AxiStreamCtrlType;
 
+   signal ethStartAcq : sl;
+
    signal tluClk     : sl;
    signal tluSpill   : sl;
    signal tluStart   : sl;
@@ -234,6 +236,7 @@ begin
    extTriggers(3) <= tluSpill;
    extTriggers(4) <= tluStart;
    extTriggers(5) <= tluTrigger;
+   extTriggers(6) <= ethStartAcq;
 
    -------------------------------------------------------------------------------------------------
    -- Ethernet core with SRPv3-AxiLite and Data FIFO
@@ -252,7 +255,8 @@ begin
          mAxilWriteSlave  => axilWriteSlave,                        -- [in]
          ebAxisMaster     => ebAxisMaster,                          -- [in]
          ebAxisSlave      => ebAxisSlave,                           -- [out]
-         ebAxisCtrl       => ebAxisCtrl,                            -- [out]         
+         ebAxisCtrl       => ebAxisCtrl,                            -- [out]
+         startAcq         => ethStartAcq,                           -- [out]
          phyReady         => open,                                  -- [out]
          rssiStatus       => open,                                  -- [out]
          sAxilReadMaster  => locAxilReadMasters(AXIL_ETH_CORE_C),   -- [in]

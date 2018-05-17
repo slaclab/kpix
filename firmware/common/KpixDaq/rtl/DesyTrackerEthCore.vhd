@@ -54,6 +54,8 @@ entity DesyTrackerEthCore is
       ebAxisMaster     : in  AxiStreamMasterType;
       ebAxisSlave      : out AxiStreamSlaveType;
       ebAxisCtrl       : out AxiStreamCtrlType;
+      -- Acq start from stream
+      startAcq         : out sl;
       -- Eth/RSSI Status
       phyReady         : out sl;
       rssiStatus       : out slv(6 downto 0);
@@ -285,8 +287,8 @@ begin
          mTspAxisMaster_o  => ibServerMasters(0),
          mTspAxisSlave_i   => ibServerSlaves(0),
          -- AXI-Lite Interface
-         axiClk_i          => ethClk,
-         axiRst_i          => ethRst,
+         axiClk_i          => locClk200,
+         axiRst_i          => locRst200,
          axilReadMaster    => sAxilReadMaster,
          axilReadSlave     => sAxilReadSlave,
          axilWriteMaster   => sAxilWriteMaster,
@@ -344,8 +346,8 @@ begin
          SLAVE_AXI_CONFIG_G  => EB_DATA_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => AXIS_CONFIG_C(1))
       port map (
-         sAxisClk    => locClk200,            -- [in]
-         sAxisRst    => locRst200,            -- [in]
+         sAxisClk    => locClk200,         -- [in]
+         sAxisRst    => locRst200,         -- [in]
          sAxisMaster => ebAxisMaster,      -- [in]
          sAxisSlave  => ebAxisSlave,       -- [out]
          sAxisCtrl   => ebAxisCtrl,        -- [out]
@@ -355,6 +357,26 @@ begin
          mAxisSlave  => rssiIbSlaves(1));  -- [in]
 
    rssiObSlaves(1) <= AXI_STREAM_SLAVE_FORCE_C;  -- always ready
+
+   acqReqValid <= rssiObMasters(1).tValid and rssiObMasters.tData(7 downto 0) = X"AA" and
+                  rssiObMasters(1).tLast and ssiGetUserSof(AXIS_CONFIG_C(1), rssiObMasters(1));
+
+   U_SynchronizerFifo_1 : entity work.SynchronizerFifo
+      generic map (
+         TPD_G        => TPD_G,
+         COMMON_CLK_G => false,
+         BRAM_EN_G    => false,
+         DATA_WIDTH_G => 1,
+         ADDR_WIDTH_G => 4)
+      port map (
+         rst    => ethRst,              -- [in]
+         wr_clk => ethClk,              -- [in]
+         wr_en  => acqReqValid,         -- [in]
+         din    => (others => '0'),     -- [in]
+         rd_clk => clk200,              -- [in]
+         rd_en  => '1',                 -- [in]
+         valid  => startAcq,            -- [out]
+         dout   => open);               -- [out]
 
 
 
