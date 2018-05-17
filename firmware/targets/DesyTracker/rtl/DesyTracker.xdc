@@ -23,14 +23,14 @@ set_clock_groups -asynchronous \
 
 
 # TLU
-set_property -dict { PACKAGE_PIN AC9  IOSTANDARD LVDS } [get_ports { tluClkP }];
-set_property -dict { PACKAGE_PIN AD9  IOSTANDARD LVDS } [get_ports { tluClkN }];
-set_property -dict { PACKAGE_PIN AA9  IOSTANDARD LVDS } [get_ports { tluSpillP }];
-set_property -dict { PACKAGE_PIN AB9  IOSTANDARD LVDS } [get_ports { tluSpillN }];
-set_property -dict { PACKAGE_PIN AB7  IOSTANDARD LVDS } [get_ports { tluStartP }];
-set_property -dict { PACKAGE_PIN AC7  IOSTANDARD LVDS } [get_ports { tluStartN }];
-set_property -dict { PACKAGE_PIN AC8  IOSTANDARD LVDS } [get_ports { tluTriggerP }];
-set_property -dict { PACKAGE_PIN AD8  IOSTANDARD LVDS } [get_ports { tluTriggerN }];
+set_property -dict { PACKAGE_PIN AC9  IOSTANDARD LVDS DIFF_TERM TRUE } [get_ports { tluClkP }];
+set_property -dict { PACKAGE_PIN AD9  IOSTANDARD LVDS DIFF_TERM TRUE } [get_ports { tluClkN }];
+set_property -dict { PACKAGE_PIN AA9  IOSTANDARD LVDS DIFF_TERM TRUE } [get_ports { tluSpillP }];
+set_property -dict { PACKAGE_PIN AB9  IOSTANDARD LVDS DIFF_TERM TRUE } [get_ports { tluSpillN }];
+set_property -dict { PACKAGE_PIN AB7  IOSTANDARD LVDS DIFF_TERM TRUE } [get_ports { tluStartP }];
+set_property -dict { PACKAGE_PIN AC7  IOSTANDARD LVDS DIFF_TERM TRUE } [get_ports { tluStartN }];
+set_property -dict { PACKAGE_PIN AC8  IOSTANDARD LVDS DIFF_TERM TRUE } [get_ports { tluTriggerP }];
+set_property -dict { PACKAGE_PIN AD8  IOSTANDARD LVDS DIFF_TERM TRUE } [get_ports { tluTriggerN }];
 set_property -dict { PACKAGE_PIN AB11 IOSTANDARD LVDS } [get_ports { tluBusyP }];
 set_property -dict { PACKAGE_PIN AC11 IOSTANDARD LVDS } [get_ports { tluBusyN }];
 
