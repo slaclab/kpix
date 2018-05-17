@@ -122,11 +122,12 @@ begin
    -------------------------------------------------------------------------------------------------
    comb : process (acqControl, axilReadMaster, axilWriteMaster, kpixClkPreRise, kpixRegRxOut,
                    kpixState, r, rst200, sysConfig) is
-      variable v                : RegType;
-      variable addressedKpixVar : natural;
-      variable axiStatus        : AxiLiteStatusType;
-      variable axiReq           : sl;
-      variable axiAddr          : slv(31 downto 0);
+      variable v              : RegType;
+      variable axiKpixAddrInt : natural;
+      variable araddrInt      : natural;
+      variable axiStatus      : AxiLiteStatusType;
+      variable axiReq         : sl;
+      variable axiAddr        : slv(31 downto 0);
    begin
       v := r;
 
@@ -135,14 +136,6 @@ begin
          v.kpixResetLatch := '1';
       end if;
 
-      -- These are currently held for 256 cycles so no need to do this
---       if (triggerOut.startReadout = '1') then
---          v.startReadoutLatch := '1';
---       end if;
-
---       if (triggerOut.startAcquire = '1') then
---          v.startAcquireLatch := '1';
---       end if;
 
       -- Listen for AXIL transactions
       axiSlaveWaitTxn(axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave, axiStatus);
@@ -150,8 +143,10 @@ begin
       axiAddr := ite(axiStatus.writeEnable = '1', axilWriteMaster.awaddr,
                      ite(axiStatus.readEnable = '1', axilReadMaster.araddr, X"00000000"));
 
-      addressedKpixVar := conv_integer(axiAddr(KPIX_ADDR_RANGE_C));
-
+      axiKpixAddrInt        := conv_integer(axiAddr(KPIX_ADDR_RANGE_C));
+      araddrInt             := conv_integer(axilReadMaster.araddr(KPIX_ADDR_RANGE_C));
+      -- Always assign to ease timing
+      v.axilReadSlave.rdata := kpixRegRxOut(araddrInt).regData;
 
       -- Do most everything to coincide with rising edge of clock      
       if (kpixClkPreRise = '1') then
@@ -172,33 +167,34 @@ begin
                v.txEnable     := (others => '0');
 
                if (axiReq = '1') then
-                  if (addressedKpixVar > NUM_KPIX_MODULES_G) then
+                  if (axiKpixAddrInt > NUM_KPIX_MODULES_G) then
                      if (axiStatus.writeEnable = '1') then
                         axiSlaveWriteResponse(v.axilWriteSlave, AXI_RESP_DECERR_C);
                      else
                         axiSlaveReadResponse(v.axilReadSlave, AXI_RESP_DECERR_C);
                      end if;
 
-                  end if;
-                  -- Register access, format output word
-                  v.txShiftReg                               := (others => '0');  -- Simplifies parity calc
-                  v.txShiftReg(KPIX_MARKER_RANGE_C)          := KPIX_MARKER_C;
-                  v.txShiftReg(KPIX_FRAME_TYPE_INDEX_C)      := KPIX_CMD_RSP_FRAME_C;
-                  v.txShiftReg(KPIX_ACCESS_TYPE_INDEX_C)     := KPIX_REG_ACCESS_C;
-                  v.txShiftReg(KPIX_WRITE_INDEX_C)           := axiStatus.writeEnable;
-                  v.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := bitReverse(axiAddr(REG_ADDR_RANGE_C));
-                  v.txShiftReg(KPIX_DATA_RANGE_C)            := bitReverse(axilWriteMaster.wdata);
-                  if (axiStatus.readEnable = '1') then  -- Override data field with 0s of doing a read
-                     v.txShiftReg(KPIX_DATA_RANGE_C) := (others => '0');
-                  end if;
-                  v.txShiftReg(KPIX_HEADER_PARITY_INDEX_C) := '0';
-                  v.txShiftReg(KPIX_DATA_PARITY_INDEX_C)   := '0';
-                  v.txShiftCount                           := (others => '0');
+                  else
+                     -- Register access, format output word
+                     v.txShiftReg                               := (others => '0');  -- Simplifies parity calc
+                     v.txShiftReg(KPIX_MARKER_RANGE_C)          := KPIX_MARKER_C;
+                     v.txShiftReg(KPIX_FRAME_TYPE_INDEX_C)      := KPIX_CMD_RSP_FRAME_C;
+                     v.txShiftReg(KPIX_ACCESS_TYPE_INDEX_C)     := KPIX_REG_ACCESS_C;
+                     v.txShiftReg(KPIX_WRITE_INDEX_C)           := axiStatus.writeEnable;
+                     v.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := bitReverse(axiAddr(REG_ADDR_RANGE_C));
+                     v.txShiftReg(KPIX_DATA_RANGE_C)            := bitReverse(axilWriteMaster.wdata);
+                     if (axiStatus.readEnable = '1') then  -- Override data field with 0s of doing a read
+                        v.txShiftReg(KPIX_DATA_RANGE_C) := (others => '0');
+                     end if;
+                     v.txShiftReg(KPIX_HEADER_PARITY_INDEX_C) := '0';
+                     v.txShiftReg(KPIX_DATA_PARITY_INDEX_C)   := '0';
+                     v.txShiftCount                           := (others => '0');
 
-                  v.txEnable                   := (others => '0');
-                  v.txEnable(addressedKpixVar) := '1';
-                  v.isAcquire                  := '0';
-                  v.state                      := PARITY_S;
+                     v.txEnable                 := (others => '0');
+                     v.txEnable(axiKpixAddrInt) := '1';
+                     v.isAcquire                := '0';
+                     v.state                    := PARITY_S;
+                  end if;
 
                elsif (acqControl.startReadout = '1') then
                   -- Start a readout (only used with autoReadDisable)
@@ -214,7 +210,7 @@ begin
                   v.txShiftCount                             := (others => '0');
                   v.state                                    := PARITY_S;
                   v.isAcquire                                := '1';
-                  v.txEnable                                 := sysConfig.kpixEnable;
+                  v.txEnable(NUM_KPIX_MODULES_G-1 downto 0)  := sysConfig.kpixEnable(NUM_KPIX_MODULES_G-1 downto 0);
                   v.txEnable(NUM_KPIX_MODULES_G)             := '1';  -- Always enable internal kpix
 
                elsif (acqControl.startAcquire = '1') then
@@ -232,7 +228,7 @@ begin
                   v.state                                    := PARITY_S;
                   v.isAcquire                                := '1';
                   -- Send acquire only to enabled kpix asics.
-                  v.txEnable                                 := sysConfig.kpixEnable;
+                  v.txEnable(NUM_KPIX_MODULES_G-1 downto 0)  := sysConfig.kpixEnable(NUM_KPIX_MODULES_G-1 downto 0);
                   v.txEnable(NUM_KPIX_MODULES_G)             := '1';  -- Always enable internal kpix
                   if (acqControl.startCalibrate = '1') then
                      v.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := KPIX_CALIBRATE_CMD_ID_REV_C;
@@ -292,13 +288,13 @@ begin
                -- Wait for read response
                -- Timeout and fail after defined number of cycles
                v.txShiftCount := r.txShiftCount + 1;
---               addressedKpixVar := conv_integer(axilReadMaster.araddr(VALID_KPIX_ADDR_RANGE_C));
-               if (kpixRegRxOut(addressedKpixVar).regValid = '1' and
-                   kpixRegRxOut(addressedKpixVar).regAddr = axilReadMaster.araddr(REG_ADDR_RANGE_C)) then  -- REG_ADDR_RANGE_C
-                  -- Only ack when kpix id and reg addr is the same as tx'd
-                  v.axilReadSlave.rdata := kpixRegRxOut(addressedKpixVar).regData;
 
-                  if (kpixRegRxOut(addressedKpixVar).regParityErr = '1') then
+--               axiKpixAddrInt := conv_integer(axilReadMaster.araddr(VALID_KPIX_ADDR_RANGE_C));
+               if (kpixRegRxOut(araddrInt).regValid = '1' and
+                   kpixRegRxOut(araddrInt).regAddr = axilReadMaster.araddr(REG_ADDR_RANGE_C)) then  -- REG_ADDR_RANGE_C
+                  -- Only ack when kpix id and reg addr is the same as tx'd
+
+                  if (kpixRegRxOut(araddrInt).regParityErr = '1') then
                      axiSlaveReadResponse(v.axilReadSlave, AXI_RESP_SLVERR_C);
                   else
                      axiSlaveReadResponse(v.axilReadSlave, AXI_RESP_OK_C);

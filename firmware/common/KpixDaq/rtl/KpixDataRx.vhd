@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2018-05-15
+-- Last update: 2018-05-16
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -39,7 +39,7 @@ entity KpixDataRx is
       -- System config
       sysConfig        : in  SysConfigType;
       -- Serial input
-      kpixClkPreFall : in sl;
+      kpixClkPreFall   : in  sl;
       kpixSerRxIn      : in  sl;                 -- Serial Data from KPIX      
       -- AXI-Lite interface for registers
       axilReadMaster   : in  AxiLiteReadMasterType;
@@ -75,7 +75,7 @@ architecture rtl of KpixDataRx is
    -----------------------------------------------------------------------------
    -- RAM
    -----------------------------------------------------------------------------
-   signal txRamRdAddr   : slv(RAM_ADDR_WIDTH_C-1 downto 0);
+   signal txRamRdAddr : slv(RAM_ADDR_WIDTH_C-1 downto 0);
    signal txRamRdData : slv(RAM_DATA_WIDTH_C-1 downto 0);
 
    ---------------------------------------------------------------------------
@@ -130,10 +130,12 @@ architecture rtl of KpixDataRx is
       axilReadSlave          : AxiLiteReadSlaveType;
       axilWriteSlave         : AxiLiteWriteSlaveType;
       enabled                : sl;
-      markerErrorCount       : slv(15 downto 0);
-      headerParityErrorCount : slv(15 downto 0);
-      dataParityErrorCount   : slv(15 downto 0);
-      overflowErrorCount     : slv(15 downto 0);
+      markerErrorCount       : slv(7 downto 0);
+      headerParityErrorCount : slv(7 downto 0);
+      dataParityErrorCount   : slv(7 downto 0);
+      overflowErrorCount     : slv(7 downto 0);
+      dataParityError : sl;
+      resetCounters          : sl;
       -- RX
       rxShiftData            : slv(0 to SHIFT_REG_LENGTH_C-1);  -- Upward indexed to match documentation
       rxShiftCount           : slv(5 downto 0);                 -- Counts bits shifted in
@@ -170,6 +172,8 @@ architecture rtl of KpixDataRx is
       headerParityErrorCount => (others => '0'),
       dataParityErrorCount   => (others => '0'),
       overflowErrorCount     => (others => '0'),
+      dataParityError => '0',
+      resetCounters          => '0',
       rxShiftData            => (others => '0'),
       rxShiftCount           => (others => '0'),
       rxColumnCount          => (others => '0'),
@@ -253,13 +257,15 @@ begin
       ----------------------------------------------------------------------------------------------
       -- AXI Lite registers
       ----------------------------------------------------------------------------------------------
+      v.resetCounters := '0';
       axiSlaveWaitTxn(axilEp, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
 
 --      axiSlaveRegister(axilEp, X"00", 0, v.enabled);
-      axiSlaveRegister(axilEp, x"00", 0, v.headerParityErrorCount, X"0000");
-      axiSlaveRegister(axilEp, x"04", 0, v.markerErrorCount, X"0000");
-      axiSlaveRegister(axilEp, X"08", 0, v.overflowErrorCount, X"0000");
-      axiSlaveRegister(axilEp, X"0C", 0, v.dataParityErrorCount, X"0000");
+      axiSlaveRegister(axilEp, x"00", 0, v.headerParityErrorCount);
+      axiSlaveRegister(axilEp, x"04", 0, v.markerErrorCount);
+      axiSlaveRegister(axilEp, X"08", 0, v.overflowErrorCount);
+      axiSlaveRegister(axilEp, X"0C", 0, v.dataParityErrorCount);
+      axiSlaveRegister(axilEp, X"10", 0, v.resetCounters);
 
       axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
 
@@ -398,7 +404,7 @@ begin
 --          v.kpixDataRxOut.busy := '1';
 --       end if;
 
-
+      v.dataParityError := '0';
       -- Each run through the states and back to idle processes one "row"
       -- of pixels. Each pixel contains up to 4 buckets, resulting in up
       -- to 4 samples being transmitted for each pixel.
@@ -421,9 +427,9 @@ begin
             if (r.rxRowReq(conv_integer(r.txRowBuffer)) = '1') then
 --              and  r.txRowAck(conv_integer(r.txRowBuffer)) = '0') then
                -- Assert offset of Count
-               v.txColumnOffset     := r.txColumnOffset + 1;  -- "0000"
+               v.txColumnOffset := r.txColumnOffset + 1;  -- "0000"
                --v.kpixDataRxOut.busy := '1';  -- Should already be busy from rxBusy trigger but whatever
-               v.txState            := TX_ROW_ID_S;
+               v.txState        := TX_ROW_ID_S;
             end if;
 
          when TX_ROW_ID_S =>
@@ -459,7 +465,7 @@ begin
             end case;
 
             if (oddParity(txRamRdData(13 downto 0)) = '1') then
-               v.dataParityErrorCount := r.dataParityErrorCount + 1;
+               v.dataParityError := '1';
             end if;
 
 
@@ -486,7 +492,7 @@ begin
                v.txSample.emptyBit   := not r.txValidBuckets(conv_integer(r.txBucketCount(1 downto 0)));
 
                if (oddParity(txRamRdData(13 downto 0)) = '1') then
-                  v.dataParityErrorCount := r.dataParityErrorCount + 1;
+                  v.dataParityError := '1';
                end if;
 
                v.txState := TX_ADC_DATA_S;
@@ -511,7 +517,7 @@ begin
             -- Read ADC value from ram
             -- This happens up to 4 times depending on txValidBuckets
             if (oddParity(txRamRdData(13 downto 0)) = '1') then
-               v.dataParityErrorCount := r.dataParityErrorCount + 1;
+               v.dataParityError := '1';
             end if;
             v.txSample.adc  := grayDecode(txRamRdData(12 downto 0));
             v.txBucketCount := r.txBucketCount + 1;
@@ -550,6 +556,35 @@ begin
             end if;
       end case;
 
+      -- Counters Saturate
+      if (r.headerParityErrorCount = X"FF") then
+         v.headerParityErrorCount := r.headerParityErrorCount;
+      end if;
+
+      if (r.markerErrorCount = X"FF") then
+         v.markerErrorCount := r.markerErrorCount;
+      end if;
+
+      if (r.overflowErrorCount = X"FF") then
+         v.overflowErrorCount := r.overflowErrorCount;
+      end if;
+
+      if (r.dataParityError = '1') then
+         v.dataParityErrorCount := r.dataParityErrorCount + 1;
+      end if;
+      
+      if (r.dataParityErrorCount = X"FF") then
+         v.dataParityErrorCount := r.dataParityErrorCount;
+      end if;
+
+      if (v.resetCounters = '1') then
+         v.headerParityErrorCount := (others => '0');
+         v.markerErrorCount       := (others => '0');
+         v.overflowErrorCount     := (others => '0');
+         v.dataParityErrorCount   := (others => '0');
+      end if;
+
+
       if (rst200 = '1') then
          v := REG_INIT_C;
       end if;
@@ -563,7 +598,7 @@ begin
       kpixDataRxMaster <= r.kpixDataRxMaster;
 
    end process;
-   
+
    seq : process (clk200) is
    begin
       if (rising_edge(clk200)) then

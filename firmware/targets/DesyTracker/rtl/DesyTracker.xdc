@@ -23,35 +23,35 @@ set_clock_groups -asynchronous \
 
 
 # TLU
-set_property -dict { PACKAGE_PIN AC9  IOSTANDARD LVDS_25 } [get_ports { tluClkP }];
-set_property -dict { PACKAGE_PIN AD9  IOSTANDARD LVDS_25 } [get_ports { tluClkN }];
-set_property -dict { PACKAGE_PIN AA9  IOSTANDARD LVDS_25 } [get_ports { tluSpillP }];
-set_property -dict { PACKAGE_PIN AB9  IOSTANDARD LVDS_25 } [get_ports { tluSpillN }];
-set_property -dict { PACKAGE_PIN AB7  IOSTANDARD LVDS_25 } [get_ports { tluStartP }];
-set_property -dict { PACKAGE_PIN AC7  IOSTANDARD LVDS_25 } [get_ports { tluStartN }];
-set_property -dict { PACKAGE_PIN AC8  IOSTANDARD LVDS_25 } [get_ports { tluTriggerP }];
-set_property -dict { PACKAGE_PIN AD8  IOSTANDARD LVDS_25 } [get_ports { tluTriggerN }];
-set_property -dict { PACKAGE_PIN AB11 IOSTANDARD LVDS_25 } [get_ports { tluBusyP }];
-set_property -dict { PACKAGE_PIN AC11 IOSTANDARD LVDS_25 } [get_ports { tluBusyN }];
+set_property -dict { PACKAGE_PIN AC9  IOSTANDARD LVDS } [get_ports { tluClkP }];
+set_property -dict { PACKAGE_PIN AD9  IOSTANDARD LVDS } [get_ports { tluClkN }];
+set_property -dict { PACKAGE_PIN AA9  IOSTANDARD LVDS } [get_ports { tluSpillP }];
+set_property -dict { PACKAGE_PIN AB9  IOSTANDARD LVDS } [get_ports { tluSpillN }];
+set_property -dict { PACKAGE_PIN AB7  IOSTANDARD LVDS } [get_ports { tluStartP }];
+set_property -dict { PACKAGE_PIN AC7  IOSTANDARD LVDS } [get_ports { tluStartN }];
+set_property -dict { PACKAGE_PIN AC8  IOSTANDARD LVDS } [get_ports { tluTriggerP }];
+set_property -dict { PACKAGE_PIN AD8  IOSTANDARD LVDS } [get_ports { tluTriggerN }];
+set_property -dict { PACKAGE_PIN AB11 IOSTANDARD LVDS } [get_ports { tluBusyP }];
+set_property -dict { PACKAGE_PIN AC11 IOSTANDARD LVDS } [get_ports { tluBusyN }];
 
 # KPIX IO
-set_property -dict { PACKAGE_PIN AE7  IOSTANDARD LVDS_25 } [get_ports { kpixClkP[0] }];
-set_property -dict { PACKAGE_PIN AF7  IOSTANDARD LVDS_25 } [get_ports { kpixClkN[0] }];
-set_property -dict { PACKAGE_PIN AE8  IOSTANDARD LVDS_25 } [get_ports { kpixClkP[1] }];
-set_property -dict { PACKAGE_PIN AF8  IOSTANDARD LVDS_25 } [get_ports { kpixClkN[1] }];
-set_property -dict { PACKAGE_PIN Y3   IOSTANDARD LVDS_25 } [get_ports { kpixClkP[2] }];
-set_property -dict { PACKAGE_PIN Y2   IOSTANDARD LVDS_25 } [get_ports { kpixClkN[2] }];
-set_property -dict { PACKAGE_PIN AE3  IOSTANDARD LVDS_25 } [get_ports { kpixClkP[3] }];
-set_property -dict { PACKAGE_PIN AE2  IOSTANDARD LVDS_25 } [get_ports { kpixClkN[3] }];
+set_property -dict { PACKAGE_PIN AE7  IOSTANDARD LVDS } [get_ports { kpixClkP[0] }];
+set_property -dict { PACKAGE_PIN AF7  IOSTANDARD LVDS } [get_ports { kpixClkN[0] }];
+set_property -dict { PACKAGE_PIN AE8  IOSTANDARD LVDS } [get_ports { kpixClkP[1] }];
+set_property -dict { PACKAGE_PIN AF8  IOSTANDARD LVDS } [get_ports { kpixClkN[1] }];
+set_property -dict { PACKAGE_PIN Y3   IOSTANDARD LVDS } [get_ports { kpixClkP[2] }];
+set_property -dict { PACKAGE_PIN Y2   IOSTANDARD LVDS } [get_ports { kpixClkN[2] }];
+set_property -dict { PACKAGE_PIN AE3  IOSTANDARD LVDS } [get_ports { kpixClkP[3] }];
+set_property -dict { PACKAGE_PIN AE2  IOSTANDARD LVDS } [get_ports { kpixClkN[3] }];
 
-set_property -dict { PACKAGE_PIN AA8  IOSTANDARD LVDS_25 } [get_ports { kpixTrigP[0] }];
-set_property -dict { PACKAGE_PIN AA7  IOSTANDARD LVDS_25 } [get_ports { kpixTrigN[0] }];
-set_property -dict { PACKAGE_PIN AE13 IOSTANDARD LVDS_25 } [get_ports { kpixTrigP[1] }];
-set_property -dict { PACKAGE_PIN AF13 IOSTANDARD LVDS_25 } [get_ports { kpixTrigN[1] }];
-set_property -dict { PACKAGE_PIN V2   IOSTANDARD LVDS_25 } [get_ports { kpixTrigP[2] }];
-set_property -dict { PACKAGE_PIN v1   IOSTANDARD LVDS_25 } [get_ports { kpixTrigN[2] }];
-set_property -dict { PACKAGE_PIN AE6  IOSTANDARD LVDS_25 } [get_ports { kpixTrigP[3] }];
-set_property -dict { PACKAGE_PIN AE5  IOSTANDARD LVDS_25 } [get_ports { kpixTrigN[3] }];
+set_property -dict { PACKAGE_PIN AA8  IOSTANDARD LVDS } [get_ports { kpixTrigP[0] }];
+set_property -dict { PACKAGE_PIN AA7  IOSTANDARD LVDS } [get_ports { kpixTrigN[0] }];
+set_property -dict { PACKAGE_PIN AE13 IOSTANDARD LVDS } [get_ports { kpixTrigP[1] }];
+set_property -dict { PACKAGE_PIN AF13 IOSTANDARD LVDS } [get_ports { kpixTrigN[1] }];
+set_property -dict { PACKAGE_PIN V2   IOSTANDARD LVDS } [get_ports { kpixTrigP[2] }];
+set_property -dict { PACKAGE_PIN v1   IOSTANDARD LVDS } [get_ports { kpixTrigN[2] }];
+set_property -dict { PACKAGE_PIN AE6  IOSTANDARD LVDS } [get_ports { kpixTrigP[3] }];
+set_property -dict { PACKAGE_PIN AE5  IOSTANDARD LVDS } [get_ports { kpixTrigN[3] }];
 
 set_property -dict { PACKAGE_PIN U9   IOSTANDARD LVCMOS18 } [get_ports { kpixCmd[0][0] }];
 set_property -dict { PACKAGE_PIN W11  IOSTANDARD LVCMOS18 } [get_ports { kpixCmd[0][1] }];
@@ -78,40 +78,40 @@ set_property -dict { PACKAGE_PIN AD6  IOSTANDARD LVCMOS18 } [get_ports { kpixCmd
 set_property -dict { PACKAGE_PIN AD4  IOSTANDARD LVCMOS18 } [get_ports { kpixCmd[3][4] }];
 set_property -dict { PACKAGE_PIN AD1  IOSTANDARD LVCMOS18 } [get_ports { kpixCmd[3][5] }];
 
-set_property -dict { PACKAGE_PIN V11  IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[0][0] }];
-set_property -dict { PACKAGE_PIN V8   IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[0][1] }];
-set_property -dict { PACKAGE_PIN W10  IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[0][2] }];
-set_property -dict { PACKAGE_PIN Y8   IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[0][3] }];
-set_property -dict { PACKAGE_PIN Y11  IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[0][4] }];
-set_property -dict { PACKAGE_PIN V9   IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[0][5] }];
-set_property -dict { PACKAGE_PIN AC12 IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[1][0] }];
-set_property -dict { PACKAGE_PIN AA12 IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[1][1] }];
-set_property -dict { PACKAGE_PIN AD13 IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[1][2] }];
-set_property -dict { PACKAGE_PIN Y12  IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[1][3] }];
-set_property -dict { PACKAGE_PIN AE11 IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[1][4] }];
-set_property -dict { PACKAGE_PIN AD10 IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[1][5] }];
-set_property -dict { PACKAGE_PIN U6   IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[2][0] }];
-set_property -dict { PACKAGE_PIN U2   IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[2][1] }];
-set_property -dict { PACKAGE_PIN W6   IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[2][2] }];
-set_property -dict { PACKAGE_PIN V3   IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[2][3] }];
-set_property -dict { PACKAGE_PIN U7   IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[2][4] }];
-set_property -dict { PACKAGE_PIN V4   IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[2][5] }];
-set_property -dict { PACKAGE_PIN AB5  IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[3][0] }];
-set_property -dict { PACKAGE_PIN AC6  IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[3][1] }];
-set_property -dict { PACKAGE_PIN Y5   IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[3][2] }];
-set_property -dict { PACKAGE_PIN AD5  IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[3][3] }];
-set_property -dict { PACKAGE_PIN AD3  IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[3][4] }];
-set_property -dict { PACKAGE_PIN AE1  IOSTANDARD LVCMOS18 } [get_ports { kpixRsp[3][5] }];
+set_property -dict { PACKAGE_PIN V11  IOSTANDARD LVCMOS18 } [get_ports { kpixData[0][0] }];
+set_property -dict { PACKAGE_PIN V8   IOSTANDARD LVCMOS18 } [get_ports { kpixData[0][1] }];
+set_property -dict { PACKAGE_PIN W10  IOSTANDARD LVCMOS18 } [get_ports { kpixData[0][2] }];
+set_property -dict { PACKAGE_PIN Y8   IOSTANDARD LVCMOS18 } [get_ports { kpixData[0][3] }];
+set_property -dict { PACKAGE_PIN Y11  IOSTANDARD LVCMOS18 } [get_ports { kpixData[0][4] }];
+set_property -dict { PACKAGE_PIN V9   IOSTANDARD LVCMOS18 } [get_ports { kpixData[0][5] }];
+set_property -dict { PACKAGE_PIN AC12 IOSTANDARD LVCMOS18 } [get_ports { kpixData[1][0] }];
+set_property -dict { PACKAGE_PIN AA12 IOSTANDARD LVCMOS18 } [get_ports { kpixData[1][1] }];
+set_property -dict { PACKAGE_PIN AD13 IOSTANDARD LVCMOS18 } [get_ports { kpixData[1][2] }];
+set_property -dict { PACKAGE_PIN Y12  IOSTANDARD LVCMOS18 } [get_ports { kpixData[1][3] }];
+set_property -dict { PACKAGE_PIN AE11 IOSTANDARD LVCMOS18 } [get_ports { kpixData[1][4] }];
+set_property -dict { PACKAGE_PIN AE10 IOSTANDARD LVCMOS18 } [get_ports { kpixData[1][5] }];
+set_property -dict { PACKAGE_PIN U6   IOSTANDARD LVCMOS18 } [get_ports { kpixData[2][0] }];
+set_property -dict { PACKAGE_PIN U2   IOSTANDARD LVCMOS18 } [get_ports { kpixData[2][1] }];
+set_property -dict { PACKAGE_PIN W6   IOSTANDARD LVCMOS18 } [get_ports { kpixData[2][2] }];
+set_property -dict { PACKAGE_PIN V3   IOSTANDARD LVCMOS18 } [get_ports { kpixData[2][3] }];
+set_property -dict { PACKAGE_PIN U7   IOSTANDARD LVCMOS18 } [get_ports { kpixData[2][4] }];
+set_property -dict { PACKAGE_PIN V4   IOSTANDARD LVCMOS18 } [get_ports { kpixData[2][5] }];
+set_property -dict { PACKAGE_PIN AB5  IOSTANDARD LVCMOS18 } [get_ports { kpixData[3][0] }];
+set_property -dict { PACKAGE_PIN AC6  IOSTANDARD LVCMOS18 } [get_ports { kpixData[3][1] }];
+set_property -dict { PACKAGE_PIN Y5   IOSTANDARD LVCMOS18 } [get_ports { kpixData[3][2] }];
+set_property -dict { PACKAGE_PIN AD5  IOSTANDARD LVCMOS18 } [get_ports { kpixData[3][3] }];
+set_property -dict { PACKAGE_PIN AD3  IOSTANDARD LVCMOS18 } [get_ports { kpixData[3][4] }];
+set_property -dict { PACKAGE_PIN AE1  IOSTANDARD LVCMOS18 } [get_ports { kpixData[3][5] }];
 
 # Cassette I2C
 set_property -dict { PACKAGE_PIN AB1 IOSTANDARD LVCMOS18 } [get_ports { cassetteSda[0] }];
-set_property -dict { PACKAGE_PIN AC1 IOSTANDARD LVCMOS18 } [get_ports { cassetteSCl[0] }];
+set_property -dict { PACKAGE_PIN AC1 IOSTANDARD LVCMOS18 } [get_ports { cassetteScl[0] }];
 set_property -dict { PACKAGE_PIN W1  IOSTANDARD LVCMOS18 } [get_ports { cassetteSda[1] }];
-set_property -dict { PACKAGE_PIN Y1  IOSTANDARD LVCMOS18 } [get_ports { cassetteSCl[1] }];
+set_property -dict { PACKAGE_PIN Y1  IOSTANDARD LVCMOS18 } [get_ports { cassetteScl[1] }];
 set_property -dict { PACKAGE_PIN AB2 IOSTANDARD LVCMOS18 } [get_ports { cassetteSda[2] }];
-set_property -dict { PACKAGE_PIN AC2 IOSTANDARD LVCMOS18 } [get_ports { cassetteSCl[2] }];
+set_property -dict { PACKAGE_PIN AC2 IOSTANDARD LVCMOS18 } [get_ports { cassetteScl[2] }];
 set_property -dict { PACKAGE_PIN AA3 IOSTANDARD LVCMOS18 } [get_ports { cassetteSda[3] }];
-set_property -dict { PACKAGE_PIN AA2 IOSTANDARD LVCMOS18 } [get_ports { cassetteSCl[3] }];
+set_property -dict { PACKAGE_PIN AA2 IOSTANDARD LVCMOS18 } [get_ports { cassetteScl[3] }];
 set_property -dict { PACKAGE_PIN AA4 IOSTANDARD LVCMOS18 } [get_ports { cassetteI2cEn[0] }];
 set_property -dict { PACKAGE_PIN AB4 IOSTANDARD LVCMOS18 } [get_ports { cassetteI2cEn[1] }];
 set_property -dict { PACKAGE_PIN AC4 IOSTANDARD LVCMOS18 } [get_ports { cassetteI2cEn[2] }];
@@ -150,12 +150,12 @@ set_property -dict { PACKAGE_PIN B24 IOSTANDARD LVCMOS33 } [get_ports { bootMosi
 set_property -dict { PACKAGE_PIN A25 IOSTANDARD LVCMOS33 } [get_ports { bootMiso }];
 
 # LEDs
-set_property -dict { PACKAGE_PIN E25 IOSTANDARD LVCMOS33 } [get_ports { redL[0] }];
-set_property -dict { PACKAGE_PIN D25 IOSTANDARD LVCMOS33 } [get_ports { blueL[0] }];
-set_property -dict { PACKAGE_PIN G25 IOSTANDARD LVCMOS33 } [get_ports { greenL[0] }];
-set_property -dict { PACKAGE_PIN G26 IOSTANDARD LVCMOS33 } [get_ports { redL[1] }];
-set_property -dict { PACKAGE_PIN F25 IOSTANDARD LVCMOS33 } [get_ports { blueL[1] }];
-set_property -dict { PACKAGE_PIN E26 IOSTANDARD LVCMOS33 } [get_ports { greenL[1] }];
+set_property -dict { PACKAGE_PIN E25 IOSTANDARD LVCMOS33 } [get_ports { red[0] }];
+set_property -dict { PACKAGE_PIN D25 IOSTANDARD LVCMOS33 } [get_ports { blue[0] }];
+set_property -dict { PACKAGE_PIN G25 IOSTANDARD LVCMOS33 } [get_ports { green[0] }];
+set_property -dict { PACKAGE_PIN G26 IOSTANDARD LVCMOS33 } [get_ports { red[1] }];
+set_property -dict { PACKAGE_PIN F25 IOSTANDARD LVCMOS33 } [get_ports { blue[1] }];
+set_property -dict { PACKAGE_PIN E26 IOSTANDARD LVCMOS33 } [get_ports { green[1] }];
 set_property -dict { PACKAGE_PIN C11 IOSTANDARD LVCMOS25 } [get_ports { led[0] }];
 set_property -dict { PACKAGE_PIN E11 IOSTANDARD LVCMOS25 } [get_ports { led[1] }];
 set_property -dict { PACKAGE_PIN D11 IOSTANDARD LVCMOS25 } [get_ports { led[2] }];
