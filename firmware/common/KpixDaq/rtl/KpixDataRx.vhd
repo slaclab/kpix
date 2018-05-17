@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2018-05-16
+-- Last update: 2018-05-17
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -224,8 +224,6 @@ architecture rtl of KpixDataRx is
       return retVar;
    end function formatSample;
 
-
-
 begin
 
    U_SimpleDualPortRam_1 : entity work.SimpleDualPortRam
@@ -390,19 +388,6 @@ begin
       v.kpixDataRxMaster.tlast  := '0';
       -- BUSY?
 
-      -- Reset row ack when req falls
---       for i in r.txRowAck'range loop
---          if (txRowReqSync(i) = '0') then
---             v.txRowAck(i) := '0';
---          end if;
---       end loop;
-
-      -- Trip busy output high whenever rxBusy rises
-      -- Will be left high until last sample from kpix is processed
-      -- (in TX_TEMP_S state)
---       if (txRxBusyRise = '1') then
---          v.kpixDataRxOut.busy := '1';
---       end if;
 
       v.dataParityError := '0';
       -- Each run through the states and back to idle processes one "row"
@@ -425,11 +410,20 @@ begin
 
             -- Wait for current row buffer to be ready for Tx
             if (r.rxRowReq(conv_integer(r.txRowBuffer)) = '1') then
---              and  r.txRowAck(conv_integer(r.txRowBuffer)) = '0') then
                -- Assert offset of Count
                v.txColumnOffset := r.txColumnOffset + 1;  -- "0000"
                --v.kpixDataRxOut.busy := '1';  -- Should already be busy from rxBusy trigger but whatever
                v.txState        := TX_ROW_ID_S;
+
+               if (sysConfig.kpixEnable(KPIX_ID_G) = '0') then
+                  -- If this kpix is not enabled, drop any data received
+                  -- Clear the row request
+                  v.rxRowReq(conv_integer(r.txRowBuffer)) := '0';
+                  -- Increment the row buffer
+                  v.txRowBuffer := r.txRowBuffer + 1;
+                  -- Go back to start
+                  v.txState := TX_CLEAR_S;
+               end if;
             end if;
 
          when TX_ROW_ID_S =>
