@@ -237,6 +237,7 @@ begin
    extTriggers(4) <= tluStart;
    extTriggers(5) <= tluTrigger;
    extTriggers(6) <= ethStartAcq;
+   extTriggers(7) <= '0';
 
    -------------------------------------------------------------------------------------------------
    -- Ethernet core with SRPv3-AxiLite and Data FIFO

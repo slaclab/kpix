@@ -39,7 +39,7 @@ use unisim.vcomponents.all;
 entity DesyTrackerEthCore is
    generic (
       TPD_G     : time             := 1 ns;
-      DHCP_G    : boolean          := true;          -- true = DHCP, false = static address
+      DHCP_G    : boolean          := false;          -- true = DHCP, false = static address
       IP_ADDR_G : slv(31 downto 0) := x"0A01A8C0");  -- 192.168.1.10 (before DHCP)
    port (
       -- Reference Clock and Reset
@@ -113,7 +113,7 @@ architecture mapping of DesyTrackerEthCore is
    signal mAxilWriteMasters : AxiLiteWriteMasterArray(SERVER_SIZE_C-1 downto 0);
    signal mAxilWriteSlaves  : AxiLiteWriteSlaveArray(SERVER_SIZE_C-1 downto 0);
 
---   signal pgpRxTrig : Pgp2bRxOutType := PGP2B_RX_OUT_INIT_C;
+   signal acqReqValid : sl;
 
 begin
 
@@ -358,7 +358,7 @@ begin
 
    rssiObSlaves(1) <= AXI_STREAM_SLAVE_FORCE_C;  -- always ready
 
-   acqReqValid <= rssiObMasters(1).tValid and rssiObMasters.tData(7 downto 0) = X"AA" and
+   acqReqValid <= rssiObMasters(1).tValid and toSl(rssiObMasters(1).tData(7 downto 0) = X"AA") and
                   rssiObMasters(1).tLast and ssiGetUserSof(AXIS_CONFIG_C(1), rssiObMasters(1));
 
    U_SynchronizerFifo_1 : entity work.SynchronizerFifo
@@ -373,7 +373,7 @@ begin
          wr_clk => ethClk,              -- [in]
          wr_en  => acqReqValid,         -- [in]
          din    => (others => '0'),     -- [in]
-         rd_clk => clk200,              -- [in]
+         rd_clk => locClk200,           -- [in]
          rd_en  => '1',                 -- [in]
          valid  => startAcq,            -- [out]
          dout   => open);               -- [out]
