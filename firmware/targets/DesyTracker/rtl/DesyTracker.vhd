@@ -94,7 +94,7 @@ entity DesyTracker is
 
 
       -- Debug LEDs
-      led   : out slv(3 downto 0);
+      led   : out slv(3 downto 0) := (others => '0');
       red   : out slv(1 downto 0);
       blue  : out slv(1 downto 0);
       green : out slv(1 downto 0));
@@ -158,6 +158,9 @@ architecture rtl of DesyTracker is
    signal kpixSerTxOut   : slv(23 downto 0);
    signal kpixSerRxIn    : slv(23 downto 0);
 
+   signal rssiStatus : slv(6 downto 0);
+   signal phyReady   : sl;
+
 begin
 
    -------------------------------------------------------------------------------------------------
@@ -193,6 +196,35 @@ begin
          O  => tluBusyP,
          OB => tluBusyN);
 
+   -------------------------------------------------------------------------------------------------
+   -- Clock heartbeats and LED statuses
+   -------------------------------------------------------------------------------------------------
+   -- clk200
+   Heartbeat_clk200 : entity work.Heartbeat
+      generic map (
+         TPD_G        => TPD_G,
+         PERIOD_IN_G  => 5.0E-9,
+         PERIOD_OUT_G => 0.5)
+      port map (
+         clk => clk200,
+         o   => led(0));
+
+   -- tluClk
+   Heartbeat_tluClk : entity work.Heartbeat
+      generic map (
+         TPD_G        => TPD_G,
+         PERIOD_IN_G  => 6.25-9,
+         PERIOD_OUT_G => 0.625)
+      port map (
+         clk => tluClk,
+         o   => led(1));
+
+   green(0) <= rssiStatus(0);
+   red(0)   <= not rssiStatus(0);
+
+   green(0) <= phyReady(0);
+   red(0) <= not phyReady(0);
+   
    -------------------------------------------------------------------------------------------------
    -- Assign KPIX IO
    -- Clock, rigger and reset fanned out to each of the 4 cassettes
@@ -258,8 +290,8 @@ begin
          ebAxisSlave      => ebAxisSlave,                           -- [out]
          ebAxisCtrl       => ebAxisCtrl,                            -- [out]
          startAcq         => ethStartAcq,                           -- [out]
-         phyReady         => open,                                  -- [out]
-         rssiStatus       => open,                                  -- [out]
+         phyReady         => phyReady,                              -- [out]
+         rssiStatus       => rssiStatus,                            -- [out]
          sAxilReadMaster  => locAxilReadMasters(AXIL_ETH_CORE_C),   -- [in]
          sAxilReadSlave   => locAxilReadSlaves(AXIL_ETH_CORE_C),    -- [out]
          sAxilWriteMaster => locAxilWriteMasters(AXIL_ETH_CORE_C),  -- [in]
