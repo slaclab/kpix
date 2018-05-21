@@ -31,6 +31,7 @@ use unisim.vcomponents.all;
 entity DesyTracker is
    generic (
       TPD_G        : time             := 1 ns;
+      SIMULATION_G : boolean          := false;
       BUILD_INFO_G : BuildInfoType;
       DHCP_G       : boolean          := true;
       IP_ADDR_G    : slv(31 downto 0) := x"0A01A8C0");
@@ -95,9 +96,9 @@ entity DesyTracker is
 
       -- Debug LEDs
       led   : out slv(3 downto 0) := (others => '0');
-      red   : out slv(1 downto 0);
-      blue  : out slv(1 downto 0);
-      green : out slv(1 downto 0));
+      red   : out slv(1 downto 0) := (others => '0');
+      blue  : out slv(1 downto 0) := (others => '0');
+      green : out slv(1 downto 0) := (others => '0'));
 end DesyTracker;
 
 architecture rtl of DesyTracker is
@@ -213,7 +214,7 @@ begin
    Heartbeat_tluClk : entity work.Heartbeat
       generic map (
          TPD_G        => TPD_G,
-         PERIOD_IN_G  => 6.25-9,
+         PERIOD_IN_G  => 6.25E-9,
          PERIOD_OUT_G => 0.625)
       port map (
          clk => tluClk,
@@ -222,9 +223,9 @@ begin
    green(0) <= rssiStatus(0);
    red(0)   <= not rssiStatus(0);
 
-   green(0) <= phyReady(0);
-   red(0) <= not phyReady(0);
-   
+   green(1) <= phyReady;
+   red(1)   <= not phyReady;
+
    -------------------------------------------------------------------------------------------------
    -- Assign KPIX IO
    -- Clock, rigger and reset fanned out to each of the 4 cassettes
@@ -276,9 +277,10 @@ begin
    -------------------------------------------------------------------------------------------------
    U_DesyTrackerEthCore_1 : entity work.DesyTrackerEthCore
       generic map (
-         TPD_G     => TPD_G,
-         DHCP_G    => DHCP_G,
-         IP_ADDR_G => IP_ADDR_G)
+         TPD_G        => TPD_G,
+         SIMULATION_G => SIMULATION_G,
+         DHCP_G       => DHCP_G,
+         IP_ADDR_G    => IP_ADDR_G)
       port map (
          clk200           => clk200,                                -- [out]
          rst200           => rst200,                                -- [out]
