@@ -38,9 +38,10 @@ use unisim.vcomponents.all;
 
 entity DesyTrackerEthCore is
    generic (
-      TPD_G     : time             := 1 ns;
-      DHCP_G    : boolean          := false;          -- true = DHCP, false = static address
-      IP_ADDR_G : slv(31 downto 0) := x"0A01A8C0");  -- 192.168.1.10 (before DHCP)
+      TPD_G        : time             := 1 ns;
+      SIMULATION_G : boolean          := false;
+      DHCP_G       : boolean          := false;         -- true = DHCP, false = static address
+      IP_ADDR_G    : slv(31 downto 0) := x"0A01A8C0");  -- 192.168.1.10 (before DHCP)
    port (
       -- Reference Clock and Reset
       clk200           : out sl;
@@ -77,8 +78,9 @@ architecture mapping of DesyTrackerEthCore is
    constant SERVER_SIZE_C  : positive                  := 1;
    constant SERVER_PORTS_C : PositiveArray(0 downto 0) := (0 => 8192);
 
-   constant RSSI_SIZE_C   : positive                                     := 2;
-   constant AXIS_CONFIG_C : AxiStreamConfigArray(RSSI_SIZE_C-1 downto 0) := (others => ssiAxiStreamConfig(8));
+   constant RSSI_SIZE_C   : positive            := 2;
+   constant AXIS_CONFIG_C : AxiStreamConfigType := ssiAxiStreamConfig(8);
+--   constant AXIS_CONFIG_C : AxiStreamConfigArray(RSSI_SIZE_C-1 downto 0) := (others => ssiAxiStreamConfig(8));
 
    signal gtClkDiv2  : sl;
    signal refClk     : sl;
@@ -185,116 +187,146 @@ begin
          rstOut(1) => ethRstDiv2,
          rstOut(2) => locRst200);
 
-   -------------------------
-   -- GigE Core for KINTEX-7
-   -------------------------
-   U_ETH_PHY_MAC : entity work.GigEthGtx7
-      generic map (
-         TPD_G         => TPD_G,
-         AXIS_CONFIG_G => EMAC_AXIS_CONFIG_C)
-      port map (
-         -- Local Configurations
-         localMac    => localMac,
-         -- Streaming DMA Interface 
-         dmaClk      => ethClk,
-         dmaRst      => ethRst,
-         dmaIbMaster => rxMaster,
-         dmaIbSlave  => rxSlave,
-         dmaObMaster => txMaster,
-         dmaObSlave  => txSlave,
-         -- PHY + MAC signals
-         sysClk62    => ethClkDiv2,
-         sysClk125   => ethClk,
-         sysRst125   => ethRst,
-         extRst      => refRst,
-         phyReady    => phyReady,
-         -- MGT Ports
-         gtTxP       => gtTxP,
-         gtTxN       => gtTxN,
-         gtRxP       => gtRxP,
-         gtRxN       => gtRxN);
+   REAL_ETH_GEN : if (not SIMULATION_G) generate
 
-   ----------------------
-   -- IPv4/ARP/UDP Engine
-   ----------------------
-   U_UDP : entity work.UdpEngineWrapper
-      generic map (
-         -- Simulation Generics
-         TPD_G          => TPD_G,
-         -- UDP Server Generics
-         SERVER_EN_G    => true,
-         SERVER_SIZE_G  => SERVER_SIZE_C,
-         SERVER_PORTS_G => SERVER_PORTS_C,
-         -- UDP Client Generics
-         CLIENT_EN_G    => false,
-         -- General IPv4/ARP/DHCP Generics
-         DHCP_G         => DHCP_G,
-         CLK_FREQ_G     => 125.0E+6,
-         COMM_TIMEOUT_G => 30)
-      port map (
-         -- Local Configurations
-         localMac        => localMac,
-         localIp         => IP_ADDR_G,
-         -- Interface to Ethernet Media Access Controller (MAC)
-         obMacMaster     => rxMaster,
-         obMacSlave      => rxSlave,
-         ibMacMaster     => txMaster,
-         ibMacSlave      => txSlave,
-         -- Interface to UDP Server engine(s)
-         obServerMasters => obServerMasters,
-         obServerSlaves  => obServerSlaves,
-         ibServerMasters => ibServerMasters,
-         ibServerSlaves  => ibServerSlaves,
-         -- Clock and Reset
-         clk             => ethClk,
-         rst             => ethRst);
 
-   ------------------------------------------
-   -- Software's RSSI Server Interface @ 8192
-   ------------------------------------------
-   U_RssiServer : entity work.RssiCoreWrapper
-      generic map (
-         TPD_G               => TPD_G,
-         APP_ILEAVE_EN_G     => true,
-         MAX_SEG_SIZE_G      => 1024,
-         SEGMENT_ADDR_SIZE_G => 7,
-         APP_STREAMS_G       => 2,
-         APP_STREAM_ROUTES_G => (
-            0                => X"00",
-            1                => X"01"),
-         CLK_FREQUENCY_G     => 125.0E+6,
-         TIMEOUT_UNIT_G      => 1.0E-3,  -- In units of seconds
-         SERVER_G            => true,
-         RETRANSMIT_ENABLE_G => true,
-         BYPASS_CHUNKER_G    => false,
-         WINDOW_ADDR_SIZE_G  => 3,
-         PIPE_STAGES_G       => 1,
-         APP_AXIS_CONFIG_G   => AXIS_CONFIG_C,
-         TSP_AXIS_CONFIG_G   => EMAC_AXIS_CONFIG_C,
-         INIT_SEQ_N_G        => 16#80#)
-      port map (
-         clk_i             => ethClk,
-         rst_i             => ethRst,
-         openRq_i          => '1',
-         -- Application Layer Interface
-         sAppAxisMasters_i => rssiIbMasters,
-         sAppAxisSlaves_o  => rssiIbSlaves,
-         mAppAxisMasters_o => rssiObMasters,
-         mAppAxisSlaves_i  => rssiObSlaves,
-         -- Transport Layer Interface
-         sTspAxisMaster_i  => obServerMasters(0),
-         sTspAxisSlave_o   => obServerSlaves(0),
-         mTspAxisMaster_o  => ibServerMasters(0),
-         mTspAxisSlave_i   => ibServerSlaves(0),
-         -- AXI-Lite Interface
-         axiClk_i          => locClk200,
-         axiRst_i          => locRst200,
-         axilReadMaster    => sAxilReadMaster,
-         axilReadSlave     => sAxilReadSlave,
-         axilWriteMaster   => sAxilWriteMaster,
-         axilWriteSlave    => sAxilWriteSlave,
-         -- Internal statuses
-         statusReg_o       => rssiStatus);
+
+      -------------------------
+      -- GigE Core for KINTEX-7
+      -------------------------
+      U_ETH_PHY_MAC : entity work.GigEthGtx7
+         generic map (
+            TPD_G         => TPD_G,
+            AXIS_CONFIG_G => EMAC_AXIS_CONFIG_C)
+         port map (
+            -- Local Configurations
+            localMac    => localMac,
+            -- Streaming DMA Interface 
+            dmaClk      => ethClk,
+            dmaRst      => ethRst,
+            dmaIbMaster => rxMaster,
+            dmaIbSlave  => rxSlave,
+            dmaObMaster => txMaster,
+            dmaObSlave  => txSlave,
+            -- PHY + MAC signals
+            sysClk62    => ethClkDiv2,
+            sysClk125   => ethClk,
+            sysRst125   => ethRst,
+            extRst      => refRst,
+            phyReady    => phyReady,
+            -- MGT Ports
+            gtTxP       => gtTxP,
+            gtTxN       => gtTxN,
+            gtRxP       => gtRxP,
+            gtRxN       => gtRxN);
+
+      ----------------------
+      -- IPv4/ARP/UDP Engine
+      ----------------------
+      U_UDP : entity work.UdpEngineWrapper
+         generic map (
+            -- Simulation Generics
+            TPD_G          => TPD_G,
+            -- UDP Server Generics
+            SERVER_EN_G    => true,
+            SERVER_SIZE_G  => SERVER_SIZE_C,
+            SERVER_PORTS_G => SERVER_PORTS_C,
+            -- UDP Client Generics
+            CLIENT_EN_G    => false,
+            -- General IPv4/ARP/DHCP Generics
+            DHCP_G         => DHCP_G,
+            CLK_FREQ_G     => 125.0E+6,
+            COMM_TIMEOUT_G => 30)
+         port map (
+            -- Local Configurations
+            localMac        => localMac,
+            localIp         => IP_ADDR_G,
+            -- Interface to Ethernet Media Access Controller (MAC)
+            obMacMaster     => rxMaster,
+            obMacSlave      => rxSlave,
+            ibMacMaster     => txMaster,
+            ibMacSlave      => txSlave,
+            -- Interface to UDP Server engine(s)
+            obServerMasters => obServerMasters,
+            obServerSlaves  => obServerSlaves,
+            ibServerMasters => ibServerMasters,
+            ibServerSlaves  => ibServerSlaves,
+            -- Clock and Reset
+            clk             => ethClk,
+            rst             => ethRst);
+
+      ------------------------------------------
+      -- Software's RSSI Server Interface @ 8192
+      ------------------------------------------
+      U_RssiServer : entity work.RssiCoreWrapper
+         generic map (
+            TPD_G               => TPD_G,
+            APP_ILEAVE_EN_G     => true,
+            MAX_SEG_SIZE_G      => 1024,
+            SEGMENT_ADDR_SIZE_G => 7,
+            APP_STREAMS_G       => 2,
+            APP_STREAM_ROUTES_G => (
+               0                => X"00",
+               1                => X"01"),
+            CLK_FREQUENCY_G     => 125.0E+6,
+            TIMEOUT_UNIT_G      => 1.0E-3,  -- In units of seconds
+            SERVER_G            => true,
+            RETRANSMIT_ENABLE_G => true,
+            BYPASS_CHUNKER_G    => false,
+            WINDOW_ADDR_SIZE_G  => 3,
+            PIPE_STAGES_G       => 1,
+            APP_AXIS_CONFIG_G   => (0 => AXIS_CONFIG_C, 1 => AXIS_CONFIG_C),
+            TSP_AXIS_CONFIG_G   => EMAC_AXIS_CONFIG_C,
+            INIT_SEQ_N_G        => 16#80#)
+         port map (
+            clk_i             => ethClk,
+            rst_i             => ethRst,
+            openRq_i          => '1',
+            -- Application Layer Interface
+            sAppAxisMasters_i => rssiIbMasters,
+            sAppAxisSlaves_o  => rssiIbSlaves,
+            mAppAxisMasters_o => rssiObMasters,
+            mAppAxisSlaves_i  => rssiObSlaves,
+            -- Transport Layer Interface
+            sTspAxisMaster_i  => obServerMasters(0),
+            sTspAxisSlave_o   => obServerSlaves(0),
+            mTspAxisMaster_o  => ibServerMasters(0),
+            mTspAxisSlave_i   => ibServerSlaves(0),
+            -- AXI-Lite Interface
+            axiClk_i          => locClk200,
+            axiRst_i          => locRst200,
+            axilReadMaster    => sAxilReadMaster,
+            axilReadSlave     => sAxilReadSlave,
+            axilWriteMaster   => sAxilWriteMaster,
+            axilWriteSlave    => sAxilWriteSlave,
+            -- Internal statuses
+            statusReg_o       => rssiStatus);
+
+   end generate REAL_ETH_GEN;
+
+   SIM_GEN : if (SIMULATION_G) generate
+      DESTS : for i in 1 downto 0 generate
+         U_RogueStreamSimWrap_1 : entity work.RogueStreamSimWrap
+            generic map (
+               TPD_G               => TPD_G,
+               DEST_ID_G           => 0,
+               USER_ID_G           => 1,
+               COMMON_MASTER_CLK_G => true,
+               COMMON_SLAVE_CLK_G  => true,
+               AXIS_CONFIG_G       => AXIS_CONFIG_C)
+            port map (
+               clk         => locClk200,         -- [in]
+               rst         => locRst200,         -- [in]
+               sAxisClk    => locClk200,         -- [in]
+               sAxisRst    => locRst200,         -- [in]
+               sAxisMaster => rssiIbMasters(i),  -- [in]
+               sAxisSlave  => rssiIbSlaves(i),   -- [out]
+               mAxisClk    => locClk200,         -- [in]
+               mAxisRst    => locRst200,         -- [in]
+               mAxisMaster => rssiObMasters(i),  -- [out]
+               mAxisSlave  => rssiObSlaves(i));  -- [in]
+      end generate;
+   end generate SIM_GEN;
 
    ---------------------------------------
    -- TDEST = 0x0: Register access control   
@@ -305,7 +337,7 @@ begin
          SLAVE_READY_EN_G    => true,
          GEN_SYNC_FIFO_G     => false,
          AXIL_CLK_FREQ_G     => 200.0e6,
-         AXI_STREAM_CONFIG_G => AXIS_CONFIG_C(0))
+         AXI_STREAM_CONFIG_G => AXIS_CONFIG_C)
       port map (
          -- Streaming Slave (Rx) Interface (sAxisClk domain) 
          sAxisClk         => ethClk,
@@ -344,7 +376,7 @@ begin
          FIFO_FIXED_THRESH_G => true,
          FIFO_PAUSE_THRESH_G => 2**12-8,
          SLAVE_AXI_CONFIG_G  => EB_DATA_AXIS_CONFIG_C,
-         MASTER_AXI_CONFIG_G => AXIS_CONFIG_C(1))
+         MASTER_AXI_CONFIG_G => AXIS_CONFIG_C)
       port map (
          sAxisClk    => locClk200,         -- [in]
          sAxisRst    => locRst200,         -- [in]
@@ -359,7 +391,7 @@ begin
    rssiObSlaves(1) <= AXI_STREAM_SLAVE_FORCE_C;  -- always ready
 
    acqReqValid <= rssiObMasters(1).tValid and toSl(rssiObMasters(1).tData(7 downto 0) = X"AA") and
-                  rssiObMasters(1).tLast and ssiGetUserSof(AXIS_CONFIG_C(1), rssiObMasters(1));
+                  rssiObMasters(1).tLast and ssiGetUserSof(AXIS_CONFIG_C, rssiObMasters(1));
 
    U_SynchronizerFifo_1 : entity work.SynchronizerFifo
       generic map (
