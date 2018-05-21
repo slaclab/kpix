@@ -53,6 +53,11 @@ set_property -dict { PACKAGE_PIN v1   IOSTANDARD LVDS } [get_ports { kpixTrigN[2
 set_property -dict { PACKAGE_PIN AE6  IOSTANDARD LVDS } [get_ports { kpixTrigP[3] }];
 set_property -dict { PACKAGE_PIN AE5  IOSTANDARD LVDS } [get_ports { kpixTrigN[3] }];
 
+set_property -dict { PACKAGE_PIN W8   IOSTANDARD LVCMOS18 } [get_ports { kpixRst[0] }];
+set_property -dict { PACKAGE_PIN AE12 IOSTANDARD LVCMOS18 } [get_ports { kpixRst[1] }];
+set_property -dict { PACKAGE_PIN W4   IOSTANDARD LVCMOS18 } [get_ports { kpixRst[2] }];
+set_property -dict { PACKAGE_PIN AF5  IOSTANDARD LVCMOS18 } [get_ports { kpixRst[3] }];
+
 set_property -dict { PACKAGE_PIN U9   IOSTANDARD LVCMOS18 } [get_ports { kpixCmd[0][0] }];
 set_property -dict { PACKAGE_PIN W11  IOSTANDARD LVCMOS18 } [get_ports { kpixCmd[0][1] }];
 set_property -dict { PACKAGE_PIN V7   IOSTANDARD LVCMOS18 } [get_ports { kpixCmd[0][2] }];
