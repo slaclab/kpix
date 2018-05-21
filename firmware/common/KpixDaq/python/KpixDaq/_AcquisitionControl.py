@@ -68,5 +68,5 @@ class AcquisitionControl(pr.Device):
             offset = 0x14,
             bitOffset = 0,
             bitSize = 1,
-            function = RemoteCommand.touchOne))
+            function = pr.RemoteCommand.touchOne))
         

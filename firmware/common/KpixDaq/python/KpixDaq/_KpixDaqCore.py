@@ -11,7 +11,7 @@ class KpixDaqCore(pr.Device):
         self.add(kd.KpixClockGen(
             offset=0x100))
 
-        self.add(kd.AcquistionControl(
+        self.add(kd.AcquisitionControl(
             offset = 0x200,
             extTrigEnum = extTrigEnum))
 

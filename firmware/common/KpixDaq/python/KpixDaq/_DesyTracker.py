@@ -1,33 +1,51 @@
-import pyrogue as pr
+import pyrogue
+import pyrogue.interfaces.simulation
+import pyrogue.protocols
+import pyrogue.utilities.fileio
+import rogue
 import surf.axi as axi
 import surf.protocols.rssi as rssi
 import KpixDaq
 
-class DesyTrackerRoot(pr.Root):
-    def __init__(self, hwEmu=False, pollEn=False, **kwargs):
+class DesyTrackerRoot(pyrogue.Root):
+    def __init__(self, mode="HW", pollEn=False, **kwargs):
         super().__init__(**kwargs)
 
-        cmd = rogue.interfaces.stream.Master()
+        print(f"DesyTrackerRoot(mode={mode})")
 
+        if mode == "MEM_EMU":
+            srp = pyrogue.interfaces.simulation.MemEmulate()
+            data = rogue.interfaces.stream.Master()
+            cmd = rogue.interfaces.stream.Master()
         
-        if hwEmu:
-            srp = pr.interfaces.simulation.MemEmulate()
         else:
-            udp = pyrogue.protocols.UdpRssiPack( host='192.168.1.10', port=8192, packVer=2 )            
+            if mode == "SIM":
+                dest0 = pyrogue.simulation.StreamSim(host='localhost', dest=0, uid=1, ssi=True)
+                dest1 = pyrogue.simulation.StreamSim(host='localhost', dest=1, uid=1, ssi=True)
+            
+            elif mode == "HW":
+                udp = pyrogue.protocols.UdpRssiPack( host='192.168.1.10', port=8192, packVer=2 )                
+                dest0 = udp.application(dest=0)
+                dest1 = udp.application(dest=1)
+
             srp = rogue.protocols.srp.SrpV3()
+            cmd = rogue.interfaces.stream.Master()            
             dataWriter = pyrogue.utilities.fileio.StreamWriter()
+            
+            pyrogue.streamConnectBiDir(srp, dest0)
+            pyrogue.streamConnect(dest1, dataWriter.getChannel(0))
+            pyrogue.streamConnect(cmd, dest1)
+
             self.add(dataWriter)
 
-            pyrogue.streamConnectBiDir(srp, udp.application(dest=0))
-            pyrogue.streamConnect(cmd, udp.application(dest=1))
-            pyrogue.streamConnect(udp.application(dest=1), dataWriter.getChannel(0))
-
+            
         self.add(DesyTracker(memBase=srp, cmd=cmd, offset=0, enabled=True))
 
+        print('Calling start')
         self.start(pollEn=pollEn)
         
 
-class DesyTracker(pr.Device):
+class DesyTracker(pyrogue.Device):
     def __init__(self, cmd, **kwargs):
         super().__init__(**kwargs)
 
@@ -56,9 +74,6 @@ class DesyTracker(pr.Device):
         self.add(rssi.RssiCore(
             offset = 0x02000000))
 
-class DesyTrackerRoot(pr.Root):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
         
     

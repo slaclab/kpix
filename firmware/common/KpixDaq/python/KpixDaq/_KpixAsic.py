@@ -172,7 +172,7 @@ class KpixAsic(pr.Device):
             bitSize=16,
             hidden=True))
 
-        self.add(pr.Linkedset(
+        self.add(pr.LinkVariable(
             name = 'BunchClockCount',
             variable = self.BunchClockCountRaw,
             linkedGet = lambda: self.BunchClockCountRaw.value() + 1,
@@ -259,7 +259,7 @@ class KpixAsic(pr.Device):
             self.add(pr.LinkVariable(
                 name = f'{name}Volt',
                 mode = 'RO',
-                dependencies = [self.node(name)]
+                dependencies = [self.node(name)],
                 linkedGet = dacToVolt))
 
         makeDacVar(name = 'DacPreThresholdA', offset=DAC_0)
@@ -277,35 +277,35 @@ class KpixAsic(pr.Device):
         DacCalibrationCharge
         
         self.add(pr.RemoteVariable(
-            name = 'CntrlDisPerReset'
+            name = 'CntrlDisPerReset',
             offset=CONTROL,
             bitOffset=0,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
-            name = 'CntrlEnDcReset'
+            name = 'CntrlEnDcReset',
             offset=CONTROL,
             bitOffset=1,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
-            name = 'CntrlHighGain'
+            name = 'CntrlHighGain',
             offset=CONTROL,
             bitOffset=2,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
-            name = 'CntrlNearNeighbor'
+            name = 'CntrlNearNeighbor',
             offset=CONTROL,
             bitOffset=3,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
-            name = 'CntrlCalSource'
+            name = 'CntrlCalSource',
             offset=CONTROL,
             bitOffset=[6, 4], # I'm pretty sure this wont work
             bitSize=[1, 1],
@@ -315,7 +315,7 @@ class KpixAsic(pr.Device):
                 2: 'External'}))
 
         self.add(pr.RemoteVariable(
-            name = 'CntrlCalSource'
+            name = 'CntrlCalSource',
             offset=CONTROL,
             bitOffset=[7, 5], # I'm pretty sure this wont work
             bitSize=[1, 1],
@@ -325,7 +325,7 @@ class KpixAsic(pr.Device):
                 2: 'External'}))
 
         self.add(pr.RemoteVariable(
-            name = 'CntrlHoldTime'
+            name = 'CntrlHoldTime',
             offset=CONTROL,
             bitOffset=8,
             bitSize=3,
@@ -340,28 +340,28 @@ class KpixAsic(pr.Device):
                 7: '64x'}))
         
         self.add(pr.RemoteVariable(
-            name = 'CntrlCalibHigh'
+            name = 'CntrlCalibHigh',
             offset=CONTROL,
             bitOffset=11,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
-            name = 'CntrlShortIntEn'
+            name = 'CntrlShortIntEn',
             offset=CONTROL,
             bitOffset=12,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
-            name = 'CntrlForceLowGain'
+            name = 'CntrlForceLowGain',
             offset=CONTROL,
             bitOffset=13,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
-            name = 'CntrlLeakNullDisable'
+            name = 'CntrlLeakNullDisable',
             offset=CONTROL,
             bitOffset=14,
             bitSize=1,
@@ -369,7 +369,7 @@ class KpixAsic(pr.Device):
 
 
         self.add(pr.RemoteVariable(
-            name = 'CntrlPolarity'
+            name = 'CntrlPolarity',
             offset=CONTROL,
             bitOffset=15,
             bitSize=1,
@@ -379,14 +379,14 @@ class KpixAsic(pr.Device):
 
 
         self.add(pr.RemoteVariable(
-            name = 'CntrlDisPwrCycle'
+            name = 'CntrlDisPwrCycle',
             offset=CONTROL,
             bitOffset=24,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
-            name = 'CntrlFeCurr'
+            name = 'CntrlFeCurr',
             offset=CONTROL,
             bitOffset=25,
             bitSize=3,
@@ -403,7 +403,7 @@ class KpixAsic(pr.Device):
 
 
         self.add(pr.RemoteVariable(
-            name = 'CntrlDiffTime'
+            name = 'CntrlDiffTime',
             offset=CONTROL,
             bitOffset=28,
             bitSize=2,
@@ -414,7 +414,7 @@ class KpixAsic(pr.Device):
                 3: 'Quarter'}))
 
         self.add(pr.RemoteVariable(
-            name = 'CntrlMonSource'
+            name = 'CntrlMonSource',
             offset=CONTROL,
             bitOffset=30,
             bitSize=2,

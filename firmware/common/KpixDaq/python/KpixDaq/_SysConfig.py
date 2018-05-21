@@ -33,7 +33,7 @@ class SysConfig(pr.Device):
             offset = 0x00,
             bitOffset = 0,
             bitSize = 1,
-            function = RemoteCommand.touchOne))
+            function = pr.RemoteCommand.touchOne))
         
         
         
