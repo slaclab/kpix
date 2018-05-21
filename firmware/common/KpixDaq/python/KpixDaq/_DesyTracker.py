@@ -3,22 +3,37 @@ import surf.axi as axi
 import surf.protocols.rssi as rssi
 import KpixDaq
 
-class DesyTracker(pr.Device):
-    def __init__(self, **kwargs):
+class DesyTrackerRoot(pr.Root):
+    def __init__(self, hwEmu=False, pollEn=False, **kwargs):
         super().__init__(**kwargs)
 
+        cmd = rogue.interfaces.stream.Master()
+
+        
         if hwEmu:
             srp = pr.interfaces.simulation.MemEmulate()
         else:
+            udp = pyrogue.protocols.UdpRssiPack( host='192.168.1.10', port=8192, packVer=2 )            
             srp = rogue.protocols.srp.SrpV3()
-            udp = pyrogue.protocols.UdpRssiPack( host='192.168.1.10', port=8192, packVer=2 )
+            dataWriter = pyrogue.utilities.fileio.StreamWriter()
+            self.add(dataWriter)
+
             pyrogue.streamConnectBiDir(srp, udp.application(dest=0))
-            cmd = rogue.interfaces.stream.Master()
             pyrogue.streamConnect(cmd, udp.application(dest=1))
+            pyrogue.streamConnect(udp.application(dest=1), dataWriter.getChannel(0))
+
+        self.add(DesyTracker(memBase=srp, cmd=cmd, offset=0, enabled=True))
+
+        self.start(pollEn=pollEn)
+        
+
+class DesyTracker(pr.Device):
+    def __init__(self, cmd, **kwargs):
+        super().__init__(**kwargs)
 
         @self.command()
         def EthAcquire():
-            cmd.sendFrame(b'\xaa')
+            cmd._sendFrame(bytearray([b'\xaa']))
                 
         self.add(axi.AxiVersion(
             offset = 0x0000))
