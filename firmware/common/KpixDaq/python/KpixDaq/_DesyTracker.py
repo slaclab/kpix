@@ -42,8 +42,7 @@ class DesyTrackerRoot(pyrogue.Root):
         self.add(DesyTracker(memBase=srp, cmd=cmd, offset=0, rssi=(mode=='HW'), enabled=True))
 
         print('Calling start')
-        self.start(pollEn=pollEn)
-        self.setTimeout(100000)        
+        self.start(pollEn=pollEn, timeout=100000)
         print('Start Done')        
         
 
