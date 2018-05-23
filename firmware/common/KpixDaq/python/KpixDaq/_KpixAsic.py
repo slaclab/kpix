@@ -484,17 +484,16 @@ class KpixAsic(pr.Device):
                 mode = 'RW',
                 dependencies = [self.node(f'ChanModeA_{col}'), self.node(f'ChanModeB_{col}')],
                 linkedGet = getChanMode,
-                linkedSet = setChanMode))            
+                linkedSet = setChanMode))  
+            
                 
 
-#         # Channel mode variables
+        # Channel mode variables
 #         for col in range(32):
 #             for row in range(32):
-#                 self.add(pr.LinkVariable(
+#                 self.add(pr.RemoteVariable(
 #                     name = f'ChanMode_{col}_{row}',
 #                     mode = 'RW',
-#                     dependencies = [self.node(f'ChanModeA_{col}'), self.node(f'ChanModeB_{col}')]
-#                     getFunction = lambda: ((self.dependencies[1].value() >> row)&1 << 1) | ((self.dependencies[0].value() >> row) &1)
 #                     offset = [CHAN_MODE_A[col], CHAN_MODE_B[col]],
 #                     bitOffset = 31-row,
 #                     bitSize = 1,
@@ -532,7 +531,6 @@ class LocalKpix(KpixAsic):
             if v not in self.activeVariables:
                 v.hidden = True
         self.enable.hidden = False
-        print(self.activeVariables)
         
     def writeBlocks(self, force=False, recurse=True, variable=None, checkEach=False):
         if variable is None:
