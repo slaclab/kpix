@@ -369,7 +369,7 @@ begin
                end if;
 
             when RX_RESP_S =>
-               if (r.rxShiftCount = 59) then
+               if (r.rxShiftCount = 32) then
                   v.rxState := RX_IDLE_S;
                end if;
 
