@@ -28,7 +28,7 @@ class KpixAsicArray(pr.Device):
     def __init__(self, numKpix, **kwargs):
         super().__init__(**kwargs)
         for i in range(numKpix):
-            self.add(KpixDaq.KpixAsic(
+            self.add(KpixDaq.LocalKpix(
                 name = f'KpixAsic[{i}]',
                 offset = 0x100000 + (i*0x1000),
                 enabled = False,
@@ -41,9 +41,9 @@ class KpixAsicArray(pr.Device):
             enabled = True,
             expand = False))
 
-    def readBlocks(self, recurse=True, variable=None, checkEach=False):
-        self._root.checkBlocks()
-        pr.Device.readBlocks(self, recurse, variable, checkEach=True)
+#     def readBlocks(self, recurse=True, variable=None, checkEach=False):
+#         self._root.checkBlocks()
+#         pr.Device.readBlocks(self, recurse, variable, checkEach=True)
 
 class KpixDataRxArray(pr.Device):
     def __init__(self, numKpix, **kwargs):
