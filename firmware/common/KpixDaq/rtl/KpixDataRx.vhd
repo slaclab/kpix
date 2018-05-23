@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2018-05-18
+-- Last update: 2018-05-23
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -259,10 +259,10 @@ begin
       axiSlaveWaitTxn(axilEp, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
 
 --      axiSlaveRegister(axilEp, X"00", 0, v.enabled);
-      axiSlaveRegister(axilEp, x"00", 0, v.markerErrorCount);      
-      axiSlaveRegister(axilEp, X"04", 0, v.overflowErrorCount);
-      axiSlaveRegister(axilEp, x"08", 0, v.headerParityErrorCount);
-      axiSlaveRegister(axilEp, X"0C", 0, v.dataParityErrorCount);
+      axiSlaveRegisterR(axilEp, x"00", 0, r.markerErrorCount);      
+      axiSlaveRegisterR(axilEp, X"04", 0, r.overflowErrorCount);
+      axiSlaveRegisterR(axilEp, x"08", 0, r.headerParityErrorCount);
+      axiSlaveRegisterR(axilEp, X"0C", 0, r.dataParityErrorCount);
       axiSlaveRegister(axilEp, X"10", 0, v.resetCounters);
 
       axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
