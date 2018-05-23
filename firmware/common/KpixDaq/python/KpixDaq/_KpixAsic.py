@@ -1,3 +1,4 @@
+import collections
 import pyrogue as pr
 
 class FlippedUInt(pr.UInt):
@@ -459,16 +460,13 @@ class KpixAsic(pr.Device):
             l = []
             a = var.dependencies[0].value()
             b = var.dependencies[1].value()
-            print(f'Getting Chan mode {var.name} - a: {a:08x}, b: {b:08x}')
             for row in range(32):
                 val = ((((b >> (31-row)) & 1) <<1 ), ((a >> (31-row)) & 1))
                 l.append(d[val])
             s =  ' '.join([''.join(x for x in l[i:i+8]) for i in range(0, 32, 8)])
-            print(f'Result - {s}')
             return s
 
         def setChanMode(dev, var, value):
-            print(f'Setting chan mode - value: {value}')
             value = ''.join(value.split()) # remove whitespace
             regA = 0
             regB = 0
@@ -476,9 +474,7 @@ class KpixAsic(pr.Device):
                 b,a = drev[value[row]]
                 regA |= a << (31-row)
                 regB |= b << (31-row)
-                print(f'value[i]: {value[i]}, a: {a}, b: {b}, regA: {regA}, regB: {regB}')
                 
-            print(f'Set A: {regA:08x}, B: {regB:08x}')
             var.dependencies[0].set(regA)
             var.dependencies[1].set(regB)
             
@@ -542,6 +538,9 @@ class LocalKpix(KpixAsic):
         if variable is None:
             super().writeBlocks(force=force, recurse=recurse, variable=self.activeVariables, checkEach=checkEach)
         else:
+            if isinstance(variable, pr.BaseVariable):
+                variable = [variable]
+            variable = [x for x in variable if x in self.activeVariables]
             super().writeBlocks(force=force, recurse=recurse, variable=variable, checkEach=checkEach)
 
         
@@ -549,18 +548,27 @@ class LocalKpix(KpixAsic):
         if variable is None:
             super().readBlocks(recurse=recurse, variable=self.activeVariables, checkEach=checkEach)
         else:
+            if isinstance(variable, pr.BaseVariable):
+                variable = [variable]
+            variable = [x for x in variable if x in self.activeVariables]            
             super().readBlocks(recurse=recurse, variable=variable, checkEach=checkEach)
         
     def verifyBlocks(self, recurse=True, variable=None, checkEach=False):
         if variable is None:
             super().verifyBlocks(recurse=recurse, variable=self.activeVariables, checkEach=checkEach)
         else:
+            if isinstance(variable, pr.BaseVariable):
+                variable = [variable]
+            variable = [x for x in variable if x in self.activeVariables]            
             super().verifyBlocks(recurse=recurse, variable=variable, checkEach=checkEach)
 
     def checkBlocks(self, recurse=True, variable=None, checkEach=False):
         if variable is None:
             super().checkBlocks(recurse=recurse, variable=self.activeVariables)
         else:
+            if isinstance(variable, pr.BaseVariable):
+                variable = [variable]
+            variable = [x for x in variable if x in self.activeVariables]            
             super().checkBlocks(recurse=recurse, variable=variable)
 
 
