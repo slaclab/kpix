@@ -35,34 +35,38 @@ class KpixAsic(pr.Device):
         DAC_6 = 0x0026*4
         DAC_7 = 0x0027*4
         DAC_8 = 0x0028*4
-        DAC_0 = 0x0029*4
+        DAC_9 = 0x0029*4
         CONTROL = 0x0030*4
-        CHANMODE_A = list(range(0x0040*4, 0x0060*4, 4))
-        CHANMODE_B = list(range(0x0060*4, 0x0080*4, 4))        
+        CHAN_MODE_A = list(range(0x0040*4, 0x0060*4, 4))
+        CHAN_MODE_B = list(range(0x0060*4, 0x0080*4, 4))        
         
 
         # Status regs
         self.add(pr.RemoteVariable(
             name = 'StatCmdPerr',
             offset=STATUS,
+            mode='RO',
             bitOffset=0,
             bitSize=1))
 
         self.add(pr.RemoteVariable(
             name = 'StatDataPerr',
             offset=STATUS,
+            mode='RO',
             bitOffset=1,
             bitSize=1))
 
         self.add(pr.RemoteVariable(
             name = 'StatTempEn',
             offset=STATUS,
+            mode='RO',
             bitOffset=2,
             bitSize=1))
 
         self.add(pr.RemoteVariable(
             name = 'StatTempIdValue',
             offset=STATUS,
+            mode='RO',
             bitOffset=24,
             bitSize=8))
 
@@ -161,8 +165,8 @@ class KpixAsic(pr.Device):
         self.add(pr.LinkVariable(
             name = 'TrigInhibitOff',
             dependencies = [self.TimerD, self.TimeBunchClkDelay],
-            linkedGet = lambda: ((self.TimerD.value()-self.TimeBunchClkDelay.value())-1)/8,
-            linkedSet = lambda value: self.TimerD.set((value*8)+self.TimeBunchClkDelay.value()+1)))
+            linkedGet = lambda: int( ((self.TimerD.value()-self.TimeBunchClkDelay.value())-1)/8 ),
+            linkedSet = lambda value: self.TimerD.set((int(value)*8)+self.TimeBunchClkDelay.value()+1)))
 
         # setComp(0,1,1,'')
         self.add(pr.RemoteVariable(
@@ -179,11 +183,11 @@ class KpixAsic(pr.Device):
             linkedSet = lambda value: self.BunchClockCountRaw.set(value - 1)))
         
 
-        self.add(pr.RemoteVariable(
-            name = 'TimePowerUpOn',
-            offset=TIMER_E,
-            bitOffset=16,
-            bitSize=16))
+ #        self.add(pr.RemoteVariable(
+#             name = 'TimePowerUpOn',
+#             offset=TIMER_E,
+#             bitOffset=16,
+#             bitSize=16))
 
 
         # Calibration Stuff
@@ -231,7 +235,7 @@ class KpixAsic(pr.Device):
                     name = f'{name}Raw{i}',
                     offset = offset,
                     bitOffset = i*8,                    
-                    bitsize = 8,
+                    bitSize = 8,
                     hidden = True))
             raws = [self.node(f'{name}Raw{i}') for i in range(4)]
 
@@ -239,7 +243,7 @@ class KpixAsic(pr.Device):
             # Set all Raw RemoteVariables to the same value
             def ls(value):
                 for v in raws:
-                    self.set(value)
+                    v.set(value)
             self.add(pr.LinkVariable(
                 name = name,
                 mode = 'RW',
@@ -274,7 +278,7 @@ class KpixAsic(pr.Device):
         makeDacVar(name = 'DacThresholdB', offset=DAC_9)        
         
 
-        DacCalibrationCharge
+        #DacCalibrationCharge
         
         self.add(pr.RemoteVariable(
             name = 'CntrlDisPerReset',
@@ -315,7 +319,7 @@ class KpixAsic(pr.Device):
                 2: 'External'}))
 
         self.add(pr.RemoteVariable(
-            name = 'CntrlCalSource',
+            name = 'CntrlForceTrigSource',
             offset=CONTROL,
             bitOffset=[7, 5], # I'm pretty sure this wont work
             bitSize=[1, 1],
@@ -377,6 +381,13 @@ class KpixAsic(pr.Device):
                 0: 'Negative',
                 1: 'Positive'}))
 
+        self.add(pr.RemoteVariable(
+            name = 'CntrlTrigDisable',
+            offset=CONTROL,
+            bitOffset=16,
+            bitSize=1,
+            base=pr.Bool))
+
 
         self.add(pr.RemoteVariable(
             name = 'CntrlDisPwrCycle',
@@ -391,7 +402,7 @@ class KpixAsic(pr.Device):
             bitOffset=25,
             bitSize=3,
             base = FlippedUInt,
-            emum = {
+            enum = {
                 0: '1uA',
                 1: '31uA',
                 2: '61uA',
@@ -424,47 +435,108 @@ class KpixAsic(pr.Device):
                 1: 'Amp',
                 2: 'Shaper'}))
 
-        # Channel mode variables
-        for col in range(32):
-            for row in range(32):
-                self.add(pr.RemoteVariable(
-                    name = f'ChanMode_{col}_{row}',
-                    mode = 'RW',
-                    offset = [CHAN_MODE_A[col], CHAN_MODE_B[col]],
-                    bitOffset = 31-row,
-                    bitSize = 1,
-                    hidden = True,
-                    enum = {
-                        0b00: 'B',
-                        0b01: 'D',
-                        0b10: 'A',
-                        0b11: 'C'}))
+        for i, addr in enumerate(CHAN_MODE_A):
+            self.add(pr.RemoteVariable(
+                name = f'ChanModeA_{i}',
+                offset = addr,
+                mode = 'RW',
+                hidden = True))
 
-        def getChanMode(dev, var):
-            # Combine into a string with a space every 8 chars
-            return ' '.join([''.join(dep.value() for dep in var.dependencies[i:i+8]) for i in range(0, 32, 8)]),
+        for i, addr in enumerate(CHAN_MODE_B):
+            self.add(pr.RemoteVariable(
+                name = f'ChanModeB_{i}',
+                offset = addr,
+                mode = 'RW',
+                hidden = True))
+
+        d = {(0,0): 'B',
+             (0,1): 'D',
+             (1,0): 'A',
+             (1,1): 'C'}
+        drev = {v:k for k,v in d.items()}
         
+        def getChanMode(dev, var):
+            l = []
+            a = var.dependencies[0].value()
+            b = var.dependencies[1].value()
+            print(f'Getting Chan mode {var.name} - a: {a:08x}, b: {b:08x}')
+            for row in range(32):
+                val = ((((b >> (31-row)) & 1) <<1 ), ((a >> (31-row)) & 1))
+                l.append(d[val])
+            s =  ' '.join([''.join(x for x in l[i:i+8]) for i in range(0, 32, 8)])
+            print(f'Result - {s}')
+            return s
+
         def setChanMode(dev, var, value):
+            print(f'Setting chan mode - value: {value}')
             value = ''.join(value.split()) # remove whitespace
-            for i, dep in enumerate(var.dependencies):
-                dep.set(value[i], write=(i==31)) # Only write on last value
-
-
+            regA = 0
+            regB = 0
+            for row in range(32):
+                b,a = drev[value[row]]
+                regA |= a << (31-row)
+                regB |= b << (31-row)
+                print(f'value[i]: {value[i]}, a: {a}, b: {b}, regA: {regA}, regB: {regB}')
+                
+            print(f'Set A: {regA:08x}, B: {regB:08x}')
+            var.dependencies[0].set(regA)
+            var.dependencies[1].set(regB)
+            
         for col in range(32):
             self.add(pr.LinkVariable(
-                name = f'Chan_{col*32:4d}_{col*32+31:4d}',
+                name = f'Chan_{col*32:d}_{col*32+31:d}',
                 mode = 'RW',
-                dependencies = [self.node(f'ChanMode_{col}_{row}') for row in range(32)],
+                dependencies = [self.node(f'ChanModeA_{col}'), self.node(f'ChanModeB_{col}')],
                 linkedGet = getChanMode,
-                linkedSet = setChanMode))
+                linkedSet = setChanMode))            
+                
 
-def LocalKpix(KpixAsic):
+#         # Channel mode variables
+#         for col in range(32):
+#             for row in range(32):
+#                 self.add(pr.LinkVariable(
+#                     name = f'ChanMode_{col}_{row}',
+#                     mode = 'RW',
+#                     dependencies = [self.node(f'ChanModeA_{col}'), self.node(f'ChanModeB_{col}')]
+#                     getFunction = lambda: ((self.dependencies[1].value() >> row)&1 << 1) | ((self.dependencies[0].value() >> row) &1)
+#                     offset = [CHAN_MODE_A[col], CHAN_MODE_B[col]],
+#                     bitOffset = 31-row,
+#                     bitSize = 1,
+#                     hidden = True,
+#                     enum = {
+#                         0b00: 'B',
+#                         0b01: 'D',
+#                         0b10: 'A',
+#                         0b11: 'C'}))
+
+#         def getChanMode(dev, var):
+#             # Combine into a string with a space every 8 chars
+#             return ' '.join([''.join(dep.valueDisp() for dep in var.dependencies[i:i+8]) for i in range(0, 32, 8)])
+        
+#         def setChanMode(dev, var, value):
+#             value = ''.join(value.split()) # remove whitespace
+#             for i, dep in enumerate(var.dependencies):
+#                 dep.setDisp(value[i], write=(i==31)) # Only write on last value
+
+
+#         for col in range(32):
+#             self.add(pr.LinkVariable(
+#                 name = f'Chan_{col*32:d}_{col*32+31:d}',
+#                 mode = 'RW',
+#                 dependencies = [self.node(f'ChanMode_{col}_{row}') for row in range(32)],
+#                 linkedGet = getChanMode,
+#                 linkedSet = setChanMode))
+
+class LocalKpix(KpixAsic):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.activeVariables = self.find(name='(Cal)') + self.find(name='(Time)') + self.find(name='(Cfg)')
-        for v in self._variables.values():
+        self.activeVariables = self.find(name='(Stat)') + self.find(name='(Cal)') + self.find(name='(Time)') + self.find(name='(Cfg)')
+        self.activeVariables.remove(self.TimerD)
+        for v in self.variables.values():
             if v not in self.activeVariables:
                 v.hidden = True
+        self.enable.hidden = False
+        print(self.activeVariables)
         
     def writeBlocks(self, force=False, recurse=True, variable=None, checkEach=False):
         if variable is None:
@@ -490,8 +562,6 @@ def LocalKpix(KpixAsic):
             super().checkBlocks(recurse=recurse, variable=self.activeVariables)
         else:
             super().checkBlocks(recurse=recurse, variable=variable)
-            
-        
-        
+
 
         

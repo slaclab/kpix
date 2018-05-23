@@ -20,8 +20,8 @@ class DesyTrackerRoot(pyrogue.Root):
         
         else:
             if mode == "SIM":
-                dest0 = pyrogue.simulation.StreamSim(host='localhost', dest=0, uid=1, ssi=True)
-                dest1 = pyrogue.simulation.StreamSim(host='localhost', dest=1, uid=1, ssi=True)
+                dest0 = pyrogue.interfaces.simulation.StreamSim(host='localhost', dest=0, uid=1, ssi=True)
+                dest1 = pyrogue.interfaces.simulation.StreamSim(host='localhost', dest=1, uid=1, ssi=True)
             
             elif mode == "HW":
                 udp = pyrogue.protocols.UdpRssiPack( host='192.168.1.10', port=8192, packVer=2 )                
@@ -39,19 +39,23 @@ class DesyTrackerRoot(pyrogue.Root):
             self.add(dataWriter)
 
             
-        self.add(DesyTracker(memBase=srp, cmd=cmd, offset=0, enabled=True))
+        self.add(DesyTracker(memBase=srp, cmd=cmd, offset=0, rssi=(mode=='HW'), enabled=True))
 
         print('Calling start')
         self.start(pollEn=pollEn)
+        self.setTimeout(100000)        
+        print('Start Done')        
         
 
 class DesyTracker(pyrogue.Device):
-    def __init__(self, cmd, **kwargs):
+    def __init__(self, cmd, rssi, **kwargs):
         super().__init__(**kwargs)
 
         @self.command()
         def EthAcquire():
-            cmd._sendFrame(bytearray([b'\xaa']))
+            f = cmd._reqFrame(1, False)
+            f.write(bytearray([0xAA]), 0)
+            cmd._sendFrame(f)
                 
         self.add(axi.AxiVersion(
             offset = 0x0000))
@@ -71,8 +75,9 @@ class DesyTracker(pyrogue.Device):
             numKpix = 24,
             extTrigEnum = extTrigEnum))
 
-        self.add(rssi.RssiCore(
-            offset = 0x02000000))
+        if rssi:
+            self.add(rssi.RssiCore(
+                offset = 0x02000000))
 
 
         

@@ -4,7 +4,10 @@ class KpixClockGen(pr.Device):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        clockRate = 5.0e-9
+        clockRate = 5.0
+
+        def getPeriod(dev, var):
+            return (var.dependencies[0].value() + 1) * clockRate
 
         self.add(pr.RemoteVariable(
             name = 'ClkSelReadout',
@@ -16,8 +19,10 @@ class KpixClockGen(pr.Device):
         self.add(pr.LinkVariable(
             name = 'ReadoutClkPeriod',
             mode = 'RO',
-            variable = self.ClkSelReadout,
-            linkedGet = lambda: self.ClkSelReadout.value() * clockRate))
+            units = 'ns',
+            dependencies = [self.ClkSelReadout],
+            disp = '{:2.3f}',
+            linkedGet = getPeriod))
         
         
         self.add(pr.RemoteVariable(
@@ -30,13 +35,16 @@ class KpixClockGen(pr.Device):
         self.add(pr.LinkVariable(
             name = 'DigitizeClkPeriod',
             mode = 'RO',
-            variable = self.ClkSelDigitize,
-            linkedGet = lambda: self.ClkSelDigitize.value() * clockRate))
+            units = 'ns',
+            dependencies = [self.ClkSelDigitize],
+            disp = '{:2.3f}',
+            linkedGet = getPeriod))
             
         
         self.add(pr.RemoteVariable(
             name = 'ClkSelAcquire',
             mode = 'RW',
+            units = 'ns',
             offset= 0x08,
             bitOffset=0,
             bitSize=8))
@@ -44,8 +52,10 @@ class KpixClockGen(pr.Device):
         self.add(pr.LinkVariable(
             name = 'AcquireClkPeriod',
             mode = 'RO',
-            variable = self.ClkSelAcquire,
-            linkedGet = lambda: self.ClkSelAcquire.value() * clockRate))
+            units = 'ns',
+            dependencies = [self.ClkSelAcquire],
+            disp = '{:2.3f}',
+            linkedGet = getPeriod))
 
         self.add(pr.RemoteVariable(
             name = 'ClkSelIdle',
@@ -57,8 +67,10 @@ class KpixClockGen(pr.Device):
         self.add(pr.LinkVariable(
             name = 'IldeClkPeriod',
             mode = 'RO',
-            variable = self.ClkSelIdle,
-            linkedGet = lambda: self.ClkSelIdle.value() * clockRate))
+            units = 'ns',
+            dependencies = [self.ClkSelIdle],
+            disp = '{:2.3f}',
+            linkedGet = getPeriod))
         
         self.add(pr.RemoteVariable(
             name = 'ClkSelPrecharge',
@@ -70,7 +82,9 @@ class KpixClockGen(pr.Device):
         self.add(pr.LinkVariable(
             name = 'PrechargeClkPeriod',
             mode = 'RO',
-            variable = self.ClkSelPrecharge,
-            linkedGet = lambda: self.ClkSelPrecharge.value() * clockRate))
+            units = 'ns',
+            dependencies = [self.ClkSelPrecharge],
+            disp = '{:2.3f}',
+            linkedGet = getPeriod))
         
         
