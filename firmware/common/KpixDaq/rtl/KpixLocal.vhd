@@ -167,6 +167,7 @@ architecture KpixLocal of KpixLocal is
    signal r          : RegType := REG_INIT_C;
    signal rin        : RegType;
    signal regClkRise : sl;
+   signal rdback : slv(16 downto 1) := X"0001";
 
 begin
 
@@ -197,7 +198,7 @@ begin
       precharge_bus   => v8_precharge_bus,
       reg_data        => v8_reg_data,
       reg_wr_ena      => v8_reg_wr_ena,
-      rdback          => '0',
+      rdback          => rdback(1),
       analog_state    => v8_analog_state,
       read_state      => v8_read_state,
       temp_id0        => '0',
@@ -210,6 +211,20 @@ begin
       temp_id7        => '0',
       temp_en         => open
       );
+
+   rdback_proc: process (kpixClk) is
+   begin
+      if (rising_edge(kpixClk)) then
+         rdback(16) <= rdback(1) after TPD_G;
+         for i in 15 downto 1 loop
+            if (i=14 or i=13 or i=11) then
+               rdback(i) <= rdback(i+1) xor rdback(1) after TPD_G;  
+            else
+               rdback(i) <= rdback(i+1) after TPD_G;
+            end if;
+         end loop;
+      end if;
+   end process rdback_proc;
 
    -- Reset loopback
    v8_int_reset_l <= v8_out_reset_l;
