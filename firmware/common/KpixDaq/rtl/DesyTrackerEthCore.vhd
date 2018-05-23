@@ -61,9 +61,9 @@ entity DesyTrackerEthCore is
       phyReady         : out sl;
       rssiStatus       : out slv(6 downto 0);
       sAxilReadMaster  : in  AxiLiteReadMasterType;
-      sAxilReadSlave   : out AxiLiteReadSlaveType;
+      sAxilReadSlave   : out AxiLiteReadSlaveType  := AXI_LITE_READ_SLAVE_EMPTY_DECERR_C;
       sAxilWriteMaster : in  AxiLiteWriteMasterType;
-      sAxilWriteSlave  : out AxiLiteWriteSlaveType;
+      sAxilWriteSlave  : out AxiLiteWriteSlaveType := AXI_LITE_WRITE_SLAVE_EMPTY_DECERR_C;
       -- GbE Ports
       gtClkP           : in  sl;
       gtClkN           : in  sl;
@@ -153,7 +153,8 @@ begin
    -----------------
    U_PwrUpRst : entity work.PwrUpRst
       generic map (
-         TPD_G => TPD_G)
+         TPD_G         => TPD_G,
+         SIM_SPEEDUP_G => SIMULATION_G)
       port map (
          clk    => refClk,
          rstOut => refRst);
@@ -309,20 +310,20 @@ begin
          U_RogueStreamSimWrap_1 : entity work.RogueStreamSimWrap
             generic map (
                TPD_G               => TPD_G,
-               DEST_ID_G           => 0,
+               DEST_ID_G           => i,
                USER_ID_G           => 1,
                COMMON_MASTER_CLK_G => true,
                COMMON_SLAVE_CLK_G  => true,
                AXIS_CONFIG_G       => AXIS_CONFIG_C)
             port map (
-               clk         => locClk200,         -- [in]
-               rst         => locRst200,         -- [in]
-               sAxisClk    => locClk200,         -- [in]
-               sAxisRst    => locRst200,         -- [in]
+               clk         => ethClk,            -- [in]
+               rst         => ethRst,            -- [in]
+               sAxisClk    => ethClk,            -- [in]
+               sAxisRst    => ethRst,            -- [in]
                sAxisMaster => rssiIbMasters(i),  -- [in]
                sAxisSlave  => rssiIbSlaves(i),   -- [out]
-               mAxisClk    => locClk200,         -- [in]
-               mAxisRst    => locRst200,         -- [in]
+               mAxisClk    => ethClk,            -- [in]
+               mAxisRst    => ethRst,            -- [in]
                mAxisMaster => rssiObMasters(i),  -- [out]
                mAxisSlave  => rssiObSlaves(i));  -- [in]
       end generate;
@@ -391,7 +392,7 @@ begin
    rssiObSlaves(1) <= AXI_STREAM_SLAVE_FORCE_C;  -- always ready
 
    acqReqValid <= rssiObMasters(1).tValid and toSl(rssiObMasters(1).tData(7 downto 0) = X"AA") and
-                  rssiObMasters(1).tLast and ssiGetUserSof(AXIS_CONFIG_C, rssiObMasters(1));
+                  rssiObMasters(1).tLast; -- and ssiGetUserSof(AXIS_CONFIG_C, rssiObMasters(1));
 
    U_SynchronizerFifo_1 : entity work.SynchronizerFifo
       generic map (
