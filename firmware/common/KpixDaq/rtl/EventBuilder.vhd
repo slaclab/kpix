@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2018-05-16
+-- Last update: 2018-05-23
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -254,7 +254,7 @@ begin
             end if;
 
             -- Check if done
-            if (r.dataDone = sysConfig.kpixEnable) then
+            if (r.dataDone = sysConfig.kpixEnable(NUM_KPIX_MODULES_G-1 downto 0)) then
                v.ebAxisMaster.tLast  := '1';
                v.ebAxisMaster.tValid := '1';
                v.state               := WAIT_ACQUIRE_S;
