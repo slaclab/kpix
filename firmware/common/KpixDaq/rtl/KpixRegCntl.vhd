@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2018-05-16
+-- Last update: 2018-05-22
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ end entity KpixRegCntl;
 architecture rtl of KpixRegCntl is
 
    subtype REG_ADDR_RANGE_C is natural range 8 downto 2;
-   subtype KPIX_ADDR_RANGE_C is natural range 17 downto 11;
+   subtype KPIX_ADDR_RANGE_C is natural range 17 downto 12;
 --   subtype VALID_KPIX_ADDR_RANGE_C is natural range 8+log2(NUM_KPIX_MODULES_G) downto 8;
 --   subtype INVALID_KPIX_ADDR_RANGE_C is natural range 15 downto VALID_KPIX_ADDR_RANGE_C'high+1;
 
@@ -144,7 +144,7 @@ begin
                      ite(axiStatus.readEnable = '1', axilReadMaster.araddr, X"00000000"));
 
       axiKpixAddrInt        := conv_integer(axiAddr(KPIX_ADDR_RANGE_C));
-      araddrInt             := conv_integer(axilReadMaster.araddr(KPIX_ADDR_RANGE_C));
+      araddrInt             := conv_integer(axilReadMaster.araddr(KPIX_ADDR_RANGE_C)) mod (NUM_KPIX_MODULES_G+1);
       -- Always assign to ease timing
       v.axilReadSlave.rdata := kpixRegRxOut(araddrInt).regData;
 
@@ -181,9 +181,14 @@ begin
                      v.txShiftReg(KPIX_FRAME_TYPE_INDEX_C)      := KPIX_CMD_RSP_FRAME_C;
                      v.txShiftReg(KPIX_ACCESS_TYPE_INDEX_C)     := KPIX_REG_ACCESS_C;
                      v.txShiftReg(KPIX_WRITE_INDEX_C)           := axiStatus.writeEnable;
-                     v.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := bitReverse(axiAddr(REG_ADDR_RANGE_C));
+                     if (axiStatus.writeEnable = '1') then
+                        v.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := bitReverse(axilWriteMaster.awaddr(REG_ADDR_RANGE_C));
+                     else
+                        v.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := bitReverse(axilReadMaster.araddr(REG_ADDR_RANGE_C));
+                     end if;
+
                      v.txShiftReg(KPIX_DATA_RANGE_C)            := bitReverse(axilWriteMaster.wdata);
-                     if (axiStatus.readEnable = '1') then  -- Override data field with 0s of doing a read
+                     if (axiStatus.readEnable = '1') then  -- Override data field with 0s if doing a read
                         v.txShiftReg(KPIX_DATA_RANGE_C) := (others => '0');
                      end if;
                      v.txShiftReg(KPIX_HEADER_PARITY_INDEX_C) := '0';
