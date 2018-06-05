@@ -482,9 +482,17 @@ class KpixAsic(pr.Device):
             self.add(pr.LinkVariable(
                 name = f'Chan_{col*32:d}_{col*32+31:d}',
                 mode = 'RW',
-                dependencies = [self.node(f'ChanModeA_{col}'), self.node(f'ChanModeB_{col}')],
+                dependencies = [self.node(f'ChanModeA_{col}'), self.node(f'ChanaModeB_{col}')],
                 linkedGet = getChanMode,
-                linkedSet = setChanMode))  
+                linkedSet = setChanMode))
+            
+    def setCalibrationMode(self):
+        self.CntrlCalSource.setDisp("Internal", write=False)
+        self.CntrlForceTrigSource.setDisp("Internal", write=False)
+        self.CntrlTrigDisable.set(True, write=False)
+        for col in range(32):
+            self.node(f'Chan_{col*32:d}_{col*32+31:d}').setDisp("DDDD DDDD DDDD DDDD DDDD DDDD DDDD DDDD", write=False)
+        self.writeBlocks()
             
                 
 

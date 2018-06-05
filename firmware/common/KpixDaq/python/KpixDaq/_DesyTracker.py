@@ -79,5 +79,25 @@ class DesyTracker(pyrogue.Device):
                 offset = 0x02000000))
 
 
-        
+class DesyTrackerRunControl(pr.RunControl):
+    def __init__(self, **kwargs):
+        rates = {1:'1 Hz', 10:'10 Hz', 30:'30 Hz', 50: '50 Hz', 100: '100 Hz', 0:'Auto'}
+        pr.RunControl.__init__(self, , **kwargs)
+
+    def _run(self):
+        self.runCount.set(0)
+
+        while (self.runState.valueDisp() == 'Running'):
+          
+            self.root.Trigger()
+          
+            if self.runRate.valueDisp() == 'Auto':
+                self.root.dataWriter.getChannel(0).waitFrameCount(self.runCount.value()+1)
+            else:
+                delay = 1.0 / self.runRate.value()
+                time.sleep(delay)
+                # Add command here
+
+            self.runCount += 1
+
     
