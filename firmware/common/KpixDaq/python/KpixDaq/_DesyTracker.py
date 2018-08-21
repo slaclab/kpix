@@ -13,6 +13,8 @@ class DesyTrackerRoot(pyrogue.Root):
 
         print(f"DesyTrackerRoot(mode={mode})")
 
+        dataWriter = pyrogue.utilities.fileio.StreamWriter()        
+
         if mode == "MEM_EMU":
             srp = pyrogue.interfaces.simulation.MemEmulate()
             data = rogue.interfaces.stream.Master()
@@ -30,14 +32,15 @@ class DesyTrackerRoot(pyrogue.Root):
 
             srp = rogue.protocols.srp.SrpV3()
             cmd = rogue.interfaces.stream.Master()            
-            dataWriter = pyrogue.utilities.fileio.StreamWriter()
+
             
             pyrogue.streamConnectBiDir(srp, dest0)
             pyrogue.streamConnect(dest1, dataWriter.getChannel(0))
             pyrogue.streamConnect(cmd, dest1)
 
-            self.add(dataWriter)
 
+        self.add(dataWriter)
+        self.add(pyrogue.RunControl())
             
         self.add(DesyTracker(memBase=srp, cmd=cmd, offset=0, rssi=(mode=='HW'), enabled=True))
 
@@ -79,25 +82,25 @@ class DesyTracker(pyrogue.Device):
                 offset = 0x02000000))
 
 
-class DesyTrackerRunControl(pr.RunControl):
-    def __init__(self, **kwargs):
-        rates = {1:'1 Hz', 10:'10 Hz', 30:'30 Hz', 50: '50 Hz', 100: '100 Hz', 0:'Auto'}
-        pr.RunControl.__init__(self, , **kwargs)
+# class DesyTrackerRunControl(pr.RunControl):
+#     def __init__(self, **kwargs):
+#         rates = {1:'1 Hz', 10:'10 Hz', 30:'30 Hz', 50: '50 Hz', 100: '100 Hz', 0:'Auto'}
+#         pr.RunControl.__init__(self, rates=rates, **kwargs)
 
-    def _run(self):
-        self.runCount.set(0)
+#     def _run(self):
+#         self.runCount.set(0)
 
-        while (self.runState.valueDisp() == 'Running'):
+#         while (self.runState.valueDisp() == 'Running'):
           
-            self.root.Trigger()
+#             self.root.Trigger()
           
-            if self.runRate.valueDisp() == 'Auto':
-                self.root.dataWriter.getChannel(0).waitFrameCount(self.runCount.value()+1)
-            else:
-                delay = 1.0 / self.runRate.value()
-                time.sleep(delay)
-                # Add command here
+#             if self.runRate.valueDisp() == 'Auto':
+#                 self.root.dataWriter.getChannel(0).waitFrameCount(self.runCount.value()+1)
+#             else:
+#                 delay = 1.0 / self.runRate.value()
+#                 time.sleep(delay)
+#                 # Add command here
 
-            self.runCount += 1
+#             self.runCount += 1
 
     
