@@ -74,7 +74,6 @@ entity DesyTracker is
       -- Cassette I2C
       cassetteScl   : inout slv(3 downto 0) := (others => 'Z');
       cassetteSda   : inout slv(3 downto 0) := (others => 'Z');
-      cassetteI2cEn : out   slv(3 downto 0) := (others => '0');
 
       -- Boot Memory Ports
       bootCsL  : out sl;
