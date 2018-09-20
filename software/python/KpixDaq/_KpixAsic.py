@@ -486,10 +486,12 @@ class KpixAsic(pr.Device):
                 linkedGet = getChanMode,
                 linkedSet = setChanMode))
             
-    def setCalibrationMode(self):
+    def setCalibrationMode(self, channel, dac):
         self.CntrlCalSource.setDisp("Internal", write=False)
         self.CntrlForceTrigSource.setDisp("Internal", write=False)
         self.CntrlTrigDisable.set(True, write=False)
+        self.DacCalibration.set(dac, write=False)
+        
         for col in range(32):
             self.node(f'Chan_{col*32:d}_{col*32+31:d}').setDisp("DDDD DDDD DDDD DDDD DDDD DDDD DDDD DDDD", write=False)
         self.writeBlocks()
