@@ -8,18 +8,18 @@ import surf.protocols.rssi as rssi
 import KpixDaq
 
 class DesyTrackerRoot(pyrogue.Root):
-    def __init__(self, mode="HW", pollEn=False, **kwargs):
+    def __init__(self, hwEmu=False, sim=False, rssiEn=False, ip='192.168.1.10', **kwargs):
         super().__init__(**kwargs)
 
         print(f"DesyTrackerRoot(mode={mode})")
 
-        if mode == "MEM_EMU":
-            srp = pyrogue.interfaces.simulation.MemEmulate()
-            data = rogue.interfaces.stream.Master()
-            cmd = rogue.interfaces.stream.Master()
+        if hwEmu:
+            self.srp = pyrogue.interfaces.simulation.MemEmulate()
+            self.dataStream = rogue.interfaces.stream.Master()
+            self.cmdStream = rogue.interfaces.stream.Master()
         
         else:
-            if mode == "SIM":
+            if sim:
                 dest0 = pyrogue.interfaces.simulation.StreamSim(host='localhost', dest=0, uid=1, ssi=True)
                 dest1 = pyrogue.interfaces.simulation.StreamSim(host='localhost', dest=1, uid=1, ssi=True)
             
@@ -28,18 +28,18 @@ class DesyTrackerRoot(pyrogue.Root):
                 dest0 = udp.application(dest=0)
                 dest1 = udp.application(dest=1)
 
-            srp = rogue.protocols.srp.SrpV3()
-            cmd = rogue.interfaces.stream.Master()            
+            self.srp = rogue.protocols.srp.SrpV3()
+            self.cmd = rogue.interfaces.stream.Master()
+            
             dataWriter = pyrogue.utilities.fileio.LegacyStreamWriter(name='DataWriter')
             
-            pyrogue.streamConnectBiDir(srp, dest0)
+            pyrogue.streamConnectBiDir(self.srp, dest0)
             pyrogue.streamConnect(dest1, dataWriter.getDataChannel())
             pyrogue.streamConnect(cmd, dest1)
             pyrogue.streamConnect(self, dataWriter.getYamlChannel())
 
             self.add(dataWriter)
-
-        self.add(DesyTrackerRunControl())
+            self.add(DesyTrackerRunControl())
             
         self.add(DesyTracker(memBase=srp, cmd=cmd, offset=0, rssi=(mode=='HW'), enabled=True))
 
