@@ -161,6 +161,9 @@ architecture rtl of DesyTracker is
    signal rssiStatus : slv(6 downto 0);
    signal phyReady   : sl;
 
+   signal refClk : sl;
+   signal ethClk : sl;
+
 begin
 
    -------------------------------------------------------------------------------------------------
@@ -218,6 +221,24 @@ begin
       port map (
          clk => tluClk,
          o   => led(1));
+
+   Heartbeat_refClk : entity work.Heartbeat
+      generic map (
+         TPD_G        => TPD_G,
+         PERIOD_IN_G  => 6.4E-9,
+         PERIOD_OUT_G => 0.64)
+      port map (
+         clk => refClk,
+         o   => led(2));
+
+   Heartbeat_ethClk : entity work.Heartbeat
+      generic map (
+         TPD_G        => TPD_G,
+         PERIOD_IN_G  => 8.0E-9,
+         PERIOD_OUT_G => 0.8)
+      port map (
+         clk => ethClk,
+         o   => led(3));
 
    green(0) <= not rssiStatus(0);
    red(0)   <= rssiStatus(0);
@@ -281,6 +302,8 @@ begin
          DHCP_G       => DHCP_G,
          IP_ADDR_G    => IP_ADDR_G)
       port map (
+         refClkOut        => refClk,                                -- [out]
+         ethClkOut        => ethClk,                                -- [out]
          clk200           => clk200,                                -- [out]
          rst200           => rst200,                                -- [out]
          mAxilReadMaster  => axilReadMaster,                        -- [out]

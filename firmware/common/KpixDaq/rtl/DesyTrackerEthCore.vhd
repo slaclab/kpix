@@ -5,7 +5,7 @@
 -- Author     : Larry Ruckman  <ruckman@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2016-06-02
--- Last update: 2016-12-02
+-- Last update: 2018-09-20
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -43,6 +43,8 @@ entity DesyTrackerEthCore is
       DHCP_G       : boolean          := false;         -- true = DHCP, false = static address
       IP_ADDR_G    : slv(31 downto 0) := x"0A01A8C0");  -- 192.168.1.10 (before DHCP)
    port (
+      refClkOut : out sl;
+      ethClkOut : out sl;
       -- Reference Clock and Reset
       clk200           : out sl;
       rst200           : out sl;
@@ -121,6 +123,9 @@ begin
 
    clk200 <= locClk200;
    rst200 <= locRst200;
+
+   ethClkOut <= ethClk;
+   refClkOut <= refClk;
 
    --------------------
    -- Local MAC Address
