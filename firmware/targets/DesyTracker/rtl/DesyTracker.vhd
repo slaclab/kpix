@@ -33,7 +33,7 @@ entity DesyTracker is
       TPD_G        : time             := 1 ns;
       SIMULATION_G : boolean          := false;
       BUILD_INFO_G : BuildInfoType;
-      DHCP_G       : boolean          := true;
+      DHCP_G       : boolean          := false;
       IP_ADDR_G    : slv(31 downto 0) := x"0A01A8C0");
    port (
       -- PGP/GbE Ports
