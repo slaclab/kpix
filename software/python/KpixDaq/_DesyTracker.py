@@ -30,20 +30,20 @@ class DesyTrackerRoot(pyrogue.Root):
 
             srp = rogue.protocols.srp.SrpV3()
             cmd = rogue.interfaces.stream.Master()            
-            dataWriter = pyrogue.utilities.fileio.StreamWriter()
+            dataWriter = pyrogue.utilities.fileio.LegacyStreamWriter(name='DataWriter')
             
             pyrogue.streamConnectBiDir(srp, dest0)
-            pyrogue.streamConnect(dest1, dataWriter.getChannel(0))
+            pyrogue.streamConnect(dest1, dataWriter.getDataChannel())
             pyrogue.streamConnect(cmd, dest1)
+            pyrogue.streamConnect(self, dataWriter.getYamlChannel())
 
             self.add(dataWriter)
 
+        self.add(DesyTrackerRunControl())
             
         self.add(DesyTracker(memBase=srp, cmd=cmd, offset=0, rssi=(mode=='HW'), enabled=True))
 
-        print('Calling start')
         self.start(pollEn=pollEn, timeout=100000)
-        print('Start Done')        
         
 
 class DesyTracker(pyrogue.Device):
@@ -82,7 +82,7 @@ class DesyTracker(pyrogue.Device):
 class DesyTrackerRunControl(pr.RunControl):
     def __init__(self, **kwargs):
         rates = {1:'1 Hz', 10:'10 Hz', 30:'30 Hz', 50: '50 Hz', 100: '100 Hz', 0:'Auto'}
-        pr.RunControl.__init__(self, , **kwargs)
+        pr.RunControl.__init__(self, rates=rates, **kwargs)
 
     def _run(self):
         self.runCount.set(0)
@@ -92,7 +92,7 @@ class DesyTrackerRunControl(pr.RunControl):
             self.root.Trigger()
           
             if self.runRate.valueDisp() == 'Auto':
-                self.root.dataWriter.getChannel(0).waitFrameCount(self.runCount.value()+1)
+                self.root.dataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1)
             else:
                 delay = 1.0 / self.runRate.value()
                 time.sleep(delay)
