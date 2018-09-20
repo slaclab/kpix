@@ -72,8 +72,8 @@ entity DesyTracker is
       kpixData  : in  slv6Array(3 downto 0);
 
       -- Cassette I2C
-      cassetteScl   : inout slv(3 downto 0) := (others => 'Z');
-      cassetteSda   : inout slv(3 downto 0) := (others => 'Z');
+      cassetteScl : inout slv(3 downto 0) := (others => 'Z');
+      cassetteSda : inout slv(3 downto 0) := (others => 'Z');
 
       -- Boot Memory Ports
       bootCsL  : out sl;
@@ -95,9 +95,9 @@ entity DesyTracker is
 
       -- Debug LEDs
       led   : out slv(3 downto 0) := (others => '0');
-      red   : out slv(1 downto 0) := (others => '0');
-      blue  : out slv(1 downto 0) := (others => '0');
-      green : out slv(1 downto 0) := (others => '0'));
+      red   : out slv(1 downto 0) := (others => '1');
+      blue  : out slv(1 downto 0) := (others => '1');
+      green : out slv(1 downto 0) := (others => '1'));
 end DesyTracker;
 
 architecture rtl of DesyTracker is
@@ -219,11 +219,11 @@ begin
          clk => tluClk,
          o   => led(1));
 
-   green(0) <= rssiStatus(0);
-   red(0)   <= not rssiStatus(0);
+   green(0) <= not rssiStatus(0);
+   red(0)   <= rssiStatus(0);
 
-   green(1) <= phyReady;
-   red(1)   <= not phyReady;
+   green(1) <= not phyReady;
+   red(1)   <= phyReady;
 
    -------------------------------------------------------------------------------------------------
    -- Assign KPIX IO
