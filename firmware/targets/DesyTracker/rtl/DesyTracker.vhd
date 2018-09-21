@@ -34,7 +34,7 @@ entity DesyTracker is
       SIMULATION_G : boolean          := false;
       BUILD_INFO_G : BuildInfoType;
       DHCP_G       : boolean          := false;
-      IP_ADDR_G    : slv(31 downto 0) := x"0A01A8C0");
+      IP_ADDR_G    : slv(31 downto 0) := x"0A02A8C0");
    port (
       -- PGP/GbE Ports
       gtClkP : in  sl;
@@ -163,6 +163,7 @@ architecture rtl of DesyTracker is
 
    signal refClk : sl;
    signal ethClk : sl;
+   signal pllLocked : sl;
 
 begin
 
@@ -213,15 +214,8 @@ begin
          o   => led(0));
 
    -- tluClk
-   Heartbeat_tluClk : entity work.Heartbeat
-      generic map (
-         TPD_G        => TPD_G,
-         PERIOD_IN_G  => 6.25E-9,
-         PERIOD_OUT_G => 0.625)
-      port map (
-         clk => tluClk,
-         o   => led(1));
-
+   led(1) <= pllLocked;
+   
    Heartbeat_refClk : entity work.Heartbeat
       generic map (
          TPD_G        => TPD_G,
@@ -304,6 +298,7 @@ begin
       port map (
          refClkOut        => refClk,                                -- [out]
          ethClkOut        => ethClk,                                -- [out]
+         pllLocked        => pllLocked,                             -- [out]
          clk200           => clk200,                                -- [out]
          rst200           => rst200,                                -- [out]
          mAxilReadMaster  => axilReadMaster,                        -- [out]

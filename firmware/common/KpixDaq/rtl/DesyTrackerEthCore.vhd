@@ -5,7 +5,7 @@
 -- Author     : Larry Ruckman  <ruckman@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2016-06-02
--- Last update: 2018-09-20
+-- Last update: 2018-09-21
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -43,8 +43,9 @@ entity DesyTrackerEthCore is
       DHCP_G       : boolean          := false;         -- true = DHCP, false = static address
       IP_ADDR_G    : slv(31 downto 0) := x"0A01A8C0");  -- 192.168.1.10 (before DHCP)
    port (
-      refClkOut : out sl;
-      ethClkOut : out sl;
+      refClkOut        : out sl;
+      ethClkOut        : out sl;
+      pllLocked        : out sl;
       -- Reference Clock and Reset
       clk200           : out sl;
       rst200           : out sl;
@@ -130,12 +131,14 @@ begin
    --------------------
    -- Local MAC Address
    --------------------
-   U_EFuse : EFUSE_USR
-      port map (
-         EFUSEUSR => efuse);
+--    U_EFuse : EFUSE_USR
+--       port map (
+--          EFUSEUSR => efuse);
 
-   localMac(23 downto 0)  <= x"56_00_08";  -- 08:00:56:XX:XX:XX (big endian SLV)   
-   localMac(47 downto 24) <= efuse(31 downto 8);
+--    localMac(23 downto 0)  <= x"56_00_08";  -- 08:00:56:XX:XX:XX (big endian SLV)   
+--    localMac(47 downto 24) <= efuse(31 downto 8);
+
+   localMac(47 downto 0) <= x"00_00_16_56_00_08";
 
    ------------------
    -- Reference Clock
@@ -172,7 +175,7 @@ begin
          TPD_G              => TPD_G,
          TYPE_G             => "MMCM",
          INPUT_BUFG_G       => false,
-         FB_BUFG_G          => true,
+         FB_BUFG_G          => false,
          RST_IN_POLARITY_G  => '1',
          NUM_CLOCKS_G       => 3,
          -- MMCM attributes
@@ -191,7 +194,8 @@ begin
          clkOut(2) => locClk200,
          rstOut(0) => ethRst,
          rstOut(1) => ethRstDiv2,
-         rstOut(2) => locRst200);
+         rstOut(2) => locRst200,
+         locked    => pllLocked);
 
    REAL_ETH_GEN : if (not SIMULATION_G) generate
 
@@ -397,7 +401,7 @@ begin
    rssiObSlaves(1) <= AXI_STREAM_SLAVE_FORCE_C;  -- always ready
 
    acqReqValid <= rssiObMasters(1).tValid and toSl(rssiObMasters(1).tData(7 downto 0) = X"AA") and
-                  rssiObMasters(1).tLast; -- and ssiGetUserSof(AXIS_CONFIG_C, rssiObMasters(1));
+                  rssiObMasters(1).tLast;  -- and ssiGetUserSof(AXIS_CONFIG_C, rssiObMasters(1));
 
    U_SynchronizerFifo_1 : entity work.SynchronizerFifo
       generic map (
