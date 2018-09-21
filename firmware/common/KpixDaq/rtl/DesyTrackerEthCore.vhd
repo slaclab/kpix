@@ -177,25 +177,28 @@ begin
          INPUT_BUFG_G       => false,
          FB_BUFG_G          => false,
          RST_IN_POLARITY_G  => '1',
-         NUM_CLOCKS_G       => 3,
+         NUM_CLOCKS_G       => 2,
          -- MMCM attributes
-         BANDWIDTH_G        => "OPTIMIZED",
+         BANDWIDTH_G        => "HIGH",
          CLKIN_PERIOD_G     => 6.4,     -- 156.25 MHz
-         DIVCLK_DIVIDE_G    => 5,       -- 31.25 MHz = 156.25 MHz/5
-         CLKFBOUT_MULT_F_G  => 32.0,    -- 1.0GHz = 32 x 31.25 MHz
-         CLKOUT0_DIVIDE_F_G => 8.0,     -- 125 MHz = 1.0GHz/8
-         CLKOUT1_DIVIDE_G   => 16,      -- 62.5 MHz = 1.0GHz/16
+         DIVCLK_DIVIDE_G    => 1,       -- 31.25 MHz = 156.25 MHz/5
+         CLKFBOUT_MULT_F_G  => 10.0,    -- 1.0GHz = 32 x 31.25 MHz
+         CLKOUT0_DIVIDE_F_G => 12.5,     -- 125 MHz = 1.0GHz/8
+         CLKOUT1_DIVIDE_G   => 25,      -- 62.5 MHz = 1.0GHz/16
          CLKOUT2_DIVIDE_G   => 5)       -- 200 MHz = 1.0GHz/5
       port map(
          clkIn     => refClk,
          rstIn     => refRst,
          clkOut(0) => ethClk,
          clkOut(1) => ethClkDiv2,
-         clkOut(2) => locClk200,
+--         clkOut(2) => locClk200,
          rstOut(0) => ethRst,
          rstOut(1) => ethRstDiv2,
-         rstOut(2) => locRst200,
+--         rstOut(2) => locRst200,
          locked    => pllLocked);
+   
+   locClk200 <= ethClk;
+   locRst200 <= ethRst;
 
    REAL_ETH_GEN : if (not SIMULATION_G) generate
 
