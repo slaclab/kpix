@@ -2,20 +2,20 @@ create_clock -name gtRefClk -period 3.200 [get_ports {gtClkP}]
 
 create_generated_clock -name ethClk [get_pins {U_DesyTrackerEthCore_1/U_MMCM/MmcmGen.U_Mmcm/CLKOUT0}]
 create_generated_clock -name ethClkDiv2 [get_pins {U_DesyTrackerEthCore_1/U_MMCM/MmcmGen.U_Mmcm/CLKOUT1}]
-#create_generated_clock -name clk200 [get_pins {U_DesyTrackerEthCore_1/U_MMCM/MmcmGen.U_Mmcm/CLKOUT2}]
+create_generated_clock -name clk200 [get_pins {U_DesyTrackerEthCore_1/U_MMCM/MmcmGen.U_Mmcm/CLKOUT2}]
 create_generated_clock -name refClk156MHz    [get_pins {U_DesyTrackerEthCore_1/U_IBUFDS_GTE2/ODIV2}]  
 
-# set_clock_groups -asynchronous \
-#     -group [get_clocks -include_generated_clocks clk200] \
-#     -group [get_clocks -include_generated_clocks ethClk]
+set_clock_groups -asynchronous \
+    -group [get_clocks -include_generated_clocks clk200] \
+    -group [get_clocks -include_generated_clocks ethClk]
 
-# set_clock_groups -asynchronous \
-#     -group [get_clocks -include_generated_clocks clk200] \
-#     -group [get_clocks -include_generated_clocks ethClkDiv2]
+set_clock_groups -asynchronous \
+    -group [get_clocks -include_generated_clocks clk200] \
+    -group [get_clocks -include_generated_clocks ethClkDiv2]
 
-# set_clock_groups -asynchronous \
-#     -group [get_clocks -include_generated_clocks clk200] \
-#     -group [get_clocks -include_generated_clocks refClk156MHz]
+set_clock_groups -asynchronous \
+    -group [get_clocks -include_generated_clocks clk200] \
+    -group [get_clocks -include_generated_clocks refClk156MHz]
 
 set_clock_groups -asynchronous \
     -group [get_clocks -include_generated_clocks ethClk] \
