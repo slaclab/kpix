@@ -161,8 +161,8 @@ architecture rtl of DesyTracker is
    signal rssiStatus : slv(6 downto 0);
    signal phyReady   : sl;
 
-   signal refClk : sl;
-   signal ethClk : sl;
+   signal refClk    : sl;
+   signal ethClk    : sl;
    signal pllLocked : sl;
 
 begin
@@ -215,7 +215,7 @@ begin
 
    -- tluClk
    led(1) <= pllLocked;
-   
+
    Heartbeat_refClk : entity work.Heartbeat
       generic map (
          TPD_G        => TPD_G,
@@ -389,5 +389,8 @@ begin
          kpixResetOut    => kpixResetOut,                          -- [out]
          kpixSerTxOut    => kpixSerTxOut,                          -- [out]
          kpixSerRxIn     => kpixSerRxIn);                          -- [in]
+
+   bncDebug <= debugOutA;
+   bncBusy  <= debugOutB;
 
 end architecture rtl;
