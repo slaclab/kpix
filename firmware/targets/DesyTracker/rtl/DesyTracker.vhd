@@ -216,27 +216,23 @@ begin
    -- tluClk
    led(1) <= pllLocked;
    
---    Heartbeat_refClk : entity work.Heartbeat
---       generic map (
---          TPD_G        => TPD_G,
---          PERIOD_IN_G  => 6.4E-9,
---          PERIOD_OUT_G => 0.64)
---       port map (
---          clk => refClk,
---          o   => led(2));
+   Heartbeat_refClk : entity work.Heartbeat
+      generic map (
+         TPD_G        => TPD_G,
+         PERIOD_IN_G  => 6.4E-9,
+         PERIOD_OUT_G => 0.64)
+      port map (
+         clk => refClk,
+         o   => led(2));
 
-   led(2) <= refClk;
-
---    Heartbeat_ethClk : entity work.Heartbeat
---       generic map (
---          TPD_G        => TPD_G,
---          PERIOD_IN_G  => 8.0E-9,
---          PERIOD_OUT_G => 0.8)
---       port map (
---          clk => ethClk,
---          o   => led(3));
-
-   led(3) <= ethClk;
+   Heartbeat_ethClk : entity work.Heartbeat
+      generic map (
+         TPD_G        => TPD_G,
+         PERIOD_IN_G  => 8.0E-9,
+         PERIOD_OUT_G => 0.8)
+      port map (
+         clk => ethClk,
+         o   => led(3));
 
    green(0) <= not rssiStatus(0);
    red(0)   <= rssiStatus(0);
