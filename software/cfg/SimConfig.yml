@@ -1,7 +1,7 @@
 DesyTrackerRoot:
   enable: 'True'
   ForceWrite: 'False'
-  StreamWriter:
+  DataWriter:
     enable: 'True'
     dataFile: ''
     open: 'False'
