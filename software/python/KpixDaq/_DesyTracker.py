@@ -8,10 +8,8 @@ import surf.protocols.rssi as rssi
 import KpixDaq
 
 class DesyTrackerRoot(pyrogue.Root):
-    def __init__(self, hwEmu=False, sim=False, rssiEn=False, ip='192.168.1.10', **kwargs):
+    def __init__(self, hwEmu=False, sim=False, rssiEn=False, ip='192.168.1.10', pollEn=False, **kwargs):
         super().__init__(**kwargs)
-
-        print(f"DesyTrackerRoot(mode={mode})")
 
         if hwEmu:
             self.srp = pyrogue.interfaces.simulation.MemEmulate()
@@ -23,8 +21,8 @@ class DesyTrackerRoot(pyrogue.Root):
                 dest0 = pyrogue.interfaces.simulation.StreamSim(host='localhost', dest=0, uid=1, ssi=True)
                 dest1 = pyrogue.interfaces.simulation.StreamSim(host='localhost', dest=1, uid=1, ssi=True)
             
-            elif mode == "HW":
-                udp = pyrogue.protocols.UdpRssiPack( host='192.168.1.10', port=8192, packVer=2 )                
+            else:
+                udp = pyrogue.protocols.UdpRssiPack( host=ip, port=8192, packVer=2 )                
                 dest0 = udp.application(dest=0)
                 dest1 = udp.application(dest=1)
 
@@ -35,13 +33,13 @@ class DesyTrackerRoot(pyrogue.Root):
             
             pyrogue.streamConnectBiDir(self.srp, dest0)
             pyrogue.streamConnect(dest1, dataWriter.getDataChannel())
-            pyrogue.streamConnect(cmd, dest1)
+            pyrogue.streamConnect(self.cmd, dest1)
             pyrogue.streamConnect(self, dataWriter.getYamlChannel())
 
-            self.add(dataWriter)
+            #self.add(dataWriter)
             self.add(DesyTrackerRunControl())
             
-        self.add(DesyTracker(memBase=srp, cmd=cmd, offset=0, rssi=(mode=='HW'), enabled=True))
+        self.add(DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, enabled=True))
 
         self.start(pollEn=pollEn, timeout=100000)
         
@@ -79,10 +77,10 @@ class DesyTracker(pyrogue.Device):
                 offset = 0x02000000))
 
 
-class DesyTrackerRunControl(pr.RunControl):
+class DesyTrackerRunControl(pyrogue.RunControl):
     def __init__(self, **kwargs):
         rates = {1:'1 Hz', 10:'10 Hz', 30:'30 Hz', 50: '50 Hz', 100: '100 Hz', 0:'Auto'}
-        pr.RunControl.__init__(self, rates=rates, **kwargs)
+        pyrogue.RunControl.__init__(self, rates=rates, **kwargs)
 
     def _run(self):
         self.runCount.set(0)
