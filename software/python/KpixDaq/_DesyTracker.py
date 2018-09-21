@@ -36,7 +36,7 @@ class DesyTrackerRoot(pyrogue.Root):
             pyrogue.streamConnect(self.cmd, dest1)
             pyrogue.streamConnect(self, dataWriter.getYamlChannel())
 
-            #self.add(dataWriter)
+            self.add(dataWriter)
             self.add(DesyTrackerRunControl())
             
         self.add(DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, enabled=True))
