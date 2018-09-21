@@ -482,7 +482,7 @@ class KpixAsic(pr.Device):
             self.add(pr.LinkVariable(
                 name = f'Chan_{col*32:d}_{col*32+31:d}',
                 mode = 'RW',
-                dependencies = [self.node(f'ChanModeA_{col}'), self.node(f'ChanaModeB_{col}')],
+                dependencies = [self.node(f'ChanModeA_{col}'), self.node(f'ChanModeB_{col}')],
                 linkedGet = getChanMode,
                 linkedSet = setChanMode))
             
