@@ -390,7 +390,18 @@ begin
          kpixSerTxOut    => kpixSerTxOut,                          -- [out]
          kpixSerRxIn     => kpixSerRxIn);                          -- [in]
 
-   bncDebug <= debugOutA;
-   bncBusy  <= debugOutB;
+   U_ClkOutBufSingle_1 : entity work.ClkOutBufSingle
+      generic map (
+         TPD_G => TPD_G)
+      port map (
+         clkIn  => ethClk,              -- [in]
+         clkOut => bncDebug);           -- [out]
+
+   U_ClkOutBufSingle_2 : entity work.ClkOutBufSingle
+      generic map (
+         TPD_G => TPD_G)
+      port map (
+         clkIn  => refClk,              -- [in]
+         clkOut => bncBusy);            -- [out]
 
 end architecture rtl;
