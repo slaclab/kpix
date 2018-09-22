@@ -28,6 +28,47 @@ class SysConfig(pr.Device):
             bitSize=32,
             base=pr.UInt))
 
+        debugEnum = {
+            0b00000: 'reg_clk',
+            0b00001: 'reg_sel1',
+            0b00010: 'reg_sel0',
+            0b00011: 'pwr_up_acq',
+            0b00100: 'reset_load',
+            0b00101: 'leakage_null',
+            0b00110: 'offset_null',
+            0b00111: 'thresh_off',
+            0b01000: 'v8_trig_inh',
+            0b01001: 'cal_strobe',
+            0b01010: 'pwr_up_acq_dig',
+            0b01011: 'sel_cell',
+            0b01100: 'desel_all_cells',
+            0b01101: 'ramp_period',
+            0b01110: 'precharge_bus',
+            0b01111: 'reg_data',
+            0b10000: 'reg_wr_ena',
+            0b10001: 'kpixClk'}
+
+
+        self.add(pr.RemoteVariable(
+            name = 'DebugA',
+            mode = 'RW',
+            offset = 0x0C,
+            bitOffset = 0,
+            bitSize = 5,
+            base = pr.UInt,
+            enum = debugEnum))
+
+        self.add(pr.RemoteVariable(
+            name = 'DebugB',
+            mode = 'RW',
+            offset = 0x0C,
+            bitOffset = 5,
+            bitSize = 5,
+            base = pr.UInt,
+            enum = debugEnum))
+        
+                
+
         self.add(pr.RemoteCommand(
             name = 'KpixReset',
             offset = 0x00,
