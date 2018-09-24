@@ -14,7 +14,7 @@ class DesyTrackerRoot(pyrogue.Root):
         if hwEmu:
             self.srp = pyrogue.interfaces.simulation.MemEmulate()
             self.dataStream = rogue.interfaces.stream.Master()
-            self.cmdStream = rogue.interfaces.stream.Master()
+            self.cmd = rogue.interfaces.stream.Master()
         
         else:
             if sim:
