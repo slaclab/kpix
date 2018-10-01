@@ -1,7 +1,6 @@
 import rogue
 import KpixDaq
 import pyrogue.gui
-import PyQt4.QtGui
 import sys
 import argparse
 
