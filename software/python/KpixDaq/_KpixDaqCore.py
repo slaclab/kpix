@@ -28,7 +28,7 @@ class KpixAsicArray(pr.Device):
     def __init__(self, numKpix, **kwargs):
         super().__init__(**kwargs)
         for i in range(numKpix):
-            self.add(KpixDaq.LocalKpix(
+            self.add(KpixDaq.KpixAsic(
                 name = f'KpixAsic[{i}]',
                 offset = 0x100000 + (i*0x1000),
                 enabled = False,
