@@ -1,3 +1,4 @@
+import time
 import pyrogue
 import pyrogue.interfaces.simulation
 import pyrogue.protocols
@@ -6,6 +7,87 @@ import rogue
 import surf.axi as axi
 import surf.protocols.rssi as rssi
 import KpixDaq
+
+
+
+def toInt(ba):
+    return int.from_bytes(ba, 'little')
+
+def getField(value, highBit, lowBit):
+    mask = 2**(highBit-lowBit+1)-1
+    return (value >> lowBit) & mask
+
+class FrameParser(rogue.interfaces.stream.Slave):
+    def __init__(self):
+        rogue.interfaces.stream.Slave.__init__(self)
+        nesteddict = lambda:defaultdict(nesteddict)
+        self.d = []#nesteddict()
+
+
+    def parseSample(self, ba):
+        value = int.from_bytes(ba, 'little', signed=False)
+        adc = getField(value, 12, 0)
+        timestamp = getField(value, 28, 16)
+        row = getField(value, 36, 32)
+        col = getField(value, 41, 37)
+        bucket = getField(value, 43, 42)
+        triggerFlag = getField(value, 44, 44)
+        rangeFlag = getField(value, 45, 45)
+        badCountFlag = getField(value, 46, 46)
+        emptyFlag = getField(value, 47, 47)
+        kpixId = getField(value, 59, 48)
+        typeField = getField(value, 63, 60)
+
+        print('-------')        
+        if typeField == 0:
+            print('Parsed Data Sample:')
+            print(f'KPIX: {kpixId}')
+            print(f'Timestamp: {timestamp}')
+            print(f'Row: {row}')
+            print(f'Col: {col}')
+            print(f'ADC: {adc:04x}')
+            print(f'Bucket: {bucket}')
+            print(f'TriggerFlag: {triggerFlag}')
+            print(f'RangeFlag: {rangeFlag}')
+            print(f'BadCountFlag: {badCountFlag}')
+            print(f'Emptyflag: {emptyFlag}')
+        elif typeField == 1:
+            print('Parsed Temperature Sample')
+            print(f'KPIX: {kpixId}')            
+            print(f'Temperature: {getField(value, 7, 0)}')
+            print(f'TempCount: {getField(value, 31, 24)}')
+            
+        print('-------')        
+        
+    def _acceptFrame(self, frame):
+
+        if frame.getError():
+            print('Frame Error!')
+            return
+        
+        p = bytearray(frame.getPayload())
+        frame.read(p, 0)
+
+        frameSizeBytes = len(p)
+        numSamples = int((frameSizeBytes-32-8)/8)
+
+        print('')
+        print('')        
+        print('----------------------------------')
+        print(f'Got Frame! ByteSize = {frameSizeBytes:08x}')
+        print(f'Got {numSamples} samples')
+
+        timestamp = int.from_bytes(p[0:4], 'little')
+        eventNumber = int.from_bytes(p[4:8], 'little')
+        zeros = int.from_bytes(p[8:8+12], 'little')
+
+        print(f'EventNumber: {eventNumber:08x}')
+        print(f'Timestamp: {timestamp:08x}')
+
+        for i in range(numSamples):
+            self.parseSample(p[32+(i*8):32+(i*8)+8])
+        
+
 
 class DesyTrackerRoot(pyrogue.Root):
     def __init__(self, hwEmu=False, sim=False, rssiEn=False, ip='192.168.1.10', pollEn=False, **kwargs):
@@ -36,6 +118,9 @@ class DesyTrackerRoot(pyrogue.Root):
             pyrogue.streamConnect(self.cmd, dest1)
             pyrogue.streamConnect(self, dataWriter.getYamlChannel())
 
+            fp = FrameParser()
+            pyrogue.streamTap(dest1, fp)
+
             self.add(dataWriter)
             self.add(DesyTrackerRunControl())
             
@@ -50,9 +135,9 @@ class DesyTracker(pyrogue.Device):
 
         @self.command()
         def EthAcquire():
-            f = cmd._reqFrame(1, False)
+            f = self.root.cmd._reqFrame(1, False)
             f.write(bytearray([0xAA]), 0)
-            cmd._sendFrame(f)
+            self.root.cmd._sendFrame(f)
                 
         self.add(axi.AxiVersion(
             offset = 0x0000))
@@ -87,10 +172,10 @@ class DesyTrackerRunControl(pyrogue.RunControl):
 
         while (self.runState.valueDisp() == 'Running'):
           
-            self.root.Trigger()
+            self.root.DesyTracker.EthAcquire()
           
             if self.runRate.valueDisp() == 'Auto':
-                self.root.dataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1)
+                self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1)
             else:
                 delay = 1.0 / self.runRate.value()
                 time.sleep(delay)
