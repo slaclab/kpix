@@ -441,6 +441,8 @@ class KpixAsic(pr.Device):
                 name = f'ChanModeA_{i}',
                 offset = addr,
                 mode = 'RW',
+                bitOffset = 0,
+                bitSize = 32,
                 hidden = True))
 
         for i, addr in enumerate(CHAN_MODE_B):
@@ -448,6 +450,8 @@ class KpixAsic(pr.Device):
                 name = f'ChanModeB_{i}',
                 offset = addr,
                 mode = 'RW',
+                bitOffset = 0,
+                bitSize = 32,
                 hidden = True))
 
         d = {(0,0): 'B',
@@ -461,12 +465,13 @@ class KpixAsic(pr.Device):
             a = var.dependencies[0].value()
             b = var.dependencies[1].value()
             for row in range(32):
-                val = ((((b >> (31-row)) & 1) <<1 ), ((a >> (31-row)) & 1))
+                val = ((((b >> (31-row)) & 1) ), ((a >> (31-row)) & 1))
                 l.append(d[val])
             s =  ' '.join([''.join(x for x in l[i:i+8]) for i in range(0, 32, 8)])
+            print(f'getChanMode = {s}')
             return s
 
-        def setChanMode(dev, var, value):
+        def setChanMode(dev, var, value, write):
             value = ''.join(value.split()) # remove whitespace
             regA = 0
             regB = 0
@@ -474,9 +479,11 @@ class KpixAsic(pr.Device):
                 b,a = drev[value[row]]
                 regA |= a << (31-row)
                 regB |= b << (31-row)
+
+            print(f'setChanMode(value={value}) - regA={regA:x}, regB = {regB:x}')
                 
-            var.dependencies[0].set(regA)
-            var.dependencies[1].set(regB)
+            var.dependencies[0].set(value = regA, write=write)
+            var.dependencies[1].set(value = regB, write=write)
             
         for col in range(32):
             self.add(pr.LinkVariable(
@@ -485,21 +492,26 @@ class KpixAsic(pr.Device):
                 dependencies = [self.node(f'ChanModeA_{col}'), self.node(f'ChanModeB_{col}')],
                 linkedGet = getChanMode,
                 linkedSet = setChanMode))
+
+#         for i, offset in enumerate(CHAN_MODE_A):
+#             self.add(pr.RemoteVariable(
+#                 name = f'CHAN_MODE_A[{i}]',
+#                 offset = offset,
+#                 bitOffset = 0,
+#                 bitSize = 32,
+#                 mode = 'RW'))
+
+#         for i, offset in enumerate(CHAN_MODE_B):
+#             self.add(pr.RemoteVariable(
+#                 name = f'CHAN_MODE_B[{i}]',
+#                 offset = offset,
+#                 bitOffset = 0,
+#                 bitSize = 32,
+#                 mode = 'RW'))
             
-    def setCalibrationMode(self, channel, dac):
-        self.CntrlCalSource.setDisp("Internal", write=False)
-        self.CntrlForceTrigSource.setDisp("Internal", write=False)
-        self.CntrlTrigDisable.set(True, write=False)
-        self.DacCalibration.set(dac, write=False)
-        
-        for col in range(32):
-            self.node(f'Chan_{col*32:d}_{col*32+31:d}').setDisp("DDDD DDDD DDDD DDDD DDDD DDDD DDDD DDDD", write=False)
-        self.writeBlocks()
-            
-                
 
         # Channel mode variables
-#         for col in range(32):
+ #        for col in range(32):
 #             for row in range(32):
 #                 self.add(pr.RemoteVariable(
 #                     name = f'ChanMode_{col}_{row}',
@@ -531,6 +543,17 @@ class KpixAsic(pr.Device):
 #                 dependencies = [self.node(f'ChanMode_{col}_{row}') for row in range(32)],
 #                 linkedGet = getChanMode,
 #                 linkedSet = setChanMode))
+
+  #  def setCalibrationMode(self, channel, dac):
+#         self.CntrlCalSource.setDisp("Internal", write=False)
+#         self.CntrlForceTrigSource.setDisp("Internal", write=False)
+#         self.CntrlTrigDisable.set(True, write=False)
+#         self.DacCalibration.set(dac, write=False)
+        
+#         for col in range(32):
+#             self.node(f'Chan_{col*32:d}_{col*32+31:d}').setDisp("DDDD DDDD DDDD DDDD DDDD DDDD DDDD DDDD", write=False)
+#         self.writeBlocks()        
+        
 
 class LocalKpix(KpixAsic):
     def __init__(self, **kwargs):
@@ -580,4 +603,20 @@ class LocalKpix(KpixAsic):
             super().checkBlocks(recurse=recurse, variable=variable)
 
 
-        
+# Manipulate entire array together    
+# class KpixArray(pr.Device):
+#     def __init__(self, array, **kwargs):
+#         super().__init__(**kwargs)
+
+#         for v in array[0].variables if v.name != 'enable':
+#             allVars = [d.node(v.name) for d in array if d.node(v.name) is not None]
+            
+#             def ls(value, write):
+#                 for x in allVars:
+#                     v.set(value=value, write=write)
+                
+#             self.add(pr.LinkVariable(
+#                 name = v.name,
+#                 dependencies = allVars,
+#                 linkedGet = v.value,
+#                 linkedSet = ls))
