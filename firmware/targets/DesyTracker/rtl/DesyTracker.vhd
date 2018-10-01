@@ -164,6 +164,7 @@ architecture rtl of DesyTracker is
    signal refClk    : sl;
    signal ethClk    : sl;
    signal pllLocked : sl;
+   signal heartbeat : sl;
 
 begin
 
@@ -211,7 +212,9 @@ begin
          PERIOD_OUT_G => 0.5)
       port map (
          clk => clk200,
-         o   => led(0));
+         o   => heartbeat);
+
+   led(0) <= heartbeat;
 
    -- tluClk
    led(1) <= pllLocked;
@@ -394,7 +397,7 @@ begin
       generic map (
          TPD_G => TPD_G)
       port map (
-         clkIn  => ethClk,              -- [in]
+         clkIn  => heartbeat,           -- [in]
          clkOut => bncDebug);           -- [out]
 
    U_ClkOutBufSingle_2 : entity work.ClkOutBufSingle
