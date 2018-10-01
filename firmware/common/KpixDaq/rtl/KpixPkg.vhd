@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-10
--- Last update: 2018-05-21
+-- Last update: 2018-10-01
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -112,7 +112,7 @@ package KpixPkg is
    constant EB_DATA_AXIS_CONFIG_C : AxiStreamConfigType :=
       ssiAxiStreamConfig(
          dataBytes => 8,
-         tKeepMode => TKEEP_FIXED_C,
+         tKeepMode => TKEEP_COMP_C,
          tDestBits => 0);
 
 end package KpixPkg;

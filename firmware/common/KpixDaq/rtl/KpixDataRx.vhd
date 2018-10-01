@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2018-05-23
+-- Last update: 2018-10-01
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ architecture rtl of KpixDataRx is
       headerParityErrorCount : slv(7 downto 0);
       dataParityErrorCount   : slv(7 downto 0);
       overflowErrorCount     : slv(7 downto 0);
-      dataParityError : sl;
+      dataParityError        : sl;
       resetCounters          : sl;
       -- RX
       rxShiftData            : slv(0 to SHIFT_REG_LENGTH_C-1);  -- Upward indexed to match documentation
@@ -172,7 +172,7 @@ architecture rtl of KpixDataRx is
       headerParityErrorCount => (others => '0'),
       dataParityErrorCount   => (others => '0'),
       overflowErrorCount     => (others => '0'),
-      dataParityError => '0',
+      dataParityError        => '0',
       resetCounters          => '0',
       rxShiftData            => (others => '0'),
       rxShiftCount           => (others => '0'),
@@ -221,6 +221,7 @@ architecture rtl of KpixDataRx is
       retVar(28 downto 16) := sample.timestamp;
       retVar(15 downto 13) := "000";
       retVar(12 downto 0)  := sample.adc;
+      retVar               := retVar(31 downto 0) & retVar(63 downto 32);
       return retVar;
    end function formatSample;
 
@@ -259,7 +260,7 @@ begin
       axiSlaveWaitTxn(axilEp, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
 
 --      axiSlaveRegister(axilEp, X"00", 0, v.enabled);
-      axiSlaveRegisterR(axilEp, x"00", 0, r.markerErrorCount);      
+      axiSlaveRegisterR(axilEp, x"00", 0, r.markerErrorCount);
       axiSlaveRegisterR(axilEp, X"04", 0, r.overflowErrorCount);
       axiSlaveRegisterR(axilEp, x"08", 0, r.headerParityErrorCount);
       axiSlaveRegisterR(axilEp, X"0C", 0, r.dataParityErrorCount);
@@ -420,9 +421,9 @@ begin
                   -- Clear the row request
                   v.rxRowReq(conv_integer(r.txRowBuffer)) := '0';
                   -- Increment the row buffer
-                  v.txRowBuffer := r.txRowBuffer + 1;
+                  v.txRowBuffer                           := r.txRowBuffer + 1;
                   -- Go back to start
-                  v.txState := TX_CLEAR_S;
+                  v.txState                               := TX_CLEAR_S;
                end if;
             end if;
 
@@ -566,7 +567,7 @@ begin
       if (r.dataParityError = '1') then
          v.dataParityErrorCount := r.dataParityErrorCount + 1;
       end if;
-      
+
       if (r.dataParityErrorCount = X"FF") then
          v.dataParityErrorCount := r.dataParityErrorCount;
       end if;

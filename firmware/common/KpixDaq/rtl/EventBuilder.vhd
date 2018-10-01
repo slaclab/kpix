@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2018-05-23
+-- Last update: 2018-10-01
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -163,12 +163,12 @@ begin
                v.state                           := WRITE_HEADER_S;
                -- Write Event number and timestamp in SOF
                v.ebAxisMaster.tValid             := '1';
-               v.ebAxisMaster.tData(63 downto 0) := r.eventNumber & r.timestamp;
+               v.ebAxisMaster.tData(63 downto 0) := r.timestamp & r.eventNumber;
                ssiSetUserSof(EB_DATA_AXIS_CONFIG_C, v.ebAxisMaster, '1');
             end if;
 
          when WRITE_HEADER_S =>
-            v.counter           := r.counter + 1;
+            v.counter             := r.counter + 1;
             v.ebAxisMaster.tValid := '1';
             -- Place EVR data in header if it is the acqusition trigger source
 --               if (triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_EVR_C and r.counter = 0) then
@@ -204,6 +204,8 @@ begin
                v.ebAxisMaster.tData(28 downto 16) := timestampAxisMaster.tData(15 downto 3);  -- bunch count
                v.ebAxisMaster.tData(15 downto 3)  := (others => '0');
                v.ebAxisMaster.tData(2 downto 0)   := timestampAxisMaster.tData(2 downto 0);  -- subCount writeFifo(formatTimestamp);
+               -- Flip it because everything is expected this way
+               v.ebAxisMaster.tData(63 downto 0)  := v.ebAxisMaster.tData(31 downto 0) & v.ebAxisMaster.tData(63 downto 32);
             else
                v.state := WAIT_READOUT_S;
             end if;
@@ -257,6 +259,7 @@ begin
             if (r.dataDone = sysConfig.kpixEnable(NUM_KPIX_MODULES_G-1 downto 0)) then
                v.ebAxisMaster.tLast  := '1';
                v.ebAxisMaster.tValid := '1';
+               v.ebAxisMaster.tKeep  := X"0003";  -- Last word has only 2 bytes
                v.state               := WAIT_ACQUIRE_S;
             end if;
 
