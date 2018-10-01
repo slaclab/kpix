@@ -259,7 +259,7 @@ begin
             if (r.dataDone = sysConfig.kpixEnable(NUM_KPIX_MODULES_G-1 downto 0)) then
                v.ebAxisMaster.tLast  := '1';
                v.ebAxisMaster.tValid := '1';
-               v.ebAxisMaster.tKeep  := X"0003";  -- Last word has only 2 bytes
+               v.ebAxisMaster.tKeep  := X"000F";  -- Last word has only 4 bytes
                v.state               := WAIT_ACQUIRE_S;
             end if;
 
