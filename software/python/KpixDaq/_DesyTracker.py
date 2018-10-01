@@ -25,8 +25,9 @@ class FrameParser(rogue.interfaces.stream.Slave):
 
 
     def parseSample(self, ba):
-        value = int.from_bytes(ba, 'little', signed=False)
-        adc = getField(value, 12, 0)
+        baSwapped = bytearray([ba[4], ba[5], ba[6], ba[7], ba[0], ba[1], ba[2], ba[3]])
+        value = int.from_bytes(baSwapped, 'little', signed=False)
+        adc = getField(value, 28, 16)
         timestamp = getField(value, 28, 16)
         row = getField(value, 36, 32)
         col = getField(value, 41, 37)
@@ -77,8 +78,8 @@ class FrameParser(rogue.interfaces.stream.Slave):
         print(f'Got Frame! ByteSize = {frameSizeBytes:08x}')
         print(f'Got {numSamples} samples')
 
-        timestamp = int.from_bytes(p[0:4], 'little')
-        eventNumber = int.from_bytes(p[4:8], 'little')
+        timestamp = int.from_bytes(p[4:8], 'little')
+        eventNumber = int.from_bytes(p[0:4], 'little')
         zeros = int.from_bytes(p[8:8+12], 'little')
 
         print(f'EventNumber: {eventNumber:08x}')
