@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2018-05-16
+-- Last update: 2018-10-02
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -56,11 +56,11 @@ end entity KpixClockGen;
 
 architecture rtl of KpixClockGen is
 
-   constant CLK_SEL_READOUT_DEFAULT_C   : slv(7 downto 0)  := X"09";   -- 100 ns
-   constant CLK_SEL_DIGITIZE_DEFAULT_C  : slv(7 downto 0)  := X"04";   -- 50 ns
-   constant CLK_SEL_ACQUIRE_DEFAULT_C   : slv(7 downto 0)  := X"04";   -- 50 ns
-   constant CLK_SEL_IDLE_DEFAULT_C      : slv(7 downto 0)  := X"09";   -- 100 ns
-   constant CLK_SEL_PRECHARGE_DEFAULT_C : slv(11 downto 0) := X"004";  -- 50 ns
+   constant CLK_SEL_READOUT_DEFAULT_C   : slv(7 downto 0)  := X"27";   -- 200 ns
+   constant CLK_SEL_DIGITIZE_DEFAULT_C  : slv(7 downto 0)  := X"27";   -- 200 ns
+   constant CLK_SEL_ACQUIRE_DEFAULT_C   : slv(7 downto 0)  := X"27";   -- 200 ns
+   constant CLK_SEL_IDLE_DEFAULT_C      : slv(7 downto 0)  := X"27";   -- 200 ns
+   constant CLK_SEL_PRECHARGE_DEFAULT_C : slv(11 downto 0) := X"027";  -- 200 ns
 
    -- Kpix Clock registers run on 200 MHz clock
    type RegType is record
@@ -171,8 +171,12 @@ begin
       end if;
 
       -- Create preRise, preFall strobes
-      if (r.divCount = r.clkSel - 1) then
+      -- pre-rise must come a bit early because kpix always samples on the rising edge
+      if (r.divCount = r.clkSel - 3) then
          v.preRise := not r.clkDiv;
+      end if;
+
+      if (r.divCount = r.clkSel -1) then
          v.preFall := r.clkDiv;
       end if;
 
