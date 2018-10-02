@@ -18,14 +18,14 @@ DesyTrackerRoot:
         enable: 'True'
         RawDataMode: 'False'
         AutoReadDisable: 'False'
-        KpixEnable: '0x40'
+        KpixEnable: '0x800'
       KpixClockGen:
         enable: 'True'
-        ClkSelReadout: '0x9'
-        ClkSelDigitize: '0x4'
-        ClkSelAcquire: '0x4'
-        ClkSelIdle: '0x9'
-        ClkSelPrecharge: '0x4'
+        ClkSelReadout: '0x13'
+        ClkSelDigitize: '0x9'
+        ClkSelAcquire: '0x3f'
+        ClkSelIdle: '0x27'
+        ClkSelPrecharge: '0x4af'
       AcquisitionControl:
         enable: 'True'
         ExtTrigSrc: BncTrig
@@ -74,8 +74,8 @@ DesyTrackerRoot:
           CntrlEnDcReset: 'True'
           CntrlHighGain: 'True'
           CntrlNearNeighbor: 'False'
-          CntrlCalSource: Disable
-          CntrlForceTrigSource: Disable
+          CntrlCalSource: 'Disable'
+          CntrlForceTrigSource: 'Disable'
           CntrlHoldTime: 64x
           CntrlCalibHigh: 'False'
           CntrlShortIntEn: 'False'
@@ -119,8 +119,10 @@ DesyTrackerRoot:
           Chan_928_959: DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD
           Chan_960_991: DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD
           Chan_992_1023: DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD
-        KpixAsic[6]:
+        KpixAsic[12]:
           enable: 'True'
+        KpixAsic[0]:
+          enable: 'False'
         KpixAsic[24]:
           enable: 'True'
       KpixDataRxArray:
