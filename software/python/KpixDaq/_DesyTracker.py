@@ -27,7 +27,7 @@ class FrameParser(rogue.interfaces.stream.Slave):
     def parseSample(self, ba):
         baSwapped = bytearray([ba[4], ba[5], ba[6], ba[7], ba[0], ba[1], ba[2], ba[3]])
         value = int.from_bytes(baSwapped, 'little', signed=False)
-        adc = getField(value, 28, 16)
+        adc = getField(value, 12, 0)
         timestamp = getField(value, 28, 16)
         row = getField(value, 36, 32)
         col = getField(value, 41, 37)
@@ -57,6 +57,8 @@ class FrameParser(rogue.interfaces.stream.Slave):
             print(f'KPIX: {kpixId}')            
             print(f'Temperature: {getField(value, 7, 0)}')
             print(f'TempCount: {getField(value, 31, 24)}')
+        else:
+            print(f'Unknown type field: {typeField}')
             
         print('-------')        
         
@@ -70,7 +72,7 @@ class FrameParser(rogue.interfaces.stream.Slave):
         frame.read(p, 0)
 
         frameSizeBytes = len(p)
-        numSamples = int((frameSizeBytes-32-8)/8)
+        numSamples = int((frameSizeBytes-32-4)/8)
 
         print('')
         print('')        
