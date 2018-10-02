@@ -167,7 +167,7 @@ class KpixAsic(pr.Device):
             name = 'TrigInhibitOff',
             dependencies = [self.TimerD, self.TimeBunchClkDelay],
             linkedGet = lambda: int( ((self.TimerD.value()-self.TimeBunchClkDelay.value())-1)/8 ),
-            linkedSet = lambda value: self.TimerD.set((int(value)*8)+self.TimeBunchClkDelay.value()+1)))
+            linkedSet = lambda value, write: self.TimerD.set((int(value)*8)+self.TimeBunchClkDelay.value()+1, write)))
 
         # setComp(0,1,1,'')
         self.add(pr.RemoteVariable(
@@ -179,9 +179,9 @@ class KpixAsic(pr.Device):
 
         self.add(pr.LinkVariable(
             name = 'BunchClockCount',
-            variable = self.BunchClockCountRaw,
+            dependencies = [self.BunchClockCountRaw],
             linkedGet = lambda: self.BunchClockCountRaw.value() + 1,
-            linkedSet = lambda value: self.BunchClockCountRaw.set(value - 1)))
+            linkedSet = lambda value, write: self.BunchClockCountRaw.set(value - 1, write)))
         
 
  #        self.add(pr.RemoteVariable(
@@ -242,9 +242,11 @@ class KpixAsic(pr.Device):
 
             # Link Variable that gets set
             # Set all Raw RemoteVariables to the same value
-            def ls(value):
-                for v in raws:
-                    v.set(value)
+            def ls(value, write):
+                for v in raws[:-1]:
+                    v.set(value, write=False)
+                raws[-1].set(value, write=write)
+
             self.add(pr.LinkVariable(
                 name = name,
                 mode = 'RW',
@@ -264,6 +266,7 @@ class KpixAsic(pr.Device):
             self.add(pr.LinkVariable(
                 name = f'{name}Volt',
                 mode = 'RO',
+                disp = '{:0.3f}',
                 dependencies = [self.node(name)],
                 linkedGet = dacToVolt))
 
@@ -434,7 +437,8 @@ class KpixAsic(pr.Device):
             enum = {
                 0: 'None',
                 1: 'Amp',
-                2: 'Shaper'}))
+                2: 'Shaper',
+                3: '-'}))
 
         for i, addr in enumerate(CHAN_MODE_A):
             self.add(pr.RemoteVariable(
@@ -468,7 +472,7 @@ class KpixAsic(pr.Device):
                 val = ((((b >> (31-row)) & 1) ), ((a >> (31-row)) & 1))
                 l.append(d[val])
             s =  ' '.join([''.join(x for x in l[i:i+8]) for i in range(0, 32, 8)])
-            print(f'getChanMode = {s}')
+            #print(f'getChanMode = {s}')
             return s
 
         def setChanMode(dev, var, value, write):
@@ -480,7 +484,7 @@ class KpixAsic(pr.Device):
                 regA |= a << (31-row)
                 regB |= b << (31-row)
 
-            print(f'setChanMode(value={value}) - regA={regA:x}, regB = {regB:x}')
+            #print(f'setChanMode(value={value}) - regA={regA:x}, regB = {regB:x}')
                 
             var.dependencies[0].set(value = regA, write=write)
             var.dependencies[1].set(value = regB, write=write)
@@ -492,6 +496,9 @@ class KpixAsic(pr.Device):
                 dependencies = [self.node(f'ChanModeA_{col}'), self.node(f'ChanModeB_{col}')],
                 linkedGet = getChanMode,
                 linkedSet = setChanMode))
+
+    def readBlocks(self, recurse=True, variable=None, checkEach=False):
+        super().readBlocks(recurse=recurse, variable=variable, checkEach=True)
 
 #         for i, offset in enumerate(CHAN_MODE_A):
 #             self.add(pr.RemoteVariable(
@@ -567,12 +574,12 @@ class LocalKpix(KpixAsic):
         
     def writeBlocks(self, force=False, recurse=True, variable=None, checkEach=False):
         if variable is None:
-            super().writeBlocks(force=force, recurse=recurse, variable=self.activeVariables, checkEach=True)
+            super().writeBlocks(force=force, recurse=recurse, variable=self.activeVariables, checkEach=checkEach)
         else:
             if isinstance(variable, pr.BaseVariable):
                 variable = [variable]
             variable = [x for x in variable if x in self.activeVariables]
-            super().writeBlocks(force=force, recurse=recurse, variable=variable, checkEach=True)
+            super().writeBlocks(force=force, recurse=recurse, variable=variable, checkEach=checkEach)
 
         
     def readBlocks(self, recurse=True, variable=None, checkEach=False):
@@ -586,7 +593,7 @@ class LocalKpix(KpixAsic):
         
     def verifyBlocks(self, recurse=True, variable=None, checkEach=False):
         if variable is None:
-            super().verifyBlocks(recurse=recurse, variable=self.activeVariables, checkEach=True)
+            super().verifyBlocks(recurse=recurse, variable=self.activeVariables, checkEach=checkEach)
         else:
             if isinstance(variable, pr.BaseVariable):
                 variable = [variable]
