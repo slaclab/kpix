@@ -567,33 +567,33 @@ class LocalKpix(KpixAsic):
         
     def writeBlocks(self, force=False, recurse=True, variable=None, checkEach=False):
         if variable is None:
-            super().writeBlocks(force=force, recurse=recurse, variable=self.activeVariables, checkEach=checkEach)
+            super().writeBlocks(force=force, recurse=recurse, variable=self.activeVariables, checkEach=True)
         else:
             if isinstance(variable, pr.BaseVariable):
                 variable = [variable]
             variable = [x for x in variable if x in self.activeVariables]
-            super().writeBlocks(force=force, recurse=recurse, variable=variable, checkEach=checkEach)
+            super().writeBlocks(force=force, recurse=recurse, variable=variable, checkEach=True)
 
         
     def readBlocks(self, recurse=True, variable=None, checkEach=False):
         if variable is None:
-            super().readBlocks(recurse=recurse, variable=self.activeVariables, checkEach=checkEach)
+            super().readBlocks(recurse=recurse, variable=self.activeVariables, checkEach=True)
         else:
             if isinstance(variable, pr.BaseVariable):
                 variable = [variable]
             variable = [x for x in variable if x in self.activeVariables]            
-            super().readBlocks(recurse=recurse, variable=variable, checkEach=checkEach)
+            super().readBlocks(recurse=recurse, variable=variable, checkEach=True)
         
     def verifyBlocks(self, recurse=True, variable=None, checkEach=False):
         if variable is None:
-            super().verifyBlocks(recurse=recurse, variable=self.activeVariables, checkEach=checkEach)
+            super().verifyBlocks(recurse=recurse, variable=self.activeVariables, checkEach=True)
         else:
             if isinstance(variable, pr.BaseVariable):
                 variable = [variable]
             variable = [x for x in variable if x in self.activeVariables]            
-            super().verifyBlocks(recurse=recurse, variable=variable, checkEach=checkEach)
+            super().verifyBlocks(recurse=recurse, variable=variable, checkEach=True)
 
-    def checkBlocks(self, recurse=True, variable=None, checkEach=False):
+    def checkBlocks(self, recurse=True, variable=None):
         if variable is None:
             super().checkBlocks(recurse=recurse, variable=self.activeVariables)
         else:
