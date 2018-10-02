@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2018-10-01
+-- Last update: 2018-10-02
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -541,6 +541,7 @@ begin
             v.kpixDataRxMaster.tdata(31 downto 24) := tempCount(7 downto 0);
             v.kpixDataRxMaster.tdata(23 downto 16) := temperature;
             v.kpixDataRxMaster.tdata(7 downto 0)   := grayDecode(temperature);
+            v.kpixDataRxMaster.tdata(63 downto 0)  := v.kpixDataRxMaster.tdata(31 downto 0) & v.kpixDataRxMaster.tdata(63 downto 32);
             v.kpixDataRxMaster.tvalid              := '1';
             v.kpixDataRxMaster.tlast               := '1';
             if (r.kpixDataRxMaster.tvalid = '1' and kpixDataRxSlave.tready = '1') then
