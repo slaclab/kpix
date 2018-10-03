@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-17
--- Last update: 2018-05-16
+-- Last update: 2018-10-03
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -331,7 +331,7 @@ begin
       port map (
          kpixClk        => kpixClk,
          debugOutA      => debugOutA,
-         debugOutB      => debugOutB,
+         debugOutB      => open,
          debugASel      => sysConfig.debugASel,
          debugBSel      => sysConfig.debugBSel,
          kpixReset      => intKpixResetOut,
@@ -342,5 +342,6 @@ begin
          kpixClkPreRise => kpixClkPreRise,
          kpixState      => kpixState,
          calStrobeOut   => open);
+   debugOutB <= intKpixSerRxIn(NUM_KPIX_MODULES_G);
 
 end architecture rtl;
