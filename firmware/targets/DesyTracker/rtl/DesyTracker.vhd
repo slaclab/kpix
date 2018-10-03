@@ -400,11 +400,5 @@ begin
          clkIn  => heartbeat,           -- [in]
          clkOut => bncDebug);           -- [out]
 
-   U_ClkOutBufSingle_2 : entity work.ClkOutBufSingle
-      generic map (
-         TPD_G => TPD_G)
-      port map (
-         clkIn  => refClk,              -- [in]
-         clkOut => bncBusy);            -- [out]
-
+   bncBusy <= debugOutB;
 end architecture rtl;
