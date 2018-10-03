@@ -18,7 +18,7 @@ DesyTrackerRoot:
         enable: 'True'
         RawDataMode: 'False'
         AutoReadDisable: 'False'
-        KpixEnable: '0x800'
+        KpixEnable: '0x41'
       KpixClockGen:
         enable: 'True'
         ClkSelReadout: '0x13'
@@ -119,10 +119,10 @@ DesyTrackerRoot:
           Chan_928_959: DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD
           Chan_960_991: DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD
           Chan_992_1023: DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD
-        KpixAsic[12]:
-          enable: 'True'
         KpixAsic[0]:
-          enable: 'False'
+          enable: 'True'
+        KpixAsic[6]:
+          enable: 'True'
         KpixAsic[24]:
           enable: 'True'
       KpixDataRxArray:
