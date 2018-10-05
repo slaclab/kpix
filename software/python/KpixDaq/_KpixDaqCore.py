@@ -5,6 +5,8 @@ class KpixDaqCore(pr.Device):
     def __init__(self, numKpix, extTrigEnum=None, **kwargs):
         super().__init__(**kwargs)
 
+        self.numKpix = numKpix
+
         self.add(KpixDaq.SysConfig(
             offset = 0x0000))
 
