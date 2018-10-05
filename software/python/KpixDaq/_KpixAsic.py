@@ -145,7 +145,7 @@ class KpixAsic(pr.Device):
             bitSize=8))
 
         self.add(pr.RemoteVariable(
-            name = 'TimePowerUpOn',
+            name = 'TimePowerUpDigOn',
             offset=TIMER_C,
             bitOffset=0,
             bitSize=16))
@@ -184,11 +184,11 @@ class KpixAsic(pr.Device):
             linkedSet = lambda value, write: self.BunchClockCountRaw.set(value - 1, write)))
         
 
- #        self.add(pr.RemoteVariable(
-#             name = 'TimePowerUpOn',
-#             offset=TIMER_E,
-#             bitOffset=16,
-#             bitSize=16))
+        self.add(pr.RemoteVariable(
+            name = 'TimePowerUpOn',
+            offset=TIMER_E,
+            bitOffset=16,
+            bitSize=16))
 
 
         # Calibration Stuff
@@ -469,7 +469,7 @@ class KpixAsic(pr.Device):
             a = var.dependencies[0].value()
             b = var.dependencies[1].value()
             for row in range(32):
-                val = ((((b >> (31-row)) & 1) ), ((a >> (31-row)) & 1))
+                val = ((((b >> (row)) & 1) ), ((a >> (row)) & 1))
                 l.append(d[val])
             s =  ' '.join([''.join(x for x in l[i:i+8]) for i in range(0, 32, 8)])
             #print(f'getChanMode = {s}')
@@ -481,8 +481,8 @@ class KpixAsic(pr.Device):
             regB = 0
             for row in range(32):
                 b,a = drev[value[row]]
-                regA |= a << (31-row)
-                regB |= b << (31-row)
+                regA |= a << (row)
+                regB |= b << (row)
 
             #print(f'setChanMode(value={value}) - regA={regA:x}, regB = {regB:x}')
                 
@@ -551,22 +551,28 @@ class KpixAsic(pr.Device):
 #                 linkedGet = getChanMode,
 #                 linkedSet = setChanMode))
 
-  #  def setCalibrationMode(self, channel, dac):
-#         self.CntrlCalSource.setDisp("Internal", write=False)
-#         self.CntrlForceTrigSource.setDisp("Internal", write=False)
-#         self.CntrlTrigDisable.set(True, write=False)
-#         self.DacCalibration.set(dac, write=False)
+    def setCalibration(self, channel, dac):
+        col = channel%32
+        row = channel/32
         
-#         for col in range(32):
-#             self.node(f'Chan_{col*32:d}_{col*32+31:d}').setDisp("DDDD DDDD DDDD DDDD DDDD DDDD DDDD DDDD", write=False)
-#         self.writeBlocks()        
+        self.CntrlCalSource.setDisp("Internal", write=False)
+        self.CntrlForceTrigSource.setDisp("Internal", write=False)
+        self.CntrlTrigDisable.set(True, write=False)
+        self.DacCalibration.set(dac, write=False)
+       
+        for i in range(32):
+            modestring = ['D' for x in range(32)]
+            if i == col:
+                modestring[row] = 'C'
+            self.node(f'Chan_{i*32:d}_{i*32+31:d}').setDisp(''.join(modestring), write=False)
+        self.writeBlocks() 
         
 
 class LocalKpix(KpixAsic):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.activeVariables = self.find(name='(Stat)') + self.find(name='(Cal)') + self.find(name='(Time)') + self.find(name='(Cfg)')
-        self.activeVariables.remove(self.TimerD)
+        #self.activeVariables.remove(self.TimerD)
         for v in self.variables.values():
             if v not in self.activeVariables:
                 v.hidden = True
