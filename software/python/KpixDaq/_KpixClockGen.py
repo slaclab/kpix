@@ -7,7 +7,7 @@ class KpixClockGen(pr.Device):
         clockRate = 5.0
 
         def getPeriod(dev, var):
-            return (var.dependencies[0].value() + 1) * clockRate
+            return (var.dependencies[0].value() + 1) * clockRate * 2
 
         self.add(pr.RemoteVariable(
             name = 'ClkSelReadout',
