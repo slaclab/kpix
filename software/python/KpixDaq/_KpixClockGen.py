@@ -12,6 +12,7 @@ class KpixClockGen(pr.Device):
         self.add(pr.RemoteVariable(
             name = 'ClkSelReadout',
             mode = 'RW',
+            disp = '{:d}',
             offset= 0x00,
             bitOffset=0,
             bitSize=8))
@@ -28,6 +29,7 @@ class KpixClockGen(pr.Device):
         self.add(pr.RemoteVariable(
             name = 'ClkSelDigitize',
             mode = 'RW',
+            disp = '{:d}',
             offset= 0x04,
             bitOffset=0,
             bitSize=8))
@@ -44,6 +46,7 @@ class KpixClockGen(pr.Device):
         self.add(pr.RemoteVariable(
             name = 'ClkSelAcquire',
             mode = 'RW',
+            disp = '{:d}',
             units = 'ns',
             offset= 0x08,
             bitOffset=0,
@@ -60,6 +63,7 @@ class KpixClockGen(pr.Device):
         self.add(pr.RemoteVariable(
             name = 'ClkSelIdle',
             mode = 'RW',
+            disp = '{:d}',
             offset= 0x0C,
             bitOffset=0,
             bitSize=8))
@@ -75,6 +79,7 @@ class KpixClockGen(pr.Device):
         self.add(pr.RemoteVariable(
             name = 'ClkSelPrecharge',
             mode = 'RW',
+            disp = '{:d}',
             offset= 0x10,
             bitOffset=0,
             bitSize=12))

@@ -1,3 +1,4 @@
+import threading
 import time
 import click
 import pyrogue
@@ -75,21 +76,21 @@ class FrameParser(rogue.interfaces.stream.Slave):
         frameSizeBytes = len(p)
         numSamples = int((frameSizeBytes-32-4)/8)
 
-        print('')
-        print('')        
-        print('----------------------------------')
-        print(f'Got Frame! ByteSize = {frameSizeBytes:08x}')
-        print(f'Got {numSamples} samples')
+        #print('')
+        #print('')        
+        #print('----------------------------------')
+        #print(f'Got Frame! ByteSize = {frameSizeBytes:08x}')
+        #print(f'Got {numSamples} samples')
 
         timestamp = int.from_bytes(p[4:8], 'little')
         eventNumber = int.from_bytes(p[0:4], 'little')
         zeros = int.from_bytes(p[8:8+12], 'little')
 
-        print(f'EventNumber: {eventNumber:08x}')
-        print(f'Timestamp: {timestamp:08x}')
+        #print(f'EventNumber: {eventNumber:d}')
+        #print(f'Timestamp: {timestamp:08x}')
 
-        for i in range(numSamples):
-            self.parseSample(p[32+(i*8):32+(i*8)+8])
+#        for i in range(numSamples):
+#            self.parseSample(p[32+(i*8):32+(i*8)+8])
         
 
 
@@ -173,52 +174,52 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         pyrogue.RunControl.__init__(self, rates=rates, states=states, **kwargs)
 
         # These specify the parameters of a run
-        self.add(pr.LocalVariable(
+        self.add(pyrogue.LocalVariable(
             name = 'CalMeanCount',
             description = 'Set number of iterations for mean fitting',
-            value = 4000))
+            value = 100))
 
-        self.add(pr.LocalVariable(
+        self.add(pyrogue.LocalVariable(
             name = 'CalDacMin',
             description = 'Min DAC value for calibration',
             value = 0))
 
-        self.add(pr.LocalVariable(
+        self.add(pyrogue.LocalVariable(
             name = 'CalDacMax',
             description = 'Max DAC value for calibration',
             value = 255))
 
-        self.add(pr.LocalVariable(
+        self.add(pyrogue.LocalVariable(
             name = 'CalDacStep',
             description = "DAC increment value for calibration",
             value = 1))
 
-        self.add(pr.LocalVariable(
+        self.add(pyrogue.LocalVariable(
             name = 'CalDacCount',
             description = "Number of iterations to take at each dac value",
             value = 1))
 
-        self.add(pr.LocalVariable(
+        self.add(pyrogue.LocalVariable(
             name = 'CalChanMin',
             description = 'Starting calibration channel',
-            value = 1023))
+            value = 0))
 
-        self.add(pr.LocalVariable(
+        self.add(pyrogue.LocalVariable(
             name = 'CalChanMax',
             description = 'Last calibration channel',
             value = 1023))
 
         # These are updated during the run
-        self.add(pr.LocalVariable(
+        self.add(pyrogue.LocalVariable(
             name = 'CalState',
-            disp = ['Idle', 'Baseline', 'Inject']
+            disp = ['Idle', 'Baseline', 'Inject'],
             value = 'Idle'))
 
-        self.add(pr.LocalVariable(
+        self.add(pyrogue.LocalVariable(
             name = 'CalChannel',
             value = 0))
 
-        self.add(pr.LocalVariable(
+        self.add(pyrogue.LocalVariable(
             name = 'CalDac',
             value = 0))
         
@@ -234,7 +235,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                 #print("Starting run")
                 self._thread = threading.Thread(target=self._run)
                 self._thread.start()
-            elif self.runState.valueDisp() = 'Calibration':
+            elif self.runState.valueDisp() == 'Calibration':
                 self._thread = threading.Thread(target=self._calibrate)
                 self._thread.start()
             elif self._thread is not None:
@@ -266,7 +267,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         dacStep = self.CalDacStep.value()
         dacCount = self.CalDacCount.value()
         firstChan = self.CalChanMin.value()
-        lastChan = self.CalDacMax.value()
+        lastChan = self.CalChanMax.value()
         
         # Configure firmware for calibration
         acqCtrl = self.root.DesyTracker.KpixDaqCore.AcquisitionControl
@@ -275,40 +276,56 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         acqCtrl.ExtAcquisitionSrc.setDisp('EthAcquire', write=True)
         acqCtrl.Calibrate.set(True, write=True)
 
+        kpixAsics = [self.root.DesyTracker.KpixDaqCore.KpixAsicArray.KpixAsic[i] for i in range(24)]
+
         self.runCount.set(0)        
 
         # First do baselines        
         self.CalState.set('Baseline')
-        click.progressbar(
-            iterable= range(meanCount),
-            label = click.style('Running baseline: ', fg='green'))
-        as bar:
+        with click.progressbar(
+                iterable= range(meanCount),
+                label = click.style('Running baseline: ', fg='green')) as bar:
+            
             for i in bar:
-                self.root.DesyTracker.EthAcquire()
-                self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1)
-                runCount += 1
+                if self.runState.valueDisp() == 'Calibration':
+                    self.root.DesyTracker.EthAcquire()
+                    self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1)
+                    self.runCount += 1
+                else:
+                    self.runState.setDisp('Stopped')
+                    return
 
         
         # Calibration
         self.CalState.set('Inject')
-        click.progressbar(
+        print(f'firstChan: {firstChan}, lastChan: {lastChan}')
+        with click.progressbar(
             iterable= range(firstChan, lastChan+1),
             label = click.style('Running Injection: ', fg='green'))  as bar:
 
             for channel in bar:
+                click.echo(f'Calibrating channel {channel}')
                 for dac in range(dacMin, dacMax+1, dacStep):
+                    click.echo(f'Setting DAC to  {dac:02x}')                    
                     # Set these to log in event stream
                     self.CalChannel.set(channel)
                     self.CalDac.set(dac)
                 
                     # Configure each kpix for channel and dac
-                    for kpix in self.kpixAsics:
-                        kpix.setCalib(channel, dac)
+                    for kpix in kpixAsics:
+                        kpix.setCalibration(channel, dac)
                     
                     # Send acquire command and wait for response
                     for count in range(dacCount):
-                        self.root.DesyTracker.EthAcquire()
-                        self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1)
-                        runCount += 1
+                        if self.runState.valueDisp() == 'Calibration':                        
+                            self.root.DesyTracker.EthAcquire()
+                            self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1)
+                            self.runCount += 1
+                        else:
+                            self.runState.setDisp('Stopped')
+                            return
+                            
+        self.runCount.get()
+        self.runState.setDisp('Stopped')        
 
     

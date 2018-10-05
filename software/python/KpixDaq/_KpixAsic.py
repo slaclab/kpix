@@ -167,7 +167,7 @@ class KpixAsic(pr.Device):
             name = 'TrigInhibitOff',
             dependencies = [self.TimerD, self.TimeBunchClkDelay],
             linkedGet = lambda: int( ((self.TimerD.value()-self.TimeBunchClkDelay.value())-1)/8 ),
-            linkedSet = lambda value, write: self.TimerD.set((int(value)*8)+self.TimeBunchClkDelay.value()+1, write)))
+            linkedSet = lambda value, write: self.TimerD.set((int(value)*8)+self.TimeBunchClkDelay.value()+1, write=True)))
 
         # setComp(0,1,1,'')
         self.add(pr.RemoteVariable(
@@ -243,9 +243,8 @@ class KpixAsic(pr.Device):
             # Link Variable that gets set
             # Set all Raw RemoteVariables to the same value
             def ls(value, write):
-                for v in raws[:-1]:
-                    v.set(value, write=False)
-                raws[-1].set(value, write=write)
+                for v in raws:
+                    v.set(value, write=write)
 
             self.add(pr.LinkVariable(
                 name = name,
@@ -497,8 +496,8 @@ class KpixAsic(pr.Device):
                 linkedGet = getChanMode,
                 linkedSet = setChanMode))
 
-    def readBlocks(self, recurse=True, variable=None, checkEach=False):
-        super().readBlocks(recurse=recurse, variable=variable, checkEach=True)
+#    def readBlocks(self, recurse=True, variable=None, checkEach=False):
+#        super().readBlocks(recurse=recurse, variable=variable, checkEach=True)
 
 #         for i, offset in enumerate(CHAN_MODE_A):
 #             self.add(pr.RemoteVariable(
@@ -552,8 +551,8 @@ class KpixAsic(pr.Device):
 #                 linkedSet = setChanMode))
 
     def setCalibration(self, channel, dac):
-        col = channel%32
-        row = channel/32
+        row = channel%32
+        col = channel//32
         
         self.CntrlCalSource.setDisp("Internal", write=False)
         self.CntrlForceTrigSource.setDisp("Internal", write=False)
@@ -565,7 +564,9 @@ class KpixAsic(pr.Device):
             if i == col:
                 modestring[row] = 'C'
             self.node(f'Chan_{i*32:d}_{i*32+31:d}').setDisp(''.join(modestring), write=False)
-        self.writeBlocks() 
+        self.writeBlocks()
+        self.verifyBlocks()
+        self.checkBlocks()
         
 
 class LocalKpix(KpixAsic):
