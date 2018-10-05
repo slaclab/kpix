@@ -5,7 +5,7 @@
 -- Author     : Larry Ruckman  <ruckman@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2016-06-02
--- Last update: 2018-09-21
+-- Last update: 2018-10-03
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -45,6 +45,7 @@ entity DesyTrackerEthCore is
    port (
       refClkOut        : out sl;
       ethClkOut        : out sl;
+      ethRstOut        : out sl;
       pllLocked        : out sl;
       -- Reference Clock and Reset
       clk200           : out sl;
@@ -126,6 +127,7 @@ begin
    rst200 <= locRst200;
 
    ethClkOut <= ethClk;
+   ethRstOut <= ethRst;
    refClkOut <= refClk;
 
    --------------------
