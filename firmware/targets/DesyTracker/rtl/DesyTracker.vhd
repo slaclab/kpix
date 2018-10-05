@@ -105,12 +105,15 @@ architecture rtl of DesyTracker is
    signal clk200 : sl;
    signal rst200 : sl;
 
-   constant NUM_AXIL_MASTERS_C : integer := 3;
+   constant NUM_AXIL_MASTERS_C : integer := 6;
    constant AXIL_VERSION_C     : integer := 0;
    constant AXIL_KPIX_DAQ_C    : integer := 1;
 --   constant AXIL_CASSETTE_I2C_0_C : integer := 2;
 --   constant AXIL_CASSETTE_I2C_1_C : integer := 3;   
    constant AXIL_ETH_CORE_C    : integer := 2;
+   constant AXIL_XADC_C        : integer := 3;
+   constant AXIL_TEMP_C        : integer := 4;
+   constant AXIL_BOOT_C        : integer := 5;
 
    constant AXIL_XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXIL_MASTERS_C-1 downto 0) := (
       AXIL_VERSION_C  => (
@@ -124,7 +127,20 @@ architecture rtl of DesyTracker is
       AXIL_ETH_CORE_C => (
          baseAddr     => X"02000000",
          addrBits     => 10,
+         connectivity => X"FFFF"),
+      AXIL_XADC_C     => (
+         baseAddr     => X"03000000",
+         addrBits     => 12,
+         connectivity => X"FFFF"),
+      AXIL_TEMP_C     => (
+         baseAddr     => X"04000000",
+         addrBits     => 12,
+         connectivity => X"FFFF"),
+      AXIL_BOOT_C     => (
+         baseAddr     => X"04000000",
+         addrBits     => 12,
          connectivity => X"FFFF"));
+
 
    signal axilReadMaster  : AxiLiteReadMasterType;
    signal axilReadSlave   : AxiLiteReadSlaveType;
@@ -163,8 +179,11 @@ architecture rtl of DesyTracker is
 
    signal refClk    : sl;
    signal ethClk    : sl;
+   signal ethRst    : sl;
    signal pllLocked : sl;
    signal heartbeat : sl;
+
+   signal bootSck : sl;
 
 begin
 
@@ -301,6 +320,7 @@ begin
       port map (
          refClkOut        => refClk,                                -- [out]
          ethClkOut        => ethClk,                                -- [out]
+         ethRstOut        => ethRst,
          pllLocked        => pllLocked,                             -- [out]
          clk200           => clk200,                                -- [out]
          rst200           => rst200,                                -- [out]
@@ -401,4 +421,122 @@ begin
          clkOut => bncDebug);           -- [out]
 
    bncBusy <= debugOutB;
+
+   -------------------------------------------------------------------------------------------------
+   -- XADC
+   -- Need to use ethClk on xadcClk and COMMON_CLK_G=false because DRP can't run at 200 MHz
+   -------------------------------------------------------------------------------------------------
+   U_XadcSimpleCore_1 : entity work.XadcSimpleCore
+      generic map (
+         TPD_G                    => TPD_G,
+         COMMON_CLK_G             => false,
+         SEQUENCER_MODE_G         => "CONTINUOUS",
+         SAMPLING_MODE_G          => "CONTINUOUS",
+         MUX_EN_G                 => false,
+         ADCCLK_RATIO_G           => 5,
+         SAMPLE_AVG_G             => "00",
+         COEF_AVG_EN_G            => true,
+         OVERTEMP_AUTO_SHDN_G     => true,
+         OVERTEMP_ALM_EN_G        => true,
+         OVERTEMP_LIMIT_G         => 80.0,
+         OVERTEMP_RESET_G         => 30.0,
+         TEMP_ALM_EN_G            => false,
+         TEMP_UPPER_G             => 70.0,
+         TEMP_LOWER_G             => 0.0,
+         VCCINT_ALM_EN_G          => false,
+         VCCAUX_ALM_EN_G          => false,
+         VCCBRAM_ALM_EN_G         => false,
+         ADC_OFFSET_CORR_EN_G     => false,
+         ADC_GAIN_CORR_EN_G       => true,
+         SUPPLY_OFFSET_CORR_EN_G  => false,
+         SUPPLY_GAIN_CORR_EN_G    => true,
+         SEQ_XADC_CAL_SEL_EN_G    => false,
+         SEQ_TEMPERATURE_SEL_EN_G => true,
+         SEQ_VCCINT_SEL_EN_G      => true,
+         SEQ_VCCAUX_SEL_EN_G      => true,
+         SEQ_VCCBRAM_SEL_EN_G     => true,
+         SEQ_VAUX_SEL_EN_G        => (others => false))        -- All AUX voltages on
+      port map (
+         axilClk         => clk200,                            -- [in]
+         axilRst         => rst200,                            -- [in]
+         axilReadMaster  => locAxilReadMasters(AXIL_XADC_C),   -- [in]
+         axilReadSlave   => locAxilReadSlaves(AXIL_XADC_C),    -- [out]
+         axilWriteMaster => locAxilWriteMasters(AXIL_XADC_C),  -- [in]
+         axilWriteSlave  => locAxilWriteSlaves(AXIL_XADC_C),   -- [out]
+         xadcClk         => ethClk,                            -- [in]
+         xadcRst         => ethRst,                            -- [in]
+         alm             => open,                              -- [out]
+         ot              => open);                             -- [out]
+
+   -------------------------------------------------------------------------------------------------
+   -- Board temperature
+   -------------------------------------------------------------------------------------------------
+   U_AxiI2cRegMaster_1 : entity work.AxiI2cRegMaster
+      generic map (
+         TPD_G             => TPD_G,
+         DEVICE_MAP_G      => (
+            0              => (
+               i2cAddress  => "0001001000",
+               i2cTenbit   => '0',
+               dataSize    => 8,
+               addrSize    => 8,
+               endianness  => '0',
+               repeatStart => '0')),
+         I2C_SCL_FREQ_G    => 100.0E+3,
+         I2C_MIN_PULSE_G   => 100.0E-9,
+         AXI_CLK_FREQ_G    => 200.0E+6)
+      port map (
+         axiClk         => clk200,                            -- [in]
+         axiRst         => rst200,                            -- [in]
+         axiReadMaster  => locAxilReadMasters(AXIL_TEMP_C),   -- [in]
+         axiReadSlave   => locAxilReadSlaves(AXIL_TEMP_C),    -- [out]
+         axiWriteMaster => locAxilWriteMasters(AXIL_TEMP_C),  -- [in]
+         axiWriteSlave  => locAxilWriteSlaves(AXIL_TEMP_C),   -- [out]
+         scl            => pwrScl,                            -- [inout]
+         sda            => pwrSda);                           -- [inout]
+
+   ----------------------
+   -- AXI-Lite: Boot Prom
+   ----------------------
+   U_SpiProm : entity work.AxiMicronN25QCore
+      generic map (
+         TPD_G          => TPD_G,
+         AXI_CLK_FREQ_G => 200.0E+6,
+         SPI_CLK_FREQ_G => (200.0E+6/12.0))
+      port map (
+         -- FLASH Memory Ports
+         csL            => bootCsL,
+         sck            => bootSck,
+         mosi           => bootMosi,
+         miso           => bootMiso,
+         -- AXI-Lite Register Interface
+         axiReadMaster  => locAxilReadMasters(AXIL_BOOT_C),
+         axiReadSlave   => locAxilReadSlaves(AXIL_BOOT_C),
+         axiWriteMaster => locAxilWriteMasters(AXIL_BOOT_C),
+         axiWriteSlave  => locAxilWriteSlaves(AXIL_BOOT_C),
+         -- Clocks and Resets
+         axiClk         => clk200,
+         axiRst         => rst200);
+
+   -----------------------------------------------------
+   -- Using the STARTUPE2 to access the FPGA's CCLK port
+   -----------------------------------------------------
+   U_STARTUPE2 : STARTUPE2
+      port map (
+         CFGCLK    => open,             -- 1-bit output: Configuration main clock output
+         CFGMCLK   => open,  -- 1-bit output: Configuration internal oscillator clock output
+         EOS       => open,  -- 1-bit output: Active high output signal indicating the End Of Startup.
+         PREQ      => open,             -- 1-bit output: PROGRAM request to fabric output
+         CLK       => '0',              -- 1-bit input: User start-up clock input
+         GSR       => '0',  -- 1-bit input: Global Set/Reset input (GSR cannot be used for the port name)
+         GTS       => '0',  -- 1-bit input: Global 3-state input (GTS cannot be used for the port name)
+         KEYCLEARB => '0',  -- 1-bit input: Clear AES Decrypter Key input from Battery-Backed RAM (BBRAM)
+         PACK      => '0',              -- 1-bit input: PROGRAM acknowledge input
+         USRCCLKO  => bootSck,          -- 1-bit input: User CCLK input
+         USRCCLKTS => '0',              -- 1-bit input: User CCLK 3-state enable input
+         USRDONEO  => '1',              -- 1-bit input: User DONE pin output control
+         USRDONETS => '1');             -- 1-bit input: User DONE 3-state enable output   
+
+
+
 end architecture rtl;
