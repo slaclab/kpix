@@ -550,13 +550,15 @@ class KpixAsic(pr.Device):
 #                 linkedGet = getChanMode,
 #                 linkedSet = setChanMode))
 
+    def setCalibrationMode(self):
+        self.CntrlCalSource.setDisp("Internal", write=True)
+        self.CntrlForceTrigSource.setDisp("Internal", write=True)
+        self.CntrlTrigDisable.set(True, write=True)
+
     def setCalibration(self, channel, dac):
         row = channel%32
         col = channel//32
         
-        self.CntrlCalSource.setDisp("Internal", write=False)
-        self.CntrlForceTrigSource.setDisp("Internal", write=False)
-        self.CntrlTrigDisable.set(True, write=False)
         self.DacCalibration.set(dac, write=False)
        
         for i in range(32):
