@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2018-10-01
+-- Last update: 2018-10-11
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -76,8 +76,8 @@ architecture rtl of EventBuilder is
       GATHER_DATA_S);
 
    type RegType is record
-      timestampCount     : slv(31 downto 0);
-      timestamp          : slv(31 downto 0);
+      timestampCount     : slv(63 downto 0);
+      timestamp          : slv(63 downto 0);
       eventNumber        : slv(31 downto 0);
       newAcquire         : sl;
       state              : StateType;
@@ -163,7 +163,7 @@ begin
                v.state                           := WRITE_HEADER_S;
                -- Write Event number and timestamp in SOF
                v.ebAxisMaster.tValid             := '1';
-               v.ebAxisMaster.tData(63 downto 0) := r.timestamp & r.eventNumber;
+               v.ebAxisMaster.tData(63 downto 0) := r.timestamp(31 downto 0) & r.eventNumber;
                ssiSetUserSof(EB_DATA_AXIS_CONFIG_C, v.ebAxisMaster, '1');
             end if;
 
@@ -176,6 +176,9 @@ begin
 --               else
 
 --               end if;
+            if (r.counter = 0) then
+               v.ebAxisMaster.tData(31 downto 0) := r.timestamp(63 downto 32);
+            end if;
             if (r.counter = 2) then
                v.state := WAIT_DIGITIZE_S;
             end if;
