@@ -11,10 +11,10 @@ DesyTrackerRoot:
     CalMeanCount: 100
     CalDacMin: 200
     CalDacMax: 255
-    CalDacStep: 1
+    CalDacStep: 5
     CalDacCount: 1
-    CalChanMin: 0
-    CalChanMax: 1023
+    CalChanMin: 50
+    CalChanMax: 55
 #    CalState: Idle
 #    CalChannel: '0'
 #    CalDac: '0'
