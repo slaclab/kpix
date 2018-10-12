@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2018-10-02
+-- Last update: 2018-10-12
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -56,11 +56,11 @@ end entity KpixClockGen;
 
 architecture rtl of KpixClockGen is
 
-   constant CLK_SEL_READOUT_DEFAULT_C   : slv(7 downto 0)  := X"27";   -- 200 ns
-   constant CLK_SEL_DIGITIZE_DEFAULT_C  : slv(7 downto 0)  := X"27";   -- 200 ns
-   constant CLK_SEL_ACQUIRE_DEFAULT_C   : slv(7 downto 0)  := X"27";   -- 200 ns
-   constant CLK_SEL_IDLE_DEFAULT_C      : slv(7 downto 0)  := X"27";   -- 200 ns
-   constant CLK_SEL_PRECHARGE_DEFAULT_C : slv(11 downto 0) := X"027";  -- 200 ns
+   constant CLK_SEL_READOUT_DEFAULT_C   : slv(7 downto 0)  := X"20";   
+   constant CLK_SEL_DIGITIZE_DEFAULT_C  : slv(7 downto 0)  := X"21";   
+   constant CLK_SEL_ACQUIRE_DEFAULT_C   : slv(7 downto 0)  := X"22";   
+   constant CLK_SEL_IDLE_DEFAULT_C      : slv(7 downto 0)  := X"23";   
+   constant CLK_SEL_PRECHARGE_DEFAULT_C : slv(11 downto 0) := X"024";  
 
    -- Kpix Clock registers run on 200 MHz clock
    type RegType is record
@@ -155,8 +155,6 @@ begin
          -- Assign new clkSel dependant on kpixState
          if (kpixState.analogState = KPIX_ANALOG_DIG_STATE_C and kpixState.prechargeBus = '1') then
             v.clkSel := r.clkSelPrecharge;
-         elsif (kpixState.analogState = KPIX_ANALOG_IDLE_STATE_C) then
-            v.clkSel := "0000" & r.clkSelIdle;
          elsif (kpixState.analogState = KPIX_ANALOG_PRE_STATE_C or
                 kpixState.analogState = KPIX_ANALOG_SAMP_STATE_C or
                 kpixState.analogState = KPIX_ANALOG_PAUSE_STATE_C) then
