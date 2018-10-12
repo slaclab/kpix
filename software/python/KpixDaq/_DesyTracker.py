@@ -1,17 +1,21 @@
 import threading
 import time
 import click
+
+import rogue
 import pyrogue
 import pyrogue.interfaces.simulation
 import pyrogue.protocols
 import pyrogue.utilities.fileio
-import rogue
-import surf.axi as axi
-import surf.protocols.rssi as rssi
+
+import surf.axi
+import surf.protocols.rssi
+import surf.devices.linear
+import surf.devices.nxp
+import surf.xilinx
+#import surf.devices.micron
+
 import KpixDaq
-
-
-
 
 class DesyTrackerRoot(pyrogue.Root):
     def __init__(self, hwEmu=False, sim=False, rssiEn=False, ip='192.168.1.10', pollEn=False, **kwargs):
@@ -42,8 +46,8 @@ class DesyTrackerRoot(pyrogue.Root):
             pyrogue.streamConnect(self.cmd, dest1)
             pyrogue.streamConnect(self, dataWriter.getYamlChannel())
 
-            fp = FrameParser()
-            pyrogue.streamTap(dest1, fp)
+            #fp = FrameParser()
+            #pyrogue.streamTap(dest1, fp)
 
             self.add(dataWriter)
             self.add(DesyTrackerRunControl())
@@ -63,7 +67,7 @@ class DesyTracker(pyrogue.Device):
             f.write(bytearray([0xAA]), 0)
             self.root.cmd._sendFrame(f)
                 
-        self.add(axi.AxiVersion(
+        self.add(surf.axi.AxiVersion(
             offset = 0x0000))
 
         extTrigEnum = {
@@ -82,21 +86,26 @@ class DesyTracker(pyrogue.Device):
             extTrigEnum = extTrigEnum))
 
         if rssi:
-            self.add(rssi.RssiCore(
+            self.add(surf.protocols.rssi.RssiCore(
                 offset = 0x02000000))
             
         self.add(surf.xilinx.Xadc(
             offset=0x03000000,
             expand=False))
 
+        self.add(surf.devices.linear.Ltc4151(
+            offset = 0x04000000,
+            senseRes = 0.02))
+
+
         self.add(surf.devices.nxp.Sa56004x(
             description = "Board temperate monitor",
-            offset = 0x04000000))
+            offset = 0x04000400))
 
-        self.add(surf.devices.micron.AxiMicronN25Q(
-            offset = 0x05000000,
-            addrMode = False,
-            hidden = True))
+#         self.add(surf.devices.micron.AxiMicronN25Q(
+#             offset = 0x06000000,
+#             addrMode = False,
+#             hidden = True))
 
 class DesyTrackerRunControl(pyrogue.RunControl):
     def __init__(self, **kwargs):
@@ -153,8 +162,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         self.add(pyrogue.LocalVariable(
             name = 'CalDac',
             value = 0))
-        
-        
+
     def _setRunState(self,value,changed):
         """
         Set run state. Reimplement in sub-class.
@@ -207,8 +215,12 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         acqCtrl.ExtAcquisitionSrc.setDisp('EthAcquire', write=True)
         acqCtrl.Calibrate.set(True, write=True)
 
+        # Put asics in calibration mode
         kpixAsics = [self.root.DesyTracker.KpixDaqCore.KpixAsicArray.KpixAsic[i] for i in range(24)]
+        for kpix in kpixAsics:
+            kpix.setCalibrationMode()
 
+        # Restart the run count
         self.runCount.set(0)        
 
         # First do baselines        
@@ -237,7 +249,6 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             for channel in bar:
                 click.echo(f'Calibrating channel {channel}')
                 for dac in range(dacMin, dacMax+1, dacStep):
-                    click.echo(f'Setting DAC to  {dac:02x}')                    
                     # Set these to log in event stream
                     self.CalChannel.set(channel)
                     self.CalDac.set(dac)
