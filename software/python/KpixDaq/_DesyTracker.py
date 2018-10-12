@@ -84,7 +84,19 @@ class DesyTracker(pyrogue.Device):
         if rssi:
             self.add(rssi.RssiCore(
                 offset = 0x02000000))
+            
+        self.add(surf.xilinx.Xadc(
+            offset=0x03000000,
+            expand=False))
 
+        self.add(surf.devices.nxp.Sa56004x(
+            description = "Board temperate monitor",
+            offset = 0x04000000))
+
+        self.add(surf.devices.micron.AxiMicronN25Q(
+            offset = 0x05000000,
+            addrMode = False,
+            hidden = True))
 
 class DesyTrackerRunControl(pyrogue.RunControl):
     def __init__(self, **kwargs):
