@@ -21,6 +21,7 @@ use ieee.std_logic_1164.all;
 use work.StdRtlPkg.all;
 use work.AxiLitePkg.all;
 use work.AxiStreamPkg.all;
+use work.I2cPkg.all;
 
 use work.KpixPkg.all;
 
@@ -112,7 +113,7 @@ architecture rtl of DesyTracker is
 --   constant AXIL_CASSETTE_I2C_1_C : integer := 3;   
    constant AXIL_ETH_CORE_C    : integer := 2;
    constant AXIL_XADC_C        : integer := 3;
-   constant AXIL_TEMP_C        : integer := 4;
+   constant AXIL_PWR_C         : integer := 4;
    constant AXIL_BOOT_C        : integer := 5;
 
    constant AXIL_XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXIL_MASTERS_C-1 downto 0) := (
@@ -132,9 +133,9 @@ architecture rtl of DesyTracker is
          baseAddr     => X"03000000",
          addrBits     => 12,
          connectivity => X"FFFF"),
-      AXIL_TEMP_C     => (
+      AXIL_PWR_C      => (
          baseAddr     => X"04000000",
-         addrBits     => 12,
+         addrBits     => 16,
          connectivity => X"FFFF"),
       AXIL_BOOT_C     => (
          baseAddr     => X"05000000",
@@ -473,27 +474,30 @@ begin
    -------------------------------------------------------------------------------------------------
    U_AxiI2cRegMaster_1 : entity work.AxiI2cRegMaster
       generic map (
-         TPD_G             => TPD_G,
-         DEVICE_MAP_G      => (
-            0              => (
-               i2cAddress  => "0001001000",
-               i2cTenbit   => '0',
-               dataSize    => 8,
-               addrSize    => 8,
-               endianness  => '0',
-               repeatStart => '0')),
-         I2C_SCL_FREQ_G    => 100.0E+3,
-         I2C_MIN_PULSE_G   => 100.0E-9,
-         AXI_CLK_FREQ_G    => 200.0E+6)
+         TPD_G            => TPD_G,
+         DEVICE_MAP_G     => (
+            0             => MakeI2cAxiLiteDevType(
+               i2cAddress => "1101111",
+               dataSize   => 8,
+               addrSize   => 8,
+               endianness => '1'),
+            1             => MakeI2cAxiLiteDevType(
+               i2cAddress => "1001000",
+               dataSize   => 8,
+               addrSize   => 8,
+               endianness => '1')),
+         I2C_SCL_FREQ_G   => 100.0E+3,
+         I2C_MIN_PULSE_G  => 100.0E-9,
+         AXI_CLK_FREQ_G   => 200.0E+6)
       port map (
-         axiClk         => clk200,                            -- [in]
-         axiRst         => rst200,                            -- [in]
-         axiReadMaster  => locAxilReadMasters(AXIL_TEMP_C),   -- [in]
-         axiReadSlave   => locAxilReadSlaves(AXIL_TEMP_C),    -- [out]
-         axiWriteMaster => locAxilWriteMasters(AXIL_TEMP_C),  -- [in]
-         axiWriteSlave  => locAxilWriteSlaves(AXIL_TEMP_C),   -- [out]
-         scl            => pwrScl,                            -- [inout]
-         sda            => pwrSda);                           -- [inout]
+         axiClk         => clk200,                           -- [in]
+         axiRst         => rst200,                           -- [in]
+         axiReadMaster  => locAxilReadMasters(AXIL_PWR_C),   -- [in]
+         axiReadSlave   => locAxilReadSlaves(AXIL_PWR_C),    -- [out]
+         axiWriteMaster => locAxilWriteMasters(AXIL_PWR_C),  -- [in]
+         axiWriteSlave  => locAxilWriteSlaves(AXIL_PWR_C),   -- [out]
+         scl            => pwrScl,                           -- [inout]
+         sda            => pwrSda);                          -- [inout]
 
    ----------------------
    -- AXI-Lite: Boot Prom
