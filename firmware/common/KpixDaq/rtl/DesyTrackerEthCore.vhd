@@ -5,7 +5,7 @@
 -- Author     : Larry Ruckman  <ruckman@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2016-06-02
--- Last update: 2018-10-03
+-- Last update: 2018-10-12
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -177,7 +177,7 @@ begin
          TPD_G              => TPD_G,
          TYPE_G             => "MMCM",
          INPUT_BUFG_G       => false,
-         FB_BUFG_G          => false,
+         FB_BUFG_G          => true,    -- Without this, will never lock in simulation
          RST_IN_POLARITY_G  => '1',
          NUM_CLOCKS_G       => 3,
          -- MMCM attributes
