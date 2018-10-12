@@ -7,7 +7,7 @@ export PRJ_PART = XC7K160TFBG676-3
 
 export RUCKUS_DIR = $(abspath $(PWD)/../../submodules/ruckus)
 
-export REMOVE_UNUSED_CODE = 1
+#export REMOVE_UNUSED_CODE = 1
 
 export PRJ_VERSION = 0x00000000
 
