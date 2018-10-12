@@ -137,7 +137,7 @@ architecture rtl of DesyTracker is
          addrBits     => 12,
          connectivity => X"FFFF"),
       AXIL_BOOT_C     => (
-         baseAddr     => X"04000000",
+         baseAddr     => X"05000000",
          addrBits     => 12,
          connectivity => X"FFFF"));
 
