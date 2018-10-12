@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-16
--- Last update: 2018-10-11
+-- Last update: 2018-10-12
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ architecture rtl of EventBuilder is
       counter            : slv(15 downto 0);  -- Generic counter for stalling in a state
       activeModules      : slv(NUM_KPIX_MODULES_G-1 downto 0);
       dataDone           : slv(NUM_KPIX_MODULES_G-1 downto 0);
-      kpixCounter        : slv(log2(NUM_KPIX_MODULES_G)-1 downto 0);
+      kpixIndex          : integer range 0 to NUM_KPIX_MODULES_G-1;
       kpixDataRxSlaves   : AxiStreamSlaveArray(NUM_KPIX_MODULES_G-1 downto 0);
       timestampAxisSlave : AxiStreamSlaveType;
       ebAxisMaster       : AxiStreamMasterType;
@@ -99,7 +99,7 @@ architecture rtl of EventBuilder is
       counter            => (others => '0'),
       activeModules      => (others => '0'),
       dataDone           => (others => '0'),
-      kpixCounter        => (others => '0'),
+      kpixIndex          => 0,
       kpixDataRxSlaves   => (others => AXI_STREAM_SLAVE_INIT_C),
       timestampAxisSlave => AXI_STREAM_SLAVE_INIT_C,
       ebAxisMaster       => axiStreamMasterInit(EB_DATA_AXIS_CONFIG_C));
@@ -112,7 +112,6 @@ begin
    comb : process (acqControl, ebAxisCtrl, kpixDataRxMasters, kpixState, r, rst200, sysConfig,
                    timestampAxisMaster) is
       variable v              : RegType;
-      variable kpixCounterInt : integer;
 
    begin
       v := r;
@@ -143,18 +142,10 @@ begin
 
       -- Determines which kpix to look for data from.
       -- Increments every cycle so that kpixes are read in round robin fashion.
-      v.kpixCounter := r.kpixCounter + 1;
-      if (r.kpixCounter = NUM_KPIX_MODULES_G-1) then
-         v.kpixCounter := (others => '0');
+      v.kpixIndex := r.kpixIndex + 1;
+      if (r.kpixIndex = NUM_KPIX_MODULES_G-1) then
+         v.kpixIndex := 0;
       end if;
-      kpixCounterInt := conv_integer(r.kpixCounter);
-
-      -- Reset ack when valid falls
---       for i in NUM_KPIX_MODULES_G-1 downto 0 loop
---          if (kpixDataRxOut(i).valid = '0') then
---             v.kpixDataRxIn(i).ack := '0';
---          end if;
---       end loop;
 
       case r.state is
          when WAIT_ACQUIRE_S =>
@@ -218,43 +209,18 @@ begin
                v.state := GATHER_DATA_S;  -- was CHECK_BUSY_S
             end if;
 
---          when CHECK_BUSY_S =>
---             -- Wait X kpixClk cycles for busy signals
---             -- Tells which modules are active
---             v.counter := r.counter;
---             if (kpixClkRise = '1') then
---                v.counter := r.counter + 1;
---             end if;
---             if (r.counter = 65532) then  -- Wait some amount of time for data to arrive
---                -- No busy signals detected at all
---                v.state := WAIT_ACQUIRE_S;
---                writeFifo(X"0123456789abcdef", EOF_C);
---             end if;
---             for i in NUM_KPIX_MODULES_G-1 downto 0 loop
---                if (kpixDataRxOut(i).busy = '1') then
---                   v.activeModules(i) := '1';
---                end if;
---                -- Due to clock crossing, busy signals may arrive 1 cycle appart
---                -- Checking r.activeModules rather than busy inputs assures that
---                -- any late arriving busy signals will set the corresponding activeModules
---                -- signal correctly.
---                if (r.activeModules(i) = '1') then
---                   v.state := GATHER_DATA_S;
---                end if;
---             end loop;
-
          when GATHER_DATA_S =>
             v.dataDone := r.dataDone;
 
             -- kpixCounter increments every clock.
             -- Check to see if the KpixDataRx module selected by kpixCounter has data.
-            if (kpixDataRxMasters(kpixCounterInt).tvalid = '1') then
-               v.kpixDataRxSlaves(kpixCounterInt).tReady := '1';
+            if (kpixDataRxMasters(r.kpixIndex).tvalid = '1') then
+               v.kpixDataRxSlaves(r.kpixIndex).tReady := '1';
                v.ebAxisMaster.tValid                     := '1';
-               v.ebAxisMaster.tData(63 downto 0)         := kpixDataRxMasters(kpixCounterInt).tdata(63 downto 0);
+               v.ebAxisMaster.tData(63 downto 0)         := kpixDataRxMasters(r.kpixIndex).tdata(63 downto 0);
 
-               if (kpixDataRxMasters(kpixCounterInt).tLast = '1') then
-                  v.dataDone(kpixCounterInt) := '1';
+               if (kpixDataRxMasters(r.kpixIndex).tLast = '1') then
+                  v.dataDone(r.kpixIndex) := '1';
                end if;
             end if;
 
