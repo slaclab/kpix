@@ -46,8 +46,8 @@ class DesyTrackerRoot(pyrogue.Root):
             pyrogue.streamConnect(self.cmd, dest1)
             pyrogue.streamConnect(self, dataWriter.getYamlChannel())
 
-            #fp = FrameParser()
-            #pyrogue.streamTap(dest1, fp)
+            fp = KpixDaq.KpixStreamInfo()
+            pyrogue.streamTap(dest1, fp)
 
             self.add(dataWriter)
             self.add(DesyTrackerRunControl())
@@ -235,7 +235,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                     self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1)
                     self.runCount += 1
                 else:
-                    self.runState.setDisp('Stopped')
+                    #self.runState.setDisp('Stopped')
                     return
 
         
@@ -247,8 +247,9 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             label = click.style('Running Injection: ', fg='green'))  as bar:
 
             for channel in bar:
-                click.echo(f'Calibrating channel {channel}')
+                click.echo(f'\nCalibrating channel {channel}\n')
                 for dac in range(dacMin, dacMax+1, dacStep):
+                    click.echo(f'\nDAC {dac:d}\n')
                     # Set these to log in event stream
                     self.CalChannel.set(channel)
                     self.CalDac.set(dac)
@@ -264,7 +265,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                             self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1)
                             self.runCount += 1
                         else:
-                            self.runState.setDisp('Stopped')
+                            #self.runState.setDisp('Stopped')
                             return
                             
         self.runCount.get()
