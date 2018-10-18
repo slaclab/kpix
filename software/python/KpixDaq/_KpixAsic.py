@@ -17,6 +17,8 @@ class KpixAsic(pr.Device):
     def __init__(self, version=12, **kwargs):
         super().__init__(**kwargs)
 
+        self.calChannel = 0
+
         STATUS = 0x0000*4
         CONFIG = 0x0001*4
         TIMER_A = 0x0008*4
@@ -487,14 +489,25 @@ class KpixAsic(pr.Device):
                 
             var.dependencies[0].set(value = regA, write=write)
             var.dependencies[1].set(value = regB, write=write)
-            
+
+        colModes = []
         for col in range(32):
-            self.add(pr.LinkVariable(
+            colModes.append(pr.LinkVariable(
                 name = f'Chan_{col*32:d}_{col*32+31:d}',
                 mode = 'RW',
                 dependencies = [self.node(f'ChanModeA_{col}'), self.node(f'ChanModeB_{col}')],
                 linkedGet = getChanMode,
                 linkedSet = setChanMode))
+        self.add(colModes)
+
+#         for col in range(32):
+#             for row in range(32):
+#                 self.add(pr.LinkVariable(
+#                     name = f'Chan[{col}][{row}]',
+#                     mode = 'WO',
+#                     dependencies = [colModes[col]]
+#                     linkedSet = lambda dev,var,value,write: 
+                    
 
 #    def readBlocks(self, recurse=True, variable=None, checkEach=False):
 #        super().readBlocks(recurse=recurse, variable=variable, checkEach=True)
@@ -560,14 +573,17 @@ class KpixAsic(pr.Device):
         col = channel//32
         
         self.DacCalibration.set(dac, write=False)
-       
-        for i in range(32):
-            modestring = ['D' for x in range(32)]
-            if i == col:
-                modestring[row] = 'C'
-            self.node(f'Chan_{i*32:d}_{i*32+31:d}').setDisp(''.join(modestring), write=False)
+
+        # Turn off last cal channel
+        oldCol = self.calChannel//32
+        modestring = ['D' for x in range(32)]
+        self.node(f'Chan_{oldCol*32:d}_{oldCol*32+31:d}').setDisp(''.join(modestring), write=False)
+
+        # Turn on new cal channel
+        modestring[row] = 'C'
+        self.node(f'Chan_{col*32:d}_{col*32+31:d}').setDisp(''.join(modestring), write=False)
+        self.calChannel = channel
         self.writeBlocks()
-        self.verifyBlocks()
         self.checkBlocks()
         
 
