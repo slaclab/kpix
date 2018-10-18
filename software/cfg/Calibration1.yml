@@ -8,13 +8,13 @@ DesyTrackerRoot:
 #    bufferSize: '0'
 #    maxFileSize: '0'
   DesyTrackerRunControl:
-    CalMeanCount: 100
-    CalDacMin: 200
+    CalMeanCount: 500
+    CalDacMin: 0
     CalDacMax: 255
     CalDacStep: 5
-    CalDacCount: 1
-    CalChanMin: 50
-    CalChanMax: 55
+    CalDacCount: 10
+    CalChanMin: 0
+    CalChanMax: 100
 #    CalState: Idle
 #    CalChannel: '0'
 #    CalDac: '0'
@@ -29,14 +29,14 @@ DesyTrackerRoot:
         enable: 'True'
         RawDataMode: 'False'
         AutoReadDisable: 'False'
-        KpixEnable: '0x40'
+        KpixEnable: '0x41'
       KpixClockGen:
         enable: 'True'
-        ClkSelReadout: '0x13'
-        ClkSelDigitize: '0x9'
-        ClkSelAcquire: '0x3f'
-        ClkSelIdle: '0x04'
-        ClkSelPrecharge: '0x4af'
+        ClkSelReadout: 4
+        ClkSelDigitize: 9
+        ClkSelAcquire: 63
+        ClkSelIdle: 4
+        ClkSelPrecharge: 1199
       AcquisitionControl:
         enable: 'True'
         ExtTrigSrc: BncTrig
@@ -45,7 +45,7 @@ DesyTrackerRoot:
         ExtTimestampEn: 'False'
         ExtAcquisitionSrc: EthAcquire
         ExtAcquisitionEn: 'True'
-        Calibrate: 'False'
+        Calibrate: 'True'
       KpixAsicArray:
         enable: 'True'
         KpixAsic[*]:
@@ -60,7 +60,7 @@ DesyTrackerRoot:
           TimeLeakageNullOff: 5
           TimeDeselDelay: 91
           TimeBunchClkDelay: 15000
-          TimeDigitizeDelay: 143
+          TimeDigitizeDelay: 10
           TimePowerUpOn: 11
           TimePowerUpDigOn: 11          
           TimeThreshOff: 2600
@@ -70,7 +70,7 @@ DesyTrackerRoot:
           Cal1Delay: 200
           Cal2Delay: 200
           Cal3Delay: 200
-          CalCount: 1
+          CalCount: '4'
           DacRampThresh: 240
           DacRangeThreshold: 0
           DacCalibration: 255
@@ -81,17 +81,17 @@ DesyTrackerRoot:
           DacThresholdB: 0
           CntrlDisPerReset: 'True'
           CntrlEnDcReset: 'True'
-          CntrlHighGain: 'True'
+          CntrlHighGain: 'False'
           CntrlNearNeighbor: 'False'
-          CntrlCalSource: 'Disable'
-          CntrlForceTrigSource: 'Internal'
+          CntrlCalSource: 'Internal'
+          CntrlForceTrigSource: 'Disable'
           CntrlHoldTime: 64x
           CntrlCalibHigh: 'False'
           CntrlShortIntEn: 'False'
           CntrlForceLowGain: 'False'
           CntrlLeakNullDisable: 'True'
           CntrlPolarity: Positive
-          CntrlTrigDisable: 'False'
+          CntrlTrigDisable: 'True'
           CntrlDisPwrCycle: 'False'
           CntrlFeCurr: 31uA
           CntrlDiffTime: Half
@@ -129,7 +129,7 @@ DesyTrackerRoot:
           Chan_960_991: DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD
           Chan_992_1023: DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD
         KpixAsic[0]:
-          enable: 'False'
+          enable: 'True'
         KpixAsic[6]:
           enable: 'True'
         KpixAsic[24]:
