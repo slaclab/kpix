@@ -4,7 +4,7 @@ import pyrogue.gui
 import sys
 import argparse
 
-rogue.Logging.setFilter('pyrogue.SrpV3', rogue.Logging.Debug)
+#rogue.Logging.setFilter('pyrogue.SrpV3', rogue.Logging.Debug)
 # Set the argument parser
 parser = argparse.ArgumentParser()
 
