@@ -5,7 +5,7 @@
 -- Author     : Larry Ruckman  <ruckman@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2016-06-02
--- Last update: 2018-10-12
+-- Last update: 2018-10-22
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -272,24 +272,25 @@ begin
       ------------------------------------------
       U_RssiServer : entity work.RssiCoreWrapper
          generic map (
-            TPD_G               => TPD_G,
-            APP_ILEAVE_EN_G     => true,
-            MAX_SEG_SIZE_G      => 1024,
-            SEGMENT_ADDR_SIZE_G => 7,
-            APP_STREAMS_G       => 2,
-            APP_STREAM_ROUTES_G => (
-               0                => X"00",
-               1                => X"01"),
-            CLK_FREQUENCY_G     => 125.0E+6,
-            TIMEOUT_UNIT_G      => 1.0E-3,  -- In units of seconds
-            SERVER_G            => true,
-            RETRANSMIT_ENABLE_G => true,
-            BYPASS_CHUNKER_G    => false,
-            WINDOW_ADDR_SIZE_G  => 3,
-            PIPE_STAGES_G       => 1,
-            APP_AXIS_CONFIG_G   => (0 => AXIS_CONFIG_C, 1 => AXIS_CONFIG_C),
-            TSP_AXIS_CONFIG_G   => EMAC_AXIS_CONFIG_C,
-            INIT_SEQ_N_G        => 16#80#)
+            TPD_G                => TPD_G,
+            APP_ILEAVE_EN_G      => true,
+            ILEAVE_ON_NOTVALID_G => true,
+            MAX_SEG_SIZE_G       => 1024,
+            SEGMENT_ADDR_SIZE_G  => 7,
+            APP_STREAMS_G        => 2,
+            APP_STREAM_ROUTES_G  => (
+               0                 => X"00",
+               1                 => X"01"),
+            CLK_FREQUENCY_G      => 125.0E+6,
+            TIMEOUT_UNIT_G       => 1.0E-3,  -- In units of seconds
+            SERVER_G             => true,
+            RETRANSMIT_ENABLE_G  => true,
+            BYPASS_CHUNKER_G     => false,
+            WINDOW_ADDR_SIZE_G   => 3,
+            PIPE_STAGES_G        => 1,
+            APP_AXIS_CONFIG_G    => (0 => AXIS_CONFIG_C, 1 => AXIS_CONFIG_C),
+            TSP_AXIS_CONFIG_G    => EMAC_AXIS_CONFIG_C,
+            INIT_SEQ_N_G         => 16#80#)
          port map (
             clk_i             => ethClk,
             rst_i             => ethRst,
