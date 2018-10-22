@@ -1,18 +1,20 @@
 -------------------------------------------------------------------------------
--- Title      : 
+-- Title      : Kpix DAQ Core
 -------------------------------------------------------------------------------
--- File       : KpixDaqCore.vhd
--- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2012-05-17
--- Last update: 2018-10-03
--- Platform   : 
--- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
--- Description: 
+-- Description: Integrates all of the modules that every KPIX firmware target
+-- will need.
 -------------------------------------------------------------------------------
--- Copyright (c) 2012 SLAC National Accelerator Laboratory
+-- This file is part of 'KPIX'
+-- It is subject to the license terms in the LICENSE.txt file found in the 
+-- top-level directory of this distribution and at: 
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
+-- No part of 'KPIX', including this file, 
+-- may be copied, modified, propagated, or distributed except according to 
+-- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
+
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -23,14 +25,8 @@ use work.StdRtlPkg.all;
 use work.AxiLitePkg.all;
 use work.AxiStreamPkg.all;
 
-use work.EventBuilderFifoPkg.all;
 use work.KpixPkg.all;
-use work.KpixDataRxPkg.all;
-use work.KpixRegRxPkg.all;
-use work.TriggerPkg.all;
 use work.KpixLocalPkg.all;
-use work.KpixClockGenPkg.all;
-use work.EvrCorePkg.all;
 
 entity KpixDaqCore is
 

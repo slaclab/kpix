@@ -1,17 +1,17 @@
 -------------------------------------------------------------------------------
--- Title      : 
+-- Title      : KpixLocal Support Package
 -------------------------------------------------------------------------------
--- File       : KpixLocalPkg.vhd
--- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2012-05-22
--- Last update: 2013-07-31
--- Platform   : 
--- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
--- Description: 
+-- Description: Provides constants for KpixLocal module
 -------------------------------------------------------------------------------
--- Copyright (c) 2012 SLAC National Accelerator Laboratory
+-- This file is part of 'KPIX'
+-- It is subject to the license terms in the LICENSE.txt file found in the 
+-- top-level directory of this distribution and at: 
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
+-- No part of 'KPIX', including this file, 
+-- may be copied, modified, propagated, or distributed except according to 
+-- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -42,16 +42,6 @@ package KpixLocalPkg is
   constant KPIX_READOUT_SHIFT_STATE_C     : slv(2 downto 0) := "110";  -- Shift row/word select
   constant KPIX_REAOUT_DONE_STATE_C       : slv(2 downto 0) := "111";  -- Done With Readout
 
-
-  -- External Configuration registers
-  type KpixLocalRegsInType is record
-    debugASel : slv(4 downto 0);
-    debugBsel : slv(4 downto 0);
-  end record KpixLocalRegsInType;
-
-  constant KPIX_LOCAL_REGS_IN_INIT_C : KpixLocalRegsInType := (
-     debugASel => (others => '0'),
-     debugBsel => (others => '0'));
 
   -- Kpix Local outputs that are synchronous with sysClk
   type KpixStateOutType is record

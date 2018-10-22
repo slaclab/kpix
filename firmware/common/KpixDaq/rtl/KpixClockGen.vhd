@@ -1,17 +1,19 @@
 -------------------------------------------------------------------------------
--- Title      : 
+-- Title      : Kpix Clock Generator
 -------------------------------------------------------------------------------
--- File       : KpixClockGen.vhd
--- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2012-05-16
--- Last update: 2018-10-12
--- Platform   : 
--- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
--- Description: 
+-- Description: Controls generation of the KPIX clock by dividing a 200MHz
+-- reference clock. Can set a different clock rate for each state in the
+-- KPIX acquisition cycle.
 -------------------------------------------------------------------------------
--- Copyright (c) 2012 SLAC National Accelerator Laboratory
+-- This file is part of 'KPIX'
+-- It is subject to the license terms in the LICENSE.txt file found in the 
+-- top-level directory of this distribution and at: 
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
+-- No part of 'KPIX', including this file, 
+-- may be copied, modified, propagated, or distributed except according to 
+-- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -22,7 +24,7 @@ use ieee.std_logic_unsigned.all;
 use work.StdRtlPkg.all;
 use work.AxiLitePkg.all;
 
-use work.kpixPkg.all;
+use work.KpixPkg.all;
 use work.KpixLocalPkg.all;
 
 library UNISIM;

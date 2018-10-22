@@ -1,18 +1,18 @@
 -------------------------------------------------------------------------------
 -- Title      : KPIX Data Receive Module
 -------------------------------------------------------------------------------
--- File       : 
--- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2012-05-03
--- Last update: 2018-10-02
--- Platform   : 
--- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
 -- Description: Receives sample data from a KPIX device and formats it for
 -- output to the EventBuilder.
 -------------------------------------------------------------------------------
--- Copyright (c) 2012 SLAC National Accelerator Laboratory
+-- This file is part of 'KPIX'
+-- It is subject to the license terms in the LICENSE.txt file found in the 
+-- top-level directory of this distribution and at: 
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
+-- No part of 'KPIX', including this file, 
+-- may be copied, modified, propagated, or distributed except according to 
+-- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -231,7 +231,7 @@ begin
       generic map (
          TPD_G        => TPD_G,
          BRAM_EN_G    => true,
-         DOB_REG_G    => false,         -- I think
+         DOB_REG_G    => false,      
          DATA_WIDTH_G => RAM_DATA_WIDTH_C,
          ADDR_WIDTH_G => RAM_ADDR_WIDTH_C)
       port map (

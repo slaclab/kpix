@@ -2,8 +2,6 @@
 -- Title      : KPIX Config
 -------------------------------------------------------------------------------
 -- Company    : SLAC National Accelerator Laboratory
--- Platform   : 
--- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
 -- Description: Configuration registers for KPIX DAQ
 -------------------------------------------------------------------------------

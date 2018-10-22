@@ -1,29 +1,28 @@
 -------------------------------------------------------------------------------
 -- Title         : KPIX Test FPGA, Local KPIX Core
--- Project       : W_SI, KPIX Test Board
 -------------------------------------------------------------------------------
--- File          : KpixLocal.vhd
--- Author        : Ryan Herbst, rherbst@slac.stanford.edu
--- Created       : 12/12/2004
+-- Company    : SLAC National Accelerator Laboratory
 -------------------------------------------------------------------------------
 -- Description:
 -- Core VHDL source file for the control of the KPIX devices
 -------------------------------------------------------------------------------
--- Copyright (c) 2004 by Ryan Herbst. All rights reserved.
--------------------------------------------------------------------------------
--- Modification history:
--- 12/12/2004: created.
+-- This file is part of 'KPIX'
+-- It is subject to the license terms in the LICENSE.txt file found in the 
+-- top-level directory of this distribution and at: 
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
+-- No part of 'KPIX', including this file, 
+-- may be copied, modified, propagated, or distributed except according to 
+-- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
 
+
 library ieee;
-library Unisim;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
 use work.StdRtlPkg.all;
 use work.KpixLocalPkg.all;
-
 
 entity KpixLocal is
    generic (

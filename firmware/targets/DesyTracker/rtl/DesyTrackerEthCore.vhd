@@ -1,15 +1,10 @@
 -------------------------------------------------------------------------------
--- Title      : 
+-- Title      :  DesyTrackerEthCore
 -------------------------------------------------------------------------------
--- File       : DesyTrackerEthCore.vhd
--- Author     : Larry Ruckman  <ruckman@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2016-06-02
--- Last update: 2018-10-22
--- Platform   : 
--- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
--- Description: 
+-- Description: Encapsulates ethernet stack, RSSI, SRP and IO buffers into a
+-- single module.
 -------------------------------------------------------------------------------
 -- This file is part of 'KPIX'
 -- It is subject to the license terms in the LICENSE.txt file found in the 
