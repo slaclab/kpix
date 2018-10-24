@@ -6,7 +6,7 @@ import scipy.stats as stats
 import matplotlib.pyplot as plt
 from collections import defaultdict
 import ctypes
-
+import line_profiler
 
 
 nesteddict = lambda:defaultdict(nesteddict)
@@ -70,7 +70,7 @@ def parseSample(ba):
     return d
 
 
-
+#@profile
 def parseFrame(ba):
     frameSizeBytes = len(ba)
     numSamples = int((frameSizeBytes-32-4)/8)
@@ -174,6 +174,7 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
         self.frameCount = 0
         self.sampleCount = 0
 
+    #@profile
     def _acceptFrame(self, frame):
         if frame.getError():
             print('Frame Error!')
@@ -195,30 +196,32 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
             calState = runControlDict['CalState']
             calChannel = runControlDict['CalChannel']
             calDac = runControlDict['CalDac']
+            calMeanCount = runControlDict['CalMeanCount']
+            calDacCount = runControlDict['CalDacCount']
 
             #numDacs = (runControlDict['CalDacMax']-runControlDict['CalDacMin'])/runControlDict['CalDacStep']
             #dacCount = runControlDict['CalDacCount']
 
-            parsedFrame = parseFrame(ba)
-            runtime = parsedFrame['runtime']
+            #parsedFrame = parseFrame(ba)
+            #runtime = parsedFrame['runtime']
 
             self.frameCount += 1
             sample = KpixSample(0)
             #(rawSamples[i:i+8] for i in range(0, len(rawSamples), 8))
-            data = parsedFrame['data']
-            size = len(data)
+            data = ba[32:-4]
+            #size = len(data)
             dv = data.view()
-            dv.shape = (8, size//8)
+            dv.shape = (len(data)//8, 8)
 
             #print(data)
             #print(dv)
             #return
             
-            for i in range(0, len(data), 8):
-                ba = data[i:i+8]
-                #word = ba.ctypes.data_as(ctypes.POINTER(ctypes.c_uint64)).contents.value
-                self.sampleCount += 1
-                sample.asWord = int.from_bytes(ba, 'little', signed=False)
+            for seg in dv:
+                #word = 
+                #self.sampleCount += 1
+                #sample.asWord = int.from_bytes(seg, 'little', signed=False)
+                sample.asWord = seg.ctypes.data_as(ctypes.POINTER(ctypes.c_uint64)).contents.value
                 #print(f'Kpix: {sample.fields.kpixId}, row: {sample.fields.row}, col: {sample.fields.col}, bucket: {sample.fields.bucket}')
                 if sample.fields.type != 0:
                     continue # Temperature type
@@ -232,24 +235,24 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
 
                 if calState == 'Baseline':
                     if kpix not in self.baselines:
-                        self.baselines[kpix] = np.zeros([1024, 4, 100], dtype=np.uint16)
+                        self.baselines[kpix] = np.zeros([1024, 4, calMeanCount], dtype=np.uint16)
                         self.counts[kpix] = np.zeros([1024,4], dtype=np.uint8)
                         #self.dataDict[fields.kpixId][channel][fields.bucket]['baseline']['data'][runtime] = fields.adc
-                    count = self.counts[kpix][channel][bucket]
+                    count = self.counts[kpix][channel, bucket]
                     #print(f'Kpix: {kpix}, channel: {channel}, bucket: {bucket}, count: {count}, type: {sample.fields.type}')
-                    self.baselines[kpix][channel][bucket][count] = adc
-                    self.counts[kpix][channel][bucket] = count + 1
+                    self.baselines[kpix][channel, bucket, count] = adc
+                    self.counts[kpix][channel, bucket] = count + 1
 
                 elif calState == 'Inject':
                     if kpix not in self.injections:
-                        self.injections[kpix] = np.zeros([1024, 4, 256, 10], dtype=np.uint16)
+                        self.injections[kpix] = np.zeros([1024, 4, 256, calDacCount], dtype=np.uint16)
                         self.counts[kpix] = np.zeros([1024, 4, 256], dtype=np.uint8)
 
                     if channel == calChannel:
-                        count = self.counts[kpix][channel][bucket][calDac]
+                        count = self.counts[kpix][channel, bucket, calDac]
                         #print(f'Kpix: {kpix}, channel: {channel}, bucket: {bucket}, dac: {calDac}, count: {count}, type: {sample.fields.type}')                        
-                        self.injections[kpix][channel][bucket][calDac][count] = adc
-                        self.counts[kpix][channel][bucket][calDac] = count + 1
+                        self.injections[kpix][channel, bucket, calDac, count] = adc
+                        self.counts[kpix][channel, bucket, calDac] = count + 1
 
                         #self.dataDict[fields.kpixId][channel][fields.bucket]['injection'][calDac][runtime] = fields.adc
                     
@@ -274,44 +277,36 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
                     
         return ret
 
-    def plot_baseline_heatmap(self, kpix, bucket, noise=[0.0, 1000000], maxhits=20):
-        d = {}
-        # Filter out bad channels
-        for channel in range(1024):
-            adcs = np.array(list(self.dataDict[kpix][channel][bucket]['baseline']['data'].values()))
-            std = np.std(adcs)
-            if noise[0] < std < noise[1]:
-                d[channel] = adcs
+    def plot_baseline_heatmaps(self, kpix):
 
-
-        # Just make it a list for now
-        d = [x for x in d.values()]
-
-
-
-        ymin = np.min(d)
-        ymax = np.max(d)
-        print(f'minAdc={ymin}, maxAdc={ymax}')
+        fig = plt.figure(1)
+        plt.xlabel('Channel')
+        plt.ylabel('ADC')
+        plt.title('Baseline historam all channels')
         
-        bins = list(range(ymin, ymax+1))
+        for bucket in range(4):
+            
+            d = self.baselines[kpix][:, bucket]
+            ymin = np.min(d)
+            ymax = np.max(d)
+            print(f'minAdc={ymin}, maxAdc={ymax}')
+        
+            bins = list(range(ymin, ymax+1))
 
-        # Create a histogram for each channel
-        h2d = [np.histogram(x, bins=bins)[0] for x in d]
-        h2d = [x for x in h2d if max(x) < maxhits]
-        h2d = np.array(h2d)
+            # Create a histogram for each channel
+            h2d = np.array([np.histogram(x, bins=bins)[0] for x in d])
 
-        print(f'Total channels: {len(h2d)}')        
+            zmax = np.max(h2d)
+            zmin = np.min(h2d)
 
-        zmax = np.max(h2d)
-        zmin = np.min(h2d)
+            print(f'minHits={zmin}, maxHits={zmax}')
 
-        print(f'minHits={zmin}, maxHits={zmax}')
+            ax = fig.add_subplot(4, 1, bucket+1)
+            #plt.title(f'Bucket {bucket}')
 
-        fig, ax = plt.subplots()
-
-        img = ax.imshow(h2d.T, vmin=zmin, vmax=zmax, extent=[0, len(h2d), ymin, ymax], aspect='auto')
-
-        fig.colorbar(img)
+            img = ax.imshow(h2d.T, vmin=zmin, vmax=zmax, extent=[0, len(h2d), ymin, ymax], aspect='auto')
+            fig.colorbar(img)
+            
         plt.show()
 
     def plot_injection_fit(self, kpix, channel):
@@ -324,9 +319,9 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
             plt.subplot(4, 1, bucket+1)
             plt.title(f'Bucket {bucket}')
             
-            d = self.dataDict[kpix][channel][bucket]['injection']
-            dacs = np.array(list(d.keys()))
-            adcs = np.array([list(v.values()) for v in d.values()])
+            d = self.injections[kpix][channel, bucket, 200:]
+            dacs = np.array(list(range(200,256)))
+            adcs = d
             x = np.repeat(dacs, len(adcs[0]))
             y = adcs.flatten()
 
