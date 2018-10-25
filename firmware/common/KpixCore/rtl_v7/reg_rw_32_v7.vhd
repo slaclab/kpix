@@ -10,7 +10,13 @@
 -- This is a generic 32-bit serial read / write register. This module is used
 -- in the command control block.
 -------------------------------------------------------------------------------
--- Copyright (c) 2005 by SLAC. All rights reserved.
+-- This file is part of 'kpix-dev'.
+-- It is subject to the license terms in the LICENSE.txt file found in the 
+-- top-level directory of this distribution and at: 
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
+-- No part of 'kpix-dev', including this file, 
+-- may be copied, modified, propagated, or distributed except according to 
+-- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
 -- Modification history:
 -- 08/03/2005: created.

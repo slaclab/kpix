@@ -10,7 +10,13 @@
 -- Top level module for VHDL portion of W_Si chip. This module is responsible
 -- for controlling data sampling, digitization and readout.
 -------------------------------------------------------------------------------
--- Copyright (c) 2005 by SLAC. All rights reserved.
+-- This file is part of 'kpix-dev'.
+-- It is subject to the license terms in the LICENSE.txt file found in the 
+-- top-level directory of this distribution and at: 
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
+-- No part of 'kpix-dev', including this file, 
+-- may be copied, modified, propagated, or distributed except according to 
+-- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
 -- Modification history:
 -- 04/22/2005: created.

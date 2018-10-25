@@ -1,3 +1,12 @@
+##############################################################################
+## This file is part of 'kpix-dev'.
+## It is subject to the license terms in the LICENSE.txt file found in the 
+## top-level directory of this distribution and at: 
+##    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
+## No part of 'kpix-dev', including this file, 
+## may be copied, modified, propagated, or distributed except according to 
+## the terms contained in the LICENSE.txt file.
+##############################################################################
 create_clock -name gtRefClk -period 3.200 [get_ports {gtClkP}]
 
 create_generated_clock -name ethClk [get_pins {U_DesyTrackerEthCore_1/U_MMCM/MmcmGen.U_Mmcm/CLKOUT0}]

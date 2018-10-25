@@ -9,7 +9,13 @@
 -- Description:
 -- Wrapper for front end logic connection.
 -------------------------------------------------------------------------------
--- Copyright (c) 2012 by Ryan Herbst. All rights reserved.
+-- This file is part of 'kpix-dev'.
+-- It is subject to the license terms in the LICENSE.txt file found in the 
+-- top-level directory of this distribution and at: 
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
+-- No part of 'kpix-dev', including this file, 
+-- may be copied, modified, propagated, or distributed except according to 
+-- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
 -- Modification history:
 -- 05/03/2012: created.
