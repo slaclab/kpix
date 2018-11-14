@@ -6,7 +6,7 @@ import scipy.stats as stats
 import matplotlib.pyplot as plt
 from collections import defaultdict
 import ctypes
-import line_profiler
+#import line_profiler
 
 
 nesteddict = lambda:defaultdict(nesteddict)
@@ -203,7 +203,7 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
             #dacCount = runControlDict['CalDacCount']
 
             #parsedFrame = parseFrame(ba)
-            #runtime = parsedFrame['runtime']
+            
 
             self.frameCount += 1
             sample = KpixSample(0)
@@ -213,9 +213,7 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
             dv = data.view()
             dv.shape = (len(data)//8, 8)
 
-            #print(data)
-            #print(dv)
-            #return
+            runtime = int.from_bytes(ba[4:12], 'little')
             
             for seg in dv:
                 #word = 
@@ -237,7 +235,10 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
                     if kpix not in self.baselines:
                         self.baselines[kpix] = np.zeros([1024, 4, calMeanCount], dtype=np.uint16)
                         self.counts[kpix] = np.zeros([1024,4], dtype=np.uint8)
-                        #self.dataDict[fields.kpixId][channel][fields.bucket]['baseline']['data'][runtime] = fields.adc
+
+                    # dict cheat
+                    self.dataDict[kpix][channel][bucket]['baseline']['data'][runtime] = adc
+                        
                     count = self.counts[kpix][channel, bucket]
                     #print(f'Kpix: {kpix}, channel: {channel}, bucket: {bucket}, count: {count}, type: {sample.fields.type}')
                     self.baselines[kpix][channel, bucket, count] = adc
@@ -254,7 +255,7 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
                         self.injections[kpix][channel, bucket, calDac, count] = adc
                         self.counts[kpix][channel, bucket, calDac] = count + 1
 
-                        #self.dataDict[fields.kpixId][channel][fields.bucket]['injection'][calDac][runtime] = fields.adc
+                        self.dataDict[kpix][channel][bucket]['injection'][calDac][runtime] = adc
                     
         else:
             #print("Got YAML Frame")
@@ -308,6 +309,42 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
             fig.colorbar(img)
             
         plt.show()
+
+    def plot_baseline_heatmaps_dict(self, kpix):
+
+        fig = plt.figure()
+        fig.suptitle('Baseline historam all channels')
+        
+        for bucket in range(4):
+            
+            keys = self.dataDict[kpix].keys()
+            d = [list(self.dataDict[kpix][channel][bucket]['baseline']['data'].values()) for channel in keys]
+
+            d = np.array(d)
+            ymin = np.min(d)
+            ymax = np.max(d)
+
+            bins = list(range(ymin, ymax+1))
+            
+            # Create a histogram for each channel
+            h2d = np.array([np.histogram(x, bins=bins)[0] for x in d])
+
+            zmax = np.max(h2d)
+            zmin = np.min(h2d)
+
+            print(f'minHits={zmin}, maxHits={zmax}')
+
+            ax = fig.add_subplot(4, 1, bucket+1)
+            ax.set_title(f'Bucket {bucket}')
+            ax.set_xlabel('Channel')
+            ax.set_ylabel('ADC')
+
+            img = ax.imshow(h2d.T, vmin=zmin, vmax=zmax, extent=[0, len(h2d), ymin, ymax], aspect='auto')
+            plt.colorbar(img, ax=ax)
+
+            
+        plt.show()
+        
 
     def plot_injection_fit(self, kpix, channel):
         plt.figure(1)
