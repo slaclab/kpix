@@ -55,7 +55,8 @@ entity DesyTrackerEthCore is
       ebAxisSlave      : out AxiStreamSlaveType;
       ebAxisCtrl       : out AxiStreamCtrlType;
       -- Acq start from stream
-      startAcq         : out sl;
+      acqCmd           : out sl;
+      startCmd         : out sl;
       -- Eth/RSSI Status
       phyReady         : out sl;
       rssiStatus       : out slv(6 downto 0);
@@ -114,7 +115,9 @@ architecture mapping of DesyTrackerEthCore is
    signal mAxilWriteMasters : AxiLiteWriteMasterArray(SERVER_SIZE_C-1 downto 0);
    signal mAxilWriteSlaves  : AxiLiteWriteSlaveArray(SERVER_SIZE_C-1 downto 0);
 
-   signal acqReqValid : sl;
+   signal acqReqValid   : sl;
+   signal startReqValid : sl;
+   signal ethCmd        : sl;
 
 begin
 
@@ -399,24 +402,32 @@ begin
    rssiObSlaves(1) <= AXI_STREAM_SLAVE_FORCE_C;  -- always ready
 
    acqReqValid <= rssiObMasters(1).tValid and toSl(rssiObMasters(1).tData(7 downto 0) = X"AA") and
-                  rssiObMasters(1).tLast;  -- and ssiGetUserSof(AXIS_CONFIG_C, rssiObMasters(1));
+                  rssiObMasters(1).tLast;
+
+   startReqValid <= rssiObMasters(1).tValid and toSl(rssiObMasters(1).tData(7 downto 0) = X"55") and
+                    rssiObMasters(1).tLast;
+
+   ethCmd <= acqReqValid or startReqValid;
+
 
    U_SynchronizerFifo_1 : entity work.SynchronizerFifo
       generic map (
          TPD_G        => TPD_G,
          COMMON_CLK_G => false,
          BRAM_EN_G    => false,
-         DATA_WIDTH_G => 1,
+         DATA_WIDTH_G => 2,
          ADDR_WIDTH_G => 4)
       port map (
-         rst    => ethRst,              -- [in]
-         wr_clk => ethClk,              -- [in]
-         wr_en  => acqReqValid,         -- [in]
-         din    => (others => '0'),     -- [in]
-         rd_clk => locClk200,           -- [in]
-         rd_en  => '1',                 -- [in]
-         valid  => startAcq,            -- [out]
-         dout   => open);               -- [out]
+         rst     => ethRst,             -- [in]
+         wr_clk  => ethClk,             -- [in]
+         wr_en   => ethCmd,             -- [in]
+         din(0)  => acqReqValid,        -- [in]
+         din(1)  => startReqValid,      -- [in]
+         rd_clk  => locClk200,          -- [in]
+         rd_en   => '1',                -- [in]
+         valid   => open,               -- [out]
+         dout(0) => acqCmd,             -- [out]
+         dout(1) => startCmd);          -- [out]
 
 
 

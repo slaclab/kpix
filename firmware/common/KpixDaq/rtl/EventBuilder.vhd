@@ -129,7 +129,8 @@ begin
          v.newAcquire  := '1';
       end if;
 
-      if (sysConfig.kpixReset = '1') then
+      -- Reset event number to 0 at start of run
+      if (acqControl.startRun = '1') then
          v.eventNumber := (others => '0');
       end if;
 

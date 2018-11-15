@@ -64,53 +64,61 @@ end entity AcquisitionControl;
 
 architecture rtl of AcquisitionControl is
 
-   constant CLOCKS_PER_USEC_C : natural := 20; --integer(100 / CLOCK_PERIOD_G);  -- 1000?
+   constant CLOCKS_PER_USEC_C : natural := 20;  --integer(100 / CLOCK_PERIOD_G);  -- 1000?
 
    type RegType is record
       -- Config regs
-      extTriggerSrc      : slv(2 downto 0);
-      extTriggerEn       : sl;
-      extTimestampSrc    : slv(2 downto 0);
-      extTimestampEn     : sl;
-      extAcquisitionSrc  : slv(2 downto 0);
-      extAcquisitionEn   : sl;
-      swAcquisition      : sl;
-      calibrate          : sl;
-      axilWriteSlave     : AxiLiteWriteSlaveType;
-      axilReadSlave      : AxiLiteReadSlaveType;
+      extTriggerSrc          : slv(2 downto 0);
+      extTriggerEn           : sl;
+      extTimestampSrc        : slv(2 downto 0);
+      extTimestampEn         : sl;
+      extAcquisitionSrc      : slv(2 downto 0);
+      extAcquisitionEn       : sl;
+      extStartSrc            : slv(2 downto 0);
+      extStartEn             : sl;
+      swAcquisition          : sl;
+      calibrate              : sl;
+      axilWriteSlave         : AxiLiteWriteSlaveType;
+      axilReadSlave          : AxiLiteReadSlaveType;
       -- Logic Regs
-      triggerCounter     : slv(log2(CLOCKS_PER_USEC_C)-1 downto 0);
-      triggerCountEnable : sl;
-      startCounter       : slv(7 downto 0);
-      startCountEnable   : sl;
-      timestampFifoWrEn  : sl;
-      readoutPending     : sl;
-      readoutCounter     : slv(7 downto 0);
-      readoutCountEnable : sl;
+      triggerCounter         : slv(log2(CLOCKS_PER_USEC_C)-1 downto 0);
+      triggerCountEnable     : sl;
+      acquisitionCounter     : slv(7 downto 0);
+      acquisitionCountEnable : sl;
+      startCounter           : slv(7 downto 0);
+      startCountEnable       : sl;
+      timestampFifoWrEn      : sl;
+      readoutPending         : sl;
+      readoutCounter         : slv(7 downto 0);
+      readoutCountEnable     : sl;
       -- Outputs
-      acqControl         : AcquisitionControlType;
+      acqControl             : AcquisitionControlType;
    end record;
 
    constant REG_INIT_C : RegType := (
-      extTriggerSrc      => (others => '0'),
-      extTriggerEn       => '0',
-      extTimestampSrc    => (others => '0'),
-      extTimestampEn     => '0',
-      extAcquisitionSrc  => (others => '0'),
-      extAcquisitionEn   => '0',
-      swAcquisition      => '0',
-      calibrate          => '0',
-      axilWriteSlave     => AXI_LITE_WRITE_SLAVE_INIT_C,
-      axilReadSlave      => AXI_LITE_READ_SLAVE_INIT_C,
-      triggerCounter     => (others => '0'),
-      triggerCountEnable => '0',
-      startCounter       => (others => '0'),
-      startCountEnable   => '0',
-      timestampFifoWrEn  => '0',
-      readoutPending     => '0',
-      readoutCounter     => (others => '0'),
-      readoutCountEnable => '0',
-      acqControl         => ACQUISITION_CONTROL_INIT_C);
+      extTriggerSrc          => (others => '0'),
+      extTriggerEn           => '0',
+      extTimestampSrc        => (others => '0'),
+      extTimestampEn         => '0',
+      extAcquisitionSrc      => (others => '0'),
+      extAcquisitionEn       => '0',
+      extStartSrc            => (others => '0'),
+      extStartEn             => '0',
+      swAcquisition          => '0',
+      calibrate              => '0',
+      axilWriteSlave         => AXI_LITE_WRITE_SLAVE_INIT_C,
+      axilReadSlave          => AXI_LITE_READ_SLAVE_INIT_C,
+      triggerCounter         => (others => '0'),
+      triggerCountEnable     => '0',
+      acquisitionCounter     => (others => '0'),
+      acquisitionCountEnable => '0',
+      startCounter           => (others => '0'),
+      startCountEnable       => '0',
+      timestampFifoWrEn      => '0',
+      readoutPending         => '0',
+      readoutCounter         => (others => '0'),
+      readoutCountEnable     => '0',
+      acqControl             => ACQUISITION_CONTROL_INIT_C);
 
    signal r   : RegType := REG_INIT_C;
    signal rin : RegType;
@@ -160,11 +168,16 @@ begin
       axiSlaveRegister(axilEp, x"00", 0, v.extTriggerSrc);
       axiSlaveRegister(axilEp, x"04", 0, v.extTimestampSrc);
       axiSlaveRegister(axilEp, X"08", 0, v.extAcquisitionSrc);
-      axiSlaveRegister(axilEp, X"0C", 0, v.extTriggerEn);
-      axiSlaveRegister(axilEp, X"0C", 1, v.extTimestampEn);
-      axiSlaveRegister(axilEp, X"0C", 2, v.extAcquisitionEn);
-      axiSlaveRegister(axilEp, X"10", 0, v.calibrate);
-      axiSlaveRegister(axilEp, X"14", 0, v.swAcquisition);
+      axiSlaveRegister(axilEp, X"0C", 0, v.extStartSrc);
+
+      axiSlaveRegister(axilEp, X"10", 0, v.extTriggerEn);
+      axiSlaveRegister(axilEp, X"10", 1, v.extTimestampEn);
+      axiSlaveRegister(axilEp, X"10", 2, v.extAcquisitionEn);
+      axiSlaveRegister(axilEp, X"10", 3, v.extStartEn);
+
+      axiSlaveRegister(axilEp, X"20", 0, v.calibrate);
+
+--      axiSlaveRegister(axilEp, X"14", 0, v.swAcquisition);
 
       axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
 
@@ -227,28 +240,37 @@ begin
 
       ------------------------------------------------------------------------------------------------
       -- Acquire Command
-      -- Source could be software (through FrontEndCmdCntl), EVR, or external input
-      -- Selected by Front End Register triggerRegsIn.acquisitionSrc
       ------------------------------------------------------------------------------------------------
       if ((r.swAcquisition = '1') or
           (r.extAcquisitionEn = '1' and extTriggerRise(conv_integer(r.extAcquisitionSrc)) = '1'))
       then
          v.acqControl.startAcquire   := '1';
          v.acqControl.startCalibrate := r.calibrate;
-         v.startCountEnable          := '1';
-         v.startCounter              := (others => '0');
+         v.acquisitionCountEnable    := '1';
+         v.acquisitionCounter        := (others => '0');
       end if;
 
-      if (r.startCountEnable = '1') then
-         v.startCounter := r.startCounter + 1;
-         if (uAnd(slv(r.startCounter)) = '1') then
-            v.startCounter              := (others => '0');
-            v.startCountEnable          := '0';
+      if (r.acquisitionCountEnable = '1') then
+         v.acquisitionCounter := r.acquisitionCounter + 1;
+         if (uAnd(slv(r.acquisitionCounter)) = '1') then
+            v.acquisitionCounter        := (others => '0');
+            v.acquisitionCountEnable    := '0';
             v.acqControl.startAcquire   := '0';
             v.acqControl.startCalibrate := '0';
          end if;
       end if;
 
+      ----------------------------------------------------------------------------------------------
+      -- Start Command
+      ----------------------------------------------------------------------------------------------
+      v.acqControl.startRun := '0';
+      if (r.extStartEn = '1' and extTriggerRise(conv_integer(r.extStartSrc)) = '1') then
+         v.acqControl.startRun := '1';
+      end if;
+
+      ----------------------------------------------------------------------------------------------
+      -- Reset and outputs
+      ----------------------------------------------------------------------------------------------
       if (rst200 = '1') then
          v := REG_INIT_C;
       end if;

@@ -106,7 +106,7 @@ architecture rtl of DesyTracker is
    signal clk200 : sl;
    signal rst200 : sl;
 
-   constant NUM_AXIL_MASTERS_C : integer := 6;
+   constant NUM_AXIL_MASTERS_C : integer := 7;
    constant AXIL_VERSION_C     : integer := 0;
    constant AXIL_KPIX_DAQ_C    : integer := 1;
 --   constant AXIL_CASSETTE_I2C_0_C : integer := 2;
@@ -115,6 +115,7 @@ architecture rtl of DesyTracker is
    constant AXIL_XADC_C        : integer := 3;
    constant AXIL_PWR_C         : integer := 4;
    constant AXIL_BOOT_C        : integer := 5;
+   constant AXIL_TLU_MON_C     : integer := 6;
 
    constant AXIL_XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXIL_MASTERS_C-1 downto 0) := (
       AXIL_VERSION_C  => (
@@ -140,6 +141,10 @@ architecture rtl of DesyTracker is
       AXIL_BOOT_C     => (
          baseAddr     => X"05000000",
          addrBits     => 12,
+         connectivity => X"FFFF"),
+      AXIL_TLU_MON_C  => (
+         baseAddr     => X"06000000",
+         addrBits     => 8,
          connectivity => X"FFFF"));
 
 
@@ -157,7 +162,8 @@ architecture rtl of DesyTracker is
    signal ebAxisSlave  : AxiStreamSlaveType;
    signal ebAxisCtrl   : AxiStreamCtrlType;
 
-   signal ethStartAcq : sl;
+   signal ethAcqCmd   : sl;
+   signal ethStartCmd : sl;
 
    signal tluClk     : sl;
    signal tluSpill   : sl;
@@ -237,7 +243,15 @@ begin
    led(0) <= heartbeat;
 
    -- tluClk
-   led(1) <= pllLocked;
+   Heartbeat_tlu : entity work.Heartbeat
+      generic map (
+         TPD_G        => TPD_G,
+         PERIOD_IN_G  => 25.0E-6,
+         PERIOD_OUT_G => 0.25)
+      port map (
+         clk => refClk,
+         o   => led(2));
+
 
    Heartbeat_refClk : entity work.Heartbeat
       generic map (
@@ -306,8 +320,8 @@ begin
    extTriggers(3) <= tluSpill;
    extTriggers(4) <= tluStart;
    extTriggers(5) <= tluTrigger;
-   extTriggers(6) <= ethStartAcq;
-   extTriggers(7) <= '0';
+   extTriggers(6) <= ethAcqCmd;
+   extTriggers(7) <= ethStartCmd;
 
    -------------------------------------------------------------------------------------------------
    -- Ethernet core with SRPv3-AxiLite and Data FIFO
@@ -332,7 +346,8 @@ begin
          ebAxisMaster     => ebAxisMaster,                          -- [in]
          ebAxisSlave      => ebAxisSlave,                           -- [out]
          ebAxisCtrl       => ebAxisCtrl,                            -- [out]
-         startAcq         => ethStartAcq,                           -- [out]
+         acqCmd           => ethAcqCmd,                             -- [out]
+         startCmd         => ethStartCmd,                           -- [out]
          phyReady         => phyReady,                              -- [out]
          rssiStatus       => rssiStatus,                            -- [out]
          sAxilReadMaster  => locAxilReadMasters(AXIL_ETH_CORE_C),   -- [in]
@@ -541,6 +556,23 @@ begin
          USRDONEO  => '1',              -- 1-bit input: User DONE pin output control
          USRDONETS => '1');             -- 1-bit input: User DONE 3-state enable output   
 
+   ---------------------------------------
+   -- TLU MON
+   ---------------------------------------
+   U_TluMonitor_1 : entity work.TluMonitor
+      generic map (
+         TPD_G => TPD_G)
+      port map (
+         axilClk         => axilClk,          -- [in]
+         axilRst         => axilRst,          -- [in]
+         axilReadMaster  => axilReadMaster,   -- [in]
+         axilReadSlave   => axilReadSlave,    -- [out]
+         axilWriteMaster => axilWriteMaster,  -- [in]
+         axilWriteSlave  => axilWriteSlave,   -- [out]
+         tluClk          => tluClk,           -- [in]
+         tluTrigger      => tluTrigger,       -- [in]
+         tluStart        => tluStart,         -- [in]
+         tluSpill        => tluSpill);        -- [in]
 
 
 end architecture rtl;

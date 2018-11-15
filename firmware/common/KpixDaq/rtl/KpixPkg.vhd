@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-10
--- Last update: 2018-10-01
+-- Last update: 2018-11-13
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -89,13 +89,15 @@ package KpixPkg is
       startAcquire   : sl;
       startCalibrate : sl;
       startReadout   : sl;
+      startRun       : sl;
    end record;
 
    constant ACQUISITION_CONTROL_INIT_C : AcquisitionControlType := (
       trigger        => '0',
       startAcquire   => '0',
       startCalibrate => '0',
-      startReadout   => '0');
+      startReadout   => '0',
+      startRun       => '0');
 
    constant TIMESTAMP_AXIS_CONFIG_C : AxiStreamConfigType := (
       TSTRB_EN_C    => false,
