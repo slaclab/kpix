@@ -44,8 +44,25 @@ end entity TluMonitor;
 
 architecture rtl of TluMonitor is
 
+   type RegType is record
+      rstCounts      : sl;
+      axilWriteSlave : AxiLiteWriteSlaveType;
+      axilReadSlave  : AxiLiteReadSlaveType;
+   end record;
 
+   constant REG_INIT_C : RegType := (
+      rstCounts      => '0',
+      axilWriteSlave => AXI_LITE_WRITE_SLAVE_INIT_C,
+      axilReadSlave  => AXI_LITE_READ_SLAVE_INIT_C);
 
+   signal r   : RegType := REG_INIT_C;
+   signal rin : RegType;
+
+   signal tluClkFreq   : slv(31 downto 0);
+   signal triggerCount : slv(31 downto 0);
+   signal spillCount   : slv(31 downto 0);
+   signal startCount   : slv(31 downto 0);
+   
 begin
 
 
@@ -77,7 +94,7 @@ begin
          CNT_WIDTH_G   => 32)
       port map (
          dataIn     => tluTrigger,      -- [in]
-         rollOverEn => true,            -- [in]
+         rollOverEn => '1',            -- [in]
          cntRst     => r.rstCounts,     -- [in]
          cntOut     => triggerCount,    -- [out]
          wrClk      => tluClk,          -- [in]
@@ -94,7 +111,7 @@ begin
          CNT_WIDTH_G   => 32)
       port map (
          dataIn     => tluStart,        -- [in]
-         rollOverEn => true,            -- [in]
+         rollOverEn => '1',            -- [in]
          cntRst     => r.rstCounts,     -- [in]
          cntOut     => startCount,      -- [out]
          wrClk      => tluClk,          -- [in]
@@ -111,7 +128,7 @@ begin
          CNT_WIDTH_G   => 32)
       port map (
          dataIn     => tluSpill,        -- [in]
-         rollOverEn => true,            -- [in]
+         rollOverEn => '1',            -- [in]
          cntRst     => r.rstCounts,     -- [in]
          cntOut     => startCount,      -- [out]
          wrClk      => tluClk,          -- [in]
@@ -119,7 +136,8 @@ begin
          rdClk      => axilClk,         -- [in]
          rdRst      => axilRst);        -- [in]
 
-   comb : process (r) is
+   comb : process (axilReadMaster, axilRst, axilWriteMaster, r, spillCount, startCount, tluClkFreq,
+                   triggerCount) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
    begin
@@ -128,7 +146,7 @@ begin
       axiSlaveWaitTxn(axilEp, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
 
       axiSlaveRegisterR(axilEp, x"00", 0, tluClkFreq);
-      axiSlaveRegister(axilEp, x"04", 0, triggerCount);
+      axiSlaveRegisterR(axilEp, x"04", 0, triggerCount);
       axiSlaveRegisterR(axilEp, x"08", 0, spillCount);
       axiSlaveRegisterR(axilEp, x"0C", 0, startCount);
       axiSlaveRegister(axilEp, X"10", 0, v.rstCounts);

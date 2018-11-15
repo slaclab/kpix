@@ -563,8 +563,8 @@ begin
       generic map (
          TPD_G => TPD_G)
       port map (
-         axilClk         => axilClk,          -- [in]
-         axilRst         => axilRst,          -- [in]
+         axilClk         => clk200,          -- [in]
+         axilRst         => rst200,          -- [in]
          axilReadMaster  => axilReadMaster,   -- [in]
          axilReadSlave   => axilReadSlave,    -- [out]
          axilWriteMaster => axilWriteMaster,  -- [in]
