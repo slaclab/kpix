@@ -103,8 +103,16 @@ end DesyTracker;
 
 architecture rtl of DesyTracker is
 
-   signal clk200 : sl;
-   signal rst200 : sl;
+   signal ethClk200    : sl;
+   signal ethClk200Rst : sl;
+
+   signal tluClk200    : sl;
+   signal tluClk200Rst : sl;
+
+   signal tluClkSel : sl;
+
+   signal kpixClk200 : sl;
+   signal kpixRst200 : sl;
 
    constant NUM_AXIL_MASTERS_C : integer := 7;
    constant AXIL_VERSION_C     : integer := 0;
@@ -157,6 +165,11 @@ architecture rtl of DesyTracker is
    signal locAxilReadSlaves   : AxiLiteReadSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0);
    signal locAxilWriteMasters : AxiLiteWriteMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
    signal locAxilWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0);
+
+   signal kpixDaqAxilReadMaster  : AxiLiteReadMasterType;
+   signal kpixDaqAxilReadSlave   : AxiLiteReadSlaveType;
+   signal kpixDaqAxilWriteMaster : AxiLiteWriteMasterType;
+   signal kpixDaqAxilWriteSlave  : AxiLiteWriteSlaveType;
 
    signal ebAxisMaster : AxiStreamMasterType;
    signal ebAxisSlave  : AxiStreamSlaveType;
@@ -230,14 +243,14 @@ begin
    -------------------------------------------------------------------------------------------------
    -- Clock heartbeats and LED statuses
    -------------------------------------------------------------------------------------------------
-   -- clk200
-   Heartbeat_clk200 : entity work.Heartbeat
+   -- kpixClk200
+   Heartbeat_kpixClk200 : entity work.Heartbeat
       generic map (
          TPD_G        => TPD_G,
          PERIOD_IN_G  => 5.0E-9,
          PERIOD_OUT_G => 0.5)
       port map (
-         clk => clk200,
+         clk => kpixClk200,
          o   => heartbeat);
 
    led(0) <= heartbeat;
@@ -250,7 +263,7 @@ begin
          PERIOD_OUT_G => 0.25)
       port map (
          clk => refClk,
-         o   => led(2));
+         o   => led(1));
 
 
    Heartbeat_refClk : entity work.Heartbeat
@@ -335,14 +348,16 @@ begin
       port map (
          refClkOut        => refClk,                                -- [out]
          ethClkOut        => ethClk,                                -- [out]
-         ethRstOut        => ethRst,
+         ethRstOut        => ethRst,                                -- [out]
          pllLocked        => pllLocked,                             -- [out]
-         clk200           => clk200,                                -- [out]
-         rst200           => rst200,                                -- [out]
+         clk200           => ethClk200,                             -- [out]
+         rst200           => ethClk200Rst,                          -- [out]
          mAxilReadMaster  => axilReadMaster,                        -- [out]
          mAxilReadSlave   => axilReadSlave,                         -- [in]
          mAxilWriteMaster => axilWriteMaster,                       -- [out]
          mAxilWriteSlave  => axilWriteSlave,                        -- [in]
+         ebAxisClk        => kpixClk200,                            -- [in]
+         ebAxisRst        => kpixRst200,                            -- [in]
          ebAxisMaster     => ebAxisMaster,                          -- [in]
          ebAxisSlave      => ebAxisSlave,                           -- [out]
          ebAxisCtrl       => ebAxisCtrl,                            -- [out]
@@ -371,8 +386,8 @@ begin
          NUM_MASTER_SLOTS_G => NUM_AXIL_MASTERS_C,
          MASTERS_CONFIG_G   => AXIL_XBAR_CONFIG_C)
       port map (
-         axiClk              => clk200,
-         axiClkRst           => rst200,
+         axiClk              => ethClk200,
+         axiClkRst           => ethClk200Rst,
          sAxiWriteMasters(0) => axilWriteMaster,
          sAxiWriteSlaves(0)  => axilWriteSlave,
          sAxiReadMasters(0)  => axilReadMaster,
@@ -395,12 +410,32 @@ begin
          EN_DS2411_G     => false,
          EN_ICAP_G       => true)
       port map (
-         axiClk         => clk200,                               -- [in]
-         axiRst         => rst200,                               -- [in]
+         axiClk         => ethClk200,                            -- [in]
+         axiRst         => ethClk200Rst,                         -- [in]
          axiReadMaster  => locAxilReadMasters(AXIL_VERSION_C),   -- [in]
          axiReadSlave   => locAxilReadSlaves(AXIL_VERSION_C),    -- [out]
          axiWriteMaster => locAxilWriteMasters(AXIL_VERSION_C),  -- [in]
          axiWriteSlave  => locAxilWriteSlaves(AXIL_VERSION_C));  -- [out]
+
+   -------------------------------------------------------------------------------------------------
+   -- Synchronize the AXI-Lite bus to selected 200Mhz clock that is sent to KpixDaqCore
+   -------------------------------------------------------------------------------------------------
+   U_AxiLiteAsync_1 : entity work.AxiLiteAsync
+      generic map (
+         TPD_G => TPD_G)
+      port map (
+         sAxiClk         => ethClk200,                             -- [in]
+         sAxiClkRst      => ethClk200Rst,                          -- [in]
+         sAxiReadMaster  => locAxilReadMasters(AXIL_KPIX_DAQ_C),   -- [in]
+         sAxiReadSlave   => locAxilReadSlaves(AXIL_KPIX_DAQ_C),    -- [out]
+         sAxiWriteMaster => locAxilWriteMasters(AXIL_KPIX_DAQ_C),  -- [in]
+         sAxiWriteSlave  => locAxilWriteSlaves(AXIL_KPIX_DAQ_C),   -- [out]
+         mAxiClk         => kpixClk200,                            -- [in]
+         mAxiClkRst      => kpixRst200,                            -- [in]
+         mAxiReadMaster  => kpixDaqAxilReadMaster,                 -- [out]
+         mAxiReadSlave   => kpixDaqAxilReadSlave,                  -- [in]
+         mAxiWriteMaster => kpixDaqAxilWriteMaster,                -- [out]
+         mAxiWriteSlave  => kpixDaqAxilWriteSlave);                -- [in]
 
    -------------------------------------------------------------------------------------------------
    -- Main KPIX DAQ Core
@@ -411,23 +446,23 @@ begin
          AXIL_BASE_ADDR_G   => AXIL_XBAR_CONFIG_C(AXIL_KPIX_DAQ_C).baseAddr,
          NUM_KPIX_MODULES_G => 24)
       port map (
-         clk200          => clk200,                                -- [in]
-         rst200          => rst200,                                -- [in]
-         axilReadMaster  => locAxilReadMasters(AXIL_KPIX_DAQ_C),   -- [in]
-         axilReadSlave   => locAxilReadSlaves(AXIL_KPIX_DAQ_C),    -- [out]
-         axilWriteMaster => locAxilWriteMasters(AXIL_KPIX_DAQ_C),  -- [in]
-         axilWriteSlave  => locAxilWriteSlaves(AXIL_KPIX_DAQ_C),   -- [out]
-         ebAxisMaster    => ebAxisMaster,                          -- [out]
-         ebAxisSlave     => ebAxisSlave,                           -- [in]
-         ebAxisCtrl      => ebAxisCtrl,                            -- [in]
-         extTriggers     => extTriggers,                           -- [in]
-         debugOutA       => debugOutA,                             -- [out]
-         debugOutB       => debugOutB,                             -- [out]
-         kpixClkOut      => kpixClkOut,                            -- [out]
-         kpixTriggerOut  => kpixTriggerOut,                        -- [out]
-         kpixResetOut    => kpixResetOut,                          -- [out]
-         kpixSerTxOut    => kpixSerTxOut,                          -- [out]
-         kpixSerRxIn     => kpixSerRxIn);                          -- [in]
+         clk200          => kpixClk200,              -- [in]
+         rst200          => kpixRst200,              -- [in]
+         axilReadMaster  => kpixDaqAxilReadMaster,   -- [in]
+         axilReadSlave   => kpixDaqAxilReadSlave,    -- [out]
+         axilWriteMaster => kpixDaqAxilWriteMaster,  -- [in]
+         axilWriteSlave  => kpixDaqAxilWriteSlave,   -- [out]
+         ebAxisMaster    => ebAxisMaster,            -- [out]
+         ebAxisSlave     => ebAxisSlave,             -- [in]
+         ebAxisCtrl      => ebAxisCtrl,              -- [in]
+         extTriggers     => extTriggers,             -- [in]
+         debugOutA       => debugOutA,               -- [out]
+         debugOutB       => debugOutB,               -- [out]
+         kpixClkOut      => kpixClkOut,              -- [out]
+         kpixTriggerOut  => kpixTriggerOut,          -- [out]
+         kpixResetOut    => kpixResetOut,            -- [out]
+         kpixSerTxOut    => kpixSerTxOut,            -- [out]
+         kpixSerRxIn     => kpixSerRxIn);            -- [in]
 
    U_ClkOutBufSingle_1 : entity work.ClkOutBufSingle
       generic map (
@@ -473,8 +508,8 @@ begin
          SEQ_VCCBRAM_SEL_EN_G     => true,
          SEQ_VAUX_SEL_EN_G        => (others => false))        -- All AUX voltages on
       port map (
-         axilClk         => clk200,                            -- [in]
-         axilRst         => rst200,                            -- [in]
+         axilClk         => ethClk200,                         -- [in]
+         axilRst         => ethClk200Rst,                      -- [in]
          axilReadMaster  => locAxilReadMasters(AXIL_XADC_C),   -- [in]
          axilReadSlave   => locAxilReadSlaves(AXIL_XADC_C),    -- [out]
          axilWriteMaster => locAxilWriteMasters(AXIL_XADC_C),  -- [in]
@@ -505,8 +540,8 @@ begin
          I2C_MIN_PULSE_G  => 100.0E-9,
          AXI_CLK_FREQ_G   => 200.0E+6)
       port map (
-         axiClk         => clk200,                           -- [in]
-         axiRst         => rst200,                           -- [in]
+         axiClk         => ethClk200,                        -- [in]
+         axiRst         => ethClk200Rst,                     -- [in]
          axiReadMaster  => locAxilReadMasters(AXIL_PWR_C),   -- [in]
          axiReadSlave   => locAxilReadSlaves(AXIL_PWR_C),    -- [out]
          axiWriteMaster => locAxilWriteMasters(AXIL_PWR_C),  -- [in]
@@ -534,8 +569,8 @@ begin
          axiWriteMaster => locAxilWriteMasters(AXIL_BOOT_C),
          axiWriteSlave  => locAxilWriteSlaves(AXIL_BOOT_C),
          -- Clocks and Resets
-         axiClk         => clk200,
-         axiRst         => rst200);
+         axiClk         => ethClk200,
+         axiRst         => ethClk200Rst);
 
    -----------------------------------------------------
    -- Using the STARTUPE2 to access the FPGA's CCLK port
@@ -563,16 +598,29 @@ begin
       generic map (
          TPD_G => TPD_G)
       port map (
-         axilClk         => clk200,          -- [in]
-         axilRst         => rst200,          -- [in]
-         axilReadMaster  => axilReadMaster,   -- [in]
-         axilReadSlave   => axilReadSlave,    -- [out]
-         axilWriteMaster => axilWriteMaster,  -- [in]
-         axilWriteSlave  => axilWriteSlave,   -- [out]
-         tluClk          => tluClk,           -- [in]
-         tluTrigger      => tluTrigger,       -- [in]
-         tluStart        => tluStart,         -- [in]
-         tluSpill        => tluSpill);        -- [in]
+         axilClk         => ethClk200,                            -- [in]
+         axilRst         => ethClk200Rst,                         -- [in]
+         axilReadMaster  => locAxilReadMasters(AXIL_TLU_MON_C),   -- [in]
+         axilReadSlave   => locAxilReadSlaves(AXIL_TLU_MON_C),    -- [out]
+         axilWriteMaster => locAxilWriteMasters(AXIL_TLU_MON_C),  -- [in]
+         axilWriteSlave  => locAxilWriteSlaves(AXIL_TLU_MON_C),   -- [out]
+         tluClk          => tluClk,                               -- [in]
+         tluTrigger      => tluTrigger,                           -- [in]
+         tluStart        => tluStart,                             -- [in]
+         tluSpill        => tluSpill,                             -- [in]
+         tluClk200       => tluClk200,                            -- [out]
+         tluClk200Rst    => tluClk200Rst,                         -- [out]
+         tluClkSel       => tluClkSel);                           -- [out]
+
+
+   CLKMUX : BUFGMUX_CTRL
+      port map (
+         I0 => ethClk200,
+         I1 => tluClk200,
+         S  => tluClkSel,
+         O  => kpixClk200);
+
+   kpixRst200 <= ethClk200Rst when tluClkSel = '0' else tluClk200Rst;
 
 
 end architecture rtl;

@@ -11,24 +11,52 @@ create_clock -name gtRefClk -period 3.200 [get_ports {gtClkP}]
 
 create_generated_clock -name ethClk [get_pins {U_DesyTrackerEthCore_1/U_MMCM/MmcmGen.U_Mmcm/CLKOUT0}]
 create_generated_clock -name ethClkDiv2 [get_pins {U_DesyTrackerEthCore_1/U_MMCM/MmcmGen.U_Mmcm/CLKOUT1}]
-create_generated_clock -name clk200 [get_pins {U_DesyTrackerEthCore_1/U_MMCM/MmcmGen.U_Mmcm/CLKOUT2}]
-create_generated_clock -name refClk156MHz    [get_pins {U_DesyTrackerEthCore_1/U_IBUFDS_GTE2/ODIV2}]  
+create_generated_clock -name ethClk200 [get_pins {U_DesyTrackerEthCore_1/U_MMCM/MmcmGen.U_Mmcm/CLKOUT2}]
+create_generated_clock -name refClk156MHz    [get_pins {U_DesyTrackerEthCore_1/U_IBUFDS_GTE2/ODIV2}]
+
+create_clock -name tluClk -period 25.000 [get_ports {tluClkP}]
+
+create_generated_clock -name tluClk200 [get_pins {U_TluMonitor_1/U_MMCM/PllGen.U_Pll/CLKOUT0}]
+
+#create_generated_clock -name clk200 [get_pins {CLKMUX/O}]
+create_generated_clock -name muxEthClk200 -divide_by 1 -source [get_pins {CLKMUX/I0}] [get_pins {CLKMUX/O}]
+create_generated_clock -name muxTluClk200 -divide_by 1 -add -master_clock tluClk200 -source [get_pins {CLKMUX/I1}] [get_pins {CLKMUX/O}]
+set_clock_groups -physically_exclusive -group muxEthClk200 -group muxTluClk200
+#set_case_analysis 1 [get_pins {CLKMUX/S}]
+
+#set_clock_groups -logically_exclusive -group ethClk200 -group tluClk200
+
+create_generated_clock -name kpixClk -source [get_pins {CLKMUX/O}] -divide_by 2 [get_pins {U_KpixDaqCore_1/U_KpixClockGen_1/KPIX_CLK_BUFG/O}]
+
 
 set_clock_groups -asynchronous \
-    -group [get_clocks -include_generated_clocks clk200] \
+    -group [get_clocks -include_generated_clocks ethClk200] \
     -group [get_clocks -include_generated_clocks ethClk]
 
 set_clock_groups -asynchronous \
-    -group [get_clocks -include_generated_clocks clk200] \
+    -group [get_clocks -include_generated_clocks ethClk200] \
     -group [get_clocks -include_generated_clocks ethClkDiv2]
 
 set_clock_groups -asynchronous \
-    -group [get_clocks -include_generated_clocks clk200] \
+    -group [get_clocks -include_generated_clocks ethClk200] \
     -group [get_clocks -include_generated_clocks refClk156MHz]
 
 set_clock_groups -asynchronous \
-    -group [get_clocks -include_generated_clocks ethClk] \
+    -group [get_clocks -include_generated_clocks ethClk200] \
     -group [get_clocks -include_generated_clocks refClk156MHz]
+
+set_clock_groups -asynchronous \
+    -group [get_clocks -include_generated_clocks gtRefClk] \
+    -group [get_clocks -include_generated_clocks tluClk]
+
+# set_clock_groups -asynchronous \
+#     -group [get_clocks ethClk200] \
+#     -group [get_clocks tluClk200]
+
+# set_clock_groups -asynchronous \
+#     -group [get_clocks muxTluClk200] \
+#     -group [get_clocks ethClk]
+
 
 
 # TLU

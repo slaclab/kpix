@@ -50,7 +50,9 @@ entity DesyTrackerEthCore is
       mAxilReadSlave   : in  AxiLiteReadSlaveType;
       mAxilWriteMaster : out AxiLiteWriteMasterType;
       mAxilWriteSlave  : in  AxiLiteWriteSlaveType;
-      -- Streaming Data (clk200 domain)
+      -- Streaming Data 
+      ebAxisClk        : in  sl;
+      ebAxisRst        : in  sl;
       ebAxisMaster     : in  AxiStreamMasterType;
       ebAxisSlave      : out AxiStreamSlaveType;
       ebAxisCtrl       : out AxiStreamCtrlType;
@@ -389,8 +391,8 @@ begin
          SLAVE_AXI_CONFIG_G  => EB_DATA_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => AXIS_CONFIG_C)
       port map (
-         sAxisClk    => locClk200,         -- [in]
-         sAxisRst    => locRst200,         -- [in]
+         sAxisClk    => ebAxisClk,         -- [in]
+         sAxisRst    => ebAxisRst,         -- [in]
          sAxisMaster => ebAxisMaster,      -- [in]
          sAxisSlave  => ebAxisSlave,       -- [out]
          sAxisCtrl   => ebAxisCtrl,        -- [out]
