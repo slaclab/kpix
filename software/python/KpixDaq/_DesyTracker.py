@@ -56,6 +56,64 @@ class DesyTrackerRoot(pyrogue.Root):
 
         self.start(pollEn=pollEn, timeout=100000)
 
+class TluMonitor(pyrogue.Device):
+    def __init__(self, cmd, rssi, **kwargs):
+        super().__init__(**kwargs)
+
+        self.add(pyrogue.RemoteVariable(
+            name = 'TluClkFreqRaw',
+            offset = 0x00,
+            mode = 'RO',
+            base = pr.UInt,
+        ))
+
+        self.add(pyrogue.LinkVariable(
+            name = 'TluClkFreq',
+            dependencies = [self.TluClkFreqRaw],
+            linkedGet = lambda: self.TluClkFreqRaw.value() * 1.0e-6,
+            units = 'MHz',
+            disp = '{:d}',
+        ))
+
+        self.add(pyrogue.RemoteVariable(
+            name = 'TriggerCount',
+            offset = 0x04,
+            mode = 'RO',
+            base = pr.UInt,
+        ))
+
+        self.add(pyrogue.RemoteVariable(
+            name = 'SpillCount',
+            offset = 0x08,
+            mode = 'RO',
+            base = pr.UInt,
+        ))
+
+        self.add(pyrogue.RemoteVariable(
+            name = 'StartCount',
+            offset = 0x0C,
+            mode = 'RO',
+            base = pr.UInt,
+        ))
+
+        self.add(pyrogue.RemoteCommand(
+            name = 'RstCounts',
+            offset = 0x10,
+            function = pyrogue.RemoteCommand.toggle
+        ))
+
+        self.add(pyrogue.RemoteVariable(
+            name = 'ClkSel',
+            offset = 0x20,
+            mode = 'RW',
+            base = pr.UInt,
+            emum = {
+                0: 'EthClk',
+                1: 'TluClk',
+            }
+        ))
+        
+        
 
 class DesyTracker(pyrogue.Device):
     def __init__(self, cmd, rssi, **kwargs):
@@ -101,6 +159,9 @@ class DesyTracker(pyrogue.Device):
         self.add(surf.devices.nxp.Sa56004x(
             description = "Board temperate monitor",
             offset = 0x04000400))
+
+        self.add(TluMonitor(
+            offset = 0x06000000
 
 #         self.add(surf.devices.micron.AxiMicronN25Q(
 #             offset = 0x06000000,
