@@ -21,6 +21,10 @@ use ieee.std_logic_1164.all;
 use work.StdRtlPkg.all;
 use work.AxiLitePkg.all;
 
+
+library unisim;
+use unisim.vcomponents.all;
+
 entity TluMonitor is
 
    generic (
@@ -39,9 +43,8 @@ entity TluMonitor is
       tluStart   : in sl;
       tluSpill   : in sl;
 
-      tluClk200    : out sl;
-      tluClk200Rst : out sl;
-      tluClkSel    : out sl);
+      kpixClk200 : out sl;
+      kpixRst200 : out sl);
 
 end entity TluMonitor;
 
@@ -50,6 +53,8 @@ architecture rtl of TluMonitor is
    type RegType is record
       rstCounts      : sl;
       tluClkSel      : sl;
+      mmcmResetRise  : sl;
+      mmcmReset      : slv(7 downto 0);
       axilWriteSlave : AxiLiteWriteSlaveType;
       axilReadSlave  : AxiLiteReadSlaveType;
    end record;
@@ -57,6 +62,8 @@ architecture rtl of TluMonitor is
    constant REG_INIT_C : RegType := (
       rstCounts      => '0',
       tluClkSel      => '0',
+      mmcmResetRise  => '0',
+      mmcmReset      => (others => '0'),
       axilWriteSlave => AXI_LITE_WRITE_SLAVE_INIT_C,
       axilReadSlave  => AXI_LITE_READ_SLAVE_INIT_C);
 
@@ -68,6 +75,11 @@ architecture rtl of TluMonitor is
    signal spillCount   : slv(31 downto 0);
    signal startCount   : slv(31 downto 0);
 
+   signal tluClk200     : sl;
+   signal kpixClk200Loc : sl;
+   signal kpixRst200Raw : sl;
+   signal mmcmLocked    : sl;
+
 begin
 
    U_MMCM : entity work.ClockManager7
@@ -75,21 +87,43 @@ begin
          TPD_G             => TPD_G,
          TYPE_G            => "PLL",
          INPUT_BUFG_G      => false,
+         OUTPUT_BUFG_G     => false,
          FB_BUFG_G         => true,     -- Without this, will never lock in simulation
          RST_IN_POLARITY_G => '1',
          NUM_CLOCKS_G      => 1,
          -- MMCM attributes
          BANDWIDTH_G       => "OPTIMIZED",
-         CLKIN_PERIOD_G    => 25.000,   -- 156.25 MHz
-         DIVCLK_DIVIDE_G   => 1,        -- 31.25 MHz = 156.25 MHz/5
-         CLKFBOUT_MULT_G   => 25,       -- 1.0GHz = 32 x 31.25 MHz
-         CLKOUT0_DIVIDE_G  => 5)        -- 125 MHz = 1.0GHz/8
+         CLKIN_PERIOD_G    => 25.000,
+         DIVCLK_DIVIDE_G   => 1,
+         CLKFBOUT_MULT_G   => 25,
+         CLKOUT0_DIVIDE_G  => 5)
       port map(
          clkIn     => tluClk,
-         rstIn     => '0',
-         clkOut(0) => tluClk200,
-         rstOut(0) => tluClk200Rst);
+         rstIn     => r.mmcmReset(0),
+         locked    => mmcmLocked,
+         clkOut(0) => tluClk200);
 
+   CLKMUX : BUFGMUX_CTRL
+      port map (
+         I0 => axilClk,
+         I1 => tluClk200,
+         S  => r.tluClkSel,
+         O  => kpixClk200Loc);
+
+   kpixClk200 <= kpixClk200Loc;
+
+   kpixRst200Raw <= axilRst when r.tluClkSel = '0' else not mmcmLocked;
+
+   RstSync_1 : entity work.RstSync
+      generic map (
+         TPD_G          => TPD_G,
+         IN_POLARITY_G  => '1',
+         OUT_POLARITY_G => '1',
+         BYPASS_SYNC_G  => false)
+      port map (
+         clk      => kpixClk200Loc,
+         asyncRst => kpixRst200Raw,
+         syncRst  => kpixRst200);
 
    U_SyncClockFreq_1 : entity work.SyncClockFreq
       generic map (
@@ -168,6 +202,9 @@ begin
    begin
       v := r;
 
+      v.mmcmResetRise := '0';
+      v.mmcmReset     := '0' & r.mmcmReset(7 downto 1);
+
       axiSlaveWaitTxn(axilEp, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
 
       axiSlaveRegisterR(axilEp, x"00", 0, tluClkFreq);
@@ -176,6 +213,12 @@ begin
       axiSlaveRegisterR(axilEp, x"0C", 0, startCount);
       axiSlaveRegister(axilEp, X"10", 0, v.rstCounts);
       axiSlaveRegister(axilEp, X"20", 0, v.tluClkSel);
+      axiSlaveRegister(axilEp, X"20", 1, v.mmcmResetRise);
+
+      -- Hold mmcmReset for 7 clocks (need at least 3)
+      if (v.mmcmResetRise = '1') then
+         v.mmcmReset := (others => '1');
+      end if;
 
       axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
 
@@ -188,7 +231,6 @@ begin
 
       axilWriteSlave <= r.axilWriteSlave;
       axilReadSlave  <= r.axilReadSlave;
-      tluClkSel      <= r.tluClkSel;
 
    end process comb;
 

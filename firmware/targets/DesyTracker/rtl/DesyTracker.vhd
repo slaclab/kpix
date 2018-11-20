@@ -106,11 +106,6 @@ architecture rtl of DesyTracker is
    signal ethClk200    : sl;
    signal ethClk200Rst : sl;
 
-   signal tluClk200    : sl;
-   signal tluClk200Rst : sl;
-
-   signal tluClkSel : sl;
-
    signal kpixClk200 : sl;
    signal kpixRst200 : sl;
 
@@ -608,19 +603,10 @@ begin
          tluTrigger      => tluTrigger,                           -- [in]
          tluStart        => tluStart,                             -- [in]
          tluSpill        => tluSpill,                             -- [in]
-         tluClk200       => tluClk200,                            -- [out]
-         tluClk200Rst    => tluClk200Rst,                         -- [out]
-         tluClkSel       => tluClkSel);                           -- [out]
+         kpixClk200      => kpixClk200,                           -- [out]
+         kpixRst200      => kpixRst200);                          -- [out]
 
 
-   CLKMUX : BUFGMUX_CTRL
-      port map (
-         I0 => ethClk200,
-         I1 => tluClk200,
-         S  => tluClkSel,
-         O  => kpixClk200);
-
-   kpixRst200 <= ethClk200Rst when tluClkSel = '0' else tluClk200Rst;
 
 
 end architecture rtl;
