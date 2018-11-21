@@ -153,7 +153,7 @@ begin
 
    U_ClkRst_tluClk : entity work.ClkRst
       generic map (
-         CLK_PERIOD_G      => 6.25 ns,
+         CLK_PERIOD_G      => 25 ns,
          CLK_DELAY_G       => 1 ns,
          RST_START_DELAY_G => 0 ns,
          RST_HOLD_TIME_G   => 5 us,
