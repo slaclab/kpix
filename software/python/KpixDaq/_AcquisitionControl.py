@@ -64,7 +64,7 @@ class AcquisitionControl(pr.Device):
             enum = extTrigEnum))
 
         self.add(pr.RemoteVariable(
-            name = 'ExtAcquisitionEn',
+            name = 'ExtStartEn',
             mode = 'RW',
             offset= 0x10,
             bitOffset=3,

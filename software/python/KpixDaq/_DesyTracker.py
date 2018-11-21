@@ -47,7 +47,7 @@ class DesyTrackerRoot(pyrogue.Root):
             pyrogue.streamConnect(self, dataWriter.getYamlChannel())
 
             fp = KpixDaq.KpixStreamInfo()
-            pyrogue.streamTap(dest1, fp)
+            pyrogue.streamTap(dest1, fp) 
 
             self.add(dataWriter)
             self.add(DesyTrackerRunControl())
@@ -57,43 +57,44 @@ class DesyTrackerRoot(pyrogue.Root):
         self.start(pollEn=pollEn, timeout=100000)
 
 class TluMonitor(pyrogue.Device):
-    def __init__(self, cmd, rssi, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         self.add(pyrogue.RemoteVariable(
             name = 'TluClkFreqRaw',
             offset = 0x00,
             mode = 'RO',
-            base = pr.UInt,
+            base = pyrogue.UInt,
         ))
 
         self.add(pyrogue.LinkVariable(
             name = 'TluClkFreq',
             dependencies = [self.TluClkFreqRaw],
             linkedGet = lambda: self.TluClkFreqRaw.value() * 1.0e-6,
+            value = 0.0,
             units = 'MHz',
-            disp = '{:d}',
+            disp = '{:1.3f}',
         ))
 
         self.add(pyrogue.RemoteVariable(
             name = 'TriggerCount',
             offset = 0x04,
             mode = 'RO',
-            base = pr.UInt,
+            base = pyrogue.UInt,
         ))
 
         self.add(pyrogue.RemoteVariable(
             name = 'SpillCount',
             offset = 0x08,
             mode = 'RO',
-            base = pr.UInt,
+            base = pyrogue.UInt,
         ))
 
         self.add(pyrogue.RemoteVariable(
             name = 'StartCount',
             offset = 0x0C,
             mode = 'RO',
-            base = pr.UInt,
+            base = pyrogue.UInt,
         ))
 
         self.add(pyrogue.RemoteCommand(
@@ -106,8 +107,8 @@ class TluMonitor(pyrogue.Device):
             name = 'ClkSel',
             offset = 0x20,
             mode = 'RW',
-            base = pr.UInt,
-            emum = {
+            base = pyrogue.UInt,
+            enum = {
                 0: 'EthClk',
                 1: 'TluClk',
             }
@@ -161,7 +162,7 @@ class DesyTracker(pyrogue.Device):
             offset = 0x04000400))
 
         self.add(TluMonitor(
-            offset = 0x06000000
+            offset = 0x06000000))
 
 #         self.add(surf.devices.micron.AxiMicronN25Q(
 #             offset = 0x06000000,

@@ -109,7 +109,7 @@ class KpixStreamInfo(rogue.interfaces.stream.Slave):
 
        ba = bytearray(frame.getPayload())
        frame.read(ba, 0)        
-       parseFrame(ba)
+       print(f'Got Frame: {len(ba)} bytes')
         
 class KpixRunAnalyzer(rogue.interfaces.stream.Slave):
     def __init__(self):
