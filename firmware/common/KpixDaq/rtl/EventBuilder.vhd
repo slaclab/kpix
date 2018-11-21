@@ -112,7 +112,7 @@ begin
 
    comb : process (acqControl, ebAxisCtrl, kpixDataRxMasters, kpixState, r, rst200, sysConfig,
                    timestampAxisMaster) is
-      variable v              : RegType;
+      variable v : RegType;
 
    begin
       v := r;
@@ -218,8 +218,8 @@ begin
             -- Check to see if the KpixDataRx module selected by kpixCounter has data.
             if (kpixDataRxMasters(r.kpixIndex).tvalid = '1') then
                v.kpixDataRxSlaves(r.kpixIndex).tReady := '1';
-               v.ebAxisMaster.tValid                     := '1';
-               v.ebAxisMaster.tData(63 downto 0)         := kpixDataRxMasters(r.kpixIndex).tdata(63 downto 0);
+               v.ebAxisMaster.tValid                  := '1';
+               v.ebAxisMaster.tData(63 downto 0)      := kpixDataRxMasters(r.kpixIndex).tdata(63 downto 0);
 
                if (kpixDataRxMasters(r.kpixIndex).tLast = '1') then
                   v.dataDone(r.kpixIndex) := '1';
@@ -228,10 +228,10 @@ begin
 
             -- Check if done
             if (r.dataDone = sysConfig.kpixEnable(NUM_KPIX_MODULES_G-1 downto 0)) then
-               v.ebAxisMaster.tLast  := '1';
-               v.ebAxisMaster.tValid := '1';
-               v.ebAxisMaster.tKeep  := X"000F";  -- Last word has only 4 bytes
-               v.state               := WAIT_ACQUIRE_S;
+               v.ebAxisMaster.tLast              := '1';
+               v.ebAxisMaster.tValid             := '1';
+               v.ebAxisMaster.tKeep(15 downto 0) := X"000F";  -- Last word has only 4 bytes
+               v.state                           := WAIT_ACQUIRE_S;
             end if;
 
       end case;
