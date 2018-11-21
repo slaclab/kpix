@@ -120,6 +120,9 @@ architecture mapping of DesyTrackerEthCore is
    signal acqReqValid   : sl;
    signal startReqValid : sl;
    signal ethCmd        : sl;
+   signal cmdValid      : sl;
+   signal acqCmdTmp     : sl;
+   signal startCmdTmp   : sl;
 
 begin
 
@@ -409,28 +412,23 @@ begin
    startReqValid <= rssiObMasters(1).tValid and toSl(rssiObMasters(1).tData(7 downto 0) = X"55") and
                     rssiObMasters(1).tLast;
 
-   ethCmd <= acqReqValid or startReqValid;
-
-
-   U_SynchronizerFifo_1 : entity work.SynchronizerFifo
+   U_SynchronizerOneShot_ACQUIRE : entity work.SynchronizerOneShot
       generic map (
-         TPD_G        => TPD_G,
-         COMMON_CLK_G => false,
-         BRAM_EN_G    => false,
-         DATA_WIDTH_G => 2,
-         ADDR_WIDTH_G => 4)
+         TPD_G => TPD_G)
       port map (
-         rst     => ethRst,             -- [in]
-         wr_clk  => ethClk,             -- [in]
-         wr_en   => ethCmd,             -- [in]
-         din(0)  => acqReqValid,        -- [in]
-         din(1)  => startReqValid,      -- [in]
-         rd_clk  => locClk200,          -- [in]
-         rd_en   => '1',                -- [in]
-         valid   => open,               -- [out]
-         dout(0) => acqCmd,             -- [out]
-         dout(1) => startCmd);          -- [out]
+         clk     => ebAxisClk,          -- [in]
+         rst     => ebAxisRst,          -- [in]
+         dataIn  => acqReqValid,        -- [in]
+         dataOut => acqCmd);            -- [out]
 
+   U_SynchronizerOneShot_START : entity work.SynchronizerOneShot
+      generic map (
+         TPD_G => TPD_G)
+      port map (
+         clk     => ebAxisClk,          -- [in]
+         rst     => ebAxisRst,          -- [in]
+         dataIn  => startReqValid,      -- [in]
+         dataOut => startCmd);          -- [out]
 
 
 end mapping;
