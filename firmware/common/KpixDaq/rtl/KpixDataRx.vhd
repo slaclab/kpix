@@ -134,6 +134,7 @@ architecture rtl of KpixDataRx is
       headerParityErrorCount : slv(7 downto 0);
       dataParityErrorCount   : slv(7 downto 0);
       overflowErrorCount     : slv(7 downto 0);
+      frameCount             : slv(31 downto 0);
       dataParityError        : sl;
       resetCounters          : sl;
       -- RX
@@ -172,6 +173,7 @@ architecture rtl of KpixDataRx is
       headerParityErrorCount => (others => '0'),
       dataParityErrorCount   => (others => '0'),
       overflowErrorCount     => (others => '0'),
+      frameCount             => (others => '0'),
       dataParityError        => '0',
       resetCounters          => '0',
       rxShiftData            => (others => '0'),
@@ -231,7 +233,7 @@ begin
       generic map (
          TPD_G        => TPD_G,
          BRAM_EN_G    => true,
-         DOB_REG_G    => false,      
+         DOB_REG_G    => false,
          DATA_WIDTH_G => RAM_DATA_WIDTH_C,
          ADDR_WIDTH_G => RAM_ADDR_WIDTH_C)
       port map (
@@ -265,6 +267,7 @@ begin
       axiSlaveRegisterR(axilEp, x"08", 0, r.headerParityErrorCount);
       axiSlaveRegisterR(axilEp, X"0C", 0, r.dataParityErrorCount);
       axiSlaveRegister(axilEp, X"10", 0, v.resetCounters);
+      axiSlaveRegisterR(axilEp, X"14", 0, r.frameCount);
 
       axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
 
@@ -544,6 +547,7 @@ begin
             v.kpixDataRxMaster.tdata(63 downto 0)  := v.kpixDataRxMaster.tdata(31 downto 0) & v.kpixDataRxMaster.tdata(63 downto 32);
             v.kpixDataRxMaster.tvalid              := '1';
             v.kpixDataRxMaster.tlast               := '1';
+            v.frameCount                           := r.frameCount + 1;
             if (r.kpixDataRxMaster.tvalid = '1' and kpixDataRxSlave.tready = '1') then
                v.kpixDataRxMaster.tvalid := '0';
                v.kpixDataRxMaster.tlast  := '0';
@@ -578,6 +582,7 @@ begin
          v.markerErrorCount       := (others => '0');
          v.overflowErrorCount     := (others => '0');
          v.dataParityErrorCount   := (others => '0');
+         v.frameCount             := (others => '0');
       end if;
 
 

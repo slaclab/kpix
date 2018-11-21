@@ -36,6 +36,15 @@ class KpixDataRx(pr.Device):
             bitSize=8,
             disp = '{:d}'))
 
+        self.add(pr.RemoteVariable(
+            name = 'FrameCount',
+            mode = 'RO',
+            offset= 0x14,
+            bitOffset=0,
+            bitSize=32,
+            disp = '{:d}'))
+        
+
         self.add(pr.RemoteCommand(
             name = "ResetCounters",
             offset = 0x10,
