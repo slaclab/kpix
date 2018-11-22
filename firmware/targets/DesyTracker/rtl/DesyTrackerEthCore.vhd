@@ -39,33 +39,35 @@ entity DesyTrackerEthCore is
       IP_ADDR_G    : slv(31 downto 0) := x"0A01A8C0");  -- 192.168.1.10 (before DHCP)
    port (
       refClkOut        : out sl;
-      ethClkOut        : out sl;
-      ethRstOut        : out sl;
-      pllLocked        : out sl;
-      -- Reference Clock and Reset
-      clk200           : out sl;
-      rst200           : out sl;
       -- AXI-Lite Interface (clk200 domain)
+      axilClk          : out sl;
+      axilRst          : out sl;
+      -- Master bus out
       mAxilReadMaster  : out AxiLiteReadMasterType;
       mAxilReadSlave   : in  AxiLiteReadSlaveType;
       mAxilWriteMaster : out AxiLiteWriteMasterType;
       mAxilWriteSlave  : in  AxiLiteWriteSlaveType;
-      -- Streaming Data 
-      ebAxisClk        : in  sl;
-      ebAxisRst        : in  sl;
-      ebAxisMaster     : in  AxiStreamMasterType;
-      ebAxisSlave      : out AxiStreamSlaveType;
-      ebAxisCtrl       : out AxiStreamCtrlType;
-      -- Acq start from stream
-      acqCmd           : out sl;
-      startCmd         : out sl;
-      -- Eth/RSSI Status
-      phyReady         : out sl;
-      rssiStatus       : out slv(6 downto 0);
+      -- Slave bus for local register access
       sAxilReadMaster  : in  AxiLiteReadMasterType;
       sAxilReadSlave   : out AxiLiteReadSlaveType  := AXI_LITE_READ_SLAVE_EMPTY_DECERR_C;
       sAxilWriteMaster : in  AxiLiteWriteMasterType;
       sAxilWriteSlave  : out AxiLiteWriteSlaveType := AXI_LITE_WRITE_SLAVE_EMPTY_DECERR_C;
+      -- Eth/RSSI Status
+      phyReady         : out sl;
+      rssiStatus       : out slv(6 downto 0);
+      -- Reference Clock and Reset
+      ethClk200        : out sl;
+      ethRst200        : out sl;
+      -- Selected KPIX 200 MHz reference
+      kpixClk200       : in  sl;
+      kpixRst200       : in  sl;
+      -- Event builder stream (kpixClk200 domain)
+      ebAxisMaster     : in  AxiStreamMasterType;
+      ebAxisSlave      : out AxiStreamSlaveType;
+      ebAxisCtrl       : out AxiStreamCtrlType;
+      -- Acq start from stream (kpixClk200 domain)
+      acqCmd           : out sl;
+      startCmd         : out sl;
       -- GbE Ports
       gtClkP           : in  sl;
       gtClkN           : in  sl;
@@ -126,11 +128,12 @@ architecture mapping of DesyTrackerEthCore is
 
 begin
 
-   clk200 <= locClk200;
-   rst200 <= locRst200;
+   axilClk <= ethClk;
+   axilRst <= ethRst;
 
-   ethClkOut <= ethClk;
-   ethRstOut <= ethRst;
+   ethClk200 <= locClk200;
+   ethRst200 <= locRst200;
+
    refClkOut <= refClk;
 
    --------------------
@@ -200,11 +203,9 @@ begin
          rstOut(0) => ethRst,
          rstOut(1) => ethRstDiv2,
          rstOut(2) => locRst200,
-         locked    => pllLocked);
+         locked    => open);
 
    REAL_ETH_GEN : if (not SIMULATION_G) generate
-
-
 
       -------------------------
       -- GigE Core for KINTEX-7
@@ -309,8 +310,8 @@ begin
             mTspAxisMaster_o  => ibServerMasters(0),
             mTspAxisSlave_i   => ibServerSlaves(0),
             -- AXI-Lite Interface
-            axiClk_i          => locClk200,
-            axiRst_i          => locRst200,
+            axiClk_i          => ethClk,
+            axiRst_i          => ethRst,
             axilReadMaster    => sAxilReadMaster,
             axilReadSlave     => sAxilReadSlave,
             axilWriteMaster   => sAxilWriteMaster,
@@ -351,8 +352,8 @@ begin
       generic map (
          TPD_G               => TPD_G,
          SLAVE_READY_EN_G    => true,
-         GEN_SYNC_FIFO_G     => false,
-         AXIL_CLK_FREQ_G     => 200.0e6,
+         GEN_SYNC_FIFO_G     => true,
+         AXIL_CLK_FREQ_G     => 125.0e6,
          AXI_STREAM_CONFIG_G => AXIS_CONFIG_C)
       port map (
          -- Streaming Slave (Rx) Interface (sAxisClk domain) 
@@ -366,8 +367,8 @@ begin
          mAxisMaster      => rssiIbMasters(0),
          mAxisSlave       => rssiIbSlaves(0),
          -- AXI Lite Bus (axilClk domain)
-         axilClk          => locClk200,
-         axilRst          => locRst200,
+         axilClk          => ethClk,
+         axilRst          => ethRst,
          mAxilReadMaster  => mAxilReadMaster,
          mAxilReadSlave   => mAxilReadSlave,
          mAxilWriteMaster => mAxilWriteMaster,
@@ -394,8 +395,8 @@ begin
          SLAVE_AXI_CONFIG_G  => EB_DATA_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => AXIS_CONFIG_C)
       port map (
-         sAxisClk    => ebAxisClk,         -- [in]
-         sAxisRst    => ebAxisRst,         -- [in]
+         sAxisClk    => kpixClk200,        -- [in]
+         sAxisRst    => kpixRst200,        -- [in]
          sAxisMaster => ebAxisMaster,      -- [in]
          sAxisSlave  => ebAxisSlave,       -- [out]
          sAxisCtrl   => ebAxisCtrl,        -- [out]
@@ -416,8 +417,8 @@ begin
       generic map (
          TPD_G => TPD_G)
       port map (
-         clk     => ebAxisClk,          -- [in]
-         rst     => ebAxisRst,          -- [in]
+         clk     => kpixClk200,         -- [in]
+         rst     => kpixRst200,         -- [in]
          dataIn  => acqReqValid,        -- [in]
          dataOut => acqCmd);            -- [out]
 
@@ -425,8 +426,8 @@ begin
       generic map (
          TPD_G => TPD_G)
       port map (
-         clk     => ebAxisClk,          -- [in]
-         rst     => ebAxisRst,          -- [in]
+         clk     => kpixClk200,         -- [in]
+         rst     => kpixRst200,         -- [in]
          dataIn  => startReqValid,      -- [in]
          dataOut => startCmd);          -- [out]
 

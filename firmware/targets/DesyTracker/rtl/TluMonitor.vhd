@@ -38,6 +38,9 @@ entity TluMonitor is
       axilWriteMaster : in  AxiLiteWriteMasterType;
       axilWriteSlave  : out AxiLiteWriteSlaveType;
 
+      ethClk200 : in sl;
+      ethRst200 : in sl;
+
       tluClk     : in sl;
       tluTrigger : in sl;
       tluStart   : in sl;
@@ -105,7 +108,7 @@ begin
 
    CLKMUX : BUFGMUX_CTRL
       port map (
-         I0 => axilClk,
+         I0 => ethClk200,
          I1 => tluClk200,
          S  => r.tluClkSel,
          O  => kpixClk200Loc);

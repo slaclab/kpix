@@ -103,11 +103,6 @@ end DesyTracker;
 
 architecture rtl of DesyTracker is
 
-   signal ethClk200    : sl;
-   signal ethClk200Rst : sl;
-
-   signal kpixClk200 : sl;
-   signal kpixRst200 : sl;
 
    constant NUM_AXIL_MASTERS_C : integer := 7;
    constant AXIL_VERSION_C     : integer := 0;
@@ -150,6 +145,14 @@ architecture rtl of DesyTracker is
          addrBits     => 8,
          connectivity => X"FFFF"));
 
+   signal ethClk200 : sl;
+   signal ethRst200 : sl;
+
+   signal kpixClk200 : sl;
+   signal kpixRst200 : sl;
+
+   signal axilClk : sl;
+   signal axilRst : sl;
 
    signal axilReadMaster  : AxiLiteReadMasterType;
    signal axilReadSlave   : AxiLiteReadSlaveType;
@@ -193,8 +196,6 @@ architecture rtl of DesyTracker is
    signal phyReady   : sl;
 
    signal refClk    : sl;
-   signal ethClk    : sl;
-   signal ethRst    : sl;
    signal pllLocked : sl;
    signal heartbeat : sl;
 
@@ -251,32 +252,32 @@ begin
    led(0) <= heartbeat;
 
    -- tluClk
-   Heartbeat_tlu : entity work.Heartbeat
+   Heartbeat_refClk : entity work.Heartbeat
       generic map (
          TPD_G        => TPD_G,
-         PERIOD_IN_G  => 25.0E-6,
-         PERIOD_OUT_G => 0.25)
+         PERIOD_IN_G  => 6.40E-6,
+         PERIOD_OUT_G => 0.64)
       port map (
          clk => refClk,
          o   => led(1));
 
 
-   Heartbeat_refClk : entity work.Heartbeat
+   Heartbeat_tluClk : entity work.Heartbeat
       generic map (
          TPD_G        => TPD_G,
-         PERIOD_IN_G  => 6.4E-9,
-         PERIOD_OUT_G => 0.64)
+         PERIOD_IN_G  => 25.0E-9,
+         PERIOD_OUT_G => 0.25)
       port map (
-         clk => refClk,
+         clk => tluClk,
          o   => led(2));
 
-   Heartbeat_ethClk : entity work.Heartbeat
+   Heartbeat_axilClk : entity work.Heartbeat
       generic map (
          TPD_G        => TPD_G,
          PERIOD_IN_G  => 8.0E-9,
          PERIOD_OUT_G => 0.8)
       port map (
-         clk => ethClk,
+         clk => axilClk,
          o   => led(3));
 
    green(0) <= not rssiStatus(0);
@@ -342,28 +343,27 @@ begin
          IP_ADDR_G    => IP_ADDR_G)
       port map (
          refClkOut        => refClk,                                -- [out]
-         ethClkOut        => ethClk,                                -- [out]
-         ethRstOut        => ethRst,                                -- [out]
-         pllLocked        => pllLocked,                             -- [out]
-         clk200           => ethClk200,                             -- [out]
-         rst200           => ethClk200Rst,                          -- [out]
+         axilClk          => axilClk,                               -- [out]
+         axilRst          => axilRst,                               -- [out]
          mAxilReadMaster  => axilReadMaster,                        -- [out]
          mAxilReadSlave   => axilReadSlave,                         -- [in]
          mAxilWriteMaster => axilWriteMaster,                       -- [out]
          mAxilWriteSlave  => axilWriteSlave,                        -- [in]
-         ebAxisClk        => kpixClk200,                            -- [in]
-         ebAxisRst        => kpixRst200,                            -- [in]
+         sAxilReadMaster  => locAxilReadMasters(AXIL_ETH_CORE_C),   -- [in]
+         sAxilReadSlave   => locAxilReadSlaves(AXIL_ETH_CORE_C),    -- [out]
+         sAxilWriteMaster => locAxilWriteMasters(AXIL_ETH_CORE_C),  -- [in]
+         sAxilWriteSlave  => locAxilWriteSlaves(AXIL_ETH_CORE_C),   -- [out]
+         phyReady         => phyReady,                              -- [out]
+         rssiStatus       => rssiStatus,                            -- [out]
+         ethClk200        => ethClk200,                             -- [out]
+         ethRst200        => ethRst200,                             -- [out]
+         kpixClk200       => kpixClk200,                            -- [in]
+         kpixRst200       => kpixRst200,                            -- [in]
          ebAxisMaster     => ebAxisMaster,                          -- [in]
          ebAxisSlave      => ebAxisSlave,                           -- [out]
          ebAxisCtrl       => ebAxisCtrl,                            -- [out]
          acqCmd           => ethAcqCmd,                             -- [out]
          startCmd         => ethStartCmd,                           -- [out]
-         phyReady         => phyReady,                              -- [out]
-         rssiStatus       => rssiStatus,                            -- [out]
-         sAxilReadMaster  => locAxilReadMasters(AXIL_ETH_CORE_C),   -- [in]
-         sAxilReadSlave   => locAxilReadSlaves(AXIL_ETH_CORE_C),    -- [out]
-         sAxilWriteMaster => locAxilWriteMasters(AXIL_ETH_CORE_C),  -- [in]
-         sAxilWriteSlave  => locAxilWriteSlaves(AXIL_ETH_CORE_C),   -- [out]
          gtClkP           => gtClkP,                                -- [in]
          gtClkN           => gtClkN,                                -- [in]
          gtRxP            => gtRxP,                                 -- [in]
@@ -381,8 +381,8 @@ begin
          NUM_MASTER_SLOTS_G => NUM_AXIL_MASTERS_C,
          MASTERS_CONFIG_G   => AXIL_XBAR_CONFIG_C)
       port map (
-         axiClk              => ethClk200,
-         axiClkRst           => ethClk200Rst,
+         axiClk              => axilClk,
+         axiClkRst           => axilRst,
          sAxiWriteMasters(0) => axilWriteMaster,
          sAxiWriteSlaves(0)  => axilWriteSlave,
          sAxiReadMasters(0)  => axilReadMaster,
@@ -399,14 +399,14 @@ begin
       generic map (
          TPD_G           => TPD_G,
          BUILD_INFO_G    => BUILD_INFO_G,
-         CLK_PERIOD_G    => 5.0e-9,
+         CLK_PERIOD_G    => 8.0e-9,
          XIL_DEVICE_G    => "7SERIES",
          EN_DEVICE_DNA_G => true,
          EN_DS2411_G     => false,
          EN_ICAP_G       => true)
       port map (
-         axiClk         => ethClk200,                            -- [in]
-         axiRst         => ethClk200Rst,                         -- [in]
+         axiClk         => axilClk,                              -- [in]
+         axiRst         => axilRst,                              -- [in]
          axiReadMaster  => locAxilReadMasters(AXIL_VERSION_C),   -- [in]
          axiReadSlave   => locAxilReadSlaves(AXIL_VERSION_C),    -- [out]
          axiWriteMaster => locAxilWriteMasters(AXIL_VERSION_C),  -- [in]
@@ -419,8 +419,8 @@ begin
       generic map (
          TPD_G => TPD_G)
       port map (
-         sAxiClk         => ethClk200,                             -- [in]
-         sAxiClkRst      => ethClk200Rst,                          -- [in]
+         sAxiClk         => axilClk,                               -- [in]
+         sAxiClkRst      => axilRst,                               -- [in]
          sAxiReadMaster  => locAxilReadMasters(AXIL_KPIX_DAQ_C),   -- [in]
          sAxiReadSlave   => locAxilReadSlaves(AXIL_KPIX_DAQ_C),    -- [out]
          sAxiWriteMaster => locAxilWriteMasters(AXIL_KPIX_DAQ_C),  -- [in]
@@ -475,7 +475,7 @@ begin
    U_XadcSimpleCore_1 : entity work.XadcSimpleCore
       generic map (
          TPD_G                    => TPD_G,
-         COMMON_CLK_G             => false,
+         COMMON_CLK_G             => true,
          SEQUENCER_MODE_G         => "CONTINUOUS",
          SAMPLING_MODE_G          => "CONTINUOUS",
          MUX_EN_G                 => false,
@@ -503,14 +503,14 @@ begin
          SEQ_VCCBRAM_SEL_EN_G     => true,
          SEQ_VAUX_SEL_EN_G        => (others => false))        -- All AUX voltages on
       port map (
-         axilClk         => ethClk200,                         -- [in]
-         axilRst         => ethClk200Rst,                      -- [in]
+         axilClk         => axilClk,                           -- [in]
+         axilRst         => axilRst,                           -- [in]
          axilReadMaster  => locAxilReadMasters(AXIL_XADC_C),   -- [in]
          axilReadSlave   => locAxilReadSlaves(AXIL_XADC_C),    -- [out]
          axilWriteMaster => locAxilWriteMasters(AXIL_XADC_C),  -- [in]
          axilWriteSlave  => locAxilWriteSlaves(AXIL_XADC_C),   -- [out]
-         xadcClk         => ethClk,                            -- [in]
-         xadcRst         => ethRst,                            -- [in]
+         xadcClk         => axilClk,                           -- [in]
+         xadcRst         => axilClk,                           -- [in]
          alm             => open,                              -- [out]
          ot              => open);                             -- [out]
 
@@ -535,8 +535,8 @@ begin
          I2C_MIN_PULSE_G  => 100.0E-9,
          AXI_CLK_FREQ_G   => 200.0E+6)
       port map (
-         axiClk         => ethClk200,                        -- [in]
-         axiRst         => ethClk200Rst,                     -- [in]
+         axiClk         => axilClk,                          -- [in]
+         axiRst         => axilRst,                          -- [in]
          axiReadMaster  => locAxilReadMasters(AXIL_PWR_C),   -- [in]
          axiReadSlave   => locAxilReadSlaves(AXIL_PWR_C),    -- [out]
          axiWriteMaster => locAxilWriteMasters(AXIL_PWR_C),  -- [in]
@@ -550,8 +550,8 @@ begin
    U_SpiProm : entity work.AxiMicronN25QCore
       generic map (
          TPD_G          => TPD_G,
-         AXI_CLK_FREQ_G => 200.0E+6,
-         SPI_CLK_FREQ_G => (200.0E+6/12.0))
+         AXI_CLK_FREQ_G => 125.0E+6,
+         SPI_CLK_FREQ_G => (125.0E+6/12.0))
       port map (
          -- FLASH Memory Ports
          csL            => bootCsL,
@@ -564,8 +564,8 @@ begin
          axiWriteMaster => locAxilWriteMasters(AXIL_BOOT_C),
          axiWriteSlave  => locAxilWriteSlaves(AXIL_BOOT_C),
          -- Clocks and Resets
-         axiClk         => ethClk200,
-         axiRst         => ethClk200Rst);
+         axiClk         => axilClk,
+         axiRst         => axilClk);
 
    -----------------------------------------------------
    -- Using the STARTUPE2 to access the FPGA's CCLK port
@@ -593,12 +593,14 @@ begin
       generic map (
          TPD_G => TPD_G)
       port map (
-         axilClk         => ethClk200,                            -- [in]
-         axilRst         => ethClk200Rst,                         -- [in]
+         axilClk         => axilClk,                              -- [in]
+         axilRst         => axilRst,                              -- [in]
          axilReadMaster  => locAxilReadMasters(AXIL_TLU_MON_C),   -- [in]
          axilReadSlave   => locAxilReadSlaves(AXIL_TLU_MON_C),    -- [out]
          axilWriteMaster => locAxilWriteMasters(AXIL_TLU_MON_C),  -- [in]
          axilWriteSlave  => locAxilWriteSlaves(AXIL_TLU_MON_C),   -- [out]
+         ethClk200       => ethClk200,                            -- [in]
+         ethRst200       => ethRst200,                            -- [in]
          tluClk          => tluClk,                               -- [in]
          tluTrigger      => tluTrigger,                           -- [in]
          tluStart        => tluStart,                             -- [in]
