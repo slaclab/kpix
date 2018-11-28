@@ -565,7 +565,7 @@ begin
          axiWriteSlave  => locAxilWriteSlaves(AXIL_BOOT_C),
          -- Clocks and Resets
          axiClk         => axilClk,
-         axiRst         => axilClk);
+         axiRst         => axilRst);
 
    -----------------------------------------------------
    -- Using the STARTUPE2 to access the FPGA's CCLK port
