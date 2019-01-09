@@ -8,6 +8,13 @@ class AcquisitionControl(pr.Device):
             extTrigEnum = {x:str(x) for x in range(8)}
 
         self.add(pr.RemoteVariable(
+            name = "RunTime",
+            mode = 'RO',
+            offset = 0x14,
+            bitSize = 64,
+            base = pr.UInt))
+
+        self.add(pr.RemoteVariable(
             name = 'ExtTrigSrc',
             mode = 'RW',
             offset= 0x00,

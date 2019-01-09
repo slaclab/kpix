@@ -137,7 +137,7 @@ class DesyTracker(pyrogue.Device):
             4: 'TluStart',
             5: 'TluTrigger',
             6: 'EthAcquire',
-            7: 'Unused'}
+            7: 'EthStart'}
 
         self.add(KpixDaq.KpixDaqCore(
             offset = 0x01000000,

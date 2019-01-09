@@ -77,7 +77,6 @@ architecture rtl of EventBuilder is
       GATHER_DATA_S);
 
    type RegType is record
-      timestampCount     : slv(63 downto 0);
       timestamp          : slv(63 downto 0);
       eventNumber        : slv(31 downto 0);
       newAcquire         : sl;
@@ -92,7 +91,6 @@ architecture rtl of EventBuilder is
    end record;
 
    constant REG_INIT_C : RegType := (
-      timestampCount     => (others => '0'),
       timestamp          => (others => '0'),
       eventNumber        => (others => '1'),
       newAcquire         => '0',
@@ -122,9 +120,8 @@ begin
       -- FIFO WR Logic
       ------------------------------------------------------------------------------------------------
       -- Latch trigger
-      v.timestampCount := r.timestampCount + 1;
       if (r.newAcquire = '0' and acqControl.startAcquire = '1' and r.state = WAIT_ACQUIRE_S) then
-         v.timestamp   := r.timestampCount;
+         v.timestamp   := acqControl.runTime;
          v.eventNumber := r.eventNumber + 1;
          v.newAcquire  := '1';
       end if;
@@ -194,12 +191,8 @@ begin
             if (timestampAxisMaster.tvalid = '1') then
                v.timestampAxisSlave.tReady        := '1';
                v.ebAxisMaster.tValid              := '1';
-               v.ebAxisMaster.tData(63 downto 60) := "0010";
-               v.ebAxisMaster.tData(60 downto 32) := (others => '0');
-               v.ebAxisMaster.tData(31 downto 29) := "000";
-               v.ebAxisMaster.tData(28 downto 16) := timestampAxisMaster.tData(15 downto 3);  -- bunch count
-               v.ebAxisMaster.tData(15 downto 3)  := (others => '0');
-               v.ebAxisMaster.tData(2 downto 0)   := timestampAxisMaster.tData(2 downto 0);  -- subCount writeFifo(formatTimestamp);
+               v.ebAxisMaster.tData(63 downto 60) := "0010";  -- 
+               v.ebAxisMaster.tData(59 downto 0) := timestampAxisMaster.tData(59 downto 0);
                -- Flip it because everything is expected this way
                v.ebAxisMaster.tData(63 downto 0)  := v.ebAxisMaster.tData(31 downto 0) & v.ebAxisMaster.tData(63 downto 32);
             else

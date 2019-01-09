@@ -175,6 +175,8 @@ begin
       axiSlaveRegister(axilEp, X"10", 2, v.extAcquisitionEn);
       axiSlaveRegister(axilEp, X"10", 3, v.extStartEn);
 
+      axiSlaveRegisterR(axilEp, X"14", 0, r.acqControl.runTime);
+
       axiSlaveRegister(axilEp, X"20", 0, v.calibrate);
 
 --      axiSlaveRegister(axilEp, X"14", 0, v.swAcquisition);
@@ -264,8 +266,10 @@ begin
       -- Start Command
       ----------------------------------------------------------------------------------------------
       v.acqControl.startRun := '0';
+      v.acqControl.runTime             := r.acqControl.runTime + 1;
       if (r.extStartEn = '1' and extTriggerRise(conv_integer(r.extStartSrc)) = '1') then
          v.acqControl.startRun := '1';
+         v.acqControl.runTime             := (others => '0');
       end if;
 
       ----------------------------------------------------------------------------------------------
@@ -283,10 +287,11 @@ begin
       acqControl     <= r.acqControl;
    end process comb;
 
-   axisMaster.tValid             <= r.timestampFifoWrEn;
-   axisMaster.tData(15 downto 3) <= kpixState.bunchCount;
-   axisMaster.tData(2 downto 0)  <= kpixState.subCount;
-   axisMaster.tKeep              <= (others => '1');
+   axisMaster.tValid              <= r.timestampFifoWrEn;
+   axisMaster.tData(63 downto 16) <= r.acqControl.runTime(47 downto 0);  -- 48 bits is all that fits
+   axisMaster.tData(15 downto 3)  <= kpixState.bunchCount;
+   axisMaster.tData(2 downto 0)   <= kpixState.subCount;
+   axisMaster.tKeep               <= (others => '1');
    U_AxiStreamFifoV2_1 : entity work.AxiStreamFifoV2
       generic map (
          TPD_G               => TPD_G,
