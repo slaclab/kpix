@@ -125,6 +125,13 @@ class DesyTracker(pyrogue.Device):
             f = self.root.cmd._reqFrame(1, False)
             f.write(bytearray([0xAA]), 0)
             self.root.cmd._sendFrame(f)
+
+        @self.command()
+        def EthStart():
+            f = self.root.cmd._reqFrame(1, False)
+            f.write(bytearray([0x55]), 0)
+            self.root.cmd._sendFrame(f)
+            
                 
         self.add(surf.axi.AxiVersion(
             offset = 0x0000))
@@ -245,7 +252,11 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                 self._thread = None
 
     def _run(self):
+        for i in range(24):
+            self.root.DesyTracker.KpixDaqCore.KpixDataRxArray.KpixDataRx[i].ResetCounters()
+        
         self.runCount.set(0)
+        self.root.DesyTracker.EthStart()        
 
         while (self.runState.valueDisp() == 'Running'):
           
@@ -275,6 +286,9 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         acqCtrl.ExtTrigEn.set(False, write=True)
         acqCtrl.ExtTimestampEn.set(False, write=True)
         acqCtrl.ExtAcquisitionSrc.setDisp('EthAcquire', write=True)
+        acqCtrl.ExtAcquisitionEn.set(True, write=True)        
+        acqCtrl.ExtStartSrc.setDisp('EthStart', write=True)
+        acqCtrl.ExtStartEn.set(True, write=True)                
         acqCtrl.Calibrate.set(True, write=True)
 
         # Put asics in calibration mode
@@ -283,7 +297,11 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             kpix.setCalibrationMode()
 
         # Restart the run count
-        self.runCount.set(0)        
+        for i in range(24):
+            self.root.DesyTracker.KpixDaqCore.KpixDataRxArray.KpixDataRx[i].ResetCounters()
+        
+        self.runCount.set(0)
+        self.root.DesyTracker.EthStart()
 
         # First do baselines        
         self.CalState.set('Baseline')

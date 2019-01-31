@@ -577,7 +577,7 @@ begin
          v.dataParityErrorCount := r.dataParityErrorCount;
       end if;
 
-      if (v.resetCounters = '1') then
+      if (r.resetCounters = '1') then
          v.headerParityErrorCount := (others => '0');
          v.markerErrorCount       := (others => '0');
          v.overflowErrorCount     := (others => '0');

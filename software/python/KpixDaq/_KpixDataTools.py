@@ -3,7 +3,7 @@ import rogue
 import pyrogue
 import numpy as np
 import scipy.stats as stats
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from collections import defaultdict
 import ctypes
 #import line_profiler

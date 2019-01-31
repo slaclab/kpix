@@ -48,7 +48,7 @@ class KpixDataRx(pr.Device):
         self.add(pr.RemoteCommand(
             name = "ResetCounters",
             offset = 0x10,
-            bitOffset = 1,
+            bitOffset = 0,
             bitSize = 1,
             function = pr.RemoteCommand.touchOne))
 
