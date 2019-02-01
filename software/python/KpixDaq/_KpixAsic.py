@@ -134,33 +134,11 @@ class KpixAsic(pr.Device):
             bitOffset=0,
             bitSize=8))
 
-
-
         self.add(pr.RemoteVariable(
-            name = 'TimeBunchClkDelayRaw',
+            name = 'TimeBunchClkDelay',
             offset=TIMER_F,
             bitOffset=8,
             bitSize=16))
-
-        def setTimeBunchClkDelay(value, write):
-            if self.name == 'KpixAsic[0]':
-                print(f' - setTimeBunchClkDelay({value}, {write})')
-                
-            self.TimeBunchClkDelayRaw.set(value, write=write)
-            
-            if self.name == 'KpixAsic[0]': print(f' - self.TimeBunchClkDelayRaw.set({value}, write={write}) done')
-            
-            value = self.TrigInhibitOff.value()
-            self.TrigInhibitOff.set(value, write=write)
-            
-            if self.name == 'KpixAsic[0]': print(f' - self.TrigInhibitOff.set({value}, write={write}) done')            
-        
-        self.add(pr.LinkVariable(
-            name = 'TimeBunchClkDelay',
-            dependencies = [self.TimeBunchClkDelayRaw],
-            linkedGet = lambda: self.TimeBunchClkDelayRaw.value(),
-            linkedSet = setTimeBunchClkDelay))
-        
 
         self.add(pr.RemoteVariable(
             name = 'TimeDigitizeDelay',
@@ -187,33 +165,11 @@ class KpixAsic(pr.Device):
             bitSize=32,
             hidden=True))
 
-        def getTrigInhibitOff():
-            ret = round(((self.TimerD.value()-self.TimeBunchClkDelayRaw.value())-1)/8)
-            
-            if self.name == 'KpixAsic[0]':
-                print('getTrigInhibitOff()')
-                print(f' - TimerD: {self.TimerD.value()}')
-                print(f' - TimeBunchClkDelayRaw: {self.TimeBunchClkDelayRaw.value()}')
-                print(f' - Return: {ret}')
-                
-            return ret
-
-        def setTrigInhibitOff(value, write):
-            timerD = (int(value)*8)+self.TimeBunchClkDelayRaw.value()+1
-            self.TimerD.set(timerD, write=write)            
-            if self.name == 'KpixAsic[0]':
-                print(f'setTrigInhibitOff({value}, {write})')
-                print(f' - TimeBunchClkDelayRaw: {self.TimeBunchClkDelayRaw.value()}')
-                print(f' - TimerD: {timerD}')
-
-
-         #lambda: int( ((self.TimerD.value()-self.TimeBunchClkDelay.value())-1)/8 )
-         #lambda value, write: self.TimerD.set((int(value)*8)+self.TimeBunchClkDelay.value()+1, write=True)))         
         self.add(pr.LinkVariable(
             name = 'TrigInhibitOff',
-            dependencies = [self.TimerD, self.TimeBunchClkDelayRaw],
-            linkedGet = getTrigInhibitOff,
-            linkedSet = setTrigInhibitOff))
+            dependencies = [self.TimerD, self.TimeBunchClkDelay],
+            linkedGet = lambda: round(((self.TimerD.value()-self.TimeBunchClkDelay.value())-1)/8),
+            linkedSet = lambda value, write: self.TimerD.set((round(value)*8)+self.TimeBunchClkDelay.value()+1, write=write)))
 
         # setComp(0,1,1,'')
         self.add(pr.RemoteVariable(
