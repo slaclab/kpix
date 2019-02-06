@@ -288,7 +288,7 @@ begin
    end process comb;
 
    axisMaster.tValid              <= r.timestampFifoWrEn;
-   axisMaster.tData(63 downto 16) <= r.acqControl.runTime(47 downto 0);  -- 48 bits is all that fits
+   axisMaster.tData(63 downto 32) <= r.acqControl.runTime(31 downto 0);  -- 48 bits is all that fits
    axisMaster.tData(15 downto 3)  <= kpixState.bunchCount;
    axisMaster.tData(2 downto 0)   <= kpixState.subCount;
    axisMaster.tKeep               <= (others => '1');

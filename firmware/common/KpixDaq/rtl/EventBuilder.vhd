@@ -191,8 +191,11 @@ begin
             if (timestampAxisMaster.tvalid = '1') then
                v.timestampAxisSlave.tReady        := '1';
                v.ebAxisMaster.tValid              := '1';
-               v.ebAxisMaster.tData(63 downto 60) := "0010";  -- 
-               v.ebAxisMaster.tData(59 downto 0) := timestampAxisMaster.tData(59 downto 0);
+               v.ebAxisMaster.tData(63 downto 60) := "0010";               
+               -- bunchcount and subcount
+               v.ebAxisMaster.tData(59 downto 32) := timestampAxisMaster.tData(27 downto 0);  
+               -- runTime
+               v.ebAxisMaster.tData(31 downto 0) := timestampAxisMaster.tData(63 downto 32);               
                -- Flip it because everything is expected this way
                v.ebAxisMaster.tData(63 downto 0)  := v.ebAxisMaster.tData(31 downto 0) & v.ebAxisMaster.tData(63 downto 32);
             else
