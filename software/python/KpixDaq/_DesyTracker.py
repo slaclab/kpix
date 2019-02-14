@@ -239,6 +239,13 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         Underlying run control must update runCount variable.
         """
         if changed:
+            # First stop old threads to avoid overlapping runs
+            # but not if we are calling from the running thread
+            if self._thread is not None and self._thread != threading.current_thread():
+                self._thread.join()
+                self.thread = None;
+                self.root.ReadAll()                
+            
             if self.runState.valueDisp() == 'Running':
                 #print("Starting run")
                 self._thread = threading.Thread(target=self._run)
@@ -246,30 +253,32 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             elif self.runState.valueDisp() == 'Calibration':
                 self._thread = threading.Thread(target=self._calibrate)
                 self._thread.start()
-            elif self._thread is not None:
-                #print("Stopping run")
-                self._thread.join()
-                self._thread = None
+
 
     def _run(self):
         for i in range(24):
             self.root.DesyTracker.KpixDaqCore.KpixDataRxArray.KpixDataRx[i].ResetCounters()
-        
-        self.runCount.set(0)
+
+        self.root.ReadAll()
+            
+        self.runCount.set(self.root.DataWriter.getDataChannel().getFrameCount())
         self.root.DesyTracker.EthStart()        
 
         while (self.runState.valueDisp() == 'Running'):
           
             self.root.DesyTracker.EthAcquire()
+            #self.root.DataWriter.getDataChannel().getFrameCount()
           
             if self.runRate.valueDisp() == 'Auto':
                 self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1)
+
             else:
                 delay = 1.0 / self.runRate.value()
                 time.sleep(delay)
                 # Add command here
 
             self.runCount += 1
+
 
     def _calibrate(self):
         # Latch all of the run settings so they can't be changed mid-run
@@ -291,6 +300,8 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         acqCtrl.ExtStartEn.set(True, write=True)                
         acqCtrl.Calibrate.set(True, write=True)
 
+        self.root.ReadAll()
+
         # Put asics in calibration mode
         kpixAsics = [self.root.DesyTracker.KpixDaqCore.KpixAsicArray.KpixAsic[i] for i in range(24)]
         for kpix in kpixAsics:
@@ -300,7 +311,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         for i in range(24):
             self.root.DesyTracker.KpixDaqCore.KpixDataRxArray.KpixDataRx[i].ResetCounters()
         
-        self.runCount.set(0)
+        self.runCount.set(self.root.DataWriter.getDataChannel().getFrameCount())
         self.root.DesyTracker.EthStart()
 
         # First do baselines        
@@ -349,6 +360,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                             return
                             
         self.runCount.get()
+        self.root.ReadAll()
         self.runState.setDisp('Stopped')        
 
     
