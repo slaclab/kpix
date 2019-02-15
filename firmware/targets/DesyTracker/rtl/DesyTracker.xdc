@@ -62,14 +62,14 @@ set_clock_groups -asynchronous \
 
 
 # TLU
-set_property -dict { PACKAGE_PIN E23 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_ports { tluClkP }];
-set_property -dict { PACKAGE_PIN F22 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_ports { tluClkN }];
-set_property -dict { PACKAGE_PIN F23 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_ports { tluSpillP }];
-set_property -dict { PACKAGE_PIN G22 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_ports { tluSpillN }];
-set_property -dict { PACKAGE_PIN B21 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_ports { tluStartP }];
-set_property -dict { PACKAGE_PIN C21 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_ports { tluStartN }];
-set_property -dict { PACKAGE_PIN D24 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_ports { tluTriggerP }];
-set_property -dict { PACKAGE_PIN D23 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_ports { tluTriggerN }];
+set_property -dict { PACKAGE_PIN E23 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_ports { tluClkN }];
+set_property -dict { PACKAGE_PIN F22 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_ports { tluClkP }];
+set_property -dict { PACKAGE_PIN F23 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_ports { tluSpillN }];
+set_property -dict { PACKAGE_PIN G22 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_ports { tluSpillP }];
+set_property -dict { PACKAGE_PIN B21 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_ports { tluStartN }];
+set_property -dict { PACKAGE_PIN C21 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_ports { tluStartP }];
+set_property -dict { PACKAGE_PIN D24 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_ports { tluTriggerN }];
+set_property -dict { PACKAGE_PIN D23 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_ports { tluTriggerP }];
 set_property -dict { PACKAGE_PIN G24 IOSTANDARD LVDS_25 } [get_ports { tluBusyP }];
 set_property -dict { PACKAGE_PIN F24 IOSTANDARD LVDS_25 } [get_ports { tluBusyN }];
 

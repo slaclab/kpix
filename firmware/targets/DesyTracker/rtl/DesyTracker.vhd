@@ -206,29 +206,29 @@ begin
    -------------------------------------------------------------------------------------------------
    -- Buffers for TLU signals
    -------------------------------------------------------------------------------------------------
-   TLU_CLK_IBUF : IBUFGDS
+   TLU_CLK_IBUF : IBUFGDS_DIFF_OUT
       port map (
          I  => tluClkP,
          IB => tluClkN,
-         O  => tluClk);
+         OB => tluClk);
 
-   TLU_SPILL_IBUF : IBUFDS
+   TLU_SPILL_IBUF : IBUFDS_DIFF_OUT
       port map (
          I  => tluSpillP,
          IB => tluSpillN,
-         O  => tluSpill);
+         OB => tluSpill);
 
-   TLU_START_IBUF : IBUFDS
+   TLU_START_IBUF : IBUFDS_DIFF_OUT
       port map (
          I  => tluStartP,
          IB => tluStartN,
-         O  => tluStart);
+         OB => tluStart);
 
-   TLU_TRIGGER_IBUF : IBUFDS
+   TLU_TRIGGER_IBUF : IBUFDS_DIFF_OUT
       port map (
          I  => tluTriggerP,
          IB => tluTriggerN,
-         O  => tluTrigger);
+         OB => tluTrigger);
 
    TLU_BUSY_OBUF : OBUFDS
       port map (
