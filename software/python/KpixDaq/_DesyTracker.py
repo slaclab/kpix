@@ -18,7 +18,7 @@ import surf.xilinx
 import KpixDaq
 
 class DesyTrackerRoot(pyrogue.Root):
-    def __init__(self, hwEmu=False, sim=False, rssiEn=False, ip='192.168.1.10', pollEn=False, **kwargs):
+    def __init__(self, hwEmu=False, sim=False, rssiEn=True, ip='192.168.1.10', pollEn=False, **kwargs):
         super().__init__(**kwargs)
 
         if hwEmu:
@@ -114,6 +114,45 @@ class TluMonitor(pyrogue.Device):
             }
         ))
         
+class EnvironmentMonitor(pyrogue.Device):
+      def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.add(surf.xilinx.Xadc(
+            offset=0x03000000,
+            hidden=True))
+
+        self.add(surf.devices.linear.Ltc4151(
+            offset = 0x04000000,
+            senseRes = 0.02,
+            hidden=True))
+
+        self.add(surf.devices.nxp.Sa56004x(
+            description = "Board temperate monitor",
+            offset = 0x04000400,
+            hidden=True))
+
+
+        self.add(pyrogue.LinkVariable(
+            name = 'FpgaTemperature',
+            variable = self.Xadc.Temperature))
+
+        self.add(pyrogue.LinkVariable(
+            name = 'BoardTemperature',
+            variable = self.Sa56004x.LocalTemperature))
+
+        self.add(pyrogue.LinkVariable(
+            name = 'InputVoltage',
+            variable = self.Ltc4151.Vin))
+
+        self.add(pyrogue.LinkVariable(
+            name = 'InputCurrent',
+            variable = self.Ltc4151.Iin))
+
+        self.add(pyrogue.LinkVariable(
+            name = 'InputPower',
+            variable = self.Ltc4151.Pin))
+        
         
 
 class DesyTracker(pyrogue.Device):
@@ -136,6 +175,8 @@ class DesyTracker(pyrogue.Device):
         self.add(surf.axi.AxiVersion(
             offset = 0x0000))
 
+        self.add(EnvironmentMonitor())
+
         extTrigEnum = {
             0: 'BncTrig',
             1: 'Lemo0',
@@ -146,6 +187,9 @@ class DesyTracker(pyrogue.Device):
             6: 'EthAcquire',
             7: 'EthStart'}
 
+        self.add(TluMonitor(
+            offset = 0x06000000))
+
         self.add(KpixDaq.KpixDaqCore(
             offset = 0x01000000,
             numKpix = 24,
@@ -153,23 +197,11 @@ class DesyTracker(pyrogue.Device):
 
         if rssi:
             self.add(surf.protocols.rssi.RssiCore(
-                offset = 0x02000000))
+                offset = 0x02000000,
+                expand = False))
             
-        self.add(surf.xilinx.Xadc(
-            offset=0x03000000,
-            expand=False))
-
-        self.add(surf.devices.linear.Ltc4151(
-            offset = 0x04000000,
-            senseRes = 0.02))
 
 
-        self.add(surf.devices.nxp.Sa56004x(
-            description = "Board temperate monitor",
-            offset = 0x04000400))
-
-        self.add(TluMonitor(
-            offset = 0x06000000))
 
 #         self.add(surf.devices.micron.AxiMicronN25Q(
 #             offset = 0x06000000,
