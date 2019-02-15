@@ -14,7 +14,7 @@ class FlippedUInt(pr.UInt):
 
 
 class KpixAsic(pr.Device):
-    def __init__(self, version=12, **kwargs):
+    def __init__(self, sysConfig=None, version=12, **kwargs):
         super().__init__(**kwargs)
 
         self.calChannel = 0
@@ -42,7 +42,6 @@ class KpixAsic(pr.Device):
         CONTROL = 0x0030*4
         CHAN_MODE_A = list(range(0x0040*4, 0x0060*4, 4))
         CHAN_MODE_B = list(range(0x0060*4, 0x0080*4, 4))        
-        
 
         # Status regs
         self.add(pr.RemoteVariable(
@@ -321,7 +320,8 @@ class KpixAsic(pr.Device):
             enum = {
                 0: 'Disable',
                 1: 'Internal',
-                2: 'External'}))
+                2: 'External',
+                3: '-'}))
 
         self.add(pr.RemoteVariable(
             name = 'CntrlForceTrigSource',

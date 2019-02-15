@@ -9,12 +9,12 @@ DesyTrackerRoot:
 #    maxFileSize: '0'
   DesyTrackerRunControl:
     CalMeanCount: 500
-    CalDacMin: 0
+    CalDacMin: 200
     CalDacMax: 255
     CalDacStep: 5
     CalDacCount: 10
-    CalChanMin: 0
-    CalChanMax: 100
+    CalChanMin: 500
+    CalChanMax: 600
 #    CalState: Idle
 #    CalChannel: '0'
 #    CalDac: '0'
@@ -29,13 +29,13 @@ DesyTrackerRoot:
         enable: 'True'
         RawDataMode: 'False'
         AutoReadDisable: 'False'
-        KpixEnable: '0x1'
+#        KpixEnable: '0x1'
       KpixClockGen:
         enable: 'True'
-        ClkSelReadout: 4
+        ClkSelReadout: 9
         ClkSelDigitize: 9
         ClkSelAcquire: 63
-        ClkSelIdle: 4
+        ClkSelIdle: 9
         ClkSelPrecharge: 1199
       AcquisitionControl:
         enable: 'True'
@@ -131,7 +131,7 @@ DesyTrackerRoot:
         KpixAsic[0]:
           enable: 'True'
         KpixAsic[1]:
-          enable: 'False'
+          enable: 'True'
         KpixAsic[24]:
           enable: 'True'
       KpixDataRxArray:

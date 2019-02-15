@@ -1,7 +1,16 @@
 import pyrogue as pr
+import re
 
 class SysConfig(pr.Device):
-    def __init__(self, **kwargs):
+
+    def KpixEnableUpdate(self, path, value, disp):
+        print(f'KpixEnableUpdate: {self}, {path}, {value}, {disp}')
+        print(re.search('.*?KpixAsic\\[(.*?)\\]', path).groups())
+        index = int(re.search('.*?KpixAsic\\[(.*?)\\]', path).groups()[0])
+        self.KpixEnable[index].set(value, write=True)
+
+    
+    def __init__(self, numKpix, **kwargs):
         super().__init__(**kwargs)
 
         self.add(pr.RemoteVariable(
@@ -20,13 +29,16 @@ class SysConfig(pr.Device):
             bitSize=1,
             base=pr.Bool))
 
-        self.add(pr.RemoteVariable(
-            name = 'KpixEnable',
-            mode = 'RW',
-            offset= 0x08,
-            bitOffset=0,
-            bitSize=32,
-            base=pr.UInt))
+        for i in range(numKpix):
+            self.add(pr.RemoteVariable(
+                name = f'KpixEnable[{i}]',
+                mode = 'RW',
+                offset= 0x08,
+                bitOffset=i,
+                bitSize=1,
+                base=pr.Bool,
+                hidden=True))
+
 
         debugEnum = {
             0b00000: 'reg_clk',
@@ -78,3 +90,6 @@ class SysConfig(pr.Device):
         
         
         
+    def hardReset(self):
+        print('Sending hard reset to KPIX ASIC array')
+        self.KpixReset()

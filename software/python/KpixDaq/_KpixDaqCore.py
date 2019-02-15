@@ -8,6 +8,7 @@ class KpixDaqCore(pr.Device):
         self.numKpix = numKpix
 
         self.add(KpixDaq.SysConfig(
+            numKpix = numKpix,
             offset = 0x0000))
 
         self.add(KpixDaq.KpixClockGen(
@@ -18,8 +19,10 @@ class KpixDaqCore(pr.Device):
             extTrigEnum = extTrigEnum))
 
         self.add(KpixAsicArray(
+            sysConfig = self.SysConfig,
             offset = 0x100000,
             numKpix = numKpix))
+
 
         self.add(KpixDataRxArray(
             offset = 0x200000,
@@ -27,14 +30,18 @@ class KpixDaqCore(pr.Device):
                 
                 
 class KpixAsicArray(pr.Device):
-    def __init__(self, numKpix, **kwargs):
+    def __init__(self, numKpix, sysConfig, **kwargs):
         super().__init__(**kwargs)
         for i in range(numKpix):
             self.add(KpixDaq.KpixAsic(
                 name = f'KpixAsic[{i}]',
                 offset = 0x100000 + (i*0x1000),
                 enabled = False,
-                expand = False))        
+                expand = False))
+
+            # Link SysConfig.KpixEnable[x] to KpixAsic[x].enable
+            self.KpixAsic[i].enable.addListener(sysConfig.KpixEnableUpdate)
+
         
         # Internal KPIX
         self.add(KpixDaq.LocalKpix(
