@@ -317,7 +317,7 @@ begin
                   v.rxState       := RX_ROW_ID_S;
 
                   v.arrivalTimes(8 downto 1) := r.arrivalTimes(7 downto 0);
-                  v.arrivalTimes(0)          := acqControl.timestamp(31 downto 0);
+                  v.arrivalTimes(0)          := acqControl.runTime(31 downto 0);
 
                   if (r.rxShiftData(KPIX_MARKER_RANGE_C) /= KPIX_MARKER_C) then
                      -- Invalid Marker
