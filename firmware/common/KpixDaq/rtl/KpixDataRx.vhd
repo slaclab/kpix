@@ -38,6 +38,7 @@ entity KpixDataRx is
       rst200           : in  sl;
       -- System config
       sysConfig        : in  SysConfigType;
+      acqControl       : in  AcquisitionControlType;
       -- Serial input
       kpixClkPreFall   : in  sl;
       kpixSerRxIn      : in  sl;                 -- Serial Data from KPIX      
@@ -136,6 +137,7 @@ architecture rtl of KpixDataRx is
       overflowErrorCount     : slv(7 downto 0);
       frameCount             : slv(31 downto 0);
       dataParityError        : sl;
+      arrivalTimes           : slv32Array(8 downto 0);
       resetCounters          : sl;
       -- RX
       rxShiftData            : slv(0 to SHIFT_REG_LENGTH_C-1);  -- Upward indexed to match documentation
@@ -175,6 +177,7 @@ architecture rtl of KpixDataRx is
       overflowErrorCount     => (others => '0'),
       frameCount             => (others => '0'),
       dataParityError        => '0',
+      arrivalTimes           => (others => (others => '0')),
       resetCounters          => '0',
       rxShiftData            => (others => '0'),
       rxShiftCount           => (others => '0'),
@@ -268,6 +271,15 @@ begin
       axiSlaveRegisterR(axilEp, X"0C", 0, r.dataParityErrorCount);
       axiSlaveRegister(axilEp, X"10", 0, v.resetCounters);
       axiSlaveRegisterR(axilEp, X"14", 0, r.frameCount);
+      axiSlaveRegisterR(axilEp, X"20", 0, r.arrivalTimes(0));
+      axiSlaveRegisterR(axilEp, X"24", 0, r.arrivalTimes(1));
+      axiSlaveRegisterR(axilEp, X"28", 0, r.arrivalTimes(2));
+      axiSlaveRegisterR(axilEp, X"2C", 0, r.arrivalTimes(3));
+      axiSlaveRegisterR(axilEp, X"30", 0, r.arrivalTimes(4));
+      axiSlaveRegisterR(axilEp, X"34", 0, r.arrivalTimes(5));
+      axiSlaveRegisterR(axilEp, X"38", 0, r.arrivalTimes(6));
+      axiSlaveRegisterR(axilEp, X"3C", 0, r.arrivalTimes(7));
+      axiSlaveRegisterR(axilEp, X"40", 0, r.arrivalTimes(8));
 
       axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
 
@@ -304,6 +316,9 @@ begin
                   v.rxColumnCount := (others => '0');
                   v.rxState       := RX_ROW_ID_S;
 
+                  v.arrivalTimes(8 downto 1) := r.arrivalTimes(7 downto 0);
+                  v.arrivalTimes(0)          := acqControl.timestamp(31 downto 0);
+
                   if (r.rxShiftData(KPIX_MARKER_RANGE_C) /= KPIX_MARKER_C) then
                      -- Invalid Marker
                      v.markerErrorCount := r.markerErrorCount + 1;
@@ -311,7 +326,8 @@ begin
 
                   elsif (r.rxShiftData(KPIX_FRAME_TYPE_INDEX_C) = KPIX_CMD_RSP_FRAME_C) then
                      -- Response frame, not data
-                     v.rxState := RX_RESP_S;
+                     v.rxState      := RX_RESP_S;
+                     v.arrivalTimes := r.arrivalTimes;
 
                   elsif (evenParity(r.rxShiftData(KPIX_FULL_HEADER_RANGE_C)) = '0') then
                      -- Header Parity error
