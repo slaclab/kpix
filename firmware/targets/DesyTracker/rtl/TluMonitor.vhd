@@ -46,6 +46,8 @@ entity TluMonitor is
       tluStart   : in sl;
       tluSpill   : in sl;
 
+      tluClkClean : out sl;
+
       kpixClk200 : out sl;
       kpixRst200 : out sl);
 
@@ -78,6 +80,7 @@ architecture rtl of TluMonitor is
    signal spillCount   : slv(31 downto 0);
    signal startCount   : slv(31 downto 0);
 
+   signal iTluClkClean  : sl;
    signal tluClk200     : sl;
    signal kpixClk200Loc : sl;
    signal kpixRst200Raw : sl;
@@ -85,26 +88,30 @@ architecture rtl of TluMonitor is
 
 begin
 
+   tluClkClean <= iTluClkClean;
+
    U_MMCM : entity work.ClockManager7
       generic map(
          TPD_G             => TPD_G,
          TYPE_G            => "PLL",
          INPUT_BUFG_G      => false,
          OUTPUT_BUFG_G     => false,
-         FB_BUFG_G         => true,     -- Without this, will never lock in simulation
+         FB_BUFG_G         => true,     
          RST_IN_POLARITY_G => '1',
-         NUM_CLOCKS_G      => 1,
+         NUM_CLOCKS_G      => 2,
          -- MMCM attributes
          BANDWIDTH_G       => "OPTIMIZED",
          CLKIN_PERIOD_G    => 25.000,
          DIVCLK_DIVIDE_G   => 1,
          CLKFBOUT_MULT_G   => 25,
-         CLKOUT0_DIVIDE_G  => 5)
+         CLKOUT0_DIVIDE_G  => 5,
+         CLKOUT1_DIVIDE_G  => 25)
       port map(
          clkIn     => tluClk,
          rstIn     => r.mmcmReset(0),
          locked    => mmcmLocked,
-         clkOut(0) => tluClk200);
+         clkOut(0) => tluClk200,
+         clkOut(1) => iTluClkClean);
 
    CLKMUX : BUFGMUX_CTRL
       port map (
@@ -143,7 +150,7 @@ begin
          locked      => open,           -- [out]
          tooFast     => open,           -- [out]
          tooSlow     => open,           -- [out]
-         clkIn       => tluClk,         -- [in]
+         clkIn       => iTluClkClean,   -- [in]
          locClk      => axilClk,        -- [in]
          refClk      => axilClk);       -- [in]
 
@@ -159,7 +166,7 @@ begin
          rollOverEn => '1',             -- [in]
          cntRst     => r.rstCounts,     -- [in]
          cntOut     => triggerCount,    -- [out]
-         wrClk      => tluClk,          -- [in]
+         wrClk      => iTluClkClean,    -- [in]
          wrRst      => '0',             -- [in]
          rdClk      => axilClk,         -- [in]
          rdRst      => axilRst);        -- [in]
@@ -176,7 +183,7 @@ begin
          rollOverEn => '1',             -- [in]
          cntRst     => r.rstCounts,     -- [in]
          cntOut     => startCount,      -- [out]
-         wrClk      => tluClk,          -- [in]
+         wrClk      => iTluClkClean,    -- [in]
          wrRst      => '0',             -- [in]
          rdClk      => axilClk,         -- [in]
          rdRst      => axilRst);        -- [in]
@@ -193,7 +200,7 @@ begin
          rollOverEn => '1',             -- [in]
          cntRst     => r.rstCounts,     -- [in]
          cntOut     => spillCount,      -- [out]
-         wrClk      => tluClk,          -- [in]
+         wrClk      => iTluClkClean,    -- [in]
          wrRst      => '0',             -- [in]
          rdClk      => axilClk,         -- [in]
          rdRst      => axilRst);        -- [in]

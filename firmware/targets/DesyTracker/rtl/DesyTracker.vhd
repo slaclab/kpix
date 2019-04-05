@@ -176,11 +176,13 @@ architecture rtl of DesyTracker is
    signal ethAcqCmd   : sl;
    signal ethStartCmd : sl;
 
-   signal tluClk     : sl;
-   signal tluSpill   : sl;
-   signal tluStart   : sl;
-   signal tluTrigger : sl;
-   signal tluBusy    : sl;
+   signal tluClkClean : sl;
+   signal tluClk      : sl;
+   signal tluSpill    : sl;
+   signal tluStart    : sl;
+   signal tluTrigger  : sl;
+   signal tluBusy     : sl;
+
 
    signal extTriggers : slv(7 downto 0);
    signal debugOutA   : sl;
@@ -268,7 +270,7 @@ begin
          PERIOD_IN_G  => 25.0E-9,
          PERIOD_OUT_G => 0.25)
       port map (
-         clk => tluClk,
+         clk => tluClkClean,
          o   => led(2));
 
    Heartbeat_axilClk : entity work.Heartbeat
@@ -605,6 +607,7 @@ begin
          tluTrigger      => tluTrigger,                           -- [in]
          tluStart        => tluStart,                             -- [in]
          tluSpill        => tluSpill,                             -- [in]
+         tluClkClean     => tluClkClean,                          -- [out]
          kpixClk200      => kpixClk200,                           -- [out]
          kpixRst200      => kpixRst200);                          -- [out]
 

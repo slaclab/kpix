@@ -73,6 +73,8 @@ set_property -dict { PACKAGE_PIN D23 IOSTANDARD LVDS_25 DIFF_TERM TRUE } [get_po
 set_property -dict { PACKAGE_PIN G24 IOSTANDARD LVDS_25 } [get_ports { tluBusyP }];
 set_property -dict { PACKAGE_PIN F24 IOSTANDARD LVDS_25 } [get_ports { tluBusyN }];
 
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {tluClkP}]
+
 # KPIX IO
 set_property -dict { PACKAGE_PIN M24  IOSTANDARD LVDS_25 } [get_ports { kpixClkP[0] }];
 set_property -dict { PACKAGE_PIN L24  IOSTANDARD LVDS_25 } [get_ports { kpixClkN[0] }];
