@@ -283,6 +283,7 @@ begin
             clk200           => clk200,                     -- [in]
             rst200           => rst200,                     -- [in]
             sysConfig        => sysConfig,                  -- [in]
+            acqControl       => acqControl                  -- [in]
             kpixClkPreFall   => kpixClkPreFall,             -- [in]
             kpixSerRxIn      => kpixSerRxIn(i),             -- [in]
             axilReadMaster   => rxDataAxilReadMasters(i),   -- [in]
