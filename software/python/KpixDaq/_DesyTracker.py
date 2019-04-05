@@ -302,7 +302,9 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             #self.root.DataWriter.getDataChannel().getFrameCount()
           
             if self.runRate.valueDisp() == 'Auto':
-                self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1)
+                if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 1.0e6):
+                    print('Timed out waiting for data')
+                    return
 
             else:
                 delay = 1.0 / self.runRate.value()
@@ -355,7 +357,11 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             for i in bar:
                 if self.runState.valueDisp() == 'Calibration':
                     self.root.DesyTracker.EthAcquire()
-                    self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1)
+                    timeout = self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 1.0e6)
+                    if timeout:
+                        print('Timed out waiting for data')
+                        return
+                    
                     self.runCount += 1
                 else:
                     #self.runState.setDisp('Stopped')
@@ -385,7 +391,10 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                     for count in range(dacCount):
                         if self.runState.valueDisp() == 'Calibration':                        
                             self.root.DesyTracker.EthAcquire()
-                            self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1)
+                            timeout = self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 1.0e6)
+                            if timeout:
+                                print('Timed out waiting for data')
+                                return
                             self.runCount += 1
                         else:
                             #self.runState.setDisp('Stopped')
