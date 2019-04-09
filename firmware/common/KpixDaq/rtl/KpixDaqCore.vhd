@@ -120,8 +120,8 @@ architecture rtl of KpixDaqCore is
    signal acqControl : AcquisitionControlType;
 
    -- KPIX Rx Data Interface (with Event Builder)
-   signal kpixDataRxMasters : AxiStreamMasterArray(NUM_KPIX_MODULES_G-1 downto 0);
-   signal kpixDataRxSlaves  : AxiStreamSlaveArray(NUM_KPIX_MODULES_G-1 downto 0);
+   signal kpixDataRxMasters : AxiStreamMasterArray(NUM_KPIX_MODULES_G downto 0);
+   signal kpixDataRxSlaves  : AxiStreamSlaveArray(NUM_KPIX_MODULES_G downto 0);
 
    -- Temperatures
    signal temperature : slv8Array(NUM_KPIX_MODULES_G-1 downto 0);
@@ -273,7 +273,7 @@ begin
          mAxiReadMasters     => rxDataAxilReadMasters,
          mAxiReadSlaves      => rxDataAxilReadSlaves);
 
-   KpixDataRxGen : for i in NUM_KPIX_MODULES_G-1 downto 0 generate
+   KpixDataRxGen : for i in NUM_KPIX_MODULES_G downto 0 generate
       U_KpixDataRx_1 : entity work.KpixDataRx
          generic map (
             TPD_G             => TPD_G,
@@ -285,7 +285,7 @@ begin
             sysConfig        => sysConfig,                  -- [in]
             acqControl       => acqControl,                 -- [in]
             kpixClkPreFall   => kpixClkPreFall,             -- [in]
-            kpixSerRxIn      => kpixSerRxIn(i),             -- [in]
+            kpixSerRxIn      => intKpixSerRxIn(i),             -- [in]
             axilReadMaster   => rxDataAxilReadMasters(i),   -- [in]
             axilReadSlave    => rxDataAxilReadSlaves(i),    -- [out]
             axilWriteMaster  => rxDataAxilWriteMasters(i),  -- [in]
@@ -305,7 +305,7 @@ begin
    U_EventBuilder_1 : entity work.EventBuilder
       generic map (
          TPD_G              => TPD_G,
-         NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
+         NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G+1)
       port map (
          clk200              => clk200,               -- [in]
          rst200              => rst200,               -- [in]

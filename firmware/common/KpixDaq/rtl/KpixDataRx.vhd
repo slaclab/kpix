@@ -71,6 +71,7 @@ architecture rtl of KpixDataRx is
    constant SHIFT_REG_LENGTH_C : natural         := 15;
    constant DATA_SAMPLE_C      : slv(3 downto 0) := "0000";
    constant TEMP_SAMPLE_C      : slv(3 downto 0) := "0001";
+   constant RUNTIME_SAMPLE_C   : slv(3 downto 0) := "0010";
    constant ROW_ID_ADDR_C      : slv(3 downto 0) := "1111";
 
    -----------------------------------------------------------------------------
@@ -101,7 +102,8 @@ architecture rtl of KpixDataRx is
       TX_ADC_DATA_S,
       TX_SEND_SAMPLE_S,
       TX_WAIT_S,
-      TX_TEMP_S);
+      TX_TEMP_S,
+      TX_RUNTIME_S);
 
 
    type SampleType is record
@@ -137,8 +139,8 @@ architecture rtl of KpixDataRx is
       overflowErrorCount     : slv(7 downto 0);
       frameCount             : slv(31 downto 0);
       dataParityError        : sl;
-      arrivalTimes           : slv32Array(8 downto 0);
       resetCounters          : sl;
+      firstRuntime           : slv(31 downto 0);
       -- RX
       rxShiftData            : slv(0 to SHIFT_REG_LENGTH_C-1);  -- Upward indexed to match documentation
       rxShiftCount           : slv(5 downto 0);                 -- Counts bits shifted in
@@ -179,6 +181,7 @@ architecture rtl of KpixDataRx is
       dataParityError        => '0',
       arrivalTimes           => (others => (others => '0')),
       resetCounters          => '0',
+      firstRuntime           => (others => '0'),
       rxShiftData            => (others => '0'),
       rxShiftCount           => (others => '0'),
       rxColumnCount          => (others => '0'),
@@ -271,15 +274,7 @@ begin
       axiSlaveRegisterR(axilEp, X"0C", 0, r.dataParityErrorCount);
       axiSlaveRegister(axilEp, X"10", 0, v.resetCounters);
       axiSlaveRegisterR(axilEp, X"14", 0, r.frameCount);
-      axiSlaveRegisterR(axilEp, X"20", 0, r.arrivalTimes(0));
-      axiSlaveRegisterR(axilEp, X"24", 0, r.arrivalTimes(1));
-      axiSlaveRegisterR(axilEp, X"28", 0, r.arrivalTimes(2));
-      axiSlaveRegisterR(axilEp, X"2C", 0, r.arrivalTimes(3));
-      axiSlaveRegisterR(axilEp, X"30", 0, r.arrivalTimes(4));
-      axiSlaveRegisterR(axilEp, X"34", 0, r.arrivalTimes(5));
-      axiSlaveRegisterR(axilEp, X"38", 0, r.arrivalTimes(6));
-      axiSlaveRegisterR(axilEp, X"3C", 0, r.arrivalTimes(7));
-      axiSlaveRegisterR(axilEp, X"40", 0, r.arrivalTimes(8));
+      axiSlaveRegisterR(axilEp, X"20", 0, r.firstRuntime);
 
       axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
 
@@ -316,8 +311,11 @@ begin
                   v.rxColumnCount := (others => '0');
                   v.rxState       := RX_ROW_ID_S;
 
-                  v.arrivalTimes(8 downto 1) := r.arrivalTimes(7 downto 0);
-                  v.arrivalTimes(0)          := acqControl.runTime(31 downto 0);
+                  -- Latch the current runtime when the very first frame is seen
+                  -- This is used later to help detect asynchronicity in output
+                  if (v.rxRowId = 0 and v.rxWordId = 0) then
+                     v.rxRuntime := acqControl.runtime(31 downto 0);
+                  end if;
 
                   if (r.rxShiftData(KPIX_MARKER_RANGE_C) /= KPIX_MARKER_C) then
                      -- Invalid Marker
@@ -326,8 +324,8 @@ begin
 
                   elsif (r.rxShiftData(KPIX_FRAME_TYPE_INDEX_C) = KPIX_CMD_RSP_FRAME_C) then
                      -- Response frame, not data
-                     v.rxState      := RX_RESP_S;
-                     v.arrivalTimes := r.arrivalTimes;
+                     v.rxState   := RX_RESP_S;
+                     v.rxRuntime := r.rxRuntime;
 
                   elsif (evenParity(r.rxShiftData(KPIX_FULL_HEADER_RANGE_C)) = '0') then
                      -- Header Parity error
@@ -562,11 +560,24 @@ begin
             v.kpixDataRxMaster.tdata(7 downto 0)   := grayDecode(temperature);
             v.kpixDataRxMaster.tdata(63 downto 0)  := v.kpixDataRxMaster.tdata(31 downto 0) & v.kpixDataRxMaster.tdata(63 downto 32);
             v.kpixDataRxMaster.tvalid              := '1';
-            v.kpixDataRxMaster.tlast               := '1';
+            v.kpixDataRxMaster.tlast               := '0';
             v.frameCount                           := r.frameCount + 1;
             if (r.kpixDataRxMaster.tvalid = '1' and kpixDataRxSlave.tready = '1') then
                v.kpixDataRxMaster.tvalid := '0';
                v.kpixDataRxMaster.tlast  := '0';
+--               v.kpixDataRxMaster.busy   := '0';
+               v.txState                 := TX_RUNTIME_S;
+            end if;
+
+         when TX_RUNTIME_S =>
+            v.kpixDataRxMaster.tdata(63 downto 60) := RUNTIME_SAMPLE_C;
+            v.kpixDataRxMaster.tdata(31 downto 0)  := r.rxRuntime;
+            v.kpixDataRxMaster.tdata(63 downto 0)  := v.kpixDataRxMaster.tdata(31 downto 0) & v.kpixDataRxMaster.tdata(63 downto 32);
+            v.kpixDataRxMaster.tvalid              := '1';
+            v.kpixDataRxMaster.tlast               := '1';
+            if (r.kpixDataRxMaster.tvalid = '1' and kpixDataRxSlave.tready = '1') then
+               v.kpixDataRxMaster.tvalid := '0';
+               v.kpixDataRxMaster.tlast  := '1';
 --               v.kpixDataRxMaster.busy   := '0';
                v.txState                 := TX_CLEAR_S;
             end if;
