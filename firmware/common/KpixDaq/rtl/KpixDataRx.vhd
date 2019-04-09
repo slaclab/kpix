@@ -252,8 +252,8 @@ begin
          doutb => txRamRdData);         -- [out]
 
 
-   comb : process (axilReadMaster, axilWriteMaster, kpixClkPreFall, kpixDataRxSlave, kpixSerRxIn, r,
-                   rst200, sysConfig, tempCount, temperature, txRamRdData) is
+   comb : process (acqControl, axilReadMaster, axilWriteMaster, kpixClkPreFall, kpixDataRxSlave,
+                   kpixSerRxIn, r, rst200, sysConfig, tempCount, temperature, txRamRdData) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
 
