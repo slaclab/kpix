@@ -1,8 +1,14 @@
 import rogue
-import KpixDaq
 import pyrogue.gui
 import sys
 import argparse
+
+pyrogue.addLibraryPath('../python/')
+pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
+
+print(sys.path)
+
+import KpixDaq
 
 #rogue.Logging.setFilter('pyrogue.SrpV3', rogue.Logging.Debug)
 # Set the argument parser
