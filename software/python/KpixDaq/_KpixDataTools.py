@@ -167,6 +167,7 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
         self.state = nesteddict()
 
         self.dataDict = nesteddict()
+        self.runtimes = nesteddict()
 
         self.injections = {}
         self.baselines = {}
