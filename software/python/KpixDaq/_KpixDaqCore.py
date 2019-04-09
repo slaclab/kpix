@@ -57,7 +57,7 @@ class KpixAsicArray(pr.Device):
 class KpixDataRxArray(pr.Device):
     def __init__(self, numKpix, **kwargs):
         super().__init__(**kwargs)
-        for i in range(numKpix):
+        for i in range(numKpix+1):
             self.add(KpixDaq.KpixDataRx(
                 name = f'KpixDataRx[{i}]',
                 offset = (i*0x100),
