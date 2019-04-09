@@ -55,8 +55,8 @@ entity EventBuilder is
 
 
       -- KPIX data interface
-      kpixDataRxMasters : in  AxiStreamMasterArray(NUM_KPIX_MODULES_G-1 downto 0);
-      kpixDataRxSlaves  : out AxiStreamSlaveArray(NUM_KPIX_MODULES_G-1 downto 0);
+      kpixDataRxMasters : in  AxiStreamMasterArray(NUM_KPIX_MODULES_G downto 0);
+      kpixDataRxSlaves  : out AxiStreamSlaveArray(NUM_KPIX_MODULES_G downto 0);
 
       -- Event stream out
       ebAxisMaster : out AxiStreamMasterType;
@@ -82,10 +82,9 @@ architecture rtl of EventBuilder is
       newAcquire         : sl;
       state              : StateType;
       counter            : slv(15 downto 0);  -- Generic counter for stalling in a state
-      activeModules      : slv(NUM_KPIX_MODULES_G-1 downto 0);
-      dataDone           : slv(NUM_KPIX_MODULES_G-1 downto 0);
-      kpixIndex          : integer range 0 to NUM_KPIX_MODULES_G-1;
-      kpixDataRxSlaves   : AxiStreamSlaveArray(NUM_KPIX_MODULES_G-1 downto 0);
+      dataDone           : slv(NUM_KPIX_MODULES_G downto 0);
+      kpixIndex          : integer range 0 to NUM_KPIX_MODULES_G;
+      kpixDataRxSlaves   : AxiStreamSlaveArray(NUM_KPIX_MODULES_G downto 0);
       timestampAxisSlave : AxiStreamSlaveType;
       ebAxisMaster       : AxiStreamMasterType;
    end record;
@@ -96,7 +95,6 @@ architecture rtl of EventBuilder is
       newAcquire         => '0',
       state              => WAIT_ACQUIRE_S,
       counter            => (others => '0'),
-      activeModules      => (others => '0'),
       dataDone           => (others => '0'),
       kpixIndex          => 0,
       kpixDataRxSlaves   => (others => AXI_STREAM_SLAVE_INIT_C),
@@ -137,12 +135,11 @@ begin
       v.timestampAxisSlave.tready := '0';
       v.counter                   := (others => '0');
       v.dataDone                  := (others => '0');
-      v.activeModules             := (others => '0');
 
       -- Determines which kpix to look for data from.
       -- Increments every cycle so that kpixes are read in round robin fashion.
       v.kpixIndex := r.kpixIndex + 1;
-      if (r.kpixIndex = NUM_KPIX_MODULES_G-1) then
+      if (r.kpixIndex = NUM_KPIX_MODULES_G) then
          v.kpixIndex := 0;
       end if;
 
@@ -191,11 +188,11 @@ begin
             if (timestampAxisMaster.tvalid = '1') then
                v.timestampAxisSlave.tReady        := '1';
                v.ebAxisMaster.tValid              := '1';
-               v.ebAxisMaster.tData(63 downto 60) := "0010";               
+               v.ebAxisMaster.tData(63 downto 60) := "0010";
                -- bunchcount and subcount
-               v.ebAxisMaster.tData(59 downto 32) := timestampAxisMaster.tData(27 downto 0);  
+               v.ebAxisMaster.tData(59 downto 32) := timestampAxisMaster.tData(27 downto 0);
                -- runTime
-               v.ebAxisMaster.tData(31 downto 0) := timestampAxisMaster.tData(63 downto 32);               
+               v.ebAxisMaster.tData(31 downto 0)  := timestampAxisMaster.tData(63 downto 32);
                -- Flip it because everything is expected this way
                v.ebAxisMaster.tData(63 downto 0)  := v.ebAxisMaster.tData(31 downto 0) & v.ebAxisMaster.tData(63 downto 32);
             else
@@ -223,7 +220,8 @@ begin
             end if;
 
             -- Check if done
-            if (r.dataDone = sysConfig.kpixEnable(NUM_KPIX_MODULES_G-1 downto 0)) then
+            if (r.dataDone(NUM_KPIX_MODULES_G-1 downto 0) = sysConfig.kpixEnable(NUM_KPIX_MODULES_G-1 downto 0) and
+                (r.dataDone(NUM_KPIX_MODULES_G) = '1')) then
                v.ebAxisMaster.tLast              := '1';
                v.ebAxisMaster.tValid             := '1';
                v.ebAxisMaster.tKeep(15 downto 0) := X"000F";  -- Last word has only 4 bytes

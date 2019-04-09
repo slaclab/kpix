@@ -100,13 +100,13 @@ architecture rtl of KpixDaqCore is
    signal locAxilReadMasters  : AxiLiteReadMasterArray(NUM_AXIL_MASTERS_C-1 downto 0);
    signal locAxilReadSlaves   : AxiLiteReadSlaveArray(NUM_AXIL_MASTERS_C-1 downto 0);
 
-   constant AXIL_DATA_XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_KPIX_MODULES_G-1 downto 0) :=
-      genAxiLiteConfig(NUM_KPIX_MODULES_G, AXIL_BASE_ADDR_G+X"200000", 20, 8);
+   constant AXIL_DATA_XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_KPIX_MODULES_G downto 0) :=
+      genAxiLiteConfig(NUM_KPIX_MODULES_G+1, AXIL_BASE_ADDR_G+X"200000", 20, 8);
 
-   signal rxDataAxilReadMasters  : AxiLiteReadMasterArray(NUM_KPIX_MODULES_G-1 downto 0);
-   signal rxDataAxilReadSlaves   : AxiLiteReadSlaveArray(NUM_KPIX_MODULES_G-1 downto 0);
-   signal rxDataAxilWriteMasters : AxiLiteWriteMasterArray(NUM_KPIX_MODULES_G-1 downto 0);
-   signal rxDataAxilWriteSlaves  : AxiLiteWriteSlaveArray(NUM_KPIX_MODULES_G-1 downto 0);
+   signal rxDataAxilReadMasters  : AxiLiteReadMasterArray(NUM_KPIX_MODULES_G downto 0);
+   signal rxDataAxilReadSlaves   : AxiLiteReadSlaveArray(NUM_KPIX_MODULES_G downto 0);
+   signal rxDataAxilWriteMasters : AxiLiteWriteMasterArray(NUM_KPIX_MODULES_G downto 0);
+   signal rxDataAxilWriteSlaves  : AxiLiteWriteSlaveArray(NUM_KPIX_MODULES_G downto 0);
 
    -- Clock and reset for kpix clocked modules
    signal kpixClk        : sl;
@@ -124,8 +124,8 @@ architecture rtl of KpixDaqCore is
    signal kpixDataRxSlaves  : AxiStreamSlaveArray(NUM_KPIX_MODULES_G downto 0);
 
    -- Temperatures
-   signal temperature : slv8Array(NUM_KPIX_MODULES_G-1 downto 0);
-   signal tempCount   : slv12Array(NUM_KPIX_MODULES_G-1 downto 0);
+   signal temperature : slv8Array(NUM_KPIX_MODULES_G downto 0);
+   signal tempCount   : slv12Array(NUM_KPIX_MODULES_G downto 0);
 
    -- Timestamp interface to EventBuilder
    signal timestampAxisMaster : AxiStreamMasterType;
@@ -259,7 +259,7 @@ begin
       generic map (
          TPD_G              => TPD_G,
          NUM_SLAVE_SLOTS_G  => 1,
-         NUM_MASTER_SLOTS_G => NUM_KPIX_MODULES_G,
+         NUM_MASTER_SLOTS_G => NUM_KPIX_MODULES_G+1,
          MASTERS_CONFIG_G   => AXIL_DATA_XBAR_CONFIG_C)
       port map (
          axiClk              => clk200,
@@ -305,7 +305,7 @@ begin
    U_EventBuilder_1 : entity work.EventBuilder
       generic map (
          TPD_G              => TPD_G,
-         NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G+1)
+         NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
       port map (
          clk200              => clk200,               -- [in]
          rst200              => rst200,               -- [in]

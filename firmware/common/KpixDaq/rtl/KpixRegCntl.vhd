@@ -60,8 +60,8 @@ entity KpixRegCntl is
       kpixSerRxIn  : in  slv(NUM_KPIX_MODULES_G downto 0);  -- This should be synchronized to clk200 externally
       kpixResetOut : out sl;
 
-      temperature : out Slv8Array(NUM_KPIX_MODULES_G-1 downto 0);
-      tempCount   : out Slv12Array(NUM_KPIX_MODULES_G-1 downto 0));
+      temperature : out Slv8Array(NUM_KPIX_MODULES_G downto 0);
+      tempCount   : out Slv12Array(NUM_KPIX_MODULES_G downto 0));
 
 end entity KpixRegCntl;
 
@@ -176,18 +176,18 @@ begin
 
                   else
                      -- Register access, format output word
-                     v.txShiftReg                               := (others => '0');  -- Simplifies parity calc
-                     v.txShiftReg(KPIX_MARKER_RANGE_C)          := KPIX_MARKER_C;
-                     v.txShiftReg(KPIX_FRAME_TYPE_INDEX_C)      := KPIX_CMD_RSP_FRAME_C;
-                     v.txShiftReg(KPIX_ACCESS_TYPE_INDEX_C)     := KPIX_REG_ACCESS_C;
-                     v.txShiftReg(KPIX_WRITE_INDEX_C)           := axiStatus.writeEnable;
+                     v.txShiftReg                           := (others => '0');  -- Simplifies parity calc
+                     v.txShiftReg(KPIX_MARKER_RANGE_C)      := KPIX_MARKER_C;
+                     v.txShiftReg(KPIX_FRAME_TYPE_INDEX_C)  := KPIX_CMD_RSP_FRAME_C;
+                     v.txShiftReg(KPIX_ACCESS_TYPE_INDEX_C) := KPIX_REG_ACCESS_C;
+                     v.txShiftReg(KPIX_WRITE_INDEX_C)       := axiStatus.writeEnable;
                      if (axiStatus.writeEnable = '1') then
                         v.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := bitReverse(axilWriteMaster.awaddr(REG_ADDR_RANGE_C));
                      else
                         v.txShiftReg(KPIX_CMD_ID_REG_ADDR_RANGE_C) := bitReverse(axilReadMaster.araddr(REG_ADDR_RANGE_C));
                      end if;
 
-                     v.txShiftReg(KPIX_DATA_RANGE_C)            := bitReverse(axilWriteMaster.wdata);
+                     v.txShiftReg(KPIX_DATA_RANGE_C) := bitReverse(axilWriteMaster.wdata);
                      if (axiStatus.readEnable = '1') then  -- Override data field with 0s if doing a read
                         v.txShiftReg(KPIX_DATA_RANGE_C) := (others => '0');
                      end if;
@@ -356,6 +356,8 @@ begin
       temperature(i) <= kpixRegRxOut(i).temperature;
       tempCount(i)   <= kpixRegRxOut(i).tempCount;
    end generate;
+   temperature(NUM_KPIX_MODULES_G) <= (others => '0');
+   tempCount(NUM_KPIX_MODULES_G)   <= (others => '0');
 
 
 end architecture rtl;

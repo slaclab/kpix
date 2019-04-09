@@ -179,7 +179,6 @@ architecture rtl of KpixDataRx is
       overflowErrorCount     => (others => '0'),
       frameCount             => (others => '0'),
       dataParityError        => '0',
-      arrivalTimes           => (others => (others => '0')),
       resetCounters          => '0',
       firstRuntime           => (others => '0'),
       rxShiftData            => (others => '0'),
@@ -314,7 +313,7 @@ begin
                   -- Latch the current runtime when the very first frame is seen
                   -- This is used later to help detect asynchronicity in output
                   if (v.rxRowId = 0 and v.rxWordId = 0) then
-                     v.rxRuntime := acqControl.runtime(31 downto 0);
+                     v.firstRuntime := acqControl.runtime(31 downto 0);
                   end if;
 
                   if (r.rxShiftData(KPIX_MARKER_RANGE_C) /= KPIX_MARKER_C) then
@@ -325,7 +324,7 @@ begin
                   elsif (r.rxShiftData(KPIX_FRAME_TYPE_INDEX_C) = KPIX_CMD_RSP_FRAME_C) then
                      -- Response frame, not data
                      v.rxState   := RX_RESP_S;
-                     v.rxRuntime := r.rxRuntime;
+                     v.firstRuntime := r.firstRuntime;
 
                   elsif (evenParity(r.rxShiftData(KPIX_FULL_HEADER_RANGE_C)) = '0') then
                      -- Header Parity error
@@ -571,7 +570,8 @@ begin
 
          when TX_RUNTIME_S =>
             v.kpixDataRxMaster.tdata(63 downto 60) := RUNTIME_SAMPLE_C;
-            v.kpixDataRxMaster.tdata(31 downto 0)  := r.rxRuntime;
+            v.kpixDataRxMaster.tdata(59 downto 48) := toSlv(KPIX_ID_G, 12);            
+            v.kpixDataRxMaster.tdata(31 downto 0)  := r.firstRuntime;
             v.kpixDataRxMaster.tdata(63 downto 0)  := v.kpixDataRxMaster.tdata(31 downto 0) & v.kpixDataRxMaster.tdata(63 downto 32);
             v.kpixDataRxMaster.tvalid              := '1';
             v.kpixDataRxMaster.tlast               := '1';
