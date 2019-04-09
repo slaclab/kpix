@@ -49,6 +49,8 @@ class KpixAsicArray(pr.Device):
             offset = 0x100000 + (numKpix*0x1000),
             enabled = True,
             expand = False))
+        
+        self.KpixAsic[numKpix].enable.addListener(sysConfig.KpixEnableUpdate)
 
 #     def readBlocks(self, recurse=True, variable=None, checkEach=False):
 #         self._root.checkBlocks()

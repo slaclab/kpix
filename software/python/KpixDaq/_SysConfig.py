@@ -26,7 +26,7 @@ class SysConfig(pr.Device):
             bitSize=1,
             base=pr.Bool))
 
-        for i in range(numKpix):
+        for i in range(numKpix+1):
             self.add(pr.RemoteVariable(
                 name = f'KpixEnable[{i}]',
                 mode = 'RW',
