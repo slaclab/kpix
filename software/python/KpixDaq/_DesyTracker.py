@@ -28,8 +28,10 @@ class DesyTrackerRoot(pyrogue.Root):
         
         else:
             if sim:
-                dest0 = pyrogue.interfaces.simulation.StreamSim(host='localhost', dest=0, uid=1, ssi=True)
-                dest1 = pyrogue.interfaces.simulation.StreamSim(host='localhost', dest=1, uid=1, ssi=True)
+                dest0 = rogue.interfaces.stream.TcpClient('localhost', 9000)
+                dest1 = rogue.interfaces.stream.TcpClient('localhost', 9002)
+                rssiEn = False
+                pollEn = False
             
             else:
                 udp = pyrogue.protocols.UdpRssiPack( host=ip, port=8192, packVer=2 )                

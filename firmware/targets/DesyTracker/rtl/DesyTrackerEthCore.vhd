@@ -33,10 +33,11 @@ use unisim.vcomponents.all;
 
 entity DesyTrackerEthCore is
    generic (
-      TPD_G        : time             := 1 ns;
-      SIMULATION_G : boolean          := false;
-      DHCP_G       : boolean          := false;         -- true = DHCP, false = static address
-      IP_ADDR_G    : slv(31 downto 0) := x"0A01A8C0");  -- 192.168.1.10 (before DHCP)
+      TPD_G          : time             := 1 ns;
+      SIMULATION_G   : boolean          := false;
+      SIM_PORT_NUM_G : integer          := 9000;
+      DHCP_G         : boolean          := false;         -- true = DHCP, false = static address
+      IP_ADDR_G      : slv(31 downto 0) := x"0A01A8C0");  -- 192.168.1.10 (before DHCP)
    port (
       refClkOut        : out sl;
       -- AXI-Lite Interface (clk200 domain)
@@ -323,23 +324,18 @@ begin
 
    SIM_GEN : if (SIMULATION_G) generate
       DESTS : for i in 1 downto 0 generate
-         U_RogueStreamSimWrap_1 : entity work.RogueStreamSimWrap
+         U_RogueTcpStreamWrap_1 : entity work.RogueTcpStreamWrap
             generic map (
-               TPD_G               => TPD_G,
-               DEST_ID_G           => i,
-               USER_ID_G           => 1,
-               COMMON_MASTER_CLK_G => true,
-               COMMON_SLAVE_CLK_G  => true,
-               AXIS_CONFIG_G       => AXIS_CONFIG_C)
+               TPD_G         => TPD_G,
+               PORT_NUM_G    => SIM_PORT_NUM_G + i*2,
+               SSI_EN_G      => true,
+               CHAN_COUNT_G  => 1,
+               AXIS_CONFIG_G => AXIS_CONFIG_C)
             port map (
-               clk         => ethClk,            -- [in]
-               rst         => ethRst,            -- [in]
-               sAxisClk    => ethClk,            -- [in]
-               sAxisRst    => ethRst,            -- [in]
+               axisClk     => ethClk,            -- [in]
+               axisRst     => ethRst,            -- [in]
                sAxisMaster => rssiIbMasters(i),  -- [in]
                sAxisSlave  => rssiIbSlaves(i),   -- [out]
-               mAxisClk    => ethClk,            -- [in]
-               mAxisRst    => ethRst,            -- [in]
                mAxisMaster => rssiObMasters(i),  -- [out]
                mAxisSlave  => rssiObSlaves(i));  -- [in]
       end generate;
