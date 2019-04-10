@@ -76,7 +76,6 @@ architecture rtl of AcquisitionControl is
       extAcquisitionEn       : sl;
       extStartSrc            : slv(2 downto 0);
       extStartEn             : sl;
-      swAcquisition          : sl;
       calibrate              : sl;
       axilWriteSlave         : AxiLiteWriteSlaveType;
       axilReadSlave          : AxiLiteReadSlaveType;
@@ -91,6 +90,8 @@ architecture rtl of AcquisitionControl is
       readoutPending         : sl;
       readoutCounter         : slv(7 downto 0);
       readoutCountEnable     : sl;
+      extCounters            : slv31Array(7 downto 0);
+      countReset             : sl;
       -- Outputs
       acqControl             : AcquisitionControlType;
    end record;
@@ -104,7 +105,6 @@ architecture rtl of AcquisitionControl is
       extAcquisitionEn       => '0',
       extStartSrc            => (others => '0'),
       extStartEn             => '0',
-      swAcquisition          => '0',
       calibrate              => '0',
       axilWriteSlave         => AXI_LITE_WRITE_SLAVE_INIT_C,
       axilReadSlave          => AXI_LITE_READ_SLAVE_INIT_C,
@@ -118,6 +118,8 @@ architecture rtl of AcquisitionControl is
       readoutPending         => '0',
       readoutCounter         => (others => '0'),
       readoutCountEnable     => '0',
+      extCounters            => (others => (others => '0')),
+      countReset             => '0',
       acqControl             => ACQUISITION_CONTROL_INIT_C);
 
    signal r   : RegType := REG_INIT_C;
@@ -158,7 +160,16 @@ begin
    begin
       v := r;
 
-      v.swAcquisition := '0';
+      v.countReset := '0';
+
+      for i in 7 downto 0 loop
+         if (extTriggerRise(i) = '1') then
+            v.extCounters(i) := r.extCounters(i) + 1;
+         end if;
+      end loop;
+      if (r.countReset = '1') then
+         v.extCounters := (others => (others => '0'));
+      end if;
 
       ----------------------------------------------------------------------------------------------
       -- AXI Lite
@@ -166,20 +177,23 @@ begin
       axiSlaveWaitTxn(axilEp, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
 
       axiSlaveRegister(axilEp, x"00", 0, v.extTriggerSrc);
+      axiSlaveRegister(axilEp, X"00", 3, v.extTriggerEn);      
       axiSlaveRegister(axilEp, x"04", 0, v.extTimestampSrc);
+      axiSlaveRegister(axilEp, X"04", 3, v.extTimestampEn);      
       axiSlaveRegister(axilEp, X"08", 0, v.extAcquisitionSrc);
+      axiSlaveRegister(axilEp, X"08", 3, v.extAcquisitionEn);      
       axiSlaveRegister(axilEp, X"0C", 0, v.extStartSrc);
-
-      axiSlaveRegister(axilEp, X"10", 0, v.extTriggerEn);
-      axiSlaveRegister(axilEp, X"10", 1, v.extTimestampEn);
-      axiSlaveRegister(axilEp, X"10", 2, v.extAcquisitionEn);
-      axiSlaveRegister(axilEp, X"10", 3, v.extStartEn);
+      axiSlaveRegister(axilEp, X"0C", 3, v.extStartEn);
 
       axiSlaveRegisterR(axilEp, X"14", 0, r.acqControl.runTime);
 
       axiSlaveRegister(axilEp, X"20", 0, v.calibrate);
 
---      axiSlaveRegister(axilEp, X"14", 0, v.swAcquisition);
+
+      axiSlaveRegister(axilEp, X"24", 0, v.countReset);
+      for i in 7 downto 0 loop
+         axiSlaveRegisterR(axilEp, X"30"+toSlv(i*4, 8), 0, r.extCounters(i));
+      end loop;
 
       axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
 
@@ -243,9 +257,7 @@ begin
       ------------------------------------------------------------------------------------------------
       -- Acquire Command
       ------------------------------------------------------------------------------------------------
-      if ((r.swAcquisition = '1') or
-          (r.extAcquisitionEn = '1' and extTriggerRise(conv_integer(r.extAcquisitionSrc)) = '1'))
-      then
+      if (r.extAcquisitionEn = '1' and extTriggerRise(conv_integer(r.extAcquisitionSrc)) = '1') then
          v.acqControl.startAcquire   := '1';
          v.acqControl.startCalibrate := r.calibrate;
          v.acquisitionCountEnable    := '1';
@@ -266,10 +278,10 @@ begin
       -- Start Command
       ----------------------------------------------------------------------------------------------
       v.acqControl.startRun := '0';
-      v.acqControl.runTime             := r.acqControl.runTime + 1;
+      v.acqControl.runTime  := r.acqControl.runTime + 1;
       if (r.extStartEn = '1' and extTriggerRise(conv_integer(r.extStartSrc)) = '1') then
          v.acqControl.startRun := '1';
-         v.acqControl.runTime             := (others => '0');
+         v.acqControl.runTime  := (others => '0');
       end if;
 
       ----------------------------------------------------------------------------------------------
@@ -306,13 +318,13 @@ begin
          SLAVE_AXI_CONFIG_G  => TIMESTAMP_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => TIMESTAMP_AXIS_CONFIG_C)
       port map (
-         sAxisClk    => clk200,               -- [in]
-         sAxisRst    => rst200,               -- [in]
-         sAxisMaster => axisMaster,           -- [in]
-         sAxisCtrl   => axisCtrl,             -- [out]
-         mAxisClk    => clk200,               -- [in]
-         mAxisRst    => rst200,               -- [in]
-         mAxisMaster => timestampAxisMaster,  -- [out]
-         mAxisSlave  => timestampAxisSlave);  -- [in]
+         sAxisClk    => clk200,                                          -- [in]
+         sAxisRst    => rst200,                                          -- [in]
+         sAxisMaster => axisMaster,                                      -- [in]
+         sAxisCtrl   => axisCtrl,                                        -- [out]
+         mAxisClk    => clk200,                                          -- [in]
+         mAxisRst    => rst200,                                          -- [in]
+         mAxisMaster => timestampAxisMaster,                             -- [out]
+         mAxisSlave  => timestampAxisSlave);                             -- [in]
 
 end architecture rtl;

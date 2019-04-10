@@ -7,12 +7,16 @@ class AcquisitionControl(pr.Device):
         if extTrigEnum is None:
             extTrigEnum = {x:str(x) for x in range(8)}
 
-#         for k,v in extTrigEnum.items():
-#             extTrigEnum.pop(k)
-#             n = k | 0b1000
-#             extTrigEnum[n] = k
+        print(extTrigEnum)
+            
+        for k in list(extTrigEnum.keys()):
+            v = extTrigEnum.pop(k)
+            k1 = k | 0b1000
+            extTrigEnum[k1] = v
 
-#         extTrigEnum
+        extTrigEnum[0] = 'Disabled'
+
+        print(extTrigEnum)
 
         self.add(pr.RemoteVariable(
             name = "RunTime",
@@ -21,131 +25,38 @@ class AcquisitionControl(pr.Device):
             bitSize = 64,
             base = pr.UInt))
 
-        extTrigList = ['Disabled'] + list(extTrigEnum.values())
-        
-        def extSet(dev, var, value, write):
-            if value == 'Disabled':
-                var.dependencies[0].set(0, write=write)
-                var.dependencies[1].set(False, write=write)
-                
-            else:
-                print(f'Setting {var.dependencies[0].path}.setDisp({value})')
-                var.dependencies[0].setDisp(value)
-                var.dependencies[1].set(True)
-
-        def extGet(var):
-            if var.dependencies[1] is False:
-                return 'Disabled'
-            else:
-                return var.dependencies[0].valueDisp()
-
-
         self.add(pr.RemoteVariable(
-            name = 'ExtTrigSrcRaw',
-            mode = 'RW',
-            hidden = True,
-            offset= 0x00,
-            bitOffset=0,
-            bitSize=3,
-            enum = extTrigEnum))
-
-        self.add(pr.RemoteVariable(
-            name = 'ExtTrigEn',
-            mode = 'RW',
-            hidden = True,
-            offset= 0x10,
-            bitOffset=0,
-            bitSize=1,
-            base=pr.Bool))
-
-        self.add(pr.LinkVariable(
             name = 'ExtTrigSrc',
             mode = 'RW',
-            dependencies = [self.ExtTrigSrcRaw, self.ExtTrigEn],
-            disp = extTrigList,
-            linkedGet = extGet,
-            linkedSet = extSet))
-
-        self.add(pr.RemoteVariable(
-            name = 'ExtTimestampSrcRaw',
-            mode = 'RW',
-            hidden = True,
-            offset= 0x04,
+            offset= 0x00,
             bitOffset=0,
-            bitSize=3,
+            bitSize=4,
             enum = extTrigEnum))
-        
-        self.add(pr.RemoteVariable(
-            name = 'ExtTimestampEn',
-            mode = 'RW',
-            hidden = True,
-            offset= 0x10,
-            bitOffset=1,
-            bitSize=1,
-            base=pr.Bool))
 
-        self.add(pr.LinkVariable(
+        self.add(pr.RemoteVariable(
             name = 'ExtTimestampSrc',
             mode = 'RW',
-            dependencies = [self.ExtTimestampSrcRaw, self.ExtTimestampEn],
-            disp = extTrigList,
-            linkedGet = extGet,
-            linkedSet = extSet))
-        
-
-        self.add(pr.RemoteVariable(
-            name = 'ExtAcquisitionSrcRaw',
-            mode = 'RW',
-            hidden = True,
-            offset= 0x08,
+            offset= 0x04,
             bitOffset=0,
-            bitSize=3,
+            bitSize=4,
             enum = extTrigEnum))
-
+        
         self.add(pr.RemoteVariable(
-            name = 'ExtAcquisitionEn',
-            mode = 'RW',
-            hidden = True,
-            offset= 0x10,
-            bitOffset=2,
-            bitSize=1,
-            base=pr.Bool))
-
-        self.add(pr.LinkVariable(
             name = 'ExtAcquisitionSrc',
             mode = 'RW',
-            dependencies = [self.ExtAcquisitionSrcRaw, self.ExtAcquisitionEn],
-            disp = extTrigList,
-            linkedGet = extGet,
-            linkedSet = extSet))
-        
-
-        self.add(pr.RemoteVariable(
-            name = 'ExtStartSrcRaw',
-            mode = 'RW',
-            hidden = True,
-            offset= 0x0C,
+            offset= 0x08,
             bitOffset=0,
-            bitSize=3,
+            bitSize=4,
             enum = extTrigEnum))
 
         self.add(pr.RemoteVariable(
-            name = 'ExtStartEn',
-            mode = 'RW',
-            hidden = True,
-            offset= 0x10,
-            bitOffset=3,
-            bitSize=1,
-            base=pr.Bool))
-
-        self.add(pr.LinkVariable(
             name = 'ExtStartSrc',
             mode = 'RW',
-            dependencies = [self.ExtStartSrcRaw, self.ExtStartEn],
-            disp = extTrigList,
-            linkedGet = extGet,
-            linkedSet = extSet))
-        
+            offset= 0x0C,
+            bitOffset=0,
+            bitSize=4,
+            enum = extTrigEnum))
+
 
         self.add(pr.RemoteVariable(
             name = 'Calibrate',
