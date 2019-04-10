@@ -5,7 +5,8 @@ class SysConfig(pr.Device):
 
     def KpixEnableUpdate(self, path, value, disp):
         index = int(re.search('.*?KpixAsic\\[(.*?)\\]', path).groups()[0])
-        self.KpixEnable[index].set(value, write=True)
+        if self.KpixEnable[index].value() != value:
+            self.KpixEnable[index].set(value, write=True)
     
     def __init__(self, numKpix, **kwargs):
         super().__init__(**kwargs)
