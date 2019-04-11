@@ -4,8 +4,12 @@ class AcquisitionControl(pr.Device):
     def __init__(self, extTrigEnum=None, **kwargs):
         super().__init__(**kwargs)
 
+
+
         if extTrigEnum is None:
             extTrigEnum = {x:str(x) for x in range(8)}
+
+        origExtTrigEnum = extTrigEnum.copy()
 
         print(extTrigEnum)
             
@@ -66,7 +70,7 @@ class AcquisitionControl(pr.Device):
             bitSize=1,
             base=pr.Bool))
 
-        for k,v in extTrigEnum.items():
+        for k,v in origExtTrigEnum.items():
             self.add(pr.RemoteVariable(
                 name = f'{v}RisingEdgeCount',
                 mode = 'RO',
