@@ -5,12 +5,15 @@ import pyrogue
 import rogue.utilities
 import rogue.utilities.fileio
 
+pyrogue.addLibraryPath('../python/')
+pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
+
 import KpixDaq
 
 rogue.Logging.setFilter('LegacyStreamReader', rogue.Logging.Debug)
 
 reader = rogue.utilities.fileio.LegacyStreamReader()
-parser = KpixDaq.KpixCalibration()
+parser = KpixDaq.KpixRunAnalyzer()
 
 pyrogue.streamConnect(reader, parser)
 
