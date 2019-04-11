@@ -140,6 +140,7 @@ architecture rtl of KpixDataRx is
       frameCount             : slv(31 downto 0);
       dataParityError        : sl;
       resetCounters          : sl;
+      waitingAcquisitionData : sl;
       firstRuntime           : slv(31 downto 0);
       -- RX
       rxShiftData            : slv(0 to SHIFT_REG_LENGTH_C-1);  -- Upward indexed to match documentation
@@ -180,6 +181,7 @@ architecture rtl of KpixDataRx is
       frameCount             => (others => '0'),
       dataParityError        => '0',
       resetCounters          => '0',
+      waitingAcquisitionData => '0',
       firstRuntime           => (others => '0'),
       rxShiftData            => (others => '0'),
       rxShiftCount           => (others => '0'),
@@ -281,6 +283,20 @@ begin
       axilReadSlave  <= r.axilReadSlave;
 
       ----------------------------------------------------------------------------------------------
+      -- Grab runtime of first data bit received after an acquire command
+      ----------------------------------------------------------------------------------------------
+      if (sysConfig.kpixEnable(KPIX_ID_G) = '1') then
+         if (acqControl.startAcquire = '1') then
+            v.waitingAcquisitionData := '1';
+         end if;
+
+         if (r.waitingAcquisitionData = '1' and kpixSerRxIn = '1') then
+            v.waitingAcquisitionData := '0';
+            v.firstRuntime           := acqControl.runtime(31 downto 0);
+         end if;
+      end if;
+      
+      ----------------------------------------------------------------------------------------------
       -- RX Logic
       ----------------------------------------------------------------------------------------------
       -- Don't write to RAM unless overriden in rx state machine
@@ -310,12 +326,6 @@ begin
                   v.rxColumnCount := (others => '0');
                   v.rxState       := RX_ROW_ID_S;
 
-                  -- Latch the current runtime when the very first frame is seen
-                  -- This is used later to help detect asynchronicity in output
-                  if (v.rxRowId = 0 and v.rxWordId = 0) then
-                     v.firstRuntime := acqControl.runtime(31 downto 0);
-                  end if;
-
                   if (r.rxShiftData(KPIX_MARKER_RANGE_C) /= KPIX_MARKER_C) then
                      -- Invalid Marker
                      v.markerErrorCount := r.markerErrorCount + 1;
@@ -323,8 +333,7 @@ begin
 
                   elsif (r.rxShiftData(KPIX_FRAME_TYPE_INDEX_C) = KPIX_CMD_RSP_FRAME_C) then
                      -- Response frame, not data
-                     v.rxState   := RX_RESP_S;
-                     v.firstRuntime := r.firstRuntime;
+                     v.rxState := RX_RESP_S;
 
                   elsif (evenParity(r.rxShiftData(KPIX_FULL_HEADER_RANGE_C)) = '0') then
                      -- Header Parity error
@@ -570,7 +579,7 @@ begin
 
          when TX_RUNTIME_S =>
             v.kpixDataRxMaster.tdata(63 downto 60) := RUNTIME_SAMPLE_C;
-            v.kpixDataRxMaster.tdata(59 downto 48) := toSlv(KPIX_ID_G, 12);            
+            v.kpixDataRxMaster.tdata(59 downto 48) := toSlv(KPIX_ID_G, 12);
             v.kpixDataRxMaster.tdata(31 downto 0)  := r.firstRuntime;
             v.kpixDataRxMaster.tdata(63 downto 0)  := v.kpixDataRxMaster.tdata(31 downto 0) & v.kpixDataRxMaster.tdata(63 downto 32);
             v.kpixDataRxMaster.tvalid              := '1';
