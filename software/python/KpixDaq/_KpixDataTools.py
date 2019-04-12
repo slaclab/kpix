@@ -54,17 +54,22 @@ def parseSample(ba):
     value = int.from_bytes(ba, 'little', signed=False)
 
     d = {}
-    d['row'] = getField(value, 4, 0)        
-    d['col'] = getField(value, 9, 5)
-    d['bucket'] = getField(value, 11, 10)
-    #d['triggerFlag'] = getField(value, 12, 12)
-    #d['rangeFlag'] = getField(value, 13, 13)
-    #d['badCountFlag'] = getField(value, 14, 14)
-    #d['emptyFlag'] = getField(value, 15, 15)
-    d['kpixId'] = getField(value, 27, 16)
+
     d['type'] = getField(value, 31, 28)
-    d['adc'] = getField(value, 44, 32)
-    d['timestamp'] = getField(value, 60, 48)
+    d['kpixId'] = getField(value, 27, 16)
+    
+    if d['type'] == 2:
+        d['firstRuntime'] = getField(value, 63, 32)
+    else:
+        d['row'] = getField(value, 4, 0)        
+        d['col'] = getField(value, 9, 5)
+        d['bucket'] = getField(value, 11, 10)
+        #d['triggerFlag'] = getField(value, 12, 12)
+        #d['rangeFlag'] = getField(value, 13, 13)
+        #d['badCountFlag'] = getField(value, 14, 14)
+        #d['emptyFlag'] = getField(value, 15, 15)
+        d['adc'] = getField(value, 44, 32)
+        d['timestamp'] = getField(value, 60, 48)
     return d
 
 
@@ -87,7 +92,7 @@ def parseFrame(ba):
     for raw in data:
         sample = parseSample(raw)
         if sample['type'] == 2:
-            print(f"Found runtime sample: {sample['kpixId']} {sample['adc']:#08x}")
+            print(f"Found runtime sample: {sample['kpixId']} {sample['firstRuntime']:#08x} diff: {sample['firstRuntime']-(timestamp&0xFFFFFFFF)}")
             
             #d['data'] = rawSamples#(KpixSample(rawSamples[i:i+8].ctypes.data_as(ctypes.POINTER(ctypes.c_uint64)).contents.value)
                 # for i in range(0, len(rawSamples), 8))

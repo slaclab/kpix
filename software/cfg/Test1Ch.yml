@@ -20,10 +20,10 @@ DesyTrackerRoot:
         AutoReadDisable: 'False'
       KpixClockGen:
         enable: 'True'
-        ClkSelReadout: '0x13'
-        ClkSelDigitize: '0x9'
+        ClkSelReadout: '0x20'
+        ClkSelDigitize: '0x20'
         ClkSelAcquire: '0x3f'
-        ClkSelIdle: '0x09'
+        ClkSelIdle: '0x020'
         ClkSelPrecharge: '0x4af'
       AcquisitionControl:
         enable: 'True'
@@ -46,7 +46,7 @@ DesyTrackerRoot:
           TimeLeakageNullOff: 1
           TimeDeselDelay: 18
           TimeBunchClkDelay: 3000
-          TimeDigitizeDelay: 0x0
+          TimeDigitizeDelay: 0x1
           TimePowerUpOn: 11
           TimePowerUpDigOn: 11          
           TimeThreshOff: 2600
