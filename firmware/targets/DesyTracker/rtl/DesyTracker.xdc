@@ -19,7 +19,7 @@ create_clock -name tluClk -period 25.000 [get_ports {tluClkP}]
 create_generated_clock -name tluClk200 [get_pins {U_TluMonitor_1/U_MMCM/PllGen.U_Pll/CLKOUT0}]
 
 #create_generated_clock -name clk200 [get_pins {CLKMUX/O}]
-create_generated_clock -name muxEthClk200 -divide_by 1 -source [get_pins {U_TluMonitor_1/CLKMUX/I0}] [get_pins {U_TluMonitor_1/CLKMUX/O}]
+create_generated_clock -name muxEthClk200 -divide_by 1 -add -master_clock ethClk200 -source [get_pins {U_TluMonitor_1/CLKMUX/I0}] [get_pins {U_TluMonitor_1/CLKMUX/O}]
 create_generated_clock -name muxTluClk200 -divide_by 1 -add -master_clock tluClk200 -source [get_pins {U_TluMonitor_1/CLKMUX/I1}] [get_pins {U_TluMonitor_1/CLKMUX/O}]
 set_clock_groups -physically_exclusive -group muxEthClk200 -group muxTluClk200
 #set_clock_groups -logically_exclusive -group ethClk200 -group tluClk200
@@ -74,6 +74,11 @@ set_property -dict { PACKAGE_PIN G24 IOSTANDARD LVDS_25 } [get_ports { tluBusyP 
 set_property -dict { PACKAGE_PIN F24 IOSTANDARD LVDS_25 } [get_ports { tluBusyN }];
 
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {tluClkP}]
+
+set_input_delay -clock tluClk 3 [get_ports {tluSpillP}]
+set_input_delay -clock tluClk 3 [get_ports {tluStartP}]
+set_input_delay -clock tluClk 3 [get_ports {tluTriggerP}]
+
 
 # KPIX IO
 set_property -dict { PACKAGE_PIN M24  IOSTANDARD LVDS_25 } [get_ports { kpixClkP[0] }];
@@ -148,6 +153,11 @@ set_property -dict { PACKAGE_PIN AC21 IOSTANDARD LVCMOS25 } [get_ports { kpixDat
 set_property -dict { PACKAGE_PIN AE21 IOSTANDARD LVCMOS25 } [get_ports { kpixData[3][3] }];
 set_property -dict { PACKAGE_PIN AF25 IOSTANDARD LVCMOS25 } [get_ports { kpixData[3][4] }];
 set_property -dict { PACKAGE_PIN AE26 IOSTANDARD LVCMOS25 } [get_ports { kpixData[3][5] }];
+
+set_input_delay -clock kpixClk 2 [get_ports kpixData[*][*]];
+set_output_delay -clock kpixClk 2 [get_ports kpixCmd[*][*]];
+set_output_delay -clock kpixClk 2 [get_ports kpixTrigP[*]];
+set_output_delay -clock kpixClk 2 [get_ports kpixClkP[*]];
 
 # Cassette I2C
 set_property -dict { PACKAGE_PIN M21 IOSTANDARD LVCMOS25 } [get_ports { cassetteSda[0] }];
