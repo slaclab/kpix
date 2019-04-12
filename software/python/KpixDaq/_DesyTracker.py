@@ -301,7 +301,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             #self.root.DataWriter.getDataChannel().getFrameCount()
           
             if self.runRate.valueDisp() == 'Auto':
-                if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 1.0e6):
+                if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 1000000):
                     print('Timed out waiting for data')
                     return
 
