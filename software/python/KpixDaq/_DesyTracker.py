@@ -13,7 +13,7 @@ import surf.protocols.rssi
 import surf.devices.linear
 import surf.devices.nxp
 import surf.xilinx
-#import surf.devices.micron
+import surf.devices.micron
 
 import KpixDaq
 
@@ -201,14 +201,11 @@ class DesyTracker(pyrogue.Device):
             self.add(surf.protocols.rssi.RssiCore(
                 offset = 0x02000000,
                 expand = False))
-            
 
-
-
-#         self.add(surf.devices.micron.AxiMicronN25Q(
-#             offset = 0x06000000,
-#             addrMode = False,
-#             hidden = True))
+        self.add(surf.devices.micron.AxiMicronN25Q(
+            offset = 0x05000000,
+            addrMode = False,
+            hidden = True))
 
 class DesyTrackerRunControl(pyrogue.RunControl):
     def __init__(self, **kwargs):
