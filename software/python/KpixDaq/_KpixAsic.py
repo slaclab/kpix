@@ -17,6 +17,8 @@ class KpixAsic(pr.Device):
     def __init__(self, sysConfig=None, version=12, **kwargs):
         super().__init__(**kwargs)
 
+        self.forceCheckEach = True
+
         self.calChannel = 0
 
         STATUS = 0x0000*4
