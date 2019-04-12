@@ -569,7 +569,6 @@ begin
             v.kpixDataRxMaster.tdata(63 downto 0)  := v.kpixDataRxMaster.tdata(31 downto 0) & v.kpixDataRxMaster.tdata(63 downto 32);
             v.kpixDataRxMaster.tvalid              := '1';
             v.kpixDataRxMaster.tlast               := '0';
-            v.frameCount                           := r.frameCount + 1;
             if (r.kpixDataRxMaster.tvalid = '1' and kpixDataRxSlave.tready = '1') then
                v.kpixDataRxMaster.tvalid := '0';
                v.kpixDataRxMaster.tlast  := '0';
@@ -588,6 +587,7 @@ begin
                v.kpixDataRxMaster.tvalid := '0';
                v.kpixDataRxMaster.tlast  := '1';
 --               v.kpixDataRxMaster.busy   := '0';
+               v.frameCount                           := r.frameCount + 1;               
                v.txState                 := TX_CLEAR_S;
             end if;
       end case;
