@@ -290,7 +290,7 @@ begin
             v.waitingAcquisitionData := '1';
          end if;
 
-         if (r.waitingAcquisitionData = '1' and kpixSerRxIn = '1') then
+         if (r.waitingAcquisitionData = '1' and kpixSerRxIn = '1' and kpixClkPreFall = '1') then
             v.waitingAcquisitionData := '0';
             v.firstRuntime           := acqControl.runtime(31 downto 0);
          end if;
@@ -584,6 +584,7 @@ begin
             v.kpixDataRxMaster.tvalid              := '1';
             v.kpixDataRxMaster.tlast               := '1';
             if (r.kpixDataRxMaster.tvalid = '1' and kpixDataRxSlave.tready = '1') then
+               v.firstRuntime := (others => '0');
                v.kpixDataRxMaster.tvalid := '0';
                v.kpixDataRxMaster.tlast  := '1';
 --               v.kpixDataRxMaster.busy   := '0';
