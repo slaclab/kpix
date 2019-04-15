@@ -75,9 +75,9 @@ set_property -dict { PACKAGE_PIN F24 IOSTANDARD LVDS_25 } [get_ports { tluBusyN 
 
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {tluClkP}]
 
-set_input_delay -clock tluClk 3 [get_ports {tluSpillP}]
-set_input_delay -clock tluClk 3 [get_ports {tluStartP}]
-set_input_delay -clock tluClk 3 [get_ports {tluTriggerP}]
+#set_input_delay -clock tluClk 10 [get_ports {tluSpillP}]
+#set_input_delay -clock tluClk 10 [get_ports {tluStartP}]
+#set_input_delay -clock tluClk 10 [get_ports {tluTriggerP}]
 
 
 # KPIX IO
@@ -154,10 +154,12 @@ set_property -dict { PACKAGE_PIN AE21 IOSTANDARD LVCMOS25 } [get_ports { kpixDat
 set_property -dict { PACKAGE_PIN AF25 IOSTANDARD LVCMOS25 } [get_ports { kpixData[3][4] }];
 set_property -dict { PACKAGE_PIN AE26 IOSTANDARD LVCMOS25 } [get_ports { kpixData[3][5] }];
 
-set_input_delay -clock kpixClk 2 [get_ports kpixData[*][*]];
-set_output_delay -clock kpixClk 2 [get_ports kpixCmd[*][*]];
-set_output_delay -clock kpixClk 2 [get_ports kpixTrigP[*]];
-set_output_delay -clock kpixClk 2 [get_ports kpixClkP[*]];
+set_input_delay -clock kpixClk 6 [get_ports kpixData[*][*]];
+set_output_delay -clock kpixClk 6 [get_ports kpixCmd[*][*]];
+set_output_delay -clock kpixClk 6 [get_ports kpixTrigP[*]];
+#set_output_delay -clock kpixClk 4 [get_ports kpixClkP[*]];
+set_property IOB TRUE [get_ports kpixCmd[*][*]]
+set_property IOB TRUE [get_ports kpixData[*][*]]
 
 # Cassette I2C
 set_property -dict { PACKAGE_PIN M21 IOSTANDARD LVCMOS25 } [get_ports { cassetteSda[0] }];

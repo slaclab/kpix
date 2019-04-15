@@ -74,7 +74,7 @@ begin
       axiSlaveRegister(axilEp, x"00", 0, v.config.kpixReset);
       axiSlaveRegister(axilEp, x"04", 0, v.config.inputEdge);
       axiSlaveRegister(axilEp, x"04", 1, v.config.outputEdge);
-      axiSlaveRegister(axilEp, X"04", 2, v.config.rawDataMode);
+--      axiSlaveRegister(axilEp, X"04", 2, v.config.rawDataMode);
       axiSlaveRegister(axilEp, X"04", 3, v.config.autoReadDisable);
       axiSlaveRegister(axilEp, X"08", 0, v.config.kpixEnable);
       axiSlaveRegister(axilEp, X"0C", 0, v.config.debugASel);
