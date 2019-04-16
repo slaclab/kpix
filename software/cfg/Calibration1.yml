@@ -8,7 +8,7 @@ DesyTrackerRoot:
 #    bufferSize: '0'
 #    maxFileSize: '0'
   DesyTrackerRunControl:
-    CalMeanCount: 2000
+    CalMeanCount: 500
     CalDacMin: 200
     CalDacMax: 255
     CalDacStep: 5
@@ -32,15 +32,15 @@ DesyTrackerRoot:
 #        KpixEnable: '0x1'
       KpixClockGen:
         enable: 'True'
-        ClkSelReadout: 13
-        ClkSelDigitize: 13
+        ClkSelReadout: 19
+        ClkSelDigitize: 19
         ClkSelAcquire: 31
-        ClkSelIdle: 13
+        ClkSelIdle: 19
         ClkSelPrecharge: 599
       AcquisitionControl:
         enable: 'True'
-        ExtTrigSrc: BncTrig
-        ExtTimestampSrc: BncTrig
+        ExtTrigSrc: Disabled
+        ExtTimestampSrc: Disabled
         ExtAcquisitionSrc: EthAcquire
         ExtStartSrc: EthStart
         Calibrate: 'True'
