@@ -13,7 +13,7 @@ import KpixDaq
 rogue.Logging.setFilter('LegacyStreamReader', rogue.Logging.Debug)
 
 reader = rogue.utilities.fileio.LegacyStreamReader()
-parser = KpixDaq.KpixRunAnalyzer()
+parser = KpixDaq.KpixCalibration()
 
 pyrogue.streamConnect(reader, parser)
 

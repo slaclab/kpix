@@ -8,13 +8,13 @@ DesyTrackerRoot:
 #    bufferSize: '0'
 #    maxFileSize: '0'
   DesyTrackerRunControl:
-    CalMeanCount: 500
+    CalMeanCount: 2000
     CalDacMin: 200
     CalDacMax: 255
     CalDacStep: 5
-    CalDacCount: 10
-    CalChanMin: 500
-    CalChanMax: 600
+    CalDacCount: 5
+    CalChanMin: 0
+    CalChanMax: 1023
 #    CalState: Idle
 #    CalChannel: '0'
 #    CalDac: '0'
@@ -32,19 +32,17 @@ DesyTrackerRoot:
 #        KpixEnable: '0x1'
       KpixClockGen:
         enable: 'True'
-        ClkSelReadout: 9
-        ClkSelDigitize: 9
-        ClkSelAcquire: 63
-        ClkSelIdle: 9
-        ClkSelPrecharge: 1199
+        ClkSelReadout: 13
+        ClkSelDigitize: 13
+        ClkSelAcquire: 31
+        ClkSelIdle: 13
+        ClkSelPrecharge: 599
       AcquisitionControl:
         enable: 'True'
         ExtTrigSrc: BncTrig
-        ExtTrigEn: 'False'
         ExtTimestampSrc: BncTrig
-        ExtTimestampEn: 'False'
         ExtAcquisitionSrc: EthAcquire
-        ExtAcquisitionEn: 'True'
+        ExtStartSrc: EthStart
         Calibrate: 'True'
       KpixAsicArray:
         enable: 'True'
@@ -60,7 +58,7 @@ DesyTrackerRoot:
           TimeLeakageNullOff: 5
           TimeDeselDelay: 91
           TimeBunchClkDelay: 15000
-          TimeDigitizeDelay: 10
+          TimeDigitizeDelay: 4
           TimePowerUpOn: 11
           TimePowerUpDigOn: 11          
           TimeThreshOff: 2600
