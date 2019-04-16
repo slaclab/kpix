@@ -216,7 +216,7 @@ begin
 
                -- Ignore data and temperature samples from the local kpix
                -- Only send the runtime samples through
-               if (r.kpixIndex = NUM_KPIX_MODULES_G and v.ebAxisMaster.tData(63 downto 60) != "0011") then
+               if (r.kpixIndex = NUM_KPIX_MODULES_G and v.ebAxisMaster.tData(63 downto 60) /= "0011") then
                   v.ebAxisMaster.tValid := '0';
                end if;
 
