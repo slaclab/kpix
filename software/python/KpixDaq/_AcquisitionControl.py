@@ -11,16 +11,12 @@ class AcquisitionControl(pr.Device):
 
         origExtTrigEnum = extTrigEnum.copy()
 
-        print(extTrigEnum)
-            
         for k in list(extTrigEnum.keys()):
             v = extTrigEnum.pop(k)
             k1 = k | 0b1000
             extTrigEnum[k1] = v
 
         extTrigEnum[0] = 'Disabled'
-
-        print(extTrigEnum)
 
         self.add(pr.RemoteVariable(
             name = "RunTime",

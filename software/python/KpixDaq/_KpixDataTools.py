@@ -61,7 +61,7 @@ def parseSample(ba):
     d['type'] = getField(value, 31, 28)
     d['kpixId'] = getField(value, 27, 16)
     
-    if d['type'] == 2:
+    if d['type'] == 3:
         d['firstRuntime'] = getField(value, 63, 32)
     else:
         d['row'] = getField(value, 4, 0)        
@@ -96,11 +96,12 @@ def parseFrame(ba):
     for raw in data:
         sample = parseSample(raw)
 
-        if sample['type'] == 2:
+        if sample['kpixId'] == 24:
+            print(f'Found local kpix sample: {sample}')
+
+        if sample['type'] == 3:
             print(f"Found runtime sample: {sample['kpixId']} {sample['firstRuntime']:#08x} diff: {sample['firstRuntime']-(timestamp&0xFFFFFFFF)}")
-        elif sample['type'] == 0:
-            print(f"Found normal sample from kpix: {sample['kpixId']}")
-            
+        else:            
             d['samples'][sample['kpixId']][sample['bucket']][sample['row']][sample['col']] = sample['adc']
             
     return d
@@ -119,22 +120,20 @@ class KpixStreamInfo(rogue.interfaces.stream.Slave):
        print(f'Got Frame: {len(ba)} bytes')
        d = parseFrame(ba)
 
-       print(d.keys())
-
-       for k, kpix in d['samples'].items():
-           print(k)
-           if k == 24: continue
-           print(f'Kpix: {k}')
-           for b, bucket in kpix.items():
-               print(f'Bucket: {b}')
-               for r, row in bucket.items():
-                   l = []
-                   for c in range(32):
-                       if c not in row:
-                           l.append('     ')
-                       else:
-                           l.append(f'{row[c]:04x} ')
-                   print(''.join(l))
+#        for k, kpix in d['samples'].items():
+#            print(k)
+#            if k == 24: continue
+#            print(f'Kpix: {k}')
+#            for b, bucket in kpix.items():
+#                print(f'Bucket: {b}')
+#                for r, row in bucket.items():
+#                    l = []
+#                    for c in range(32):
+#                        if c not in row:
+#                            l.append('     ')
+#                        else:
+#                            l.append(f'{row[c]:04x} ')
+#                    print(''.join(l))
            
            
        

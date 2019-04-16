@@ -18,7 +18,7 @@ import surf.devices.micron
 import KpixDaq
 
 class DesyTrackerRoot(pyrogue.Root):
-    def __init__(self, hwEmu=False, sim=False, rssiEn=True, ip='192.168.1.10', pollEn=False, **kwargs):
+    def __init__(self, debug=False, hwEmu=False, sim=False, rssiEn=True, ip='192.168.1.10', pollEn=False, **kwargs):
         super().__init__(**kwargs)
 
         if hwEmu:
@@ -48,8 +48,9 @@ class DesyTrackerRoot(pyrogue.Root):
             pyrogue.streamConnect(self.cmd, dest1)
             pyrogue.streamConnect(self, dataWriter.getYamlChannel())
 
-            fp = KpixDaq.KpixStreamInfo()
-            pyrogue.streamTap(dest1, fp) 
+            if debug:
+                fp = KpixDaq.KpixStreamInfo()
+                pyrogue.streamTap(dest1, fp) 
 
             self.add(dataWriter)
             self.add(DesyTrackerRunControl())
@@ -263,6 +264,11 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             name = 'CalDac',
             value = 0))
 
+        self.add(pyrogue.LocalVariable(
+            name = 'TimeoutWait',
+            value = 5,
+            units = 'Seconds'))
+
     def waitStopped(self):
         self._thread.join()
 
@@ -288,7 +294,20 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                 self._thread = threading.Thread(target=self._calibrate)
                 self._thread.start()
 
+    def __triggerAndWait(self):
+        self.root.DesyTracker.EthAcquire()
 
+        if self.runRate.valueDisp() == 'Auto':
+            if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, self.TimeoutWait.value()*1000000):
+                print('Timed out waiting for data')
+                return False
+        else:
+            delay = 1.0 / self.runRate.value()
+            time.sleep(delay)
+
+        self.runCount += 1        
+        return True
+    
     def _run(self):
         for i in range(24):
             self.root.DesyTracker.KpixDaqCore.KpixDataRxArray.KpixDataRx[i].ResetCounters()
@@ -299,21 +318,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         self.root.DesyTracker.EthStart()        
 
         while (self.runState.valueDisp() == 'Running'):
-          
-            self.root.DesyTracker.EthAcquire()
-            #self.root.DataWriter.getDataChannel().getFrameCount()
-          
-            if self.runRate.valueDisp() == 'Auto':
-                if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 1000000):
-                    print('Timed out waiting for data')
-                    return
-
-            else:
-                delay = 1.0 / self.runRate.value()
-                time.sleep(delay)
-                # Add command here
-
-            self.runCount += 1
+            self.__triggerAndWait()
 
 
     def _calibrate(self):
@@ -333,6 +338,8 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         acqCtrl.ExtAcquisitionSrc.setDisp('EthAcquire', write=True)
         acqCtrl.ExtStartSrc.setDisp('EthStart', write=True)
         acqCtrl.Calibrate.set(True, write=True)
+
+        self.runRate.setDisp('Auto')
 
         self.root.ReadAll()
 
@@ -358,28 +365,35 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             
             for i in bar:
                 if self.runState.valueDisp() == 'Calibration':
-                    self.root.DesyTracker.EthAcquire()
-                    if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 1000000):
-                        print('Timed out waiting for data')
-                        return
-                    
-                    self.runCount += 1
+                    self.__triggerAndWait()
                 else:
-                    #self.runState.setDisp('Stopped')
                     return
 
+        dac = 0
+        channel = 0
+        chanSweep = range(firstChan, lastChan+1)
+        chanLoops = len(list(chanSweep))
+        dacSweep = range(dacMin, dacMax+1, dacStep)
+        dacLoops = len(list(dacSweep))
+        totalLoops = chanLoops * dacLoops
+        
+        def getDacChan(item):
+            return f'Channel: {channel}, DAC: {dac}'
         
         # Calibration
         self.CalState.set('Inject')
-        print(f'firstChan: {firstChan}, lastChan: {lastChan}')
+        
         with click.progressbar(
-            iterable= range(firstChan, lastChan+1),
-            label = click.style('Running Injection: ', fg='green'))  as bar:
+                length = totalLoops,
+                #iterable= range(firstChan, lastChan+1),
+                item_show_func=getDacChan, 
+                label = click.style('Running Injection: ', fg='green'))  as bar:
 
-            for channel in bar:
-                click.echo(f'\nCalibrating channel {channel}\n')
-                for dac in range(dacMin, dacMax+1, dacStep):
-                    click.echo(f'\nDAC {dac:d}\n')
+            for c, channel in enumerate(chanSweep):
+                for d, dac in enumerate(dacSweep):
+                    bar.update(1)
+                    #click.echo(f' Update: {c*dacLoops+d}')
+
                     # Set these to log in event stream
                     self.CalChannel.set(channel)
                     self.CalDac.set(dac)
@@ -390,14 +404,9 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                     
                     # Send acquire command and wait for response
                     for count in range(dacCount):
-                        if self.runState.valueDisp() == 'Calibration':                        
-                            self.root.DesyTracker.EthAcquire()
-                            if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 1000000):
-                                print('Timed out waiting for data')
-                                return
-                            self.runCount += 1
+                        if self.runState.valueDisp() == 'Calibration':
+                            self.__triggerAndWait()
                         else:
-                            #self.runState.setDisp('Stopped')
                             return
                             
         self.runCount.get()

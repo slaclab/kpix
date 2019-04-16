@@ -40,13 +40,21 @@ parser.add_argument(
     default = os.path.abspath(datetime.datetime.now().strftime("data/Calibration_%Y%m%d_%H%M%S.dat")),
     help = 'Output file name')
 
+parser.add_argument(
+    '--debug', '-d',
+    type = bool,
+    required = False,
+    default = False)
+
 
 if __name__ == "__main__":
     args = parser.parse_args()
     
-    with KpixDaq.DesyTrackerRoot(pollEn=False, ip=args.ip) as root:
+    with KpixDaq.DesyTrackerRoot(pollEn=False, ip=args.ip, debug=args.debug) as root:
         root.ReadAll()
         root.waitOnUpdate()
+
+        root.DesyTracker.AxiVersion.printStatus()
 
         print(f'Opening data file: {args.outfile}')
         root.DataWriter.dataFile.setDisp(args.outfile)
@@ -63,7 +71,10 @@ if __name__ == "__main__":
         root.ReadAll()
         root.waitOnUpdate()
 
-        root.DesyTrackerRunControl.runState.setDisp('Calibration')
-        root.DesyTrackerRunControl.waitStopped()        
-        
+        try:
+            root.DesyTrackerRunControl.runState.setDisp('Calibration')
+            root.DesyTrackerRunControl.waitStopped()
+        except (KeyboardInterrupt):
+            root.DesyTrackerRunControl.runState.setDisp('Stopped')
+            
         
