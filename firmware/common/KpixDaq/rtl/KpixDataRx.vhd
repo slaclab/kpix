@@ -71,7 +71,7 @@ architecture rtl of KpixDataRx is
    constant SHIFT_REG_LENGTH_C : natural         := 15;
    constant DATA_SAMPLE_C      : slv(3 downto 0) := "0000";
    constant TEMP_SAMPLE_C      : slv(3 downto 0) := "0001";
-   constant RUNTIME_SAMPLE_C   : slv(3 downto 0) := "0010";
+   constant RUNTIME_SAMPLE_C   : slv(3 downto 0) := "0011";
    constant ROW_ID_ADDR_C      : slv(3 downto 0) := "1111";
 
    -----------------------------------------------------------------------------
