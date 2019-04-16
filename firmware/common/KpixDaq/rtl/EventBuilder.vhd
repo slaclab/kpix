@@ -80,6 +80,7 @@ architecture rtl of EventBuilder is
       timestamp          : slv(63 downto 0);
       eventNumber        : slv(31 downto 0);
       newAcquire         : sl;
+      burn               : sl;
       state              : StateType;
       counter            : slv(15 downto 0);  -- Generic counter for stalling in a state
       dataDone           : slv(NUM_KPIX_MODULES_G downto 0);
@@ -93,6 +94,7 @@ architecture rtl of EventBuilder is
       timestamp          => (others => '0'),
       eventNumber        => (others => '1'),
       newAcquire         => '0',
+      burn               => '0',
       state              => WAIT_ACQUIRE_S,
       counter            => (others => '0'),
       dataDone           => (others => '0'),
@@ -145,7 +147,9 @@ begin
 
       case r.state is
          when WAIT_ACQUIRE_S =>
-            if (r.newAcquire = '1' and ebAxisCtrl.pause = '0') then
+            v.burn := '0';
+            if (r.newAcquire = '1') then
+               v.burn                            := ebAxisCtrl.pause;
                v.newAcquire                      := '0';
                v.state                           := WRITE_HEADER_S;
                -- Write Event number and timestamp in SOF
@@ -165,6 +169,9 @@ begin
 --               end if;
             if (r.counter = 0) then
                v.ebAxisMaster.tData(31 downto 0) := r.timestamp(63 downto 32);
+            end if;
+            if (r.counter = 1) then
+               v.ebAxisMaster.tData(0) := r.burn;
             end if;
             if (r.counter = 2) then
                v.state := WAIT_DIGITIZE_S;
@@ -187,7 +194,7 @@ begin
          when READ_TIMESTAMPS_S =>
             if (timestampAxisMaster.tvalid = '1') then
                v.timestampAxisSlave.tReady        := '1';
-               v.ebAxisMaster.tValid              := '1';
+               v.ebAxisMaster.tValid              := not r.burn;
                v.ebAxisMaster.tData(63 downto 60) := "0010";
                -- bunchcount and subcount
                v.ebAxisMaster.tData(59 downto 32) := timestampAxisMaster.tData(27 downto 0);
@@ -211,12 +218,12 @@ begin
             -- Check to see if the KpixDataRx module selected by kpixCounter has data.
             if (kpixDataRxMasters(r.kpixIndex).tvalid = '1') then
                v.kpixDataRxSlaves(r.kpixIndex).tReady := '1';
-               v.ebAxisMaster.tValid                  := '1';
+               v.ebAxisMaster.tValid                  := not r.burn;
                v.ebAxisMaster.tData(63 downto 0)      := kpixDataRxMasters(r.kpixIndex).tdata(63 downto 0);
 
                -- Ignore data and temperature samples from the local kpix
                -- Only send the runtime samples through
-               if (r.kpixIndex = NUM_KPIX_MODULES_G and v.ebAxisMaster.tData(63 downto 60) /= "0011") then
+               if (r.kpixIndex = NUM_KPIX_MODULES_G and v.ebAxisMaster.tData(63 downto 60) = "0000") then
                   v.ebAxisMaster.tValid := '0';
                end if;
 

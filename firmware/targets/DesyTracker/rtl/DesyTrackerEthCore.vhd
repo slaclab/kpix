@@ -372,7 +372,6 @@ begin
 
    -----------------------------------------------------
    -- TDEST = 0x1: Streaming Data
-   -- Will need FIFO here probably
    -----------------------------------------------------
    U_AxiStreamFifoV2_1 : entity work.AxiStreamFifoV2
       generic map (
@@ -387,7 +386,7 @@ begin
          GEN_SYNC_FIFO_G     => false,
          FIFO_ADDR_WIDTH_G   => 12,
          FIFO_FIXED_THRESH_G => true,
-         FIFO_PAUSE_THRESH_G => 2**12-8,
+         FIFO_PAUSE_THRESH_G => 2**12-32,
          SLAVE_AXI_CONFIG_G  => EB_DATA_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => AXIS_CONFIG_C)
       port map (
