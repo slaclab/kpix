@@ -263,6 +263,9 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             name = 'CalDac',
             value = 0))
 
+    def waitStopped(self):
+        self._thread.join()
+
     def _setRunState(self,value,changed):
         """
         Set run state. Reimplement in sub-class.
@@ -325,12 +328,10 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         
         # Configure firmware for calibration
         acqCtrl = self.root.DesyTracker.KpixDaqCore.AcquisitionControl
-        acqCtrl.ExtTrigEn.set(False, write=True)
-        acqCtrl.ExtTimestampEn.set(False, write=True)
+        acqCtrl.ExtTrigSrc.setDisp('Disabled', write=True)
+        acqCtrl.ExtTimestampSrc.setDisp('Disabled', write=True)
         acqCtrl.ExtAcquisitionSrc.setDisp('EthAcquire', write=True)
-        acqCtrl.ExtAcquisitionEn.set(True, write=True)        
         acqCtrl.ExtStartSrc.setDisp('EthStart', write=True)
-        acqCtrl.ExtStartEn.set(True, write=True)                
         acqCtrl.Calibrate.set(True, write=True)
 
         self.root.ReadAll()
@@ -347,6 +348,8 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         self.runCount.set(self.root.DataWriter.getDataChannel().getFrameCount())
         self.root.DesyTracker.EthStart()
 
+        time.sleep(1)
+
         # First do baselines        
         self.CalState.set('Baseline')
         with click.progressbar(
@@ -356,8 +359,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             for i in bar:
                 if self.runState.valueDisp() == 'Calibration':
                     self.root.DesyTracker.EthAcquire()
-                    timeout = self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 1.0e6)
-                    if timeout:
+                    if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 1000000):
                         print('Timed out waiting for data')
                         return
                     
@@ -390,8 +392,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                     for count in range(dacCount):
                         if self.runState.valueDisp() == 'Calibration':                        
                             self.root.DesyTracker.EthAcquire()
-                            timeout = self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 1.0e6)
-                            if timeout:
+                            if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 1000000):
                                 print('Timed out waiting for data')
                                 return
                             self.runCount += 1
