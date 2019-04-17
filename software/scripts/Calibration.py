@@ -40,6 +40,7 @@ parser.add_argument(
     default = os.path.abspath(datetime.datetime.now().strftime("data/Calibration_%Y%m%d_%H%M%S.dat")),
     help = 'Output file name')
 
+
 parser.add_argument(
     '--debug', '-d',
     type = bool,
@@ -56,6 +57,9 @@ if __name__ == "__main__":
 
         root.DesyTracker.AxiVersion.printStatus()
 
+        if os.path.isdir(args.outfile):
+            args.outfile = os.path.abspath(datetime.datetime.now().strftime(f"{args.outfile}/Calibration_%Y%m%d_%H%M%S.dat"))
+            
         print(f'Opening data file: {args.outfile}')
         root.DataWriter.dataFile.setDisp(args.outfile)
         root.DataWriter.open.set(True)
