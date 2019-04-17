@@ -55,7 +55,7 @@ class DesyTrackerRoot(pyrogue.Root):
             self.add(dataWriter)
             self.add(DesyTrackerRunControl())
             
-        self.add(DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, enabled=True))
+        self.add(DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, sim=sim, enabled=True))
 
         self.start(pollEn=pollEn, timeout=100000)
 
@@ -159,7 +159,7 @@ class EnvironmentMonitor(pyrogue.Device):
         
 
 class DesyTracker(pyrogue.Device):
-    def __init__(self, cmd, rssi, **kwargs):
+    def __init__(self, cmd, rssi, sim, **kwargs):
         super().__init__(**kwargs)
 
         @self.command()
@@ -178,7 +178,8 @@ class DesyTracker(pyrogue.Device):
         self.add(surf.axi.AxiVersion(
             offset = 0x0000))
 
-        self.add(EnvironmentMonitor())
+        if not sim:
+            self.add(EnvironmentMonitor())
 
         extTrigEnum = {
             0: 'BncTrig',
@@ -198,15 +199,16 @@ class DesyTracker(pyrogue.Device):
             numKpix = 24,
             extTrigEnum = extTrigEnum))
 
-        if rssi:
+        if rssi and not sim:
             self.add(surf.protocols.rssi.RssiCore(
                 offset = 0x02000000,
                 expand = False))
 
-        self.add(surf.devices.micron.AxiMicronN25Q(
-            offset = 0x05000000,
-            addrMode = False,
-            hidden = True))
+        if not sim:
+            self.add(surf.devices.micron.AxiMicronN25Q(
+                offset = 0x05000000,
+                addrMode = False,
+                hidden = True))
 
 class DesyTrackerRunControl(pyrogue.RunControl):
     def __init__(self, **kwargs):
@@ -318,7 +320,9 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         self.root.DesyTracker.EthStart()        
 
         while (self.runState.valueDisp() == 'Running'):
-            self.__triggerAndWait()
+            if self.root.DesyTracker.KpixDaqCore.AcquisitionControl.ExtAcquisitionSrc.valueDisp() == 'EthAcquire':
+                self.__triggerAndWait()
+            # Else do nothing an let external acquisition triggers do the work
 
 
     def _calibrate(self):

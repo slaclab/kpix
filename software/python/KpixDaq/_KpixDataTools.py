@@ -103,12 +103,14 @@ def parseFrame(ba):
 #            print(f'Found local kpix sample: {sample}')
 
         if sample['type'] == 1:
-            print(f'Found temp sample: {sample}')
+            pass
+            #print(f'Found temp sample: {sample}')
         elif sample['type'] == 3:
             print(f"Found runtime sample: {sample['kpixId']} {sample['firstRuntime']:#08x} diff: {sample['firstRuntime']-(timestamp&0xFFFFFFFF)}")
-        else:            
-            d['samples'][sample['kpixId']][sample['bucket']][sample['row']][sample['col']] = sample['adc']
-#            print(f'Normal sample: {sample}')
+        else:
+            pass
+            #d['samples'][sample['kpixId']][sample['bucket']][sample['row']][sample['col']] = sample['adc']
+            #print(f'Normal sample: {sample}')
             
     return d
     

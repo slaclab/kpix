@@ -6,3 +6,4 @@ from KpixDaq._KpixDaqCore import *
 from KpixDaq._KpixDataRx import *
 from KpixDaq._SysConfig import *
 from KpixDaq._KpixDataTools import *
+from KpixDaq._EventBuilder import *

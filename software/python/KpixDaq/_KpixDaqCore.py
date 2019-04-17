@@ -18,6 +18,9 @@ class KpixDaqCore(pr.Device):
             offset = 0x200,
             extTrigEnum = extTrigEnum))
 
+        self.add(KpixDaq.EventBuilder(
+            offset = 0x300))
+
         self.add(KpixAsicArray(
             sysConfig = self.SysConfig,
             offset = 0x100000,
