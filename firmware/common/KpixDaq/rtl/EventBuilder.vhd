@@ -271,7 +271,7 @@ begin
             end if;
 
             -- Check if done
-            if (r.dataDone(NUM_KPIX_MODULES_G) = sysConfig.kpixEnable(NUM_KPIX_MODULES_G)) then
+            if (r.dataDone(NUM_KPIX_MODULES_G downto 0) = sysConfig.kpixEnable(NUM_KPIX_MODULES_G downto 0)) then
                v.ebAxisMaster.tLast              := '1';
                v.ebAxisMaster.tValid             := '1';
                v.ebAxisMaster.tKeep(15 downto 0) := X"000F";  -- Last word has only 4 bytes
