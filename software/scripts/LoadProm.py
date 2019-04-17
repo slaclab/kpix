@@ -53,15 +53,19 @@ parser.add_argument(
 args = parser.parse_args()
 print(args)
 
-# Get a list of images
-images = glob.glob('{}/*.mcs*'.format(args.path))
-images = list(reversed(sorted(images)))
+if os.path.isdir(args.path):
+    # Get a list of images
+    images = glob.glob('{}/*.mcs*'.format(args.path))
+    images = list(reversed(sorted(images)))
 
-for i, l in enumerate(images):
-    print('{} : {}'.format(i, l))
+    for i, l in enumerate(images):
+        print('{} : {}'.format(i, l))
 
-idx = int(input('Enter image: '))
-image = images[idx]
+        idx = int(input('Enter image: '))
+        image = images[idx]
+
+else:
+    image = args.path
 
 #rogue.Logging.setFilter('pyrogue.SrpV3', rogue.Logging.Debug)
 
