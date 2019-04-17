@@ -223,7 +223,7 @@ begin
 
                -- Ignore data and temperature samples from the local kpix
                -- Only send the runtime samples through
-               if (r.kpixIndex = NUM_KPIX_MODULES_G and v.ebAxisMaster.tData(63 downto 60) = "0000") then
+               if (r.kpixIndex = NUM_KPIX_MODULES_G and v.ebAxisMaster.tData(31 downto 28) /= "0011") then
                   v.ebAxisMaster.tValid := '0';
                end if;
 
@@ -233,8 +233,7 @@ begin
             end if;
 
             -- Check if done
-            if (r.dataDone(NUM_KPIX_MODULES_G-1 downto 0) = sysConfig.kpixEnable(NUM_KPIX_MODULES_G-1 downto 0) and
-                (r.dataDone(NUM_KPIX_MODULES_G) = '1')) then
+            if (r.dataDone(NUM_KPIX_MODULES_G) = sysConfig.kpixEnable(NUM_KPIX_MODULES_G)) then
                v.ebAxisMaster.tLast              := '1';
                v.ebAxisMaster.tValid             := '1';
                v.ebAxisMaster.tKeep(15 downto 0) := X"000F";  -- Last word has only 4 bytes
