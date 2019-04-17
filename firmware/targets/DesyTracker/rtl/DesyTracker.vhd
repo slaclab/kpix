@@ -187,6 +187,8 @@ architecture rtl of DesyTracker is
    signal extTriggers : slv(7 downto 0);
    signal debugOutA   : sl;
    signal debugOutB   : sl;
+   
+   signal busy : sl;
 
    signal kpixResetOut   : sl;
    signal kpixClkOut     : sl;
@@ -237,6 +239,8 @@ begin
          I  => tluBusy,
          O  => tluBusyP,
          OB => tluBusyN);
+
+   tluBusy <= busy;
 
    -------------------------------------------------------------------------------------------------
    -- Clock heartbeats and LED statuses
@@ -455,6 +459,7 @@ begin
          extTriggers     => extTriggers,             -- [in]
          debugOutA       => debugOutA,               -- [out]
          debugOutB       => debugOutB,               -- [out]
+         busy => busy,                  --[out]
          kpixClkOut      => kpixClkOut,              -- [out]
          kpixTriggerOut  => kpixTriggerOut,          -- [out]
          kpixResetOut    => kpixResetOut,            -- [out]
@@ -468,7 +473,8 @@ begin
          clkIn  => heartbeat,           -- [in]
          clkOut => bncDebug);           -- [out]
 
-   bncBusy <= debugOutB;
+   bncBusy <= busy;
+   
 
    -------------------------------------------------------------------------------------------------
    -- XADC

@@ -22,6 +22,7 @@ use ieee.std_logic_unsigned.all;
 
 use work.StdRtlPkg.all;
 use work.AxiStreamPkg.all;
+use work.AxiLitePkg.all;
 use work.SsiPkg.all;
 
 use work.KpixPkg.all;
@@ -37,6 +38,12 @@ entity EventBuilder is
       clk200 : in sl;
       rst200 : in sl;
 
+      -- AXI-Lite interface for registers
+      axilReadMaster  : in  AxiLiteReadMasterType;
+      axilReadSlave   : out AxiLiteReadSlaveType;
+      axilWriteMaster : in  AxiLiteWriteMasterType;
+      axilWriteSlave  : out AxiLiteWriteSlaveType;
+
       -- Front End Registers
       sysConfig : in SysConfigType;
 
@@ -46,8 +53,8 @@ entity EventBuilder is
       -- Kpix Local Interface
       kpixState : in KpixStateOutType;
 
-      -- Kpix clock info
-      kpixClkPreRise : in sl;
+      -- Busy output
+      busy : out sl;
 
       -- Trigger Timestamp Interface
       timestampAxisMaster : in  AxiStreamMasterType;
@@ -81,6 +88,7 @@ architecture rtl of EventBuilder is
       eventNumber        : slv(31 downto 0);
       newAcquire         : sl;
       burn               : sl;
+      busy               : sl;
       state              : StateType;
       counter            : slv(15 downto 0);  -- Generic counter for stalling in a state
       dataDone           : slv(NUM_KPIX_MODULES_G downto 0);
@@ -88,6 +96,8 @@ architecture rtl of EventBuilder is
       kpixDataRxSlaves   : AxiStreamSlaveArray(NUM_KPIX_MODULES_G downto 0);
       timestampAxisSlave : AxiStreamSlaveType;
       ebAxisMaster       : AxiStreamMasterType;
+      axilReadSlave      : AxiLiteReadSlaveType;
+      axilWriteSlave     : AxiLiteWriteSlaveType;
    end record;
 
    constant REG_INIT_C : RegType := (
@@ -95,26 +105,53 @@ architecture rtl of EventBuilder is
       eventNumber        => (others => '1'),
       newAcquire         => '0',
       burn               => '0',
+      busy               => '0',
       state              => WAIT_ACQUIRE_S,
       counter            => (others => '0'),
       dataDone           => (others => '0'),
       kpixIndex          => 0,
       kpixDataRxSlaves   => (others => AXI_STREAM_SLAVE_INIT_C),
       timestampAxisSlave => AXI_STREAM_SLAVE_INIT_C,
-      ebAxisMaster       => axiStreamMasterInit(EB_DATA_AXIS_CONFIG_C));
+      ebAxisMaster       => axiStreamMasterInit(EB_DATA_AXIS_CONFIG_C),
+      axilReadSlave      => AXI_LITE_READ_SLAVE_INIT_C,
+      axilWriteSlave     => AXI_LITE_WRITE_SLAVE_INIT_C);
 
    signal r   : RegType := REG_INIT_C;
    signal rin : RegType;
 
+   signal stateEnum : slv(2 downto 0);
+
 begin
 
-   comb : process (acqControl, ebAxisCtrl, kpixDataRxMasters, kpixState, r, rst200, sysConfig,
-                   timestampAxisMaster) is
-      variable v : RegType;
+   stateEnum <= "000" when r.state = WAIT_ACQUIRE_S else
+                "001" when r.state = WRITE_HEADER_S else
+                "010" when r.state = WAIT_DIGITIZE_S else
+                "011" when r.state = READ_TIMESTAMPS_S else
+                "100" when r.state = WAIT_READOUT_S else
+                "101" when r.state = GATHER_DATA_S else
+                "111";
 
+   comb : process (acqControl, axilReadMaster, axilWriteMaster, ebAxisCtrl, kpixDataRxMasters,
+                   kpixState, r, rst200, stateEnum, sysConfig, timestampAxisMaster) is
+      variable v      : RegType;
+      variable axilEp : AxiLiteEndpointType;
    begin
       v := r;
 
+
+      ----------------------------------------------------------------------------------------------
+      -- AXI Lite debug
+      ----------------------------------------------------------------------------------------------
+      axiSlaveWaitTxn(axilEp, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
+
+      axiSlaveRegisterR(axilEp, x"00", 0, r.eventNumber);
+      axiSlaveRegisterR(axilEp, x"04", 0, stateEnum);
+      axiSlaveRegisterR(axilEp, x"08", 0, r.dataDone);
+
+      axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
+
+      axilWriteSlave <= r.axilWriteSlave;
+      axilReadSlave  <= r.axilReadSlave;
 
       ------------------------------------------------------------------------------------------------
       -- FIFO WR Logic
@@ -149,6 +186,7 @@ begin
          when WAIT_ACQUIRE_S =>
             v.burn := '0';
             if (r.newAcquire = '1') then
+               v.busy                            := '1';
                v.burn                            := ebAxisCtrl.pause;
                v.newAcquire                      := '0';
                v.state                           := WRITE_HEADER_S;
@@ -238,6 +276,7 @@ begin
                v.ebAxisMaster.tValid             := '1';
                v.ebAxisMaster.tKeep(15 downto 0) := X"000F";  -- Last word has only 4 bytes
                v.state                           := WAIT_ACQUIRE_S;
+               v.busy                            := '0';
             end if;
 
       end case;
@@ -252,6 +291,7 @@ begin
       rin <= v;
 
       ebAxisMaster <= r.ebAxisMaster;
+      busy         <= r.busy;
 
    end process comb;
 

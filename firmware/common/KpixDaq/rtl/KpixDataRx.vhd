@@ -92,6 +92,8 @@ architecture rtl of KpixDataRx is
       RX_DUMP_S,
       RX_RESP_S);
 
+   signal rxStateEnum : slv(2 downto 0) := "000";
+
    type TxStateType is (
       TX_CLEAR_S,
       TX_IDLE_S,
@@ -104,6 +106,8 @@ architecture rtl of KpixDataRx is
       TX_WAIT_S,
       TX_TEMP_S,
       TX_RUNTIME_S);
+
+   signal txStateEnum : slv(3 downto 0) := "0000";
 
 
    type SampleType is record
@@ -210,6 +214,8 @@ architecture rtl of KpixDataRx is
    signal r   : RegType := REG_INIT_C;
    signal rin : RegType;
 
+
+
    -----------------------------------------------------------------------------
    -- Functions
    -----------------------------------------------------------------------------
@@ -253,14 +259,39 @@ begin
          addrb => txRamRdAddr,          -- [in]
          doutb => txRamRdData);         -- [out]
 
+   
+   rxStateEnum <= "000" when r.rxState = RX_IDLE_S else
+                  "001" when r.rxState = RX_HEADER_S else
+                  "010" when r.rxState = RX_ROW_ID_S else
+                  "011" when r.rxState = RX_DATA_S else
+                  "100" when r.rxState = RX_FRAME_DONE_S else
+                  "101" when r.rxState = RX_DUMP_S else
+                  "110" when r.rxState = RX_RESP_S else
+                  "111";
+
+   txStateEnum <= "0000" when r.txState = TX_CLEAR_S else
+                  "0001" when r.txState = TX_IDLE_S  else
+                  "0010" when r.txState = TX_ROW_ID_S  else
+                  "0011" when r.txState = TX_NXT_COL_S  else
+                  "0100" when r.txState = TX_CNT_S  else
+                  "0101" when r.txState = TX_TIMESTAMP_S  else
+                  "0110" when r.txState = TX_ADC_DATA_S  else
+                  "0111" when r.txState = TX_SEND_SAMPLE_S  else
+                  "1000" when r.txState = TX_WAIT_S  else
+                  "1001" when r.txState = TX_TEMP_S  else
+                  "1010" when r.txState = TX_RUNTIME_S  else
+                  "1111";
 
    comb : process (acqControl, axilReadMaster, axilWriteMaster, kpixClkPreFall, kpixDataRxSlave,
-                   kpixSerRxIn, r, rst200, sysConfig, tempCount, temperature, txRamRdData) is
+                   kpixSerRxIn, r, rst200, rxStateEnum, sysConfig, tempCount, temperature,
+                   txRamRdData, txStateEnum) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
 
    begin
       v := r;
+
+
 
       ----------------------------------------------------------------------------------------------
       -- AXI Lite registers
@@ -276,6 +307,9 @@ begin
       axiSlaveRegister(axilEp, X"10", 0, v.resetCounters);
       axiSlaveRegisterR(axilEp, X"14", 0, r.frameCount);
       axiSlaveRegisterR(axilEp, X"20", 0, r.firstRuntime);
+      axiSlaveRegisterR(axilEp, X"24", 0, rxStateEnum);
+      axiSlaveRegisterR(axilEp, X"24", 8, txStateEnum);
+         
 
       axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
 

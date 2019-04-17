@@ -53,6 +53,7 @@ entity KpixDaqCore is
       extTriggers : in  slv(7 downto 0);
       debugOutA   : out sl;
       debugOutB   : out sl;
+      busy        : out sl;
 
       -- Interface to KPiX modules
       kpixClkOut     : out sl;
@@ -68,10 +69,11 @@ architecture rtl of KpixDaqCore is
    constant AXIL_SYS_CONFIG_C   : integer := 0;
    constant AXIL_CLOCK_GEN_C    : integer := 1;
    constant AXIL_ACQ_CTRL_C     : integer := 2;
-   constant AXIL_KPIX_REGS_C    : integer := 3;
-   constant AXIL_KPIX_RX_DATA_C : integer := 4;
+   constant AXIL_EVENTBUILDER_C : integer := 3;
+   constant AXIL_KPIX_REGS_C    : integer := 4;
+   constant AXIL_KPIX_RX_DATA_C : integer := 5;
 
-   constant NUM_AXIL_MASTERS_C : integer := 5;
+   constant NUM_AXIL_MASTERS_C : integer := 6;
 
    constant AXIL_CROSSBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXIL_MASTERS_C-1 downto 0) := (
       AXIL_SYS_CONFIG_C   => (
@@ -84,6 +86,10 @@ architecture rtl of KpixDaqCore is
          connectivity     => X"FFFF"),
       AXIL_ACQ_CTRL_C     => (
          baseAddr         => AXIL_BASE_ADDR_G + X"200",
+         addrBits         => 8,
+         connectivity     => X"FFFF"),
+      AXIL_EVENTBUILDER_C => (
+         baseAddr         => AXIL_BASE_ADDR_G + X"300",
          addrBits         => 8,
          connectivity     => X"FFFF"),
       AXIL_KPIX_REGS_C    => (
@@ -285,7 +291,7 @@ begin
             sysConfig        => sysConfig,                  -- [in]
             acqControl       => acqControl,                 -- [in]
             kpixClkPreFall   => kpixClkPreFall,             -- [in]
-            kpixSerRxIn      => intKpixSerRxIn(i),             -- [in]
+            kpixSerRxIn      => intKpixSerRxIn(i),          -- [in]
             axilReadMaster   => rxDataAxilReadMasters(i),   -- [in]
             axilReadSlave    => rxDataAxilReadSlaves(i),    -- [out]
             axilWriteMaster  => rxDataAxilWriteMasters(i),  -- [in]
@@ -307,18 +313,22 @@ begin
          TPD_G              => TPD_G,
          NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
       port map (
-         clk200              => clk200,               -- [in]
-         rst200              => rst200,               -- [in]
-         sysConfig           => sysConfig,            -- [in]
-         acqControl          => acqControl,           -- [in]
-         kpixState           => kpixState,            -- [in]
-         kpixClkPreRise      => kpixClkPreRise,       -- [in]
-         timestampAxisMaster => timestampAxisMaster,  -- [in]
-         timestampAxisSlave  => timestampAxisSlave,   -- [out]
-         kpixDataRxMasters   => kpixDataRxMasters,    -- [in]
-         kpixDataRxSlaves    => kpixDataRxSlaves,     -- [out]
-         ebAxisMaster        => ebAxisMaster,         -- [out]
-         ebAxisCtrl          => ebAxisCtrl);          -- [in]
+         clk200              => clk200,                                    -- [in]
+         rst200              => rst200,                                    -- [in]
+         axilReadMaster      => locAxilReadMasters(AXIL_EVENTBUILDER_C),   -- [in]
+         axilReadSlave       => locAxilReadSlaves(AXIL_EVENTBUILDER_C),    -- [out]
+         axilWriteMaster     => locAxilWriteMasters(AXIL_EVENTBUILDER_C),  -- [in]
+         axilWriteSlave      => locAxilWriteSlaves(AXIL_EVENTBUILDER_C),   -- [out]         
+         sysConfig           => sysConfig,                                 -- [in]
+         acqControl          => acqControl,                                -- [in]
+         kpixState           => kpixState,                                 -- [in]
+         busy                => busy,                                      -- [out]
+         timestampAxisMaster => timestampAxisMaster,                       -- [in]
+         timestampAxisSlave  => timestampAxisSlave,                        -- [out]
+         kpixDataRxMasters   => kpixDataRxMasters,                         -- [in]
+         kpixDataRxSlaves    => kpixDataRxSlaves,                          -- [out]
+         ebAxisMaster        => ebAxisMaster,                              -- [out]
+         ebAxisCtrl          => ebAxisCtrl);                               -- [in]
 
 
    ----------------------------------------
