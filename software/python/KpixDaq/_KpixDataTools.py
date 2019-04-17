@@ -63,14 +63,17 @@ def parseSample(ba):
     
     if d['type'] == 3:
         d['firstRuntime'] = getField(value, 63, 32)
+    elif d['type'] == 2:
+        d['temperature'] = getField(value, 39, 32)
+        d['count'] = getField(value, 63, 56)
     else:
         d['row'] = getField(value, 4, 0)        
         d['col'] = getField(value, 9, 5)
         d['bucket'] = getField(value, 11, 10)
-        #d['triggerFlag'] = getField(value, 12, 12)
-        #d['rangeFlag'] = getField(value, 13, 13)
-        #d['badCountFlag'] = getField(value, 14, 14)
-        #d['emptyFlag'] = getField(value, 15, 15)
+        d['triggerFlag'] = getField(value, 12, 12)
+        d['rangeFlag'] = getField(value, 13, 13)
+        d['badCountFlag'] = getField(value, 14, 14)
+        d['emptyFlag'] = getField(value, 15, 15)
         d['adc'] = getField(value, 44, 32)
         d['timestamp'] = getField(value, 60, 48)
     return d
@@ -96,13 +99,16 @@ def parseFrame(ba):
     for raw in data:
         sample = parseSample(raw)
 
-        if sample['kpixId'] == 24:
-            print(f'Found local kpix sample: {sample}')
+#        if sample['kpixId'] == 24:
+#            print(f'Found local kpix sample: {sample}')
 
-        if sample['type'] == 3:
+        if sample['type'] == 1:
+            print(f'Found temp sample: {sample}')
+        elif sample['type'] == 3:
             print(f"Found runtime sample: {sample['kpixId']} {sample['firstRuntime']:#08x} diff: {sample['firstRuntime']-(timestamp&0xFFFFFFFF)}")
         else:            
             d['samples'][sample['kpixId']][sample['bucket']][sample['row']][sample['col']] = sample['adc']
+#            print(f'Normal sample: {sample}')
             
     return d
     
