@@ -34,7 +34,7 @@ DesyTrackerRoot:
         enable: 'True'
         ClkSelReadout: 19
         ClkSelDigitize: 19
-        ClkSelAcquire: 31
+        ClkSelAcquire: 19
         ClkSelIdle: 19
         ClkSelPrecharge: 599
       AcquisitionControl:
@@ -63,7 +63,7 @@ DesyTrackerRoot:
           TimePowerUpDigOn: 11          
           TimeThreshOff: 2600
           TrigInhibitOff: 500
-          BunchClockCount: 1812
+          BunchClockCount: 8191
           Cal0Delay: 750
           Cal1Delay: 200
           Cal2Delay: 200
@@ -82,7 +82,7 @@ DesyTrackerRoot:
           CntrlHighGain: 'False'
           CntrlNearNeighbor: 'False'
           CntrlCalSource: 'Internal'
-          CntrlForceTrigSource: 'Disable'
+          CntrlForceTrigSource: 'Internal'
           CntrlHoldTime: 64x
           CntrlCalibHigh: 'False'
           CntrlShortIntEn: 'False'
