@@ -309,6 +309,13 @@ class DesyTrackerRunControl(pyrogue.RunControl):
 
         self.runCount += 1        
         return True
+
+    def __prestart(self):
+        self.root.CountReset()
+
+        self.root.ReadAll()
+            
+        self.runCount.set(0)
     
     def _run(self):
         for i in range(24):
