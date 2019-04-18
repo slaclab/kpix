@@ -307,8 +307,9 @@ begin
       axiSlaveRegister(axilEp, X"10", 0, v.resetCounters);
       axiSlaveRegisterR(axilEp, X"14", 0, r.frameCount);
       axiSlaveRegisterR(axilEp, X"20", 0, r.firstRuntime);
-      axiSlaveRegisterR(axilEp, X"24", 0, rxStateEnum);
-      axiSlaveRegisterR(axilEp, X"28", 0, txStateEnum);
+      
+      axiSlaveRegisterR(axilEp, X"24", 0, r.rxShiftCount);
+      axiSlaveRegisterR(axilEp, X"28", 0, r.rxColumnCount);
       axiSlaveRegisterR(axilEp, X"2C", 0, r.frameCount);      
          
 
