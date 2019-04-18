@@ -61,8 +61,8 @@ if os.path.isdir(args.path):
     for i, l in enumerate(images):
         print('{} : {}'.format(i, l))
 
-        idx = int(input('Enter image: '))
-        image = images[idx]
+    idx = int(input('Enter image: '))
+    image = images[idx]
 
 else:
     image = args.path
