@@ -333,7 +333,8 @@ class KpixAsic(pr.Device):
             enum = {
                 0: 'Disable',
                 1: 'Internal',
-                2: 'External'}))
+                2: 'External',
+                3: '-'}))
 
         self.add(pr.RemoteVariable(
             name = 'CntrlHoldTime',
