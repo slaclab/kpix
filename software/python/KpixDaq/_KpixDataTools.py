@@ -96,6 +96,7 @@ def parseFrame(ba):
     rawSamples = ba[32:-4]
 
     data = (rawSamples[i:i+8] for i in range(0, len(rawSamples), 8))
+    runtimes = []
     for raw in data:
         sample = parseSample(raw)
 
@@ -106,12 +107,24 @@ def parseFrame(ba):
             pass
             #print(f'Found temp sample: {sample}')
         elif sample['type'] == 3:
-            print(f"Found runtime sample: {sample['kpixId']} {sample['firstRuntime']:#08x} diff: {sample['firstRuntime']-(timestamp&0xFFFFFFFF)}")
+            #print(f"Found runtime sample: {sample['kpixId']} {sample['firstRuntime']:#08x} diff: {sample['firstRuntime']-(timestamp&0xFFFFFFFF)}")
+            if sample['kpixId'] != 24:
+                runtimes.append(sample)
         else:
             pass
             #d['samples'][sample['kpixId']][sample['bucket']][sample['row']][sample['col']] = sample['adc']
             #print(f'Normal sample: {sample}')
-            
+
+    #print(f'All Runtimes: {runtimes}')
+    s = set((x['firstRuntime']-d['runtime'] for x in runtimes))
+    #print(f'Runtimes: {s}')   
+    if len(s) != 1:
+        print('-----')
+        print("Runtimes do not match!")
+        for r in runtimes:
+            print(r)
+        print('-----')
+
     return d
     
 class KpixStreamInfo(rogue.interfaces.stream.Slave):
