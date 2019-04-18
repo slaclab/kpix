@@ -259,7 +259,7 @@ begin
          addrb => txRamRdAddr,          -- [in]
          doutb => txRamRdData);         -- [out]
 
-   
+
    rxStateEnum <= "000" when r.rxState = RX_IDLE_S else
                   "001" when r.rxState = RX_HEADER_S else
                   "010" when r.rxState = RX_ROW_ID_S else
@@ -270,16 +270,16 @@ begin
                   "111";
 
    txStateEnum <= "0000" when r.txState = TX_CLEAR_S else
-                  "0001" when r.txState = TX_IDLE_S  else
-                  "0010" when r.txState = TX_ROW_ID_S  else
-                  "0011" when r.txState = TX_NXT_COL_S  else
-                  "0100" when r.txState = TX_CNT_S  else
-                  "0101" when r.txState = TX_TIMESTAMP_S  else
-                  "0110" when r.txState = TX_ADC_DATA_S  else
-                  "0111" when r.txState = TX_SEND_SAMPLE_S  else
-                  "1000" when r.txState = TX_WAIT_S  else
-                  "1001" when r.txState = TX_TEMP_S  else
-                  "1010" when r.txState = TX_RUNTIME_S  else
+                  "0001" when r.txState = TX_IDLE_S else
+                  "0010" when r.txState = TX_ROW_ID_S else
+                  "0011" when r.txState = TX_NXT_COL_S else
+                  "0100" when r.txState = TX_CNT_S else
+                  "0101" when r.txState = TX_TIMESTAMP_S else
+                  "0110" when r.txState = TX_ADC_DATA_S else
+                  "0111" when r.txState = TX_SEND_SAMPLE_S else
+                  "1000" when r.txState = TX_WAIT_S else
+                  "1001" when r.txState = TX_TEMP_S else
+                  "1010" when r.txState = TX_RUNTIME_S else
                   "1111";
 
    comb : process (acqControl, axilReadMaster, axilWriteMaster, kpixClkPreFall, kpixDataRxSlave,
@@ -307,11 +307,10 @@ begin
       axiSlaveRegister(axilEp, X"10", 0, v.resetCounters);
       axiSlaveRegisterR(axilEp, X"14", 0, r.frameCount);
       axiSlaveRegisterR(axilEp, X"20", 0, r.firstRuntime);
-      
-      axiSlaveRegisterR(axilEp, X"24", 0, r.rxShiftCount);
-      axiSlaveRegisterR(axilEp, X"28", 0, r.rxColumnCount);
-      axiSlaveRegisterR(axilEp, X"2C", 0, r.frameCount);      
-         
+      axiSlaveRegisterR(axilEp, X"30", 0, toSlv(RxStateType'pos(r.rxState), 4));
+      axiSlaveRegisterR(axilEp, X"34", 0, toSlv(TxStateType'pos(r.txState), 4));
+
+
 
       axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
 
@@ -331,7 +330,7 @@ begin
             v.firstRuntime           := acqControl.runtime(31 downto 0);
          end if;
       end if;
-      
+
       ----------------------------------------------------------------------------------------------
       -- RX Logic
       ----------------------------------------------------------------------------------------------
@@ -620,11 +619,11 @@ begin
             v.kpixDataRxMaster.tvalid              := '1';
             v.kpixDataRxMaster.tlast               := '1';
             if (r.kpixDataRxMaster.tvalid = '1' and kpixDataRxSlave.tready = '1') then
-               v.firstRuntime := (others => '0');
+               v.firstRuntime            := (others => '0');
                v.kpixDataRxMaster.tvalid := '0';
                v.kpixDataRxMaster.tlast  := '1';
 --               v.kpixDataRxMaster.busy   := '0';
-               v.frameCount                           := r.frameCount + 1;               
+               v.frameCount              := r.frameCount + 1;
                v.txState                 := TX_CLEAR_S;
             end if;
       end case;
