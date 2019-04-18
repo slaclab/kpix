@@ -35,7 +35,7 @@ class SysConfig(pr.Device):
                 bitOffset=i,
                 bitSize=1,
                 base=pr.Bool,
-                hidden=False))
+                hidden=True))
 
 
         debugEnum = {
