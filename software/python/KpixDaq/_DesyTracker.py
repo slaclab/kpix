@@ -312,19 +312,17 @@ class DesyTrackerRunControl(pyrogue.RunControl):
 
     def __prestart(self):
         self.root.CountReset()
-
+        time.sleep(1)
         self.root.ReadAll()
-            
+        time.sleep(1)            
         self.runCount.set(0)
-    
+        time.sleep(1)
+        
     def _run(self):
-        for i in range(24):
-            self.root.DesyTracker.KpixDaqCore.KpixDataRxArray.KpixDataRx[i].ResetCounters()
-
-        self.root.ReadAll()
-            
-        self.runCount.set(self.root.DataWriter.getDataChannel().getFrameCount())
-        self.root.DesyTracker.EthStart()        
+        self.__prestart()
+        
+        self.root.DesyTracker.EthStart()
+        time.sleep(1)
 
         while (self.runState.valueDisp() == 'Running'):
             if self.root.DesyTracker.KpixDaqCore.AcquisitionControl.ExtAcquisitionSrc.valueDisp() == 'EthAcquire':
@@ -360,10 +358,8 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             kpix.setCalibrationMode()
 
         # Restart the run count
-        for i in range(24):
-            self.root.DesyTracker.KpixDaqCore.KpixDataRxArray.KpixDataRx[i].ResetCounters()
+        self.__prestart()
         
-        self.runCount.set(self.root.DataWriter.getDataChannel().getFrameCount())
         self.root.DesyTracker.EthStart()
 
         time.sleep(1)
