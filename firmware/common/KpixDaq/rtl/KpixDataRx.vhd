@@ -308,7 +308,8 @@ begin
       axiSlaveRegisterR(axilEp, X"14", 0, r.frameCount);
       axiSlaveRegisterR(axilEp, X"20", 0, r.firstRuntime);
       axiSlaveRegisterR(axilEp, X"24", 0, rxStateEnum);
-      axiSlaveRegisterR(axilEp, X"24", 8, txStateEnum);
+      axiSlaveRegisterR(axilEp, X"28", 0, txStateEnum);
+      axiSlaveRegisterR(axilEp, X"2C", 0, r.frameCount);      
          
 
       axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
