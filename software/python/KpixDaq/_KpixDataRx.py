@@ -45,6 +45,13 @@ class KpixDataRx(pr.Device):
             disp = '{:d}'))
 
         self.add(pr.RemoteVariable(
+            name = 'FirstRuntime',
+            mode = 'RO',
+            offset = 0x20,
+            bitOffset = 0,
+            bitSize = 32))
+
+        self.add(pr.RemoteVariable(
             name = 'RxState',
             mode = 'RO',
             offset = 0x24,
