@@ -587,6 +587,7 @@ class KpixAsic(pr.Device):
         self.node(f'Chan_{col*32:d}_{col*32+31:d}').setDisp(''.join(modestring), write=False)
         self.calChannel = channel
         self.writeBlocks()
+        self.verifyBlocks()
         self.checkBlocks()
         
 
