@@ -212,7 +212,7 @@ class DesyTracker(pyrogue.Device):
 
 class DesyTrackerRunControl(pyrogue.RunControl):
     def __init__(self, **kwargs):
-        rates = {1:'1 Hz', 10:'10 Hz', 30:'30 Hz', 50: '50 Hz', 100: '100 Hz', 0:'Auto'}
+        rates = {1:'1 Hz', 0:'Auto'}
         states = {0: 'Stopped', 1: 'Running', 2: 'Calibration'}
         pyrogue.RunControl.__init__(self, rates=rates, states=states, **kwargs)
 
@@ -286,7 +286,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             if self._thread is not None and self._thread != threading.current_thread():
                 self._thread.join()
                 self.thread = None;
-                self.root.ReadAll()                
+                self.__endRun()
             
             if self.runState.valueDisp() == 'Running':
                 #print("Starting run")
@@ -311,12 +311,25 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         return True
 
     def __prestart(self):
+        print('Resetting Counters')
         self.root.CountReset()
-        time.sleep(1)
+        time.sleep(.2)
+        print('Readding system state')
         self.root.ReadAll()
-        time.sleep(1)            
+        time.sleep(.2)
+
+        print('Starting Run')
         self.runCount.set(0)
-        time.sleep(1)
+        self.root.DesyTracker.KpixDaqCore.AcquisitionControl.Running.set(True)
+        time.sleep(1)        
+
+    def __endRun(self):
+        print('Stopping Run')
+        self.root.DesyTracker.KpixDaqCore.AcquisitionControl.Running.set(False)        
+        self.runCount.get()
+        self.root.ReadAll()
+        self.runState.setDisp('Stopped')
+        
         
     def _run(self):
         self.__prestart()
@@ -327,6 +340,8 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         while (self.runState.valueDisp() == 'Running'):
             if self.root.DesyTracker.KpixDaqCore.AcquisitionControl.ExtAcquisitionSrc.valueDisp() == 'EthAcquire':
                 self.__triggerAndWait()
+
+        self.__endRun()
             # Else do nothing an let external acquisition triggers do the work
 
 
@@ -368,12 +383,14 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         self.CalState.set('Baseline')
         with click.progressbar(
                 iterable= range(meanCount),
+                show_pos = True,
                 label = click.style('Running baseline: ', fg='green')) as bar:
             
             for i in bar:
                 if self.runState.valueDisp() == 'Calibration':
                     self.__triggerAndWait()
                 else:
+                    self.__endRun()
                     return
 
         dac = 0
@@ -384,6 +401,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         dacLoops = len(list(dacSweep))
         totalLoops = chanLoops * dacLoops
         
+
         def getDacChan(item):
             return f'Channel: {channel}, DAC: {dac}'
         
@@ -392,14 +410,13 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         
         with click.progressbar(
                 length = totalLoops,
-                #iterable= range(firstChan, lastChan+1),
+                show_pos = True,
                 item_show_func=getDacChan, 
                 label = click.style('Running Injection: ', fg='green'))  as bar:
 
-            for c, channel in enumerate(chanSweep):
-                for d, dac in enumerate(dacSweep):
+            for channel in chanSweep:
+                for dac in dacSweep:
                     bar.update(1)
-                    #click.echo(f' Update: {c*dacLoops+d}')
 
                     # Set these to log in event stream
                     self.CalChannel.set(channel)
@@ -414,10 +431,11 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                         if self.runState.valueDisp() == 'Calibration':
                             self.__triggerAndWait()
                         else:
+                            self.__endRun()
                             return
+                        
+            self.__endRun()
                             
-        self.runCount.get()
-        self.root.ReadAll()
-        self.runState.setDisp('Stopped')        
+   
 
     

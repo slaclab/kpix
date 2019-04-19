@@ -19,6 +19,14 @@ class AcquisitionControl(pr.Device):
         extTrigEnum[0] = 'Disabled'
 
         self.add(pr.RemoteVariable(
+            name = 'Running',
+            mode = 'RW',
+            offset = 0x10,
+            bitSize = 1,
+            bitOffset = 0,
+            base = pr.Bool))
+
+        self.add(pr.RemoteVariable(
             name = "RunTime",
             mode = 'RO',
             offset = 0x14,
