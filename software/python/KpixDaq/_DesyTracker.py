@@ -286,7 +286,8 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             if self._thread is not None and self._thread != threading.current_thread():
                 self._thread.join()
                 self.thread = None;
-                self.__endRun()
+                self.root.ReadAll()
+                print('Stopped')
             
             if self.runState.valueDisp() == 'Running':
                 #print("Starting run")
@@ -321,28 +322,30 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         print('Starting Run')
         self.runCount.set(0)
         self.root.DesyTracker.KpixDaqCore.AcquisitionControl.Running.set(True)
-        time.sleep(1)        
+        time.sleep(.2)        
 
     def __endRun(self):
+        print('')
         print('Stopping Run')
         self.root.DesyTracker.KpixDaqCore.AcquisitionControl.Running.set(False)        
-        self.runCount.get()
-        self.root.ReadAll()
-        self.runState.setDisp('Stopped')
-        
         
     def _run(self):
         self.__prestart()
-        
+
+        # This will be ignored if configured for external start signal
         self.root.DesyTracker.EthStart()
-        time.sleep(1)
+        time.sleep(.2)
+
+        mode = self.root.DesyTracker.KpixDaqCore.AcquisitionControl.ExtAcquisitionSrc.valueDisp()
 
         while (self.runState.valueDisp() == 'Running'):
-            if self.root.DesyTracker.KpixDaqCore.AcquisitionControl.ExtAcquisitionSrc.valueDisp() == 'EthAcquire':
+            if mode == 'EthAcquire':                
                 self.__triggerAndWait()
+            # Else do nothing an let external acquisition triggers do the work                
 
+        print('_run Exiting')
         self.__endRun()
-            # Else do nothing an let external acquisition triggers do the work
+        #self.runState.setDisp('Stopped')
 
 
     def _calibrate(self):
@@ -434,8 +437,8 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                             self.__endRun()
                             return
                         
-            self.__endRun()
-                            
+        self.__endRun()
+        self.runState.setDisp('Stopped')                            
    
 
     
