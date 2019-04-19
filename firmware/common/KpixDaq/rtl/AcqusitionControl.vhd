@@ -76,6 +76,7 @@ architecture rtl of AcquisitionControl is
       extAcquisitionEn       : sl;
       extStartSrc            : slv(2 downto 0);
       extStartEn             : sl;
+      running                : sl;
       calibrate              : sl;
       axilWriteSlave         : AxiLiteWriteSlaveType;
       axilReadSlave          : AxiLiteReadSlaveType;
@@ -105,6 +106,7 @@ architecture rtl of AcquisitionControl is
       extAcquisitionEn       => '0',
       extStartSrc            => (others => '0'),
       extStartEn             => '0',
+      running                => '0',
       calibrate              => '0',
       axilWriteSlave         => AXI_LITE_WRITE_SLAVE_INIT_C,
       axilReadSlave          => AXI_LITE_READ_SLAVE_INIT_C,
@@ -177,13 +179,14 @@ begin
       axiSlaveWaitTxn(axilEp, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
 
       axiSlaveRegister(axilEp, x"00", 0, v.extTriggerSrc);
-      axiSlaveRegister(axilEp, X"00", 3, v.extTriggerEn);      
+      axiSlaveRegister(axilEp, X"00", 3, v.extTriggerEn);
       axiSlaveRegister(axilEp, x"04", 0, v.extTimestampSrc);
-      axiSlaveRegister(axilEp, X"04", 3, v.extTimestampEn);      
+      axiSlaveRegister(axilEp, X"04", 3, v.extTimestampEn);
       axiSlaveRegister(axilEp, X"08", 0, v.extAcquisitionSrc);
-      axiSlaveRegister(axilEp, X"08", 3, v.extAcquisitionEn);      
+      axiSlaveRegister(axilEp, X"08", 3, v.extAcquisitionEn);
       axiSlaveRegister(axilEp, X"0C", 0, v.extStartSrc);
       axiSlaveRegister(axilEp, X"0C", 3, v.extStartEn);
+      axiSlaveRegister(axilEp, X"10", 0, v.running);
 
       axiSlaveRegisterR(axilEp, X"14", 0, r.acqControl.runTime);
 
@@ -200,7 +203,7 @@ begin
       ------------------------------------------------------------------------------------------------
       -- External Trigger
       ------------------------------------------------------------------------------------------------
-      if (r.extTriggerEn = '1' and
+      if (r.running = '1' and r.extTriggerEn = '1' and
           extTriggerRise(conv_integer(r.extTriggerSrc)) = '1' and
           kpixState.analogState = KPIX_ANALOG_SAMP_STATE_C and
           kpixState.trigInhibit = '0') then
@@ -222,7 +225,7 @@ begin
       -- Trigger timestamp
       ------------------------------------------------------------------------------------------------
       v.timestampFifoWrEn := '0';
-      if (r.extTimestampEn = '1' and
+      if (r.running = '1' and r.extTimestampEn = '1' and
           extTriggerRise(conv_integer(r.extTimestampSrc)) = '1' and
           kpixState.analogState = KPIX_ANALOG_SAMP_STATE_C and
           kpixState.trigInhibit = '0' and
@@ -257,7 +260,7 @@ begin
       ------------------------------------------------------------------------------------------------
       -- Acquire Command
       ------------------------------------------------------------------------------------------------
-      if (r.extAcquisitionEn = '1' and extTriggerRise(conv_integer(r.extAcquisitionSrc)) = '1') then
+      if (r.running = '1' and r.extAcquisitionEn = '1' and extTriggerRise(conv_integer(r.extAcquisitionSrc)) = '1') then
          v.acqControl.startAcquire   := '1';
          v.acqControl.startCalibrate := r.calibrate;
          v.acquisitionCountEnable    := '1';
@@ -279,7 +282,7 @@ begin
       ----------------------------------------------------------------------------------------------
       v.acqControl.startRun := '0';
       v.acqControl.runTime  := r.acqControl.runTime + 1;
-      if (r.extStartEn = '1' and extTriggerRise(conv_integer(r.extStartSrc)) = '1') then
+      if (r.running = '1' and r.extStartEn = '1' and extTriggerRise(conv_integer(r.extStartSrc)) = '1') then
          v.acqControl.startRun := '1';
          v.acqControl.runTime  := (others => '0');
       end if;
