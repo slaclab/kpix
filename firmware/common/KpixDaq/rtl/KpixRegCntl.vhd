@@ -39,6 +39,7 @@ entity KpixRegCntl is
       -- Kpix clock info
       kpixClkPreRise : in sl;
       kpixClkPreFall : in sl;
+      kpixClkSample  : in sl;
 
       -- AXI-Lite interface for registers
       axilReadMaster  : in  AxiLiteReadMasterType;
@@ -348,6 +349,7 @@ begin
             sysConfig      => sysConfig,         -- [in]
             kpixClkPreRise => kpixClkPreRise,    -- [in]
             kpixClkPreFall => kpixClkPreFall,    -- [in]
+            kpixClkSample  => kpixClkSample,     -- [in]
             kpixSerRxIn    => kpixSerRxIn(i),    -- [in]
             kpixRegRxOut   => kpixRegRxOut(i));  -- [out]
    end generate RX_GEN;

@@ -40,7 +40,9 @@ entity KpixDataRx is
       sysConfig        : in  SysConfigType;
       acqControl       : in  AcquisitionControlType;
       -- Serial input
+      kpixClkPreRise   : in  sl;
       kpixClkPreFall   : in  sl;
+      kpixClkSample    : in  sl;
       kpixSerRxIn      : in  sl;                 -- Serial Data from KPIX      
       -- AXI-Lite interface for registers
       axilReadMaster   : in  AxiLiteReadMasterType;
@@ -282,9 +284,9 @@ begin
                   "1010" when r.txState = TX_RUNTIME_S else
                   "1111";
 
-   comb : process (acqControl, axilReadMaster, axilWriteMaster, kpixClkPreFall, kpixDataRxSlave,
-                   kpixSerRxIn, r, rst200, rxStateEnum, sysConfig, tempCount, temperature,
-                   txRamRdData, txStateEnum) is
+   comb : process (acqControl, axilReadMaster, axilWriteMaster, kpixClkPreFall, kpixClkSample,
+                   kpixDataRxSlave, kpixSerRxIn, r, rst200, sysConfig, tempCount, temperature,
+                   txRamRdData) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
 
@@ -338,7 +340,7 @@ begin
       -- Don't write to RAM unless overriden in rx state machine
       v.rxRamWrEn := '0';
 
-      if (kpixClkPreFall = '1') then
+      if (kpixClkSample = '1') then
 
          v.rxShiftData  := r.rxShiftData(1 to SHIFT_REG_LENGTH_C-1) & kpixSerRxIn;
          v.rxShiftCount := r.rxShiftCount + 1;

@@ -91,5 +91,24 @@ class KpixClockGen(pr.Device):
             dependencies = [self.ClkSelPrecharge],
             disp = '{:2.3f}',
             linkedGet = getPeriod))
+
+        self.add(pr.RemoteVariable(
+            name = 'SampleDelay',
+            mode = 'RW',
+            offset = 0x14,
+            bitOffset = 0,
+            bitSize = 8,
+            disp = '{:d}'))
+
+        self.add(pr.RemoteVariable(
+            name = 'SampleEdge',
+            mode = 'RW',
+            offset = 0x14,
+            bitOffset = 31,
+            bitSize = 1,
+            enum = {
+                1: 'Rise',
+                0: 'Fall'}))
+        
         
         

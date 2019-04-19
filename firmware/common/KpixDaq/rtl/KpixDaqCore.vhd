@@ -118,6 +118,7 @@ architecture rtl of KpixDaqCore is
    signal kpixClk        : sl;
    signal kpixClkPreRise : sl;
    signal kpixClkPreFall : sl;
+   signal kpixClkSample : sl;   
 
    -- Front end accessible registers
    signal sysConfig : SysConfigType;
@@ -145,8 +146,22 @@ architecture rtl of KpixDaqCore is
    signal intKpixResetOut : sl;
    signal intKpixSerTxOut : slv(NUM_KPIX_MODULES_G downto 0);
    signal intKpixSerRxIn  : slv(NUM_KPIX_MODULES_G downto 0);
+   signal regKpixSerRxIn  : slv(NUM_KPIX_MODULES_G downto 0);
 
 begin
+
+   kpixSerTxOut                                  <= intKpixSerTxOut(NUM_KPIX_MODULES_G-1 downto 0);
+   intKpixSerRxIn(NUM_KPIX_MODULES_G-1 downto 0) <= kpixSerRxIn;
+
+   U_RegisterVector_1 : entity work.RegisterVector
+      generic map (
+         TPD_G   => TPD_G,
+         WIDTH_G => NUM_KPIX_MODULES_G+1)
+      port map (
+         clk   => clk200,               -- [in]
+         rst   => rst200,               -- [in]
+         sig_i => intKpixSerRxIn,       -- [in]
+         reg_o => regKpixSerRxIn);      -- [out]
 
    kpixClkOut <= kpixClk;
 
@@ -203,7 +218,7 @@ begin
          kpixClk         => kpixClk,                                -- [out]
          kpixClkPreRise  => kpixClkPreRise,                         -- [out]
          kpixClkPreFall  => kpixClkPreFall,                         -- [out]
-         kpixClkSample   => open);                                  -- [out]
+         kpixClkSample   => kpixClkSample);                         -- [out]
 
    --------------------------------------------------------------------------------------------------
    -- Acquisition Control
@@ -241,6 +256,7 @@ begin
          rst200          => rst200,                                 -- [in]
          kpixClkPreRise  => kpixClkPreRise,                         -- [in]
          kpixClkPreFall  => kpixClkPreFall,                         -- [in]
+         kpixClkSample   => kpixClkSample,                          -- [in]
          axilReadMaster  => locAxilReadMasters(AXIL_KPIX_REGS_C),   -- [in]
          axilReadSlave   => locAxilReadSlaves(AXIL_KPIX_REGS_C),    -- [out]
          axilWriteMaster => locAxilWriteMasters(AXIL_KPIX_REGS_C),  -- [in]
@@ -249,7 +265,7 @@ begin
          kpixState       => kpixState,                              -- [in]
          acqControl      => acqControl,                             -- [in]
          kpixSerTxOut    => intKpixSerTxOut,                        -- [out]
-         kpixSerRxIn     => intKpixSerRxIn,                         -- [in]
+         kpixSerRxIn     => regKpixSerRxIn,                         -- [in]
          kpixResetOut    => intKpixResetOut,                        -- [out]
          temperature     => temperature,                            -- [out]
          tempCount       => tempCount);                             -- [out]
@@ -290,8 +306,10 @@ begin
             rst200           => rst200,                     -- [in]
             sysConfig        => sysConfig,                  -- [in]
             acqControl       => acqControl,                 -- [in]
+            kpixClkPreRise   => kpixClkPreRise,             -- [in]            
             kpixClkPreFall   => kpixClkPreFall,             -- [in]
-            kpixSerRxIn      => intKpixSerRxIn(i),          -- [in]
+            kpixClkSample    => kpixClkSample,              -- [in]
+            kpixSerRxIn      => regKpixSerRxIn(i),          -- [in]
             axilReadMaster   => rxDataAxilReadMasters(i),   -- [in]
             axilReadSlave    => rxDataAxilReadSlaves(i),    -- [out]
             axilWriteMaster  => rxDataAxilWriteMasters(i),  -- [in]
@@ -302,8 +320,6 @@ begin
             kpixDataRxSlave  => kpixDataRxSlaves(i));       -- [in]
    end generate;
 
-   kpixSerTxOut                                  <= intKpixSerTxOut(NUM_KPIX_MODULES_G-1 downto 0);
-   intKpixSerRxIn(NUM_KPIX_MODULES_G-1 downto 0) <= kpixSerRxIn;
 
    --------------------------------------------------------------------------------------------------
    -- Event Builder

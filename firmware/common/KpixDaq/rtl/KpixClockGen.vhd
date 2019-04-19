@@ -92,8 +92,8 @@ architecture rtl of KpixClockGen is
       clkSelAcquire    => CLK_SEL_ACQUIRE_DEFAULT_C,
       clkSelIdle       => CLK_SEL_IDLE_DEFAULT_C,
       clkSelPrecharge  => CLK_SEL_PRECHARGE_DEFAULT_C,
-      sampleDelay      => X"02",
-      sampleOnRise     => '1',
+      sampleDelay      => X"00",
+      sampleOnRise     => '0',
       axilWriteSlave   => AXI_LITE_WRITE_SLAVE_INIT_C,
       axilReadSlave    => AXI_LITE_READ_SLAVE_INIT_C,
       startAcquireLast => '0',
@@ -106,7 +106,6 @@ architecture rtl of KpixClockGen is
 
    signal r          : RegType := REG_INIT_C;
    signal rin        : RegType;
-   signal kpixClkInt : sl;
 
 
 begin

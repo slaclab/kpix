@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2018-05-16
+-- Last update: 2019-04-19
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -43,6 +43,7 @@ entity KpixRegRx is
       -- Kpix clock info
       kpixClkPreRise : in  sl;
       kpixClkPreFall : in  sl;
+      kpixClkSample : in sl;
       kpixSerRxIn    : in  sl;          -- Serial Data from KPIX      
       kpixRegRxOut   : out KpixRegRxOutType
       );
@@ -72,12 +73,12 @@ architecture rtl of KpixRegRx is
 
 begin
 
-   comb : process (kpixClkPreFall, kpixSerRxIn, r, rst200)is
+   comb : process (kpixClkSample, kpixSerRxIn, r, rst200)is
       variable v : RegType;
    begin
       v := r;
 
-      if (kpixClkPreFall = '1') then
+      if (kpixClkSample = '1') then
 
          v.shiftReg              := r.shiftReg(1 to KPIX_NUM_TX_BITS_C) & kpixSerRxIn;
          v.shiftCount            := r.shiftCount + 1;

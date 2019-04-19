@@ -37,6 +37,8 @@ DesyTrackerRoot:
         ClkSelAcquire: 31
         ClkSelIdle: 9
         ClkSelPrecharge: 599
+        SampleDelay: 0
+        SampleEdge: Fall
       AcquisitionControl:
         enable: 'True'
         ExtTrigSrc: Disabled
