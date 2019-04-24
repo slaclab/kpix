@@ -46,8 +46,6 @@ print(args)
 
 with KpixDaq.DesyTrackerRoot(debug=True, **vars(args)) as root:
 
-    root.DesyTracker.KpixDaqCore.KpixAsicArray.KpixAsic[0].enable.set(True)
-    root.DesyTracker.KpixDaqCore.KpixAsicArray.KpixAsic[1].enable.set(True)    
     # Create GUI
     appTop = pyrogue.gui.application(sys.argv)
     guiTop = pyrogue.gui.GuiTop(group='guiGroup')
