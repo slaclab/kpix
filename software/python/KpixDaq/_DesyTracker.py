@@ -75,6 +75,7 @@ class TluMonitor(pyrogue.Device):
             dependencies = [self.TluClkFreqRaw],
             linkedGet = lambda: self.TluClkFreqRaw.value() * 1.0e-6,
             value = 0.0,
+            pollInterval = 1,
             units = 'MHz',
             disp = '{:1.3f}',
         ))
@@ -83,6 +84,7 @@ class TluMonitor(pyrogue.Device):
             name = 'TriggerCount',
             offset = 0x04,
             mode = 'RO',
+            pollInterval = 1,
             base = pyrogue.UInt,
         ))
 
@@ -90,6 +92,7 @@ class TluMonitor(pyrogue.Device):
             name = 'SpillCount',
             offset = 0x08,
             mode = 'RO',
+            pollInterval = 1,
             base = pyrogue.UInt,
         ))
 
@@ -97,6 +100,7 @@ class TluMonitor(pyrogue.Device):
             name = 'StartCount',
             offset = 0x0C,
             mode = 'RO',
+            pollInterval = 1,
             base = pyrogue.UInt,
         ))
 
@@ -138,22 +142,27 @@ class EnvironmentMonitor(pyrogue.Device):
 
         self.add(pyrogue.LinkVariable(
             name = 'FpgaTemperature',
+            pollInterval = 1,
             variable = self.Xadc.Temperature))
 
         self.add(pyrogue.LinkVariable(
             name = 'BoardTemperature',
+            pollInterval = 1,
             variable = self.Sa56004x.LocalTemperature))
 
         self.add(pyrogue.LinkVariable(
             name = 'InputVoltage',
+            pollInterval = 1,
             variable = self.Ltc4151.Vin))
 
         self.add(pyrogue.LinkVariable(
             name = 'InputCurrent',
+            pollInterval = 1,
             variable = self.Ltc4151.Iin))
 
         self.add(pyrogue.LinkVariable(
             name = 'InputPower',
+            pollInterval = 1,
             variable = self.Ltc4151.Pin))
         
         

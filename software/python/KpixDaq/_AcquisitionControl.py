@@ -24,6 +24,7 @@ class AcquisitionControl(pr.Device):
             offset = 0x10,
             bitSize = 1,
             bitOffset = 0,
+            pollInterval = 1,
             base = pr.Bool))
 
         self.add(pr.RemoteVariable(
@@ -31,6 +32,7 @@ class AcquisitionControl(pr.Device):
             mode = 'RO',
             offset = 0x14,
             bitSize = 64,
+            pollInterval = 1,
             base = pr.UInt))
 
         self.add(pr.RemoteVariable(
@@ -82,6 +84,7 @@ class AcquisitionControl(pr.Device):
                 bitOffset = 0,
                 bitSize = 32,
                 base = pr.UInt,
+                pollInterval = 1,
                 disp = '{:d}'))
 
         self.add(pr.RemoteCommand(
