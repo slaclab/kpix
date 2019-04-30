@@ -257,7 +257,7 @@ begin
          O  => tluBusyP,
          OB => tluBusyN);
 
-   tluBusy <= busy;
+   tluBusy <= '0';
 
    -------------------------------------------------------------------------------------------------
    -- Clock heartbeats and LED statuses
@@ -483,14 +483,16 @@ begin
          kpixSerTxOut    => kpixSerTxOut,            -- [out]
          kpixSerRxIn     => kpixSerRxIn);            -- [in]
 
-   U_ClkOutBufSingle_1 : entity work.ClkOutBufSingle
-      generic map (
-         TPD_G => TPD_G)
-      port map (
-         clkIn  => heartbeat,           -- [in]
-         clkOut => bncDebug);           -- [out]
+--    U_ClkOutBufSingle_1 : entity work.ClkOutBufSingle
+--       generic map (
+--          TPD_G => TPD_G)
+--       port map (
+--          clkIn  => heartbeat,           -- [in]
+--          clkOut => bncDebug);           -- [out]
 
-   bncBusy <= busy;
+--    bncBusy <= busy;
+   bncDebug <= '0';
+   bncBusy <= '0';
 
 
    -------------------------------------------------------------------------------------------------
