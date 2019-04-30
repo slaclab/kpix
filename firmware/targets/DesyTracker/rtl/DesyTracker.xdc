@@ -27,7 +27,7 @@ set_clock_groups -physically_exclusive -group muxEthClk200 -group muxTluClk200
 #set_case_analysis 1 [get_pins {CLKMUX/S}]
 set_false_path -from [get_pins {U_TluMonitor_1/r_reg[tluClkSel]/C}] -to [get_pins {U_TluMonitor_1/CLKMUX/S0}]
 
-create_generated_clock -name kpixClk -source [get_pins {U_TluMonitor_1/CLKMUX/O}] -divide_by 2 [get_pins {U_KpixDaqCore_1/U_KpixClockGen_1/KPIX_CLK_BUFG/O}]
+create_generated_clock -name kpixClk -source [get_pins {U_TluMonitor_1/CLKMUX/O}] -divide_by 4 [get_pins {U_KpixDaqCore_1/U_KpixClockGen_1/KPIX_CLK_BUFG/O}]
 
 #set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {U_TluMonitor_1/U_MMCM/clkOut[0]}]
 
