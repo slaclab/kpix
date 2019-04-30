@@ -104,17 +104,17 @@ end DesyTracker;
 architecture rtl of DesyTracker is
 
 
-   constant NUM_AXIL_MASTERS_C : integer := 11;
-   constant AXIL_VERSION_C     : integer := 0;
-   constant AXIL_KPIX_DAQ_C    : integer := 1;
+   constant NUM_AXIL_MASTERS_C : integer              := 11;
+   constant AXIL_VERSION_C     : integer              := 0;
+   constant AXIL_KPIX_DAQ_C    : integer              := 1;
 --   constant AXIL_CASSETTE_I2C_0_C : integer := 2;
 --   constant AXIL_CASSETTE_I2C_1_C : integer := 3;   
-   constant AXIL_ETH_CORE_C    : integer := 2;
-   constant AXIL_XADC_C        : integer := 3;
-   constant AXIL_PWR_C         : integer := 4;
-   constant AXIL_BOOT_C        : integer := 5;
-   constant AXIL_TLU_MON_C     : integer := 6;
-   constant AXIL_CAS_I2C_C : integerArray(0 to 3) := (7, 8, 9, 10);
+   constant AXIL_ETH_CORE_C    : integer              := 2;
+   constant AXIL_XADC_C        : integer              := 3;
+   constant AXIL_PWR_C         : integer              := 4;
+   constant AXIL_BOOT_C        : integer              := 5;
+   constant AXIL_TLU_MON_C     : integer              := 6;
+   constant AXIL_CAS_I2C_C     : integerArray(0 to 3) := (7, 8, 9, 10);
 
    constant AXIL_XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXIL_MASTERS_C-1 downto 0) := (
       AXIL_VERSION_C    => (
@@ -652,14 +652,14 @@ begin
             I2C_MIN_PULSE_G  => 100.0E-9,
             AXI_CLK_FREQ_G   => 125.0E+6)
          port map (
-            axiClk         => axiClk,                                 -- [in]
-            axiRst         => axiRst,                                 -- [in]
-            axiReadMaster  => locAxilReadMaster(AXIL_CAS_I2C_C(i)),   -- [in]
-            axiReadSlave   => locAxilReadSlave(AXIL_CAS_I2C_C(i)),    -- [out]
-            axiWriteMaster => locAxilWriteMaster(AXIL_CAS_I2C_C(i)),  -- [in]
-            axiWriteSlave  => locAxilWriteSlave(AXIL_CAS_I2C_C(i)),   -- [out]
-            scl            => cassetteScl(i),                         -- [inout]
-            sda            => cassetteSda(i));                        -- [inout]
+            axiClk         => axilClk,                                 -- [in]
+            axiRst         => axilRst,                                 -- [in]
+            axiReadMaster  => locAxilReadMasters(AXIL_CAS_I2C_C(i)),   -- [in]
+            axiReadSlave   => locAxilReadSlave(sAXIL_CAS_I2C_C(i)),    -- [out]
+            axiWriteMaster => locAxilWriteMasters(AXIL_CAS_I2C_C(i)),  -- [in]
+            axiWriteSlave  => locAxilWriteSlaves(AXIL_CAS_I2C_C(i)),   -- [out]
+            scl            => cassetteScl(i),                          -- [inout]
+            sda            => cassetteSda(i));                         -- [inout]
    end generate CASSETTE_I2C_GEN;
 
 end architecture rtl;
