@@ -188,6 +188,11 @@ class DesyTracker(pyrogue.Device):
             offset = 0x0000))
 
         if not sim:
+            for i in range(3):
+                self.add(KpixDaq.Si7006(
+                    offset = 0x07000000 + (i*0x100)))
+
+            
             self.add(EnvironmentMonitor())
 
         extTrigEnum = {
