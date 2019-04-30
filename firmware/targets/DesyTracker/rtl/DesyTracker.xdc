@@ -162,14 +162,14 @@ set_property IOB TRUE [get_ports kpixCmd[*][*]]
 set_property IOB TRUE [get_ports kpixData[*][*]]
 
 # Cassette I2C
-set_property -dict { PACKAGE_PIN M21 IOSTANDARD LVCMOS25 } [get_ports { cassetteSda[0] }];
-set_property -dict { PACKAGE_PIN M22 IOSTANDARD LVCMOS25 } [get_ports { cassetteScl[0] }];
-set_property -dict { PACKAGE_PIN T24 IOSTANDARD LVCMOS25 } [get_ports { cassetteSda[1] }];
-set_property -dict { PACKAGE_PIN T25 IOSTANDARD LVCMOS25 } [get_ports { cassetteScl[1] }];
-set_property -dict { PACKAGE_PIN Y25 IOSTANDARD LVCMOS25 } [get_ports { cassetteSda[2] }];
-set_property -dict { PACKAGE_PIN Y26 IOSTANDARD LVCMOS25 } [get_ports { cassetteScl[2] }];
-set_property -dict { PACKAGE_PIN W20 IOSTANDARD LVCMOS25 } [get_ports { cassetteSda[3] }];
-set_property -dict { PACKAGE_PIN Y21 IOSTANDARD LVCMOS25 } [get_ports { cassetteScl[3] }];
+set_property -dict { PACKAGE_PIN M21 IOSTANDARD LVCMOS25 PULLUP TRUE} [get_ports { cassetteSda[0] }];
+set_property -dict { PACKAGE_PIN M22 IOSTANDARD LVCMOS25 PULLUP TRUE} [get_ports { cassetteScl[0] }];
+set_property -dict { PACKAGE_PIN T24 IOSTANDARD LVCMOS25 PULLUP TRUE} [get_ports { cassetteSda[1] }];
+set_property -dict { PACKAGE_PIN T25 IOSTANDARD LVCMOS25 PULLUP TRUE} [get_ports { cassetteScl[1] }];
+set_property -dict { PACKAGE_PIN Y25 IOSTANDARD LVCMOS25 PULLUP TRUE} [get_ports { cassetteSda[2] }];
+set_property -dict { PACKAGE_PIN Y26 IOSTANDARD LVCMOS25 PULLUP TRUE} [get_ports { cassetteScl[2] }];
+set_property -dict { PACKAGE_PIN W20 IOSTANDARD LVCMOS25 PULLUP TRUE} [get_ports { cassetteSda[3] }];
+set_property -dict { PACKAGE_PIN Y21 IOSTANDARD LVCMOS25 PULLUP TRUE} [get_ports { cassetteScl[3] }];
 
 
 # External IO
