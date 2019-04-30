@@ -6,7 +6,7 @@ class Si7006(pr.Device):
 
         self.add(pr.RemoteVariable(
             name = 'HumidityRaw',
-            mode = 'RO'
+            mode = 'RO',
             offset = (0xE5 << 2),
             bitOffset = 0,
             bitSize = 16,
@@ -21,7 +21,7 @@ class Si7006(pr.Device):
 
         self.add(pr.RemoteVariable(
             name = 'TemperatureRaw',
-            mode = 'RO'
+            mode = 'RO',
             offset = (0xE3 << 2),
             bitOffset = 0,
             bitSize = 16,
