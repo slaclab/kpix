@@ -655,7 +655,7 @@ begin
             axiClk         => axilClk,                                 -- [in]
             axiRst         => axilRst,                                 -- [in]
             axiReadMaster  => locAxilReadMasters(AXIL_CAS_I2C_C(i)),   -- [in]
-            axiReadSlave   => locAxilReadSlave(sAXIL_CAS_I2C_C(i)),    -- [out]
+            axiReadSlave   => locAxilReadSlaves(AXIL_CAS_I2C_C(i)),    -- [out]
             axiWriteMaster => locAxilWriteMasters(AXIL_CAS_I2C_C(i)),  -- [in]
             axiWriteSlave  => locAxilWriteSlaves(AXIL_CAS_I2C_C(i)),   -- [out]
             scl            => cassetteScl(i),                          -- [inout]
