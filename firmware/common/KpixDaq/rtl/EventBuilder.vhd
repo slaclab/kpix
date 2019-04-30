@@ -157,11 +157,11 @@ begin
       -- FIFO WR Logic
       ------------------------------------------------------------------------------------------------
       -- Latch trigger
-      if (r.newAcquire = '0' and acqControl.startAcquire = '1' and r.state = WAIT_ACQUIRE_S) then
-         v.timestamp   := acqControl.runTime;
-         v.eventNumber := r.eventNumber + 1;
-         v.newAcquire  := '1';
-      end if;
+--       if (r.newAcquire = '0' and acqControl.startAcquire = '1' and r.state = WAIT_ACQUIRE_S) then
+--          v.timestamp   := acqControl.runTime;
+--          v.eventNumber := r.eventNumber + 1;
+--          v.newAcquire  := '1';
+--       end if;
 
       -- Reset event number to 0 at start of run
       if (acqControl.startRun = '1') then
@@ -185,10 +185,11 @@ begin
       case r.state is
          when WAIT_ACQUIRE_S =>
             v.burn := '0';
-            if (r.newAcquire = '1') then
+            if (acqControl.startAcquire = '1') then
+               v.timestamp                       := acqControl.runTime;
+               v.eventNumber                     := r.eventNumber + 1;
                v.busy                            := '1';
                v.burn                            := ebAxisCtrl.pause;
-               v.newAcquire                      := '0';
                v.state                           := WRITE_HEADER_S;
                -- Write Event number and timestamp in SOF
                v.ebAxisMaster.tValid             := '1';
