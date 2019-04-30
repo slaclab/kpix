@@ -31,5 +31,5 @@ class Si7006(pr.Device):
             name = 'Temperature',
             mode = 'RO',
             units = 'degC',
-            dependencies = [self.HumidityRaw],
-            linkedGet = lambda: ((175.72 * self.HumidityRaw.value())/65536)-46.85 ))        
+            dependencies = [self.TemperatureRaw],
+            linkedGet = lambda: ((175.72 * self.TemperatureRaw.value())/65536)-46.85 ))        

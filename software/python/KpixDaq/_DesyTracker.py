@@ -188,7 +188,7 @@ class DesyTracker(pyrogue.Device):
             offset = 0x0000))
 
         if not sim:
-            for i in range(3):
+            for i in range(4):
                 self.add(KpixDaq.Si7006(
                     name = f'Si7006[{i}]',
                     enabled = False,
