@@ -104,7 +104,7 @@ end DesyTracker;
 architecture rtl of DesyTracker is
 
 
-   constant NUM_AXIL_MASTERS_C : integer := 7;
+   constant NUM_AXIL_MASTERS_C : integer := 11;
    constant AXIL_VERSION_C     : integer := 0;
    constant AXIL_KPIX_DAQ_C    : integer := 1;
 --   constant AXIL_CASSETTE_I2C_0_C : integer := 2;
@@ -114,36 +114,53 @@ architecture rtl of DesyTracker is
    constant AXIL_PWR_C         : integer := 4;
    constant AXIL_BOOT_C        : integer := 5;
    constant AXIL_TLU_MON_C     : integer := 6;
+   constant AXIL_CAS_I2C_C : integerArray(0 to 3) := (7, 8, 9, 10);
 
    constant AXIL_XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXIL_MASTERS_C-1 downto 0) := (
-      AXIL_VERSION_C  => (
-         baseAddr     => X"00000000",
-         addrBits     => 12,
-         connectivity => X"FFFF"),
-      AXIL_KPIX_DAQ_C => (
-         baseAddr     => X"01000000",
-         addrBits     => 24,
-         connectivity => X"FFFF"),
-      AXIL_ETH_CORE_C => (
-         baseAddr     => X"02000000",
-         addrBits     => 10,
-         connectivity => X"FFFF"),
-      AXIL_XADC_C     => (
-         baseAddr     => X"03000000",
-         addrBits     => 12,
-         connectivity => X"FFFF"),
-      AXIL_PWR_C      => (
-         baseAddr     => X"04000000",
-         addrBits     => 16,
-         connectivity => X"FFFF"),
-      AXIL_BOOT_C     => (
-         baseAddr     => X"05000000",
-         addrBits     => 12,
-         connectivity => X"FFFF"),
-      AXIL_TLU_MON_C  => (
-         baseAddr     => X"06000000",
-         addrBits     => 8,
-         connectivity => X"FFFF"));
+      AXIL_VERSION_C    => (
+         baseAddr       => X"00000000",
+         addrBits       => 12,
+         connectivity   => X"FFFF"),
+      AXIL_KPIX_DAQ_C   => (
+         baseAddr       => X"01000000",
+         addrBits       => 24,
+         connectivity   => X"FFFF"),
+      AXIL_ETH_CORE_C   => (
+         baseAddr       => X"02000000",
+         addrBits       => 10,
+         connectivity   => X"FFFF"),
+      AXIL_XADC_C       => (
+         baseAddr       => X"03000000",
+         addrBits       => 12,
+         connectivity   => X"FFFF"),
+      AXIL_PWR_C        => (
+         baseAddr       => X"04000000",
+         addrBits       => 16,
+         connectivity   => X"FFFF"),
+      AXIL_BOOT_C       => (
+         baseAddr       => X"05000000",
+         addrBits       => 12,
+         connectivity   => X"FFFF"),
+      AXIL_TLU_MON_C    => (
+         baseAddr       => X"06000000",
+         addrBits       => 8,
+         connectivity   => X"FFFF"),
+      AXIL_CAS_I2C_C(0) => (
+         baseAddr       => X"07000000",
+         addrBits       => 12,
+         connectivity   => X"FFFF"),
+      AXIL_CAS_I2C_C(1) => (
+         baseAddr       => X"07001000",
+         addrBits       => 12,
+         connectivity   => X"FFFF"),
+      AXIL_CAS_I2C_C(2) => (
+         baseAddr       => X"07002000",
+         addrBits       => 12,
+         connectivity   => X"FFFF"),
+      AXIL_CAS_I2C_C(3) => (
+         baseAddr       => X"07003000",
+         addrBits       => 12,
+         connectivity   => X"FFFF"));
 
    signal ethClk200 : sl;
    signal ethRst200 : sl;
@@ -187,7 +204,7 @@ architecture rtl of DesyTracker is
    signal extTriggers : slv(7 downto 0);
    signal debugOutA   : sl;
    signal debugOutB   : sl;
-   
+
    signal busy : sl;
 
    signal kpixResetOut   : sl;
@@ -257,7 +274,7 @@ begin
 
    led(0) <= heartbeat;
 
-   
+
    Heartbeat_refClk : entity work.Heartbeat
       generic map (
          TPD_G        => TPD_G,
@@ -459,7 +476,7 @@ begin
          extTriggers     => extTriggers,             -- [in]
          debugOutA       => debugOutA,               -- [out]
          debugOutB       => debugOutB,               -- [out]
-         busy => busy,                  --[out]
+         busy            => busy,                    --[out]
          kpixClkOut      => kpixClkOut,              -- [out]
          kpixTriggerOut  => kpixTriggerOut,          -- [out]
          kpixResetOut    => kpixResetOut,            -- [out]
@@ -474,7 +491,7 @@ begin
          clkOut => bncDebug);           -- [out]
 
    bncBusy <= busy;
-   
+
 
    -------------------------------------------------------------------------------------------------
    -- XADC
@@ -541,7 +558,7 @@ begin
                endianness => '1')),
          I2C_SCL_FREQ_G   => 100.0E+3,
          I2C_MIN_PULSE_G  => 100.0E-9,
-         AXI_CLK_FREQ_G   => 200.0E+6)
+         AXI_CLK_FREQ_G   => 125.0E+6)
       port map (
          axiClk         => axilClk,                          -- [in]
          axiRst         => axilRst,                          -- [in]
@@ -618,6 +635,31 @@ begin
          kpixRst200      => kpixRst200);                          -- [out]
 
 
-
+   ----------------------------------------
+   -- Cassette I2C
+   ----------------------------------------
+   CASSETTE_I2C_GEN : for i in 3 downto 0 generate
+      U_AxiI2cRegMaster_2 : entity work.AxiI2cRegMaster
+         generic map (
+            TPD_G            => TPD_G,
+            DEVICE_MAP_G     => (
+               0             => MakeI2cAxiLiteDevType(
+                  i2cAddress => "0001000000",
+                  dataSize   => 16,
+                  addrSize   => 8,
+                  endianness => '1')),
+            I2C_SCL_FREQ_G   => 100.0E+3,
+            I2C_MIN_PULSE_G  => 100.0E-9,
+            AXI_CLK_FREQ_G   => 125.0E+6)
+         port map (
+            axiClk         => axiClk,                                 -- [in]
+            axiRst         => axiRst,                                 -- [in]
+            axiReadMaster  => locAxilReadMaster(AXIL_CAS_I2C_C(i)),   -- [in]
+            axiReadSlave   => locAxilReadSlave(AXIL_CAS_I2C_C(i)),    -- [out]
+            axiWriteMaster => locAxilWriteMaster(AXIL_CAS_I2C_C(i)),  -- [in]
+            axiWriteSlave  => locAxilWriteSlave(AXIL_CAS_I2C_C(i)),   -- [out]
+            scl            => cassetteScl(i),                         -- [inout]
+            sda            => cassetteSda(i));                        -- [inout]
+   end generate CASSETTE_I2C_GEN;
 
 end architecture rtl;
