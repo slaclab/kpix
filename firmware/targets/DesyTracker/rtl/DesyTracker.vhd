@@ -257,11 +257,11 @@ begin
 
    led(0) <= heartbeat;
 
-   -- tluClk
+   
    Heartbeat_refClk : entity work.Heartbeat
       generic map (
          TPD_G        => TPD_G,
-         PERIOD_IN_G  => 6.40E-6,
+         PERIOD_IN_G  => 6.40E-9,
          PERIOD_OUT_G => 0.64)
       port map (
          clk => refClk,
@@ -272,7 +272,7 @@ begin
       generic map (
          TPD_G        => TPD_G,
          PERIOD_IN_G  => 25.0E-9,
-         PERIOD_OUT_G => 0.25)
+         PERIOD_OUT_G => 2.5)
       port map (
          clk => tluClkClean,
          o   => led(2));

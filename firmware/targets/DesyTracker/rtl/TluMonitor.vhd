@@ -138,7 +138,7 @@ begin
    U_SyncClockFreq_1 : entity work.SyncClockFreq
       generic map (
          TPD_G          => TPD_G,
-         REF_CLK_FREQ_G => 200.0E+6,
+         REF_CLK_FREQ_G => 125.0E+6,
          REFRESH_RATE_G => 1.0E+3,
 --          CLK_LOWER_LIMIT_G => CLK_LOWER_LIMIT_G,
 --          CLK_UPPER_LIMIT_G => CLK_UPPER_LIMIT_G,
