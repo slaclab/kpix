@@ -32,10 +32,10 @@ DesyTrackerRoot:
 #        KpixEnable: '0x1'
       KpixClockGen:
         enable: 'True'
-        ClkSelReadout: 9
+        ClkSelReadout: 19
         ClkSelDigitize: 4
         ClkSelAcquire: 31
-        ClkSelIdle: 9
+        ClkSelIdle: 19
         ClkSelPrecharge: 599
         SampleDelay: 0
         SampleEdge: Fall
@@ -57,14 +57,14 @@ DesyTrackerRoot:
           TimeResetOn: 11
           TimeResetOff: 900
           TimeOffsetNullOff: 1000
-          TimeLeakageNullOff: 5
+          TimeLeakageNullOff: 1
           TimeDeselDelay: 18
           TimeBunchClkDelay: 3000
           TimeDigitizeDelay: 8
           TimePowerUpOn: 11
           TimePowerUpDigOn: 11          
           TimeThreshOff: 2600
-          TrigInhibitOff: 500
+          TrigInhibitOff: 1000
           BunchClockCount: 1812
           Cal0Delay: 750
           Cal1Delay: 200
@@ -129,16 +129,28 @@ DesyTrackerRoot:
           Chan_960_991: DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD
           Chan_992_1023: DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD
         KpixAsic[0]:
-          enable: 'True'
-        KpixAsic[1]:
-          enable: 'True'
-        KpixAsic[2]:
-          enable: 'True'
-        KpixAsic[3]:
-          enable: 'True'
-        KpixAsic[4]:
           enable: 'False'
+        KpixAsic[1]:
+          enable: 'False'
+        KpixAsic[2]:
+          enable: 'False'
+        KpixAsic[3]:
+          enable: 'False'
+        KpixAsic[4]:
+          enable: 'True'
         KpixAsic[5]:
+          enable: 'True'
+        KpixAsic[6]:
+          enable: 'False'
+        KpixAsic[7]:
+          enable: 'True'
+        KpixAsic[8]:
+          enable: 'True'
+        KpixAsic[9]:
+          enable: 'True'
+        KpixAsic[10]:
+          enable: 'True'
+        KpixAsic[11]:
           enable: 'True'
         KpixAsic[24]:
           enable: 'True'
