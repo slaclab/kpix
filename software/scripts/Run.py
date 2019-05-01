@@ -47,6 +47,12 @@ parser.add_argument(
     required = False,
     default = False)
 
+parser.add_argument(
+    '--runcount', '-r',
+    type = int,
+    required = False,
+    default = 2**64-1)
+
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -60,13 +66,15 @@ if __name__ == "__main__":
         time.sleep(5)
         print('Done Reloading FPGA')
 
+        # Read everything
         root.ReadAll()
         root.waitOnUpdate()
 
+        # Print the version info
         root.DesyTracker.AxiVersion.printStatus()
 
         if os.path.isdir(args.outfile):
-            args.outfile = os.path.abspath(datetime.datetime.now().strftime(f"{args.outfile}/Calibration_%Y%m%d_%H%M%S.dat"))
+            args.outfile = os.path.abspath(datetime.datetime.now().strftime(f"{args.outfile}/Run_%Y%m%d_%H%M%S.dat"))
             
         print(f'Opening data file: {args.outfile}')
         root.DataWriter.dataFile.setDisp(args.outfile)
@@ -83,8 +91,10 @@ if __name__ == "__main__":
         root.ReadAll()
         root.waitOnUpdate()
 
+        root.DesyTrackerRunControl.MaxRunCount.set(args.runcount)
+
         try:
-            root.DesyTrackerRunControl.runState.setDisp('Calibration')
+            root.DesyTrackerRunControl.runState.setDisp('Running')
             root.DesyTrackerRunControl.waitStopped()
         except (KeyboardInterrupt):
             root.DesyTrackerRunControl.runState.setDisp('Stopped')
