@@ -4,6 +4,16 @@ class Si7006(pr.Device):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        self.forceCheckEach = True
+
+#        self.add(pr.RemoteVariable(
+#            name = 'Temp',
+#            mode = 'RO',
+#            offset = 0xE0 << 2,
+#            bitOffset = 0,
+#            bitSize = 16,
+#            base = pr.UInt))
+
         self.add(pr.RemoteVariable(
             name = 'HumidityRaw',
             mode = 'RO',
