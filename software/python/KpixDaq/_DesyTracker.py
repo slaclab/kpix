@@ -284,8 +284,12 @@ class DesyTrackerRunControl(pyrogue.RunControl):
 
         self.add(pyrogue.LocalVariable(
             name = 'TimeoutWait',
-            value = 5,
+            value = .2,
             units = 'Seconds'))
+
+        self.add(pyrogue.LocalVariable(
+            name = 'MaxRunCount',
+            value = 2**64-1))
 
     def waitStopped(self):
         self._thread.join()
@@ -354,14 +358,23 @@ class DesyTrackerRunControl(pyrogue.RunControl):
 
         mode = self.root.DesyTracker.KpixDaqCore.AcquisitionControl.ExtAcquisitionSrc.valueDisp()
 
-        while (self.runState.valueDisp() == 'Running'):
-            if mode == 'EthAcquire':                
-                self.__triggerAndWait()
-            # Else do nothing an let external acquisition triggers do the work                
+        with click.progressbar(
+                iterable = range(self.MaxRunCount.value()),
+                show_pos = True,
+                label = click.style('Running', fg='green')) as bar:
+
+            for i in bar:
+                if self.runState.valueDisp() == 'Running':
+                    if mode == 'EthAcquire':                
+                        self.__triggerAndWait()
+                    else:
+                        self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, self.TimeoutWait.value()*1000000)
+                        self.runCount += 1
+                else:
+                    break
 
         print('_run Exiting')
         self.__endRun()
-        #self.runState.setDisp('Stopped')
 
 
     def _calibrate(self):
