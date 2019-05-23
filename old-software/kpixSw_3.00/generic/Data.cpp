@@ -7,7 +7,13 @@
 // Description :
 // Generic data container
 //-----------------------------------------------------------------------------
-// Copyright (c) 2011 by SLAC. All rights reserved.
+// This file is part of 'SLAC Generic DAQ Software'.
+// It is subject to the license terms in the LICENSE.txt file found in the 
+// top-level directory of this distribution and at: 
+//    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
+// No part of 'SLAC Generic DAQ Software', including this file, 
+// may be copied, modified, propagated, or distributed except according to 
+// the terms contained in the LICENSE.txt file.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -19,18 +25,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>
+#include <stdint.h>
 using namespace std;
 
+bool datadebug=false;
 
 // Update frame state
 void Data::update() { }
 
 // Constructor
-Data::Data ( uint *data, uint size ) {
+Data::Data ( uint32_t *data, uint32_t size ) {
    size_  = size;
    alloc_ = size;
-   data_  = (uint *)malloc(alloc_ * sizeof(uint));
-   memcpy(data_,data,size_*sizeof(uint));
+   data_  = (uint32_t *)malloc(alloc_ * sizeof(uint32_t));
+   memcpy(data_,data,size_*sizeof(uint32_t));
    update();
 }
 
@@ -38,7 +46,7 @@ Data::Data ( uint *data, uint size ) {
 Data::Data () {
    size_  = 0;
    alloc_ = 1;
-   data_  = (uint *)malloc(sizeof(uint));
+   data_  = (uint32_t *)malloc(sizeof(uint32_t));
    update();
 }
 
@@ -48,43 +56,70 @@ Data::~Data ( ) {
 }
 
 // Read data from file descriptor
-bool Data::read ( int fd, uint size ) {
+bool Data::read ( int32_t fd, uint32_t size ) {
    if ( size > alloc_ ) {
       free(data_);
       alloc_ = size;
-      data_ = (uint *)malloc(alloc_ * sizeof(uint));
+      data_ = (uint32_t *)malloc(alloc_ * sizeof(uint32_t));
    }
    size_ = size;
-   if ( ::read(fd, data_, size_*(sizeof(uint))) != (int)(size_ *sizeof(uint))) {
+   if ( ::read(fd, data_, size_*(sizeof(uint32_t))) != (int)(size_ *sizeof(uint32_t))) {
+      size_ = 0;
+      update();
+      return(false);
+   }
+   update();
+   if (datadebug)
+     cout<< "[dev] data_ =>" << data_ <<"\n"
+	 <<"\t size_ => "<< dec << size_  <<endl;
+   return(true);
+}
+
+// Read data from compressed file
+bool Data::read ( BZFILE *bzFile, uint32_t size ) {
+
+#ifdef USE_BZLIB
+   int32_t bzerror;
+
+   if ( size > alloc_ ) {
+      free(data_);
+      alloc_ = size;
+      data_ = (uint32_t *)malloc(alloc_ * sizeof(uint32_t));
+   }
+   size_ = size;
+   if ( BZ2_bzRead ( &bzerror,bzFile,data_,size_*(sizeof(uint32_t))) != (int)(size_*sizeof(uint32_t))) {
       size_ = 0;
       update();
       return(false);
    }
    update();
    return(true);
+#else
+   return(false);
+#endif
 }
 
 // Copy data from buffer
-void Data::copy ( uint *data, uint size ) {
+void Data::copy ( uint32_t *data, uint32_t size ) {
    if ( size > alloc_ ) {
       free(data_);
       alloc_ = size;
-      data_ = (uint *)malloc(alloc_ * sizeof(uint));
+      data_ = (uint32_t *)malloc(alloc_ * sizeof(uint32_t));
    }
    size_ = size;
 
    // Copy data
-   memcpy(data_,data,size_*sizeof(uint));
+   memcpy(data_,data,size_*sizeof(uint32_t));
    update();
 }
 
 // Get pointer to data buffer
-uint *Data::data ( ) {
+uint32_t *Data::data ( ) {
    return(data_);
 }
 
 // Get data size
-uint Data::size ( ) {
+uint32_t Data::size ( ) {
    return(size_);
 }
 

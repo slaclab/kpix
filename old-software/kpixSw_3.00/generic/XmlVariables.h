@@ -6,8 +6,19 @@
 //-----------------------------------------------------------------------------
 // Description :
 // Extract and store variables from XML string.
+//
+// !!!!!!!!!!!! Warning !!!!!!!!!!!!!!!!!!!
+// Objects of this class must not be created and destroyed in a multi-thread
+// environment. This class calls xml library init and cleanup functions. 
+//
 //-----------------------------------------------------------------------------
-// Copyright (c) 2012 by SLAC. All rights reserved.
+// This file is part of 'SLAC Generic DAQ Software'.
+// It is subject to the license terms in the LICENSE.txt file found in the 
+// top-level directory of this distribution and at: 
+//    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
+// No part of 'SLAC Generic DAQ Software', including this file, 
+// may be copied, modified, propagated, or distributed except according to 
+// the terms contained in the LICENSE.txt file.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -18,12 +29,12 @@
 
 #include <string>
 #include <map>
-#include <sys/types.h>
 #include <libxml/tree.h>
+#include <stdint.h>
 using namespace std;
 
 #ifdef __CINT__
-#define uint unsigned int
+#define uint32_t unsigned int
 #endif
 
 // Define variable holder
@@ -38,13 +49,13 @@ class XmlVariables {
       // Process level
       void xmlLevel( xmlNode *node, string curr );
 
-      // Generate XML for a given level knowing the previous and next values
-      string genXmlString ( string prevName, string currName, string currValue, string nextName );
-
       // Variable list
       VariableHolder vars_;
 
    public:
+
+      // Generate XML for a given level knowing the previous and next values
+      static string genXmlString ( string prevName, string currName, string currValue, string nextName );
 
       //! Constructor
       XmlVariables ( );
@@ -79,7 +90,7 @@ class XmlVariables {
       /*! 
        * \param var Variable name
       */
-      uint getInt ( string var );
+      uint32_t getInt ( string var );
 
       //! Get a variable value as double
       /*! 
@@ -100,7 +111,7 @@ class XmlVariables {
       string getXml (string variable);
 
       //! Return a string to set a variable as XML
-      string setXml (string variable, string value);
+      static string setXml (string variable, string value);
 };
 
 #endif

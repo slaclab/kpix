@@ -7,7 +7,13 @@
 // Description :
 // Extract and store variables from XML string.
 //-----------------------------------------------------------------------------
-// Copyright (c) 2012 by SLAC. All rights reserved.
+// This file is part of 'SLAC Generic DAQ Software'.
+// It is subject to the license terms in the LICENSE.txt file found in the 
+// top-level directory of this distribution and at: 
+//    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
+// No part of 'SLAC Generic DAQ Software', including this file, 
+// may be copied, modified, propagated, or distributed except according to 
+// the terms contained in the LICENSE.txt file.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
@@ -25,6 +31,7 @@
 #include <fstream>
 #include <iomanip>
 #include <libxml/tree.h>
+#include <stdint.h>
 using namespace std;
 
 // Constructor
@@ -47,7 +54,7 @@ void XmlVariables::clear() {
 // Remove whitespace and newlines
 string XmlVariables::removeWhite ( string str ) {
    string temp;
-   uint   i;
+   uint32_t   i;
 
    temp = "";
 
@@ -156,9 +163,9 @@ string XmlVariables::get ( string var ) {
 }
 
 // Get
-uint XmlVariables::getInt ( string var ) {
+uint32_t XmlVariables::getInt ( string var ) {
    VariableHolder::iterator varMapIter;
-   uint                     ret;
+   uint32_t                 ret;
    string                   value;
    const char               *sptr;
    char                     *eptr;
@@ -171,7 +178,7 @@ uint XmlVariables::getInt ( string var ) {
 
    value = varMapIter->second;
    sptr = value.c_str();
-   ret = (uint)strtoul(sptr,&eptr,0);
+   ret = (uint32_t)strtoul(sptr,&eptr,0);
    if ( *eptr != '\0' || eptr == sptr ) ret = 0;
    return(ret);
 }
@@ -212,11 +219,11 @@ string XmlVariables::getList ( string prefix ) {
 
 // Generate XML to transition from one variable to the next
 string XmlVariables::genXmlString ( string prevName, string currName, string currValue, string nextName ) {
-   uint           level;
-   uint           x;
-   uint           y;
-   uint           high;
-   uint           last;
+   uint32_t       level;
+   uint32_t       x;
+   uint32_t       y;
+   uint32_t       high;
+   uint32_t       last;
    stringstream   idx;
    stringstream   tag;
    stringstream   ret;
