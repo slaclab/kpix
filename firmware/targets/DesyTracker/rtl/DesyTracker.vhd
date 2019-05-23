@@ -115,6 +115,10 @@ architecture rtl of DesyTracker is
    constant AXIL_BOOT_C        : integer              := 5;
    constant AXIL_TLU_MON_C     : integer              := 6;
    constant AXIL_CAS_I2C_C     : integerArray(0 to 3) := (7, 8, 9, 10);
+   constant AXIL_CAS_I2C_0_C : integer := 7;
+   constant AXIL_CAS_I2C_1_C : integer := 8;
+   constant AXIL_CAS_I2C_2_C : integer := 9;
+   constant AXIL_CAS_I2C_3_C : integer := 10;   
 
    constant AXIL_XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXIL_MASTERS_C-1 downto 0) := (
       AXIL_VERSION_C    => (
@@ -145,19 +149,19 @@ architecture rtl of DesyTracker is
          baseAddr       => X"06000000",
          addrBits       => 8,
          connectivity   => X"FFFF"),
-      AXIL_CAS_I2C_C(0) => (
+      AXIL_CAS_I2C_0_C => (
          baseAddr       => X"07000000",
          addrBits       => 12,
          connectivity   => X"FFFF"),
-      AXIL_CAS_I2C_C(1) => (
+      AXIL_CAS_I2C_1_C => (
          baseAddr       => X"07001000",
          addrBits       => 12,
          connectivity   => X"FFFF"),
-      AXIL_CAS_I2C_C(2) => (
+      AXIL_CAS_I2C_2_C => (
          baseAddr       => X"07002000",
          addrBits       => 12,
          connectivity   => X"FFFF"),
-      AXIL_CAS_I2C_C(3) => (
+      AXIL_CAS_I2C_3_C => (
          baseAddr       => X"07003000",
          addrBits       => 12,
          connectivity   => X"FFFF"));
