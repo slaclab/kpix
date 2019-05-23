@@ -1,20 +1,20 @@
 //-----------------------------------------------------------------------------
-// File          : OptoFpgaLink.h
+// File          : UdpLink.h
 // Author        : Ryan Herbst  <rherbst@slac.stanford.edu>
-// Created       : 12/01/2011
+// Created       : 04/12/2011
 // Project       : General Purpose
 //-----------------------------------------------------------------------------
 // Description :
-// USB link for opto FPGA board
+// UDP communications link
 //-----------------------------------------------------------------------------
 // Copyright (c) 2011 by SLAC. All rights reserved.
 // Proprietary and confidential to SLAC.
 //-----------------------------------------------------------------------------
 // Modification history :
-// 12/01/2011: created
+// 04/12/2011: created
 //-----------------------------------------------------------------------------
-#ifndef __OPTO_FPGA_LINK_H__
-#define __OPTO_FPGA_LINK_H__
+#ifndef __UDP_LINK_H__
+#define __UDP_LINK_H__
 
 #include <sys/types.h>
 #include <string>
@@ -23,43 +23,59 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <CommLink.h>
+
 using namespace std;
 
 //! Class to contain PGP communications link
-class OptoFpgaLink : public CommLink {
+class UdpLink : public CommLink {
 
    protected:
 
-      // Device info
-      string device_;
-      int    fd_;
+      // Values used for udp version
+      uint   udpCount_;
+      int    *udpFd_;
+      struct sockaddr_in *udpAddr_;
 
-      // Receive frame
-      int rxFrame ( ushort *frame, uint size, uint *type, uint *err );
-
-      // transmit frame
-      int txFrame ( ushort *frame, uint size, uint type );
-
-   public:
-
-      //! Constructor
-      OptoFpgaLink ( );
-
-      //! Deconstructor
-      ~OptoFpgaLink ( );
+      // Data order fix
+      bool dataOrderFix_;
 
       //! IO handling thread
       void ioHandler();
 
+      //! RX handling thread
+      void rxHandler();
+
+   public:
+
+      //! Constructor
+      UdpLink ( );
+
+      //! Deconstructor
+      ~UdpLink ( );
+
+      //! Set max receive size
+      /*! 
+       * \param size max receive size
+      */
+      void setMaxRx(uint size);
+
       //! Open link and start threads
       /*! 
        * Throw string on error.
-       * \param device virtual com port device
+       * \param port  udp port
+       * \param count host count
+       * \param host  udp hosts
       */
-      void open ( string device );
+      void open ( int port, uint count, ... );
 
       //! Stop threads and close link
       void close ();
+
+      //! Set data order fix flag
+      /*! 
+       * \param enable Enable flag
+      */
+      void setDataOrderFix (bool enable);
 
 };
 #endif
