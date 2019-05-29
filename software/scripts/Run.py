@@ -5,6 +5,7 @@ import os
 import logging
 import argparse
 import datetime
+import time
 
 import pyrogue
 import rogue
@@ -37,13 +38,13 @@ parser.add_argument(
     '--outfile', '-o',
     type = str,
     required = False,
-    default = os.path.abspath(datetime.datetime.now().strftime("data/Calibration_%Y%m%d_%H%M%S.dat")),
+    default = os.path.abspath(datetime.datetime.now().strftime("data/Run_%Y%m%d_%H%M%S.dat")),
     help = 'Output file name')
 
 
 parser.add_argument(
     '--debug', '-d',
-    type = bool,
+    action = 'store_true',
     required = False,
     default = False)
 
@@ -51,21 +52,25 @@ parser.add_argument(
     '--runcount', '-r',
     type = int,
     required = False,
-    default = 2**64-1)
+    default = 2**31-1)
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
     
+    # with KpixDaq.DesyTrackerRoot(pollEn=False, ip=args.ip, debug=args.debug) as root:
+    #     # Just reload the FPGA since its the most consistent way to get to a known start state
+    #     print('Reloading FPGA')
+    #     root.DesyTracker.AxiVersion.FpgaReload()
+    #     #root.waitOnUpdate()
+        
+    # # Sleep for 5 seconds to allow FPGA to load
+    # print('Sleeping')
+    # time.sleep(2)
+    # print('Done sleeping')
+
     with KpixDaq.DesyTrackerRoot(pollEn=False, ip=args.ip, debug=args.debug) as root:
-        # Just reload the FPGA since its the most consistent way to get to a known start state
-        print('Reloading FPGA')
-        root.DesyTracker.AxiVersion.FpgaReload()
-
-        # Sleep for 5 seconds to allow FPGA to load
-        time.sleep(5)
-        print('Done Reloading FPGA')
-
+        print('Reading all')
         # Read everything
         root.ReadAll()
         root.waitOnUpdate()
@@ -75,6 +80,8 @@ if __name__ == "__main__":
 
         if os.path.isdir(args.outfile):
             args.outfile = os.path.abspath(datetime.datetime.now().strftime(f"{args.outfile}/Run_%Y%m%d_%H%M%S.dat"))
+
+        input(f'Data file will be {args.outfile}. \n Hit any key to start run.')
             
         print(f'Opening data file: {args.outfile}')
         root.DataWriter.dataFile.setDisp(args.outfile)

@@ -53,12 +53,12 @@ if __name__ == "__main__":
     
     with KpixDaq.DesyTrackerRoot(pollEn=False, ip=args.ip, debug=args.debug) as root:
         # Just reload the FPGA since its the most consistent way to get to a known start state
-        print('Reloading FPGA')
-        root.DesyTracker.AxiVersion.FpgaReload()
+        # print('Reloading FPGA')
+        # root.DesyTracker.AxiVersion.FpgaReload()
 
-        # Sleep for 5 seconds to allow FPGA to load
-        time.sleep(5)
-        print('Done Reloading FPGA')
+        # # Sleep for 5 seconds to allow FPGA to load
+        # time.sleep(5)
+        # print('Done Reloading FPGA')
 
         root.ReadAll()
         root.waitOnUpdate()

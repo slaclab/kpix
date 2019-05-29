@@ -5,6 +5,7 @@ import numpy as np
 import scipy.stats as stats
 #import matplotlib.pyplot as plt
 from collections import defaultdict
+from collections import Counter
 import ctypes
 #import line_profiler
 
@@ -52,7 +53,7 @@ def getField(value, highBit, lowBit):
     return (value >> lowBit) & mask
 
 
-def parseSample(ba):
+def parseSample(ba, timestamp):
     #baSwapped = np.array([ba[4], ba[5], ba[6], ba[7], ba[0], ba[1], ba[2], ba[3]])
     value = int.from_bytes(ba, 'little', signed=False)
 
@@ -63,9 +64,14 @@ def parseSample(ba):
     
     if d['type'] == 3:
         d['firstRuntime'] = getField(value, 63, 32)
-    elif d['type'] == 2:
+    elif d['type'] == 1:
         d['temperature'] = getField(value, 39, 32)
         d['count'] = getField(value, 63, 56)
+    elif d['type'] == 2:
+        d['runtime'] = getField(value, 63, 32)
+        d['bunchCount'] = getField(value, 15, 3)
+        d['subCount'] = getField(value, 2, 0)
+        d['jitter'] = ((d['runtime']-timestamp)*5) - ((3000+d['bunchCount']*8+d['subCount'])*320)
     else:
         d['row'] = getField(value, 4, 0)        
         d['col'] = getField(value, 9, 5)
@@ -92,26 +98,41 @@ def parseFrame(ba):
     d['eventNumber'] = eventNumber
     d['samples'] = nesteddict()
 
-    #print(f'Parsing frame {eventNumber}, timestamp: {timestamp}, {numSamples} samples')
+    kpixCounter = Counter()
+
+    print(f'Parsing frame {eventNumber}, timestamp: {timestamp}, {numSamples} samples')
     rawSamples = ba[32:-4]
 
     data = (rawSamples[i:i+8] for i in range(0, len(rawSamples), 8))
     runtimes = []
+    timestampCount = 0
+    
     for raw in data:
-        sample = parseSample(raw)
+        sample = parseSample(raw, timestamp)
 
+        if sample['type'] == 2:
+            print(sample)
+            timestampCount += 1
+
+        if sample['type'] == 3:
+            print(f"Found runtime sample: {sample['kpixId']} {sample['firstRuntime']:#08x} diff: {sample['firstRuntime']-(timestamp&0xFFFFFFFF)}")
+
+        if sample['type'] == 0:
+            kpixCounter[sample['kpixId']] += 1
+                  
+    print(f'Got {timestampCount} timestamps')
+    print(kpixCounter)
+    return d
+            
 #        if sample['kpixId'] == 24:
 #            print(f'Found local kpix sample: {sample}')
 
-        if sample['type'] == 1:
-            pass
-            #print(f'Found temp sample: {sample}')
-        elif sample['type'] == 3:
+#        elif sample['type'] == 3:
             #print(f"Found runtime sample: {sample['kpixId']} {sample['firstRuntime']:#08x} diff: {sample['firstRuntime']-(timestamp&0xFFFFFFFF)}")
-            if sample['kpixId'] != 24:
-                runtimes.append(sample)
-        else:
-            pass
+#            if sample['kpixId'] != 24:
+#                runtimes.append(sample)
+#        else:
+#            pass
             #d['samples'][sample['kpixId']][sample['bucket']][sample['row']][sample['col']] = sample['adc']
             #print(f'Normal sample: {sample}')
 
@@ -137,9 +158,10 @@ class KpixStreamInfo(rogue.interfaces.stream.Slave):
             return
 
        ba = bytearray(frame.getPayload())
-       frame.read(ba, 0)        
-       print(f'Got Frame: {len(ba)} bytes')
-       d = parseFrame(ba)
+       frame.read(ba, 0)
+       if frame.getChannel() == 0:
+           print(f'Got Frame: {len(ba)} bytes')
+           d = parseFrame(ba)
 
 #        for k, kpix in d['samples'].items():
 #            print(k)
