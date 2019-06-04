@@ -25,7 +25,7 @@ class FrameInfo(rogue.interfaces.stream.Slave):
         print(f' Got frame with {frame.getPayload()} bytes')
 
 class DesyTrackerRoot(pyrogue.Root):
-    def __init__(self, debug=False, hwEmu=False, sim=False, rssiEn=True, ip='192.168.1.10', pollEn=False, **kwargs):
+    def __init__(self, debug=False, hwEmu=False, sim=False, rssiEn=True, ip='192.168.1.10', pollEn=False, zmqPort=9099, **kwargs):
         super().__init__(**kwargs)
 
         if hwEmu:
@@ -64,7 +64,7 @@ class DesyTrackerRoot(pyrogue.Root):
             
         self.add(DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, sim=sim, enabled=True))
 
-        self.start(pollEn=pollEn, timeout=100000)
+        self.start(pollEn=pollEn, timeout=100000, zmqPort=zmqPort)
 
     def stop(self):
         self.udp._rssi.stop()
@@ -203,11 +203,11 @@ class DesyTracker(pyrogue.Device):
             offset = 0x0000))
 
         if not sim:
-#            for i in range(4):
-#                self.add(KpixDaq.Si7006(
-#                    name = f'Si7006[{i}]',
-#                    enabled = False,
-#                    offset = 0x07000000 + (i*0x1000)))
+            for i in range(4):
+                self.add(KpixDaq.Si7006(
+                    name = f'Si7006[{i}]',
+                    enabled = False,
+                    offset = 0x07000000 + (i*0x1000)))
             
             self.add(EnvironmentMonitor())
 
