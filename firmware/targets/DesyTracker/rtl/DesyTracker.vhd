@@ -650,7 +650,7 @@ begin
             TPD_G            => TPD_G,
             DEVICE_MAP_G     => (
                0             => MakeI2cAxiLiteDevType(
-                  i2cAddress => "0001000000",
+                  i2cAddress => "1000000",
                   dataSize   => 16,
                   addrSize   => 8,
                   endianness => '1')),
