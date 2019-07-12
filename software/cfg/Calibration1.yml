@@ -32,10 +32,10 @@ DesyTrackerRoot:
 #        KpixEnable: '0x1'
       KpixClockGen:
         enable: 'True'
-        ClkSelReadout: 9
-        ClkSelDigitize: 4
+        ClkSelReadout: 19
+        ClkSelDigitize: 19
         ClkSelAcquire: 31
-        ClkSelIdle: 9
+        ClkSelIdle: 19
         ClkSelPrecharge: 599
         SampleDelay: 0
         SampleEdge: Fall
@@ -131,14 +131,6 @@ DesyTrackerRoot:
         KpixAsic[0]:
           enable: 'True'
         KpixAsic[1]:
-          enable: 'True'
-        KpixAsic[2]:
-          enable: 'True'
-        KpixAsic[3]:
-          enable: 'True'
-        KpixAsic[4]:
-          enable: 'False'
-        KpixAsic[5]:
           enable: 'True'
         KpixAsic[24]:
           enable: 'True'
