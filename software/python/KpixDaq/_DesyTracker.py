@@ -356,6 +356,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
 
         print('Starting Run')
         self.runCount.set(0)
+        self.root.DataWriter.getDataChannel().setFrameCount(0)
         self.root.DesyTracker.KpixDaqCore.AcquisitionControl.Running.set(True)
         time.sleep(.2)        
 
@@ -383,8 +384,8 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                     if mode == 'EthAcquire':                
                         self.__triggerAndWait()
                     else:
-                        self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 0)
-                        self.runCount += 1
+                        if self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 1e6):
+                            self.runCount += 1
                 else:
                     self.__endRun()
                     return
