@@ -341,6 +341,7 @@ class KpixAsic(pr.Device):
             offset=CONTROL,
             bitOffset=8,
             bitSize=3,
+            base=FlippedUInt,
             enum = {
                 0: '8x',
                 1: '16x',
