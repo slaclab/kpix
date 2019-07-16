@@ -106,6 +106,7 @@ if __name__ == "__main__":
     print('Writing initial configuration')
     root.LoadConfig(args.config)
     root.ReadAll()
+    root.waitOnUpdate()
 
     root.DesyTrackerRunControl.MaxRunCount.set(args.runcount)
 
