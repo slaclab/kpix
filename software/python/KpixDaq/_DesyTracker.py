@@ -305,6 +305,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             name = 'MaxRunCount',
             value = 2**31-1))
 
+    @pyrogue.expose
     def waitStopped(self):
         self._thread.join()
 
@@ -347,6 +348,10 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         return True
 
     def __prestart(self):
+        print('Resetting run count')
+        self.runCount.set(0)
+        self.root.DataWriter.getDataChannel().setFrameCount(0)
+        
         print('Resetting Counters')
         self.root.CountReset()
         time.sleep(.2)
@@ -355,8 +360,6 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         time.sleep(.2)
 
         print('Starting Run')
-        self.runCount.set(0)
-        self.root.DataWriter.getDataChannel().setFrameCount(0)
         self.root.DesyTracker.KpixDaqCore.AcquisitionControl.Running.set(True)
         time.sleep(.2)        
 
@@ -384,7 +387,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                     if mode == 'EthAcquire':                
                         self.__triggerAndWait()
                     else:
-                        if self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 1e6):
+                        if self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 1000000):
                             self.runCount += 1
                 else:
                     self.__endRun()
