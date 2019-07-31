@@ -382,16 +382,18 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                 show_pos = True,
                 label = click.style('Running ', fg='green')) as bar:
 
-            for i in bar:
-                if self.runState.valueDisp() == 'Running':
-                    if mode == 'EthAcquire':                
-                        self.__triggerAndWait()
-                    else:
-                        if self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, 1000000):
-                            self.runCount += 1
+            lastFrameCount = 0
+
+            while self.runState.valueDisp() == 'Running':
+                if mode == 'EthAcquire':                
+                    self.__triggerAndWait()
+                    bar.update(1)
                 else:
-                    self.__endRun()
-                    return
+                    newFrameCount =  self.root.DataWriter.getDataChannel().getFrameCount()
+                    newFrames = newFrameCount-lastFrameCount
+                    lastFrameCount = newFrameCount
+                    bar.update(newFrames)
+                    self.runCount += newFrames
 
         print('_run Exiting')
         self.__endRun()
