@@ -62,7 +62,7 @@ class DesyTrackerRoot(pyrogue.Root):
             self.add(dataWriter)
             self.add(DesyTrackerRunControl())
             
-        self.add(DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, sim=sim, enabled=True))
+        self.add(DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, sim=sim, enabled=True, expand=True))
 
         self.start(pollEn=pollEn, timeout=100000, zmqPort=zmqPort)
 
@@ -200,7 +200,8 @@ class DesyTracker(pyrogue.Device):
             
                 
         self.add(surf.axi.AxiVersion(
-            offset = 0x0000))
+            offset = 0x0000,
+            expand = True))
 
         if not sim:
             for i in range(4):
@@ -209,7 +210,7 @@ class DesyTracker(pyrogue.Device):
                     enabled = False,
                     offset = 0x07000000 + (i*0x1000)))
             
-            self.add(EnvironmentMonitor())
+            self.add(EnvironmentMonitor(expand=True))
 
         extTrigEnum = {
             0: 'BncTrig',
@@ -222,12 +223,14 @@ class DesyTracker(pyrogue.Device):
             7: 'EthStart'}
 
         self.add(TluMonitor(
-            offset = 0x06000000))
+            offset = 0x06000000,
+            expand = True))
 
         self.add(KpixDaq.KpixDaqCore(
             offset = 0x01000000,
             numKpix = 24,
-            extTrigEnum = extTrigEnum))
+            extTrigEnum = extTrigEnum,
+            expand = True))
 
         if rssi and not sim:
             self.add(surf.protocols.rssi.RssiCore(
