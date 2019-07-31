@@ -341,7 +341,7 @@ class KpixAsic(pr.Device):
             offset=CONTROL,
             bitOffset=8,
             bitSize=3,
-            base=FlippedUInt,
+            base=pr.UIntReversed,
             enum = {
                 0: '8x',
                 1: '16x',
@@ -410,7 +410,7 @@ class KpixAsic(pr.Device):
             offset=CONTROL,
             bitOffset=25,
             bitSize=3,
-            base = FlippedUInt,
+            base = pr.UIntReversed,
             enum = {
                 0: '1uA',
                 1: '31uA',
@@ -438,7 +438,7 @@ class KpixAsic(pr.Device):
             offset=CONTROL,
             bitOffset=30,
             bitSize=2,
-            base = FlippedUInt,
+            base = pr.UIntReversed,
             enum = {
                 0: 'None',
                 1: 'Amp',
