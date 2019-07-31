@@ -34,7 +34,7 @@ architecture sim of DesyTrackerTb is
 
    -- component generics
    constant TPD_G        : time             := 1 ns;
-   constant SIMULATION_G : boolean          := false;
+   constant SIMULATION_G : boolean          := true;
    constant BUILD_INFO_G : BuildInfoType    := BUILD_INFO_DEFAULT_SLV_C;
    constant DHCP_G       : boolean          := true;
    constant IP_ADDR_G    : slv(31 downto 0) := x"0A01A8C0";
