@@ -397,6 +397,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                     lastFrameCount = newFrameCount
                     bar.update(newFrames)
                     self.runCount += newFrames
+                    time.sleep(.1)
 
         print('_run Exiting')
         self.__endRun()
