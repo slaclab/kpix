@@ -387,7 +387,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
 
             lastFrameCount = 0
 
-            while self.runState.valueDisp() == 'Running':
+            while self.runState.valueDisp() == 'Running' and bar.finished is False:
                 if mode == 'EthAcquire':                
                     self.__triggerAndWait()
                     bar.update(1)
