@@ -147,7 +147,7 @@ class EnvironmentMonitor(pyrogue.Device):
         self.add(surf.devices.linear.Ltc4151(
             offset = 0x04000000,
             senseRes = 0.02,
-            hidden=True))
+            hidden=False))
 
         self.add(surf.devices.nxp.Sa56004x(
             description = "Board temperate monitor",
