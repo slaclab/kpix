@@ -38,7 +38,7 @@ parser.add_argument(
     '--outfile', '-o',
     type = str,
     required = False,
-    default = os.path.abspath(datetime.datetime.now().strftime("data/Run_%Y%m%d_%H%M%S.dat")),
+    default = os.path.abspath(datetime.datetime.now().strftime("data/")),
     help = 'Output file name')
 
 
@@ -110,13 +110,13 @@ if __name__ == "__main__":
                 root.DesyTrackerRunControl.runState.setDisp('Running')
                 time.sleep(args.time)
                 root.DesyTrackerRunControl.runState.setDisp('Stopped')
-                root.DataWriter.open.set(False)
+                root.DataWriter.close()
                 print(f'Ending run')                
                 #root.DesyTrackerRunControl.waitStopped()
             except (KeyboardInterrupt):
                 print('Caught interrupt')
                 root.DesyTrackerRunControl.runState.setDisp('Stopped')
-                root.DataWriter.open.set(False)
+                root.DataWriter.close()
                 print(f'Ending run')
                 
             print(f'Ended')
