@@ -337,12 +337,19 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                 self._thread.start()
 
     def __triggerAndWait(self):
+        start = time.time()
         self.root.DesyTracker.EthAcquire()
 
         if self.runRate.valueDisp() == 'Auto':
             if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, int(self.TimeoutWait.value()*1000000)):
                 print('Timed out waiting for data')
-                return False
+                print('Waiting again')
+                if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, int(self.TimeoutWait.value()*1000000)):
+                    print('Timed out again')
+                    return False
+                else:
+                    print('Got it this time')
+            #print(f'Frame complete in {time.time()-start} seconds')
         else:
             delay = 1.0 / self.runRate.value()
             time.sleep(delay)
@@ -401,7 +408,8 @@ class DesyTrackerRunControl(pyrogue.RunControl):
 
         print('_run Exiting')
         self.__endRun()
-        self.runState.setDisp('Stopped')                                    
+        if self.runState.valueDisp() != 'Stopped':
+            self.runState.setDisp('Stopped')                                    
 
 
     def _calibrate(self):
@@ -428,6 +436,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
 
         # Put asics in calibration mode
         kpixAsics = [self.root.DesyTracker.KpixDaqCore.KpixAsicArray.KpixAsic[i] for i in range(24)]
+        kpixAsics = [kpix for kpix in kpixAsics if kpix.enable.get()==True] #small speed hack maybe
         for kpix in kpixAsics:
             kpix.setCalibrationMode()
 
@@ -486,7 +495,9 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                         # This occasionally fails so retry 10 times
                         for retry in range(10):
                             try:
+                                start = time.time()
                                 kpix.setCalibration(channel, dac)
+                                #print(f'Set new kpix settings in {time.time()-start} seconds')
                                 break
                             except pyrogue.MemoryError as e:
                                 if retry == 9:
@@ -503,7 +514,8 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                             return
                         
         self.__endRun()
-        self.runState.setDisp('Stopped')
+        if self.runState.getDisp() != 'Stopped':
+            self.runState.setDisp('Stopped')
    
 
     
