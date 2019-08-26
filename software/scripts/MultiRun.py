@@ -90,8 +90,8 @@ if __name__ == "__main__":
             outfile = os.path.abspath(datetime.datetime.now().strftime(f"{args.outfile}/Run_%Y%m%d_%H%M%S.dat"))
 
             print(f'Opening data file: {outfile}')
-            root.DataWriter.dataFile.setDisp(args.outfile)
-            root.DataWriter.open.set(True)
+            root.DataWriter.dataFile.setDisp(outfile)
+            root.DataWriter.open()
 
             print(f"Hard Reset")
             root.HardReset()

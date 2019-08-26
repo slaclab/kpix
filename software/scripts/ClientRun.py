@@ -95,7 +95,7 @@ if __name__ == "__main__":
 
     print(f'Opening data file: {args.outfile}')
     root.DataWriter.dataFile.setDisp(args.outfile)
-    root.DataWriter.open.set(True)
+    root.DataWriter.open()
 
     print(f"Hard Reset")
     root.HardReset()
@@ -127,5 +127,6 @@ if __name__ == "__main__":
                 #root.DesyTrackerRunControl.waitStopped()
     except (KeyboardInterrupt):
         root.DesyTrackerRunControl.runState.setDisp('Stopped')
-            
+        
+    root.DataWriter.close()            
         
