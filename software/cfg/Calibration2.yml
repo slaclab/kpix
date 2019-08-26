@@ -8,7 +8,7 @@ DesyTrackerRoot:
 #    bufferSize: '0'
 #    maxFileSize: '0'
   DesyTrackerRunControl:
-    CalMeanCount: 500
+    CalMeanCount: 2000
     CalDacMin: 200
     CalDacMax: 255
     CalDacStep: 5
@@ -30,7 +30,6 @@ DesyTrackerRoot:
         enable: 'True'
         RawDataMode: 'False'
         AutoReadDisable: 'False'
-#        KpixEnable: '0x1'
       KpixClockGen:
         enable: 'True'
         ClkSelReadout: 19
