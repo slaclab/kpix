@@ -105,24 +105,13 @@ if __name__ == "__main__":
             root.waitOnUpdate()
 
             root.DesyTrackerRunControl.MaxRunCount.set(args.runcount)
-            def f(vv):
-                print(vv)
-                return False
-
             try:
                 root.DesyTrackerRunControl.runState.setDisp('Running')
 
-                pr.VariableWaitValue(root.Desy.runState, '==', value)
+                pyrogue.VariableWait([root.DesyTrackerRunControl.runState],
+                                     lambda val: val[0].valueDisp == 'Stopped',
+                                     timeout=args.time)
 
-                pr.VariableWaitValueDisp([var1, var2],
-                                         lambda val: val[0].value == 0 and val[1].valuedisp == 'Running',
-                                         timeout=10)
-
-                
-                pyrogue.VariableWait(
-                    root.DesyTrackerRunControl.runState,
-                    lambda vv: vv['DesyTrackerRoot.DesyTrackerRunControl.runState'].valueDisp == 'Stopped',
-                    timeout=args.time)
                 root.DesyTrackerRunControl.runState.setDisp('Stopped')
                 root.DataWriter.Close()
                 print(f'Ending run')                
