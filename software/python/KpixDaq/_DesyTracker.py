@@ -25,7 +25,7 @@ class FrameInfo(rogue.interfaces.stream.Slave):
         print(f' Got frame with {frame.getPayload()} bytes')
 
 class DesyTrackerRoot(pyrogue.Root):
-    def __init__(self, debug=False, hwEmu=False, sim=False, rssiEn=True, ip='192.168.1.10', pollEn=False, zmqPort=9099, **kwargs):
+    def __init__(self, debug=False, hwEmu=False, sim=False, rssiEn=True, ip='192.168.1.10', pollEn=False, serverPort=9099, **kwargs):
         super().__init__(**kwargs)
 
         if hwEmu:
@@ -64,7 +64,7 @@ class DesyTrackerRoot(pyrogue.Root):
             
         self.add(DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, sim=sim, enabled=True, expand=True))
 
-        self.start(pollEn=pollEn, timeout=100000, zmqPort=zmqPort)
+        self.start(pollEn=pollEn, timeout=100000, serverPort=serverPort)
 
     def stop(self):
         self.udp._rssi.stop()
@@ -337,19 +337,23 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                 self._thread.start()
 
     def __triggerAndWait(self):
-        start = time.time()
         self.root.DesyTracker.EthAcquire()
 
         if self.runRate.valueDisp() == 'Auto':
+            runCount = self.runCount.value() +1
+            frameCount = self.root.DataWriter.getDataChannel().getFrameCount()
+            #print(f'Current count is: {current}. Waiting for: {waitfor}')            
             if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, int(self.TimeoutWait.value()*1000000)):
+                frameCount = self.root.DataWriter.getDataChannel().getFrameCount()
                 print('Timed out waiting for data')
+                print(f'Current frame count is: {frameCount}. Waiting for: {runCount}')
                 print('Waiting again')
+                start = time.time()                
                 if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, int(self.TimeoutWait.value()*1000000)):
                     print('Timed out again')
                     return False
                 else:
-                    print('Got it this time')
-            #print(f'Frame complete in {time.time()-start} seconds')
+                    print(f'Got it this time in {time.time()-start} seconds')
         else:
             delay = 1.0 / self.runRate.value()
             time.sleep(delay)

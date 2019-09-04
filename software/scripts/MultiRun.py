@@ -90,8 +90,8 @@ if __name__ == "__main__":
             outfile = os.path.abspath(datetime.datetime.now().strftime(f"{args.outfile}/Run_%Y%m%d_%H%M%S.dat"))
 
             print(f'Opening data file: {outfile}')
-            root.DataWriter.dataFile.setDisp(outfile)
-            root.DataWriter.open()
+            root.DataWriter.DataFile.setDisp(outfile)
+            root.DataWriter.Open()
 
             print(f"Hard Reset")
             root.HardReset()
@@ -105,18 +105,32 @@ if __name__ == "__main__":
             root.waitOnUpdate()
 
             root.DesyTrackerRunControl.MaxRunCount.set(args.runcount)
+            def f(vv):
+                print(vv)
+                return False
 
             try:
                 root.DesyTrackerRunControl.runState.setDisp('Running')
-                time.sleep(args.time)
+
+                pr.VariableWaitValue(root.Desy.runState, '==', value)
+
+                pr.VariableWaitValueDisp([var1, var2],
+                                         lambda val: val[0].value == 0 and val[1].valuedisp == 'Running',
+                                         timeout=10)
+
+                
+                pyrogue.VariableWait(
+                    root.DesyTrackerRunControl.runState,
+                    lambda vv: vv['DesyTrackerRoot.DesyTrackerRunControl.runState'].valueDisp == 'Stopped',
+                    timeout=args.time)
                 root.DesyTrackerRunControl.runState.setDisp('Stopped')
-                root.DataWriter.close()
+                root.DataWriter.Close()
                 print(f'Ending run')                
                 #root.DesyTrackerRunControl.waitStopped()
             except (KeyboardInterrupt):
                 print('Caught interrupt')
                 root.DesyTrackerRunControl.runState.setDisp('Stopped')
-                root.DataWriter.close()
+                root.DataWriter.Close()
                 print(f'Ending run')
                 
             print(f'Ended')

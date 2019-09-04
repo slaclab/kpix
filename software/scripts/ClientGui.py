@@ -39,7 +39,7 @@ root = client.root
 
 # Create GUI
 appTop = pyrogue.gui.application(sys.argv)
-guiTop = pyrogue.gui.GuiTop(group='guiGroup')
+guiTop = pyrogue.gui.GuiTop()
 guiTop.addTree(root)
 guiTop.resize(1000,1000)
 

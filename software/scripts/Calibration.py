@@ -69,8 +69,8 @@ if __name__ == "__main__":
             args.outfile = os.path.abspath(datetime.datetime.now().strftime(f"{args.outfile}/Calibration_%Y%m%d_%H%M%S.dat"))
             
         print(f'Opening data file: {args.outfile}')
-        root.DataWriter.dataFile.setDisp(args.outfile)
-        root.DataWriter.open()
+        root.DataWriter.DataFile.setDisp(args.outfile)
+        root.DataWriter.Open()
 
         print(f"Hard Reset")
         root.HardReset()
@@ -86,9 +86,9 @@ if __name__ == "__main__":
         try:
             root.DesyTrackerRunControl.runState.setDisp('Calibration')
             root.DesyTrackerRunControl.waitStopped()
-            root.DataWriter.close()
+            root.DataWriter.Close()
         except (KeyboardInterrupt):
             root.DesyTrackerRunControl.runState.setDisp('Stopped')
-            root.DataWriter.close()            
+            root.DataWriter.Close()            
             
         

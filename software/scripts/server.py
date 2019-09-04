@@ -54,7 +54,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
 
-    with KpixDaq.DesyTrackerRoot(pollEn=args.pollEn, ip=args.ip, debug=args.debug, zmqPort=args.port) as root:
+    with KpixDaq.DesyTrackerRoot(pollEn=args.pollEn, ip=args.ip, debug=args.debug, serverPort=args.port) as root:
         try:
             while True:
                 time.sleep(1)
