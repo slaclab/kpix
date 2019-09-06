@@ -250,7 +250,7 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
     def _acceptFrame(self, frame):
         if frame.getError():
             print('Frame Error!')
-            return
+            #return
 
         #if self.state["DesyTrackerRoot"]["DesyTrackerRunControl"]['CalState'] == "Inject":
         #    return
@@ -275,7 +275,7 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
 
             #parsedFrame = parseFrame(ba)
             
-            print('Got Data Frame')
+            
             self.frameCount += 1
             sample = KpixSample(0)
             #(rawSamples[i:i+8] for i in range(0, len(rawSamples), 8))
@@ -285,8 +285,8 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
             dv.shape = (len(data)//8, 8)
 
             runtime = int.from_bytes(ba[4:12], 'little')
-
-            print(f'CalState: {calState}')
+            print(f'Got Data Frame. Runtime: {runtime}')
+            #print(f'CalState: {calState.__dict__}')
             
             for seg in dv:
                 #word = 
@@ -304,13 +304,18 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
                 bucket = fields.bucket
                 adc = fields.adc
 
+                #print(f'Got sample: kpix: {kpix}, channel {channel}, bucket: {bucket}, adc: {adc}')
+
                 if calState == 'Baseline':
+                    pass
                     #if kpix not in self.baselines:
                         #self.baselines[kpix] = np.zeros([1024, 4, calMeanCount], dtype=np.uint16)
                         #self.counts[kpix] = np.zeros([1024,4], dtype=np.uint8)
 
                     # dict cheat
-                    self.dataDict[kpix][channel][bucket]['baseline']['data'][runtime] = adc
+
+                    # This works
+                    #self.dataDict[kpix][channel][bucket]['baseline']['data'][runtime] = adc
                         
                     #count = self.counts[kpix][channel, bucket]
                     #print(f'Kpix: {kpix}, channel: {channel}, bucket: {bucket}, type: {sample.fields.type}, adc: {adc}')
@@ -327,14 +332,21 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
                         #print(f'Kpix: {kpix}, channel: {channel}, bucket: {bucket}, dac: {calDac}, count: {count}, type: {sample.fields.type}')                        
                         #self.injections[kpix][channel, bucket, calDac, count] = adc
                         #self.counts[kpix][channel, bucket, calDac] = count + 1
-
+                        if len(self.dataDict[kpix][channel][bucket]['injection'][calDac]) > 0:
+                            print(f"Current: {self.dataDict[kpix][channel][bucket]['injection'][calDac]}")
+                            print(f'New sample: kpix: {kpix}, channel {channel}, bucket: {bucket}, adc: {adc}')
+                            
                         self.dataDict[kpix][channel][bucket]['injection'][calDac][runtime] = adc
                     
-        else:
+        elif frame.getChannel() == 6:
             print("Got YAML Frame")
             yamlString = bytearray(ba).rstrip(bytearray(1)).decode('utf-8')
-            yamlDict = pyrogue.yamlToDict(yamlString)
+            yamlDict = pyrogue.yamlToData(yamlString)
+            #print(yamlDict)
             pyrogue.dictUpdate(self.state, yamlDict)
+        else:
+            print(f'Got frame from channel: {frame.getChannel()}')
+#            print(
 
     def baselines(self):
         ret = nesteddict()

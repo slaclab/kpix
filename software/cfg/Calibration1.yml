@@ -2,12 +2,12 @@ DesyTrackerRoot:
   enable: 'True'
   ForceWrite: 'False'
   DesyTrackerRunControl:
-    CalMeanCount: 500
+    CalMeanCount: 1
     CalDacMin: 200
     CalDacMax: 255
     CalDacStep: 5
-    CalDacCount: 5
-    CalChanMin: 0
+    CalDacCount: 1
+    CalChanMin: 1000
     CalChanMax: 1023
   DesyTracker:
     enable: 'True'
@@ -122,7 +122,7 @@ DesyTrackerRoot:
         KpixAsic[6]:
           enable: 'True'
         KpixAsic[7]:
-          enable: 'True'
+          enable: 'False'
         KpixAsic[24]:
           enable: 'True'
       KpixDataRxArray:
