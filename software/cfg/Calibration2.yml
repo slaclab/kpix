@@ -8,13 +8,14 @@ DesyTrackerRoot:
 #    bufferSize: '0'
 #    maxFileSize: '0'
   DesyTrackerRunControl:
-    CalMeanCount: 500
+    CalMeanCount: 2000
     CalDacMin: 200
     CalDacMax: 255
     CalDacStep: 5
     CalDacCount: 5
     CalChanMin: 0
     CalChanMax: 1023
+    runRate: 'Auto'
 #    CalState: Idle
 #    CalChannel: '0'
 #    CalDac: '0'
@@ -29,7 +30,6 @@ DesyTrackerRoot:
         enable: 'True'
         RawDataMode: 'False'
         AutoReadDisable: 'False'
-#        KpixEnable: '0x1'
       KpixClockGen:
         enable: 'True'
         ClkSelReadout: 19
@@ -129,19 +129,19 @@ DesyTrackerRoot:
           Chan_960_991: DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD
           Chan_992_1023: DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD
         KpixAsic[0]:
-          enable: 'False'
+          enable: 'True'
         KpixAsic[1]:
-          enable: 'False'
+          enable: 'True'
         KpixAsic[2]:
-          enable: 'False'
+          enable: 'True'
         KpixAsic[3]:
-          enable: 'False'
+          enable: 'True'
         KpixAsic[4]:
           enable: 'True'
         KpixAsic[5]:
           enable: 'True'
         KpixAsic[6]:
-          enable: 'False'
+          enable: 'True'
         KpixAsic[7]:
           enable: 'True'
         KpixAsic[8]:
@@ -156,51 +156,5 @@ DesyTrackerRoot:
           enable: 'True'
       KpixDataRxArray:
         enable: 'True'
-        KpixDataRx[0]:
-          enable: 'True'
-        KpixDataRx[1]:
-          enable: 'True'
-        KpixDataRx[2]:
-          enable: 'True'
-        KpixDataRx[3]:
-          enable: 'True'
-        KpixDataRx[4]:
-          enable: 'True'
-        KpixDataRx[5]:
-          enable: 'True'
-        KpixDataRx[6]:
-          enable: 'True'
-        KpixDataRx[7]:
-          enable: 'True'
-        KpixDataRx[8]:
-          enable: 'True'
-        KpixDataRx[9]:
-          enable: 'True'
-        KpixDataRx[10]:
-          enable: 'True'
-        KpixDataRx[11]:
-          enable: 'True'
-        KpixDataRx[12]:
-          enable: 'True'
-        KpixDataRx[13]:
-          enable: 'True'
-        KpixDataRx[14]:
-          enable: 'True'
-        KpixDataRx[15]:
-          enable: 'True'
-        KpixDataRx[16]:
-          enable: 'True'
-        KpixDataRx[17]:
-          enable: 'True'
-        KpixDataRx[18]:
-          enable: 'True'
-        KpixDataRx[19]:
-          enable: 'True'
-        KpixDataRx[20]:
-          enable: 'True'
-        KpixDataRx[21]:
-          enable: 'True'
-        KpixDataRx[22]:
-          enable: 'True'
-        KpixDataRx[23]:
+        KpixDataRx[*]:
           enable: 'True'

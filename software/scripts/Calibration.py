@@ -53,12 +53,12 @@ if __name__ == "__main__":
     
     with KpixDaq.DesyTrackerRoot(pollEn=False, ip=args.ip, debug=args.debug) as root:
         # Just reload the FPGA since its the most consistent way to get to a known start state
-        print('Reloading FPGA')
-        root.DesyTracker.AxiVersion.FpgaReload()
+        # print('Reloading FPGA')
+        # root.DesyTracker.AxiVersion.FpgaReload()
 
-        # Sleep for 5 seconds to allow FPGA to load
-        time.sleep(5)
-        print('Done Reloading FPGA')
+        # # Sleep for 5 seconds to allow FPGA to load
+        # time.sleep(5)
+        # print('Done Reloading FPGA')
 
         root.ReadAll()
         root.waitOnUpdate()
@@ -69,8 +69,8 @@ if __name__ == "__main__":
             args.outfile = os.path.abspath(datetime.datetime.now().strftime(f"{args.outfile}/Calibration_%Y%m%d_%H%M%S.dat"))
             
         print(f'Opening data file: {args.outfile}')
-        root.DataWriter.dataFile.setDisp(args.outfile)
-        root.DataWriter.open.set(True)
+        root.DataWriter.DataFile.setDisp(args.outfile)
+        root.DataWriter.Open()
 
         print(f"Hard Reset")
         root.HardReset()
@@ -86,7 +86,9 @@ if __name__ == "__main__":
         try:
             root.DesyTrackerRunControl.runState.setDisp('Calibration')
             root.DesyTrackerRunControl.waitStopped()
+            root.DataWriter.Close()
         except (KeyboardInterrupt):
             root.DesyTrackerRunControl.runState.setDisp('Stopped')
+            root.DataWriter.Close()            
             
         

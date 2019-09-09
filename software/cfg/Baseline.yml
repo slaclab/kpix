@@ -1,6 +1,8 @@
 DesyTrackerRoot:
   enable: 'True'
   ForceWrite: 'False'
+  DesyTrackerRunControl:
+    runRate: 'Auto'
 #  DataWriter:
 #    enable: 'True'
 #    dataFile: ''
@@ -22,7 +24,7 @@ DesyTrackerRoot:
         enable: 'True'
         ClkSelReadout: '15'
         ClkSelDigitize: '15'
-        ClkSelAcquire: '0x20'
+        ClkSelAcquire: '32'
         ClkSelIdle: '15'
         ClkSelPrecharge: '599'
       AcquisitionControl:
@@ -114,9 +116,9 @@ DesyTrackerRoot:
           Chan_928_959: AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA
           Chan_960_991: AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA
           Chan_992_1023: AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA
-        KpixAsic[0]:
+        KpixAsic[6]:
           enable: 'True'
-        KpixAsic[1]:
+        KpixAsic[7]:
           enable: 'True'
         KpixAsic[24]:
           enable: 'True'

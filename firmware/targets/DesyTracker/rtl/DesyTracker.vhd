@@ -115,52 +115,56 @@ architecture rtl of DesyTracker is
    constant AXIL_BOOT_C        : integer              := 5;
    constant AXIL_TLU_MON_C     : integer              := 6;
    constant AXIL_CAS_I2C_C     : integerArray(0 to 3) := (7, 8, 9, 10);
+   constant AXIL_CAS_I2C_0_C   : integer              := 7;
+   constant AXIL_CAS_I2C_1_C   : integer              := 8;
+   constant AXIL_CAS_I2C_2_C   : integer              := 9;
+   constant AXIL_CAS_I2C_3_C   : integer              := 10;
 
    constant AXIL_XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXIL_MASTERS_C-1 downto 0) := (
-      AXIL_VERSION_C    => (
-         baseAddr       => X"00000000",
-         addrBits       => 12,
-         connectivity   => X"FFFF"),
-      AXIL_KPIX_DAQ_C   => (
-         baseAddr       => X"01000000",
-         addrBits       => 24,
-         connectivity   => X"FFFF"),
-      AXIL_ETH_CORE_C   => (
-         baseAddr       => X"02000000",
-         addrBits       => 10,
-         connectivity   => X"FFFF"),
-      AXIL_XADC_C       => (
-         baseAddr       => X"03000000",
-         addrBits       => 12,
-         connectivity   => X"FFFF"),
-      AXIL_PWR_C        => (
-         baseAddr       => X"04000000",
-         addrBits       => 16,
-         connectivity   => X"FFFF"),
-      AXIL_BOOT_C       => (
-         baseAddr       => X"05000000",
-         addrBits       => 12,
-         connectivity   => X"FFFF"),
-      AXIL_TLU_MON_C    => (
-         baseAddr       => X"06000000",
-         addrBits       => 8,
-         connectivity   => X"FFFF"),
-      AXIL_CAS_I2C_C(0) => (
-         baseAddr       => X"07000000",
-         addrBits       => 12,
-         connectivity   => X"FFFF"),
-      AXIL_CAS_I2C_C(1) => (
-         baseAddr       => X"07001000",
-         addrBits       => 12,
-         connectivity   => X"FFFF"),
-      AXIL_CAS_I2C_C(2) => (
-         baseAddr       => X"07002000",
-         addrBits       => 12,
-         connectivity   => X"FFFF"),
-      AXIL_CAS_I2C_C(3) => (
-         baseAddr       => X"07003000",
-         addrBits       => 12,
-         connectivity   => X"FFFF"));
+      AXIL_VERSION_C   => (
+         baseAddr      => X"00000000",
+         addrBits      => 12,
+         connectivity  => X"FFFF"),
+      AXIL_KPIX_DAQ_C  => (
+         baseAddr      => X"01000000",
+         addrBits      => 24,
+         connectivity  => X"FFFF"),
+      AXIL_ETH_CORE_C  => (
+         baseAddr      => X"02000000",
+         addrBits      => 10,
+         connectivity  => X"FFFF"),
+      AXIL_XADC_C      => (
+         baseAddr      => X"03000000",
+         addrBits      => 12,
+         connectivity  => X"FFFF"),
+      AXIL_PWR_C       => (
+         baseAddr      => X"04000000",
+         addrBits      => 16,
+         connectivity  => X"FFFF"),
+      AXIL_BOOT_C      => (
+         baseAddr      => X"05000000",
+         addrBits      => 12,
+         connectivity  => X"FFFF"),
+      AXIL_TLU_MON_C   => (
+         baseAddr      => X"06000000",
+         addrBits      => 8,
+         connectivity  => X"FFFF"),
+      AXIL_CAS_I2C_0_C => (
+         baseAddr      => X"07000000",
+         addrBits      => 12,
+         connectivity  => X"FFFF"),
+      AXIL_CAS_I2C_1_C => (
+         baseAddr      => X"07001000",
+         addrBits      => 12,
+         connectivity  => X"FFFF"),
+      AXIL_CAS_I2C_2_C => (
+         baseAddr      => X"07002000",
+         addrBits      => 12,
+         connectivity  => X"FFFF"),
+      AXIL_CAS_I2C_3_C => (
+         baseAddr      => X"07003000",
+         addrBits      => 12,
+         connectivity  => X"FFFF"));
 
    signal ethClk200 : sl;
    signal ethRst200 : sl;
@@ -492,7 +496,7 @@ begin
 
 --    bncBusy <= busy;
    bncDebug <= '0';
-   bncBusy <= '0';
+   bncBusy  <= '0';
 
 
    -------------------------------------------------------------------------------------------------
@@ -546,21 +550,22 @@ begin
    -------------------------------------------------------------------------------------------------
    U_AxiI2cRegMaster_1 : entity work.AxiI2cRegMaster
       generic map (
-         TPD_G            => TPD_G,
-         DEVICE_MAP_G     => (
-            0             => MakeI2cAxiLiteDevType(
-               i2cAddress => "1101111",
-               dataSize   => 8,
-               addrSize   => 8,
-               endianness => '1'),
-            1             => MakeI2cAxiLiteDevType(
-               i2cAddress => "1001000",
-               dataSize   => 8,
-               addrSize   => 8,
-               endianness => '1')),
-         I2C_SCL_FREQ_G   => 100.0E+3,
-         I2C_MIN_PULSE_G  => 100.0E-9,
-         AXI_CLK_FREQ_G   => 125.0E+6)
+         TPD_G             => TPD_G,
+         DEVICE_MAP_G      => (
+            0              => MakeI2cAxiLiteDevType(
+               i2cAddress  => "1101111",
+               dataSize    => 8,
+               addrSize    => 8,
+               repeatStart => '1',
+               endianness  => '1'),
+            1              => MakeI2cAxiLiteDevType(
+               i2cAddress  => "1001000",
+               dataSize    => 8,
+               addrSize    => 8,
+               endianness  => '1')),
+         I2C_SCL_FREQ_G    => 100.0E+3,
+         I2C_MIN_PULSE_G   => 100.0E-9,
+         AXI_CLK_FREQ_G    => 125.0E+6)
       port map (
          axiClk         => axilClk,                          -- [in]
          axiRst         => axilRst,                          -- [in]
@@ -646,7 +651,7 @@ begin
             TPD_G            => TPD_G,
             DEVICE_MAP_G     => (
                0             => MakeI2cAxiLiteDevType(
-                  i2cAddress => "0001000000",
+                  i2cAddress => "1000000",
                   dataSize   => 16,
                   addrSize   => 8,
                   endianness => '1')),

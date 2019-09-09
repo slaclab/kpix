@@ -17,6 +17,7 @@ class Si7006(pr.Device):
         self.add(pr.RemoteVariable(
             name = 'HumidityRaw',
             mode = 'RO',
+            hidden = True,
             offset = (0xE5 << 2),
             bitOffset = 0,
             bitSize = 16,
@@ -26,12 +27,14 @@ class Si7006(pr.Device):
             name = 'Humidity',
             mode = 'RO',
             units = '%',
+            disp = '{:2.3f}',
             dependencies = [self.HumidityRaw],
             linkedGet = lambda: ((125 * self.HumidityRaw.value())/65536)-6 ))
 
         self.add(pr.RemoteVariable(
             name = 'TemperatureRaw',
             mode = 'RO',
+            hidden = True,
             offset = (0xE3 << 2),
             bitOffset = 0,
             bitSize = 16,
@@ -41,5 +44,6 @@ class Si7006(pr.Device):
             name = 'Temperature',
             mode = 'RO',
             units = 'degC',
+            disp = '{:2.3f}',            
             dependencies = [self.TemperatureRaw],
             linkedGet = lambda: ((175.72 * self.TemperatureRaw.value())/65536)-46.85 ))        

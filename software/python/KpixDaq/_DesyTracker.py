@@ -17,8 +17,15 @@ import surf.devices.micron
 
 import KpixDaq
 
+class FrameInfo(rogue.interfaces.stream.Slave):
+    def __init__(self):
+        rogue.interfaces.stream.Slave.__init__(self)
+
+    def _acceptFrame(self, frame):
+        print(f' Got frame with {frame.getPayload()} bytes')
+
 class DesyTrackerRoot(pyrogue.Root):
-    def __init__(self, debug=False, hwEmu=False, sim=False, rssiEn=True, ip='192.168.1.10', port=8192, pollEn=False, **kwargs):
+    def __init__(self, debug=False, hwEmu=False, sim=False, rssiEn=True, ip='192.168.1.10', port=8192, pollEn=False, serverPort=9099, **kwargs):
         super().__init__(**kwargs)
 
         if hwEmu:
@@ -34,9 +41,9 @@ class DesyTrackerRoot(pyrogue.Root):
                 pollEn = False
             
             else:
-                udp = pyrogue.protocols.UdpRssiPack( host=ip, port=port, packVer=2 )                
-                dest0 = udp.application(dest=0)
-                dest1 = udp.application(dest=1)
+                self.udp = pyrogue.protocols.UdpRssiPack( host=ip, port=port, packVer=2 )                
+                dest0 = self.udp.application(dest=0)
+                dest1 = self.udp.application(dest=1)
 
             self.srp = rogue.protocols.srp.SrpV3()
             self.cmd = rogue.interfaces.stream.Master()
@@ -49,15 +56,20 @@ class DesyTrackerRoot(pyrogue.Root):
             pyrogue.streamConnect(self, dataWriter.getYamlChannel())
 
             if debug:
-                fp = KpixDaq.KpixStreamInfo()
+                fp = FrameInfo()
                 pyrogue.streamTap(dest1, fp) 
 
             self.add(dataWriter)
             self.add(DesyTrackerRunControl())
             
-        self.add(DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, sim=sim, enabled=True))
+        self.add(DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, sim=sim, enabled=True, expand=True))
 
-        self.start(pollEn=pollEn, timeout=100000)
+        self.start(pollEn=pollEn, timeout=100000, serverPort=serverPort)
+
+    def stop(self):
+        self.udp._rssi.stop()
+        super().stop()
+
 
 class TluMonitor(pyrogue.Device):
     def __init__(self, **kwargs):
@@ -120,6 +132,9 @@ class TluMonitor(pyrogue.Device):
                 1: 'TluClk',
             }
         ))
+
+    def countReset(self):
+        self.RstCounts()
         
 class EnvironmentMonitor(pyrogue.Device):
       def __init__(self, **kwargs):
@@ -139,6 +154,11 @@ class EnvironmentMonitor(pyrogue.Device):
             offset = 0x04000400,
             hidden=True))
 
+        for i in range(4):
+            self.add(KpixDaq.Si7006(
+                name = f'Si7006[{i}]',
+                enabled = False,
+                offset = 0x07000000 + (i*0x1000)))
 
         self.add(pyrogue.LinkVariable(
             name = 'FpgaTemperature',
@@ -185,16 +205,12 @@ class DesyTracker(pyrogue.Device):
             
                 
         self.add(surf.axi.AxiVersion(
-            offset = 0x0000))
+            offset = 0x0000,
+            expand = True))
 
         if not sim:
-#            for i in range(4):
-#                self.add(KpixDaq.Si7006(
-#                    name = f'Si7006[{i}]',
-#                    enabled = False,
-#                    offset = 0x07000000 + (i*0x1000)))
             
-            self.add(EnvironmentMonitor())
+            self.add(EnvironmentMonitor(expand=True))
 
         extTrigEnum = {
             0: 'BncTrig',
@@ -207,12 +223,14 @@ class DesyTracker(pyrogue.Device):
             7: 'EthStart'}
 
         self.add(TluMonitor(
-            offset = 0x06000000))
+            offset = 0x06000000,
+            expand = True))
 
         self.add(KpixDaq.KpixDaqCore(
             offset = 0x01000000,
             numKpix = 24,
-            extTrigEnum = extTrigEnum))
+            extTrigEnum = extTrigEnum,
+            expand = True))
 
         if rssi and not sim:
             self.add(surf.protocols.rssi.RssiCore(
@@ -288,8 +306,9 @@ class DesyTrackerRunControl(pyrogue.RunControl):
 
         self.add(pyrogue.LocalVariable(
             name = 'MaxRunCount',
-            value = 2**64-1))
+            value = 2**31-1))
 
+    @pyrogue.expose
     def waitStopped(self):
         self._thread.join()
 
@@ -303,9 +322,10 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             # First stop old threads to avoid overlapping runs
             # but not if we are calling from the running thread
             if self._thread is not None and self._thread != threading.current_thread():
+                print('Join')
                 self._thread.join()
                 self.thread = None;
-                self.root.ReadAll()
+                #self.root.ReadAll()
                 print('Stopped')
             
             if self.runState.valueDisp() == 'Running':
@@ -320,9 +340,20 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         self.root.DesyTracker.EthAcquire()
 
         if self.runRate.valueDisp() == 'Auto':
-            if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, self.TimeoutWait.value()*1000000):
+            runCount = self.runCount.value() +1
+            frameCount = self.root.DataWriter.getDataChannel().getFrameCount()
+            #print(f'Current count is: {current}. Waiting for: {waitfor}')            
+            if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, int(self.TimeoutWait.value()*1000000)):
+                frameCount = self.root.DataWriter.getDataChannel().getFrameCount()
                 print('Timed out waiting for data')
-                return False
+                print(f'Current frame count is: {frameCount}. Waiting for: {runCount}')
+                print('Waiting again')
+                start = time.time()                
+                if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, int(self.TimeoutWait.value()*1000000)):
+                    print('Timed out again')
+                    return False
+                else:
+                    print(f'Got it this time in {time.time()-start} seconds')
         else:
             delay = 1.0 / self.runRate.value()
             time.sleep(delay)
@@ -331,15 +362,18 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         return True
 
     def __prestart(self):
+        print('Resetting run count')
+        self.runCount.set(0)
+        self.root.DataWriter.getDataChannel().setFrameCount(0)
+        
         print('Resetting Counters')
         self.root.CountReset()
         time.sleep(.2)
-        print('Readding system state')
+        print('Reading system state')
         self.root.ReadAll()
         time.sleep(.2)
 
         print('Starting Run')
-        self.runCount.set(0)
         self.root.DesyTracker.KpixDaqCore.AcquisitionControl.Running.set(True)
         time.sleep(.2)        
 
@@ -360,20 +394,26 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         with click.progressbar(
                 iterable = range(self.MaxRunCount.value()),
                 show_pos = True,
-                label = click.style('Running', fg='green')) as bar:
+                label = click.style('Running ', fg='green')) as bar:
 
-            for i in bar:
-                if self.runState.valueDisp() == 'Running':
-                    if mode == 'EthAcquire':                
-                        self.__triggerAndWait()
-                    else:
-                        self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, self.TimeoutWait.value()*1000000)
-                        self.runCount += 1
+            lastFrameCount = 0
+
+            while self.runState.valueDisp() == 'Running' and bar.finished is False:
+                if mode == 'EthAcquire':                
+                    self.__triggerAndWait()
+                    bar.update(1)
                 else:
-                    break
+                    newFrameCount =  self.root.DataWriter.getDataChannel().getFrameCount()
+                    newFrames = newFrameCount-lastFrameCount
+                    lastFrameCount = newFrameCount
+                    bar.update(newFrames)
+                    self.runCount += newFrames
+                    time.sleep(.1)
 
         print('_run Exiting')
         self.__endRun()
+        if self.runState.valueDisp() != 'Stopped':
+            self.runState.setDisp('Stopped')                                    
 
 
     def _calibrate(self):
@@ -400,6 +440,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
 
         # Put asics in calibration mode
         kpixAsics = [self.root.DesyTracker.KpixDaqCore.KpixAsicArray.KpixAsic[i] for i in range(24)]
+        kpixAsics = [kpix for kpix in kpixAsics if kpix.enable.get()==True] #small speed hack maybe
         for kpix in kpixAsics:
             kpix.setCalibrationMode()
 
@@ -455,8 +496,19 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                 
                     # Configure each kpix for channel and dac
                     for kpix in kpixAsics:
-                        kpix.setCalibration(channel, dac)
-                    
+                        # This occasionally fails so retry 10 times
+                        for retry in range(10):
+                            try:
+                                start = time.time()
+                                kpix.setCalibration(channel, dac)
+                                #print(f'Set new kpix settings in {time.time()-start} seconds')
+                                break
+                            except pyrogue.MemoryError as e:
+                                if retry == 9:
+                                    raise e
+                                else:
+                                    print(f'{kpix.path}.setCalibration({channel}, {dac}) failed. Retrying')
+                                
                     # Send acquire command and wait for response
                     for count in range(dacCount):
                         if self.runState.valueDisp() == 'Calibration':
@@ -466,7 +518,8 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                             return
                         
         self.__endRun()
-        self.runState.setDisp('Stopped')                            
+        if self.runState.getDisp() != 'Stopped':
+            self.runState.setDisp('Stopped')
    
 
     

@@ -3,10 +3,10 @@ import re
 
 class SysConfig(pr.Device):
 
-    def KpixEnableUpdate(self, path, value, disp):
+    def KpixEnableUpdate(self, path, varValue):
         index = int(re.search('.*?KpixAsic\\[(.*?)\\]', path).groups()[0])
-        if self.KpixEnable[index].value() != value:
-            self.KpixEnable[index].set(disp=='True', write=True)
+        if self.KpixEnable[index].value() != varValue.value:
+            self.KpixEnable[index].set(varValue.value, write=True)
     
     def __init__(self, numKpix, **kwargs):
         super().__init__(**kwargs)

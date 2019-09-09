@@ -21,11 +21,11 @@ DesyTrackerRoot:
 #        KpixEnable: '0x40'
       KpixClockGen:
         enable: 'True'
-        ClkSelReadout: '0x9'
+        ClkSelReadout: 19
         ClkSelDigitize: '0x4'
-        ClkSelAcquire: '0x4'
-        ClkSelIdle: '0x9'
-        ClkSelPrecharge: '0x4'
+        ClkSelAcquire: 31
+        ClkSelIdle: 19
+        ClkSelPrecharge: 599
       AcquisitionControl:
         enable: 'True'
         ExtTrigSrc: BncTrig
@@ -49,11 +49,11 @@ DesyTrackerRoot:
           TimeLeakageNullOff: 1
           TimeDeselDelay: 18
           TimeBunchClkDelay: 3000
-          TimeDigitizeDelay: 1
+          TimeDigitizeDelay: 8
           TimePowerUpOn: 11
           TimeThreshOff: 2600
           TrigInhibitOff: 1000
-          BunchClockCount: 1000 #8191
+          BunchClockCount: 8000 #8191
           Cal0Delay: 750
           Cal1Delay: 50
           Cal2Delay: 50
@@ -117,9 +117,9 @@ DesyTrackerRoot:
           Chan_960_991: AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA
           Chan_992_1023: AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA
         KpixAsic[0]:
-          enable: 'True'
+          enable: 'False'
         KpixAsic[1]:
-          enable: 'True'
+          enable: 'False'
         KpixAsic[24]:
           enable: 'True'
       KpixDataRxArray:
