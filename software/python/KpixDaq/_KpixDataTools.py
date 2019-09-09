@@ -2,7 +2,7 @@ import sys
 import rogue
 import pyrogue
 import numpy as np
-import scipy.stats as stats
+#import scipy.stats as stats
 #import matplotlib.pyplot as plt
 from collections import defaultdict
 import ctypes

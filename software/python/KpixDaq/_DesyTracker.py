@@ -18,7 +18,7 @@ import surf.devices.micron
 import KpixDaq
 
 class DesyTrackerRoot(pyrogue.Root):
-    def __init__(self, debug=False, hwEmu=False, sim=False, rssiEn=True, ip='192.168.1.10', pollEn=False, **kwargs):
+    def __init__(self, debug=False, hwEmu=False, sim=False, rssiEn=True, ip='192.168.1.10', port=8192, pollEn=False, **kwargs):
         super().__init__(**kwargs)
 
         if hwEmu:
@@ -34,7 +34,7 @@ class DesyTrackerRoot(pyrogue.Root):
                 pollEn = False
             
             else:
-                udp = pyrogue.protocols.UdpRssiPack( host=ip, port=8192, packVer=2 )                
+                udp = pyrogue.protocols.UdpRssiPack( host=ip, port=port, packVer=2 )                
                 dest0 = udp.application(dest=0)
                 dest1 = udp.application(dest=1)
 

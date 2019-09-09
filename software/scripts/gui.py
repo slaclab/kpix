@@ -21,6 +21,11 @@ parser.add_argument(
 )  
 
 parser.add_argument(
+    "--port",
+    type = int,
+    default = 8192)
+
+parser.add_argument(
     "--hwEmu", 
     required = False,
     action = 'store_true',
