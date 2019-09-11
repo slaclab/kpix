@@ -337,6 +337,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                 self._thread.start()
 
     def __triggerAndWait(self):
+        self.root.waitOnUpdate()
         self.root.DesyTracker.EthAcquire()
 
         if self.runRate.valueDisp() == 'Auto':
