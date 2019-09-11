@@ -491,24 +491,26 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                 for dac in dacSweep:
                     bar.update(1)
 
-                    # Set these to log in event stream
-                    self.CalChannel.set(channel)
-                    self.CalDac.set(dac)
-                
-                    # Configure each kpix for channel and dac
-                    for kpix in kpixAsics:
-                        # This occasionally fails so retry 10 times
-                        for retry in range(10):
-                            try:
-                                start = time.time()
-                                kpix.setCalibration(channel, dac)
-                                #print(f'Set new kpix settings in {time.time()-start} seconds')
-                                break
-                            except pyrogue.MemoryError as e:
-                                if retry == 9:
-                                    raise e
-                                else:
-                                    print(f'{kpix.path}.setCalibration({channel}, {dac}) failed. Retrying')
+                    with self.root.updateGroup():
+
+                        # Set these to log in event stream
+                        self.CalChannel.set(channel)
+                        self.CalDac.set(dac)
+
+                        # Configure each kpix for channel and dac
+                        for kpix in kpixAsics:
+                            # This occasionally fails so retry 10 times
+                            for retry in range(10):
+                                try:
+                                    start = time.time()
+                                    kpix.setCalibration(channel, dac)
+                                    #print(f'Set new kpix settings in {time.time()-start} seconds')
+                                    break
+                                except pyrogue.MemoryError as e:
+                                    if retry == 9:
+                                        raise e
+                                    else:
+                                        print(f'{kpix.path}.setCalibration({channel}, {dac}) failed. Retrying')
                                 
                     # Send acquire command and wait for response
                     for count in range(dacCount):
