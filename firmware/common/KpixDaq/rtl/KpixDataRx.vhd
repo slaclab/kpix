@@ -250,11 +250,11 @@ begin
 
    U_SimpleDualPortRam_1 : entity surf.SimpleDualPortRam
       generic map (
-         TPD_G        => TPD_G,
-         BRAM_EN_G    => true,
-         DOB_REG_G    => false,
-         DATA_WIDTH_G => RAM_DATA_WIDTH_C,
-         ADDR_WIDTH_G => RAM_ADDR_WIDTH_C)
+         TPD_G         => TPD_G,
+         MEMORY_TYPE_G => "block",
+         DOB_REG_G     => false,
+         DATA_WIDTH_G  => RAM_DATA_WIDTH_C,
+         ADDR_WIDTH_G  => RAM_ADDR_WIDTH_C)
       port map (
          clka  => clk200,               -- [in]
          wea   => r.rxRamWrEn,          -- [in]
