@@ -24,6 +24,8 @@ use surf.StdRtlPkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
+
+library kpix; 
 ----------------------------------------------------------------------------------------------------
 
 entity DesyTrackerTb is
@@ -184,7 +186,7 @@ begin
          kpixCmdBuf(i)(j) <= transport kpixCmd(i)(j)     after 7.2 ns;
          kpixData(i)(j)   <= transport kpixDataBuf(i)(j) after 7.2 ns;
 
-         U_KpixLocal_1 : entity work.KpixLocal
+         U_KpixLocal_1 : entity kpix.KpixLocal
             generic map (
                TPD_G => TPD_G)
             port map (

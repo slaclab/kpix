@@ -27,8 +27,10 @@ use surf.AxiStreamPkg.all;
 use surf.AxiLitePkg.all;
 use surf.SsiPkg.all;
 
-use work.KpixPkg.all;
-use work.KpixLocalPkg.all;
+
+library kpix;
+use kpix.KpixPkg.all;
+use kpix.KpixLocalPkg.all;
 
 entity EventBuilder is
 

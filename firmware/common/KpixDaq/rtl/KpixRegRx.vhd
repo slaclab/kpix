@@ -29,9 +29,10 @@ use ieee.std_logic_unsigned.all;
 library surf;
 use surf.StdRtlPkg.all;
 
-use work.KpixPkg.all;
 
-use work.KpixRegRxPkg.all;
+library kpix;
+use kpix.KpixPkg.all;
+use kpix.KpixRegRxPkg.all;
 
 entity KpixRegRx is
 

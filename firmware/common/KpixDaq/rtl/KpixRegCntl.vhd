@@ -25,9 +25,11 @@ library surf;
 use surf.StdRtlPkg.all;
 use surf.AxiLitePkg.all;
 
-use work.KpixPkg.all;
-use work.KpixLocalPkg.all;
-use work.KpixRegRxPkg.all;
+
+library kpix;
+use kpix.KpixPkg.all;
+use kpix.KpixLocalPkg.all;
+use kpix.KpixRegRxPkg.all;
 
 entity KpixRegCntl is
 
@@ -341,7 +343,7 @@ begin
    end process seq;
 
    RX_GEN : for i in NUM_KPIX_MODULES_G downto 0 generate
-      U_KpixRegRx_1 : entity work.KpixRegRx
+      U_KpixRegRx_1 : entity kpix.KpixRegRx
          generic map (
             TPD_G     => TPD_G,
             KPIX_ID_G => i)

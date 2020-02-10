@@ -23,7 +23,9 @@ library surf;
 use surf.StdRtlPkg.all;
 use surf.AxiLitePkg.all;
 
-use work.KpixPkg.all;
+
+library kpix;
+use kpix.KpixPkg.all;
 
 entity SysConfig is
 

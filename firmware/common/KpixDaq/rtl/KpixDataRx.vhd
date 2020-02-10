@@ -26,7 +26,9 @@ use surf.StdRtlPkg.all;
 use surf.AxiLitePkg.all;
 use surf.AxiStreamPkg.all;
 
-use work.KpixPkg.all;
+
+library kpix;
+use kpix.KpixPkg.all;
 
 entity KpixDataRx is
 

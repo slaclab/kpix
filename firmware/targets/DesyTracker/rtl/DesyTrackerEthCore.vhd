@@ -28,7 +28,9 @@ use surf.AxiStreamPkg.all;
 use surf.SsiPkg.all;
 use surf.EthMacPkg.all;
 
-use work.KpixPkg.all;
+
+library kpix;
+use kpix.KpixPkg.all;
 
 library unisim;
 use unisim.vcomponents.all;

@@ -26,8 +26,10 @@ library surf;
 use surf.StdRtlPkg.all;
 use surf.AxiLitePkg.all;
 
-use work.KpixPkg.all;
-use work.KpixLocalPkg.all;
+
+library kpix;
+use kpix.KpixPkg.all;
+use kpix.KpixLocalPkg.all;
 
 library UNISIM;
 use UNISIM.VCOMPONENTS.all;

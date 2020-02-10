@@ -27,8 +27,10 @@ use surf.StdRtlPkg.all;
 use surf.AxiLitePkg.all;
 use surf.AxiStreamPkg.all;
 
-use work.KpixPkg.all;
-use work.KpixLocalPkg.all;
+
+library kpix;
+use kpix.KpixPkg.all;
+use kpix.KpixLocalPkg.all;
 
 entity KpixDaqCore is
 
@@ -189,7 +191,7 @@ begin
    -------------------------------------------------------------------------------------------------
    -- System level configuration registers
    -------------------------------------------------------------------------------------------------
-   U_SysConfig_1 : entity work.SysConfig
+   U_SysConfig_1 : entity kpix.SysConfig
       generic map (
          TPD_G => TPD_G)
       port map (
@@ -205,7 +207,7 @@ begin
    --------------------------------------------------------------------------------------------------
    -- Generate the KPIX Clock
    --------------------------------------------------------------------------------------------------
-   U_KpixClockGen_1 : entity work.KpixClockGen
+   U_KpixClockGen_1 : entity kpix.KpixClockGen
       generic map (
          TPD_G => TPD_G)
       port map (
@@ -225,7 +227,7 @@ begin
    --------------------------------------------------------------------------------------------------
    -- Acquisition Control
    --------------------------------------------------------------------------------------------------
-   U_AcquisitionControl_1 : entity work.AcquisitionControl
+   U_AcquisitionControl_1 : entity kpix.AcquisitionControl
       generic map (
          TPD_G          => TPD_G,
          CLOCK_PERIOD_G => 5.0e-9)
@@ -249,7 +251,7 @@ begin
    -- KPIX Register Control
    -- Handles reads and writes to KPIX registers via AXI-Lite interface
    --------------------------------------------------------------------------------------------------
-   U_KpixRegCntl_1 : entity work.KpixRegCntl
+   U_KpixRegCntl_1 : entity kpix.KpixRegCntl
       generic map (
          TPD_G              => TPD_G,
          NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
@@ -298,7 +300,7 @@ begin
          mAxiReadSlaves      => rxDataAxilReadSlaves);
 
    KpixDataRxGen : for i in NUM_KPIX_MODULES_G downto 0 generate
-      U_KpixDataRx_1 : entity work.KpixDataRx
+      U_KpixDataRx_1 : entity kpix.KpixDataRx
          generic map (
             TPD_G             => TPD_G,
             KPIX_ID_G         => i,
@@ -326,7 +328,7 @@ begin
    --------------------------------------------------------------------------------------------------
    -- Event Builder
    --------------------------------------------------------------------------------------------------
-   U_EventBuilder_1 : entity work.EventBuilder
+   U_EventBuilder_1 : entity kpix.EventBuilder
       generic map (
          TPD_G              => TPD_G,
          NUM_KPIX_MODULES_G => NUM_KPIX_MODULES_G)
@@ -352,7 +354,7 @@ begin
    ----------------------------------------
    -- Local KPIX Device
    ----------------------------------------
-   KpixLocalInst : entity work.KpixLocal
+   KpixLocalInst : entity kpix.KpixLocal
       port map (
          kpixClk        => kpixClk,
          debugOutA      => debugOutA,

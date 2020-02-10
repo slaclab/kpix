@@ -24,7 +24,9 @@ use ieee.std_logic_unsigned.all;
 
 library surf;
 use surf.StdRtlPkg.all;
-use work.KpixLocalPkg.all;
+
+library kpix;
+use kpix.KpixLocalPkg.all;
 
 entity KpixLocal is
    generic (

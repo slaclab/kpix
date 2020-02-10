@@ -25,7 +25,9 @@ use surf.AxiLitePkg.all;
 use surf.AxiStreamPkg.all;
 use surf.I2cPkg.all;
 
-use work.KpixPkg.all;
+
+library kpix;
+use kpix.KpixPkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -464,7 +466,7 @@ begin
    -------------------------------------------------------------------------------------------------
    -- Main KPIX DAQ Core
    -------------------------------------------------------------------------------------------------
-   U_KpixDaqCore_1 : entity work.KpixDaqCore
+   U_KpixDaqCore_1 : entity kpix.KpixDaqCore
       generic map (
          TPD_G              => TPD_G,
          AXIL_BASE_ADDR_G   => AXIL_XBAR_CONFIG_C(AXIL_KPIX_DAQ_C).baseAddr,
