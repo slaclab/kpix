@@ -18,8 +18,10 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-use work.StdRtlPkg.all;
-use work.AxiLitePkg.all;
+
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiLitePkg.all;
 
 
 library unisim;
@@ -90,7 +92,7 @@ begin
 
    tluClkClean <= iTluClkClean;
 
-   U_MMCM : entity work.ClockManager7
+   U_MMCM : entity surf.ClockManager7
       generic map(
          TPD_G             => TPD_G,
          TYPE_G            => "PLL",
@@ -124,7 +126,7 @@ begin
 
    kpixRst200Raw <= axilRst when r.tluClkSel = '0' else not mmcmLocked;
 
-   RstSync_1 : entity work.RstSync
+   RstSync_1 : entity surf.RstSync
       generic map (
          TPD_G          => TPD_G,
          IN_POLARITY_G  => '1',
@@ -135,7 +137,7 @@ begin
          asyncRst => kpixRst200Raw,
          syncRst  => kpixRst200);
 
-   U_SyncClockFreq_1 : entity work.SyncClockFreq
+   U_SyncClockFreq_1 : entity surf.SyncClockFreq
       generic map (
          TPD_G          => TPD_G,
          REF_CLK_FREQ_G => 125.0E+6,
@@ -154,7 +156,7 @@ begin
          locClk      => axilClk,        -- [in]
          refClk      => axilClk);       -- [in]
 
-   U_SynchronizerOneShotCnt_Trigger : entity work.SynchronizerOneShotCnt
+   U_SynchronizerOneShotCnt_Trigger : entity surf.SynchronizerOneShotCnt
       generic map (
          TPD_G         => TPD_G,
          COMMON_CLK_G  => false,
@@ -171,7 +173,7 @@ begin
          rdClk      => axilClk,         -- [in]
          rdRst      => axilRst);        -- [in]
 
-   U_SynchronizerOneShotCnt_Start : entity work.SynchronizerOneShotCnt
+   U_SynchronizerOneShotCnt_Start : entity surf.SynchronizerOneShotCnt
       generic map (
          TPD_G         => TPD_G,
          COMMON_CLK_G  => false,
@@ -188,7 +190,7 @@ begin
          rdClk      => axilClk,         -- [in]
          rdRst      => axilRst);        -- [in]
 
-   U_SynchronizerOneShotCnt_Spill : entity work.SynchronizerOneShotCnt
+   U_SynchronizerOneShotCnt_Spill : entity surf.SynchronizerOneShotCnt
       generic map (
          TPD_G         => TPD_G,
          COMMON_CLK_G  => false,

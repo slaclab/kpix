@@ -18,7 +18,9 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-use work.StdRtlPkg.all;
+
+library surf;
+use surf.StdRtlPkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -145,7 +147,7 @@ begin
          green       => green);         -- [out]
 
 
-   U_ClkRst_gtClk : entity work.ClkRst
+   U_ClkRst_gtClk : entity surf.ClkRst
       generic map (
          CLK_PERIOD_G      => 3.2 ns,
          CLK_DELAY_G       => 1 ns,
@@ -156,7 +158,7 @@ begin
          clkP => gtClkP,
          clkN => gtClkN);
 
-   U_ClkRst_tluClk : entity work.ClkRst
+   U_ClkRst_tluClk : entity surf.ClkRst
       generic map (
          CLK_PERIOD_G      => 25 ns,
          CLK_DELAY_G       => 1 ns,

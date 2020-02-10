@@ -21,9 +21,11 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
-use work.StdRtlPkg.all;
-use work.AxiLitePkg.all;
-use work.AxiStreamPkg.all;
+
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiLitePkg.all;
+use surf.AxiStreamPkg.all;
 
 use work.KpixPkg.all;
 use work.KpixLocalPkg.all;
@@ -153,7 +155,7 @@ begin
    kpixSerTxOut                                  <= intKpixSerTxOut(NUM_KPIX_MODULES_G-1 downto 0);
    intKpixSerRxIn(NUM_KPIX_MODULES_G-1 downto 0) <= kpixSerRxIn;
 
-   U_RegisterVector_1 : entity work.RegisterVector
+   U_RegisterVector_1 : entity surf.RegisterVector
       generic map (
          TPD_G   => TPD_G,
          WIDTH_G => NUM_KPIX_MODULES_G+1)
@@ -166,7 +168,7 @@ begin
    kpixClkOut <= kpixClk;
 
 
-   U_MAIN_XBAR : entity work.AxiLiteCrossbar
+   U_MAIN_XBAR : entity surf.AxiLiteCrossbar
       generic map (
          TPD_G              => TPD_G,
          NUM_SLAVE_SLOTS_G  => 1,
@@ -277,7 +279,7 @@ begin
    -- Parses incomming seiral data stream into individual samples which are fed to the EventBuilder
    -- Must instantiate one for every connected KPIX (including the local kpix?)
    --------------------------------------------------------------------------------------------------
-   U_RX_DATA_XBAR : entity work.AxiLiteCrossbar
+   U_RX_DATA_XBAR : entity surf.AxiLiteCrossbar
       generic map (
          TPD_G              => TPD_G,
          NUM_SLAVE_SLOTS_G  => 1,

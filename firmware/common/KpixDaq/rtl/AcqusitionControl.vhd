@@ -21,9 +21,11 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
-use work.StdRtlPkg.all;
-use work.AxiLitePkg.all;
-use work.AxiStreamPkg.all;
+
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiLitePkg.all;
+use surf.AxiStreamPkg.all;
 
 use work.KpixLocalPkg.all;
 use work.KpixPkg.all;
@@ -134,7 +136,7 @@ architecture rtl of AcquisitionControl is
 begin
 
    EXT_SYNC_GEN : for i in 7 downto 0 generate
-      Synchronizer : entity work.SynchronizerEdge
+      Synchronizer : entity surf.SynchronizerEdge
          generic map (
             TPD_G => TPD_G)
          port map (
@@ -307,7 +309,7 @@ begin
    axisMaster.tData(15 downto 3)  <= kpixState.bunchCount;
    axisMaster.tData(2 downto 0)   <= kpixState.subCount;
    axisMaster.tKeep               <= (others => '1');
-   U_AxiStreamFifoV2_1 : entity work.AxiStreamFifoV2
+   U_AxiStreamFifoV2_1 : entity surf.AxiStreamFifoV2
       generic map (
          TPD_G               => TPD_G,
          INT_PIPE_STAGES_G   => 1,

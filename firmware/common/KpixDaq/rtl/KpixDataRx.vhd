@@ -20,9 +20,11 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
-use work.StdRtlPkg.all;
-use work.AxiLitePkg.all;
-use work.AxiStreamPkg.all;
+
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiLitePkg.all;
+use surf.AxiStreamPkg.all;
 
 use work.KpixPkg.all;
 
@@ -244,7 +246,7 @@ architecture rtl of KpixDataRx is
 
 begin
 
-   U_SimpleDualPortRam_1 : entity work.SimpleDualPortRam
+   U_SimpleDualPortRam_1 : entity surf.SimpleDualPortRam
       generic map (
          TPD_G        => TPD_G,
          BRAM_EN_G    => true,
