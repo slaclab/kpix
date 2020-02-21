@@ -9,8 +9,9 @@ import datetime
 import pyrogue
 import rogue
 
-pyrogue.addLibraryPath('../python')
-pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
+if '--local' in sys.argv:
+    pyrogue.addLibraryPath('../../firmware/common/python')
+    pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
 
 import KpixDaq
 
@@ -49,7 +50,7 @@ parser.add_argument(
 
 
 if __name__ == "__main__":
-    args = parser.parse_args()
+    args = parser.parse_known_args()
     
     with KpixDaq.DesyTrackerRoot(pollEn=False, ip=args.ip, debug=args.debug) as root:
         # Just reload the FPGA since its the most consistent way to get to a known start state
