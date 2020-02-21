@@ -21,8 +21,12 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
-use work.StdRtlPkg.all;
-use work.KpixLocalPkg.all;
+
+library surf;
+use surf.StdRtlPkg.all;
+
+library kpix;
+use kpix.KpixLocalPkg.all;
 
 entity KpixLocal is
    generic (
@@ -260,7 +264,7 @@ begin
    -- Not really necessary since clk200 and kpixClk have synchronous edges,
    -- but it's easy to do edge detection this way.
    -------------------------------------------------------------------------------------------------
-   SynchronizerEdge_RegClk : entity work.SynchronizerEdge
+   SynchronizerEdge_RegClk : entity surf.SynchronizerEdge
       generic map (
          TPD_G => TPD_G)
       port map (
@@ -323,7 +327,7 @@ begin
    -- Synchronize kpix core outputs to sysclk
    --------------------------------------------------------------------------------------------------
 
---    SynchronizerFifo_KpixLocal : entity work.SynchronizerFifo
+--    SynchronizerFifo_KpixLocal : entity surf.SynchronizerFifo
 --       generic map (
 --          TPD_G        => TPD_G,
 --          BRAM_EN_G    => false,

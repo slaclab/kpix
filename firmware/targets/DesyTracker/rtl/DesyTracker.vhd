@@ -18,12 +18,16 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-use work.StdRtlPkg.all;
-use work.AxiLitePkg.all;
-use work.AxiStreamPkg.all;
-use work.I2cPkg.all;
 
-use work.KpixPkg.all;
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiLitePkg.all;
+use surf.AxiStreamPkg.all;
+use surf.I2cPkg.all;
+
+
+library kpix;
+use kpix.KpixPkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -267,7 +271,7 @@ begin
    -- Clock heartbeats and LED statuses
    -------------------------------------------------------------------------------------------------
    -- kpixClk200
-   Heartbeat_kpixClk200 : entity work.Heartbeat
+   Heartbeat_kpixClk200 : entity surf.Heartbeat
       generic map (
          TPD_G        => TPD_G,
          PERIOD_IN_G  => 5.0E-9,
@@ -279,7 +283,7 @@ begin
    led(0) <= heartbeat;
 
 
-   Heartbeat_refClk : entity work.Heartbeat
+   Heartbeat_refClk : entity surf.Heartbeat
       generic map (
          TPD_G        => TPD_G,
          PERIOD_IN_G  => 6.40E-9,
@@ -289,7 +293,7 @@ begin
          o   => led(1));
 
 
-   Heartbeat_tluClk : entity work.Heartbeat
+   Heartbeat_tluClk : entity surf.Heartbeat
       generic map (
          TPD_G        => TPD_G,
          PERIOD_IN_G  => 25.0E-9,
@@ -298,7 +302,7 @@ begin
          clk => tluClkClean,
          o   => led(2));
 
-   Heartbeat_axilClk : entity work.Heartbeat
+   Heartbeat_axilClk : entity surf.Heartbeat
       generic map (
          TPD_G        => TPD_G,
          PERIOD_IN_G  => 8.0E-9,
@@ -322,7 +326,7 @@ begin
       kpixRst(i) <= kpixResetOut;
 
       -- Clock
-      U_ClkOutBufDiff_CLK : entity work.ClkOutBufDiff
+      U_ClkOutBufDiff_CLK : entity surf.ClkOutBufDiff
          generic map (
             TPD_G        => TPD_G,
             XIL_DEVICE_G => "7SERIES")
@@ -401,7 +405,7 @@ begin
    -------------------------------------------------------------------------------------------------
    -- Top level crossbar
    -------------------------------------------------------------------------------------------------
-   U_XBAR : entity work.AxiLiteCrossbar
+   U_XBAR : entity surf.AxiLiteCrossbar
       generic map (
          TPD_G              => TPD_G,
          NUM_SLAVE_SLOTS_G  => 1,
@@ -422,7 +426,7 @@ begin
    -------------------------------------------------------------------------------------------------
    -- AxiVersion
    -------------------------------------------------------------------------------------------------
-   U_AxiVersion_1 : entity work.AxiVersion
+   U_AxiVersion_1 : entity surf.AxiVersion
       generic map (
          TPD_G           => TPD_G,
          BUILD_INFO_G    => BUILD_INFO_G,
@@ -442,7 +446,7 @@ begin
    -------------------------------------------------------------------------------------------------
    -- Synchronize the AXI-Lite bus to selected 200Mhz clock that is sent to KpixDaqCore
    -------------------------------------------------------------------------------------------------
-   U_AxiLiteAsync_1 : entity work.AxiLiteAsync
+   U_AxiLiteAsync_1 : entity surf.AxiLiteAsync
       generic map (
          TPD_G => TPD_G)
       port map (
@@ -462,7 +466,7 @@ begin
    -------------------------------------------------------------------------------------------------
    -- Main KPIX DAQ Core
    -------------------------------------------------------------------------------------------------
-   U_KpixDaqCore_1 : entity work.KpixDaqCore
+   U_KpixDaqCore_1 : entity kpix.KpixDaqCore
       generic map (
          TPD_G              => TPD_G,
          AXIL_BASE_ADDR_G   => AXIL_XBAR_CONFIG_C(AXIL_KPIX_DAQ_C).baseAddr,
@@ -487,7 +491,7 @@ begin
          kpixSerTxOut    => kpixSerTxOut,            -- [out]
          kpixSerRxIn     => kpixSerRxIn);            -- [in]
 
---    U_ClkOutBufSingle_1 : entity work.ClkOutBufSingle
+--    U_ClkOutBufSingle_1 : entity surf.ClkOutBufSingle
 --       generic map (
 --          TPD_G => TPD_G)
 --       port map (
@@ -503,7 +507,7 @@ begin
    -- XADC
    -- Need to use ethClk on xadcClk and COMMON_CLK_G=false because DRP can't run at 200 MHz
    -------------------------------------------------------------------------------------------------
-   U_XadcSimpleCore_1 : entity work.XadcSimpleCore
+   U_XadcSimpleCore_1 : entity surf.XadcSimpleCore
       generic map (
          TPD_G                    => TPD_G,
          COMMON_CLK_G             => true,
@@ -548,7 +552,7 @@ begin
    -------------------------------------------------------------------------------------------------
    -- Board temperature
    -------------------------------------------------------------------------------------------------
-   U_AxiI2cRegMaster_1 : entity work.AxiI2cRegMaster
+   U_AxiI2cRegMaster_1 : entity surf.AxiI2cRegMaster
       generic map (
          TPD_G             => TPD_G,
          DEVICE_MAP_G      => (
@@ -579,7 +583,7 @@ begin
    ----------------------
    -- AXI-Lite: Boot Prom
    ----------------------
-   U_SpiProm : entity work.AxiMicronN25QCore
+   U_SpiProm : entity surf.AxiMicronN25QCore
       generic map (
          TPD_G          => TPD_G,
          AXI_CLK_FREQ_G => 125.0E+6,
@@ -646,7 +650,7 @@ begin
    -- Cassette I2C
    ----------------------------------------
    CASSETTE_I2C_GEN : for i in 3 downto 0 generate
-      U_AxiI2cRegMaster_2 : entity work.AxiI2cRegMaster
+      U_AxiI2cRegMaster_2 : entity surf.AxiI2cRegMaster
          generic map (
             TPD_G            => TPD_G,
             DEVICE_MAP_G     => (

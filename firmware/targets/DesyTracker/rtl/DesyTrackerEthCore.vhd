@@ -20,13 +20,17 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
-use work.StdRtlPkg.all;
-use work.AxiLitePkg.all;
-use work.AxiStreamPkg.all;
-use work.SsiPkg.all;
-use work.EthMacPkg.all;
 
-use work.KpixPkg.all;
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiLitePkg.all;
+use surf.AxiStreamPkg.all;
+use surf.SsiPkg.all;
+use surf.EthMacPkg.all;
+
+
+library kpix;
+use kpix.KpixPkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -168,7 +172,7 @@ begin
    -----------------
    -- Power Up Reset
    -----------------
-   U_PwrUpRst : entity work.PwrUpRst
+   U_PwrUpRst : entity surf.PwrUpRst
       generic map (
          TPD_G         => TPD_G,
          SIM_SPEEDUP_G => SIMULATION_G)
@@ -179,7 +183,7 @@ begin
    ----------------
    -- Clock Manager
    ----------------
-   U_MMCM : entity work.ClockManager7
+   U_MMCM : entity surf.ClockManager7
       generic map(
          TPD_G              => TPD_G,
          TYPE_G             => "MMCM",
@@ -211,7 +215,7 @@ begin
       -------------------------
       -- GigE Core for KINTEX-7
       -------------------------
-      U_ETH_PHY_MAC : entity work.GigEthGtx7
+      U_ETH_PHY_MAC : entity surf.GigEthGtx7
          generic map (
             TPD_G         => TPD_G,
             AXIS_CONFIG_G => EMAC_AXIS_CONFIG_C)
@@ -240,7 +244,7 @@ begin
       ----------------------
       -- IPv4/ARP/UDP Engine
       ----------------------
-      U_UDP : entity work.UdpEngineWrapper
+      U_UDP : entity surf.UdpEngineWrapper
          generic map (
             -- Simulation Generics
             TPD_G          => TPD_G,
@@ -275,7 +279,7 @@ begin
       ------------------------------------------
       -- Software's RSSI Server Interface @ 8192
       ------------------------------------------
-      U_RssiServer : entity work.RssiCoreWrapper
+      U_RssiServer : entity surf.RssiCoreWrapper
          generic map (
             TPD_G                => TPD_G,
             APP_ILEAVE_EN_G      => true,
@@ -324,7 +328,7 @@ begin
 
    SIM_GEN : if (SIMULATION_G) generate
       DESTS : for i in 1 downto 0 generate
-         U_RogueTcpStreamWrap_1 : entity work.RogueTcpStreamWrap
+         U_RogueTcpStreamWrap_1 : entity surf.RogueTcpStreamWrap
             generic map (
                TPD_G         => TPD_G,
                PORT_NUM_G    => SIM_PORT_NUM_G + i*2,
@@ -344,7 +348,7 @@ begin
    ---------------------------------------
    -- TDEST = 0x0: Register access control   
    ---------------------------------------
-   U_SRPv3 : entity work.SrpV3AxiLite
+   U_SRPv3 : entity surf.SrpV3AxiLite
       generic map (
          TPD_G               => TPD_G,
          SLAVE_READY_EN_G    => true,
@@ -373,7 +377,7 @@ begin
    -----------------------------------------------------
    -- TDEST = 0x1: Streaming Data
    -----------------------------------------------------
-   U_AxiStreamFifoV2_1 : entity work.AxiStreamFifoV2
+   U_AxiStreamFifoV2_1 : entity surf.AxiStreamFifoV2
       generic map (
          TPD_G               => TPD_G,
          INT_PIPE_STAGES_G   => 1,
@@ -381,8 +385,8 @@ begin
          SLAVE_READY_EN_G    => false,
          VALID_THOLD_G       => 1,
          VALID_BURST_MODE_G  => false,
-         BRAM_EN_G           => true,
-         USE_BUILT_IN_G      => false,
+         SYNTH_MODE_G        => "inferred",
+         MEMORY_TYPE_G       => "block",
          GEN_SYNC_FIFO_G     => false,
          FIFO_ADDR_WIDTH_G   => 12,
          FIFO_FIXED_THRESH_G => true,
@@ -408,7 +412,7 @@ begin
    startReqValid <= rssiObMasters(1).tValid and toSl(rssiObMasters(1).tData(7 downto 0) = X"55") and
                     rssiObMasters(1).tLast;
 
-   U_SynchronizerOneShot_ACQUIRE : entity work.SynchronizerOneShot
+   U_SynchronizerOneShot_ACQUIRE : entity surf.SynchronizerOneShot
       generic map (
          TPD_G => TPD_G)
       port map (
@@ -417,7 +421,7 @@ begin
          dataIn  => acqReqValid,        -- [in]
          dataOut => acqCmd);            -- [out]
 
-   U_SynchronizerOneShot_START : entity work.SynchronizerOneShot
+   U_SynchronizerOneShot_START : entity surf.SynchronizerOneShot
       generic map (
          TPD_G => TPD_G)
       port map (
