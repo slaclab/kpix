@@ -11,7 +11,7 @@ import pyrogue
 import rogue
 
 if '--local' in sys.argv:
-    basedir = os.path.dirname(os.path.realpath(__file__))
+    baseDir = os.path.dirname(os.path.realpath(__file__))
     pyrogue.addLibraryPath(f'{baseDir}/../../firmware/common/python')
     pyrogue.addLibraryPath(f'{baseDir}/../../firmware/submodules/surf/python')
 
