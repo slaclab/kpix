@@ -1,4 +1,11 @@
-        
+import pyrogue
+
+import surf.xilinx
+import surf.devices.linear
+import surf.devices.nxp
+
+import KpixDaq
+
 class DesyTrackerEnvironmentMonitor(pyrogue.Device):
       def __init__(self, **kwargs):
         super().__init__(**kwargs)

@@ -1,5 +1,10 @@
-import pyrogue
+import argparse
+
 import rogue
+import pyrogue
+import pyrogue.interfaces.simulation
+import pyrogue.protocols
+import pyrogue.utilities.fileio
 
 import KpixDaq
 
@@ -39,24 +44,27 @@ class DesyTrackerRoot(pyrogue.Root):
             
             dataWriter = pyrogue.utilities.fileio.LegacyStreamWriter(name='DataWriter')
             
-            pyrogue.streamConnectBiDir(self.srp, dest0)
-            pyrogue.streamConnect(dest1, dataWriter.getDataChannel())
-            pyrogue.streamConnect(self.cmd, dest1)
-            pyrogue.streamConnect(self, dataWriter.getYamlChannel())
+            self.srp == dest0
+            dest1 >> dataWriter.getDataChannel()
+            dest1 << self.cmd
+            
+            # Connect update stream
+            self >> dataWriter.getYamlChannel()
 
             if debug:
                 fp = FrameInfo()
-                pyrogue.streamTap(dest1, fp) 
+                dest1 >> fp
 
             self.add(dataWriter)
-            self.add(DesyTrackerRunControl())
+            self.add(KpixDaq.DesyTrackerRunControl())
             
-        self.add(DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, sim=sim, enabled=True, expand=True))
+        self.add(KpixDaq.DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, sim=sim, enabled=True, expand=True))
 
-        self.start(pollEn=pollEn, timeout=100000, serverPort=serverPort)
+
 
     def stop(self):
-        self.udp._rssi.stop()
+        if hasattr(self, 'udp'):
+            self.udp._rssi.stop()
         super().stop()
 
 class DesyTrackerRootArgparser(argparse.ArgumentParser):
@@ -68,7 +76,13 @@ class DesyTrackerRootArgparser(argparse.ArgumentParser):
             type     = str,
             required = False,
             default = '192.168.2.10',
-            help     = "IP address")  
+            help     = "IP address")
+
+        self.add_argument(
+            "--serverPort",
+            type = int,
+            default = 9099
+            help = "ZMQ Server Port"
 
         self.add_argument(
             "--hwEmu", 
