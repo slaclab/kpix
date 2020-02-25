@@ -11,8 +11,9 @@ import pyrogue
 import rogue
 
 if '--local' in sys.argv:
-    pyrogue.addLibraryPath('../../firmware/common/python')
-    pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
+    baseDir = os.path.dirname(os.path.realpath(__file__))
+    pyrogue.addLibraryPath(f'{baseDir}/../../firmware/common/python')
+    pyrogue.addLibraryPath(f'{baseDir}/../../firmware/submodules/surf/python')
 
 import KpixDaq
 
@@ -40,7 +41,8 @@ runParser.add_argument(
     '--runcount', '-r',
     type = int,
     required = False,
-    default = 2**31-1)
+    default = 2**31-1,
+    help = "Number of acquisitions to take")
 
 
 if __name__ == "__main__":

@@ -18,6 +18,8 @@ import argparse
 import glob
 import os
 import sys
+import importlib
+
 import pyrogue
 import rogue
 
@@ -57,6 +59,10 @@ args = parser.parse_known_args()[0]
 
 print(args)
 
+if args.path is None:
+    BasePackage = importlib.import_module('desytracker')
+    args.path = BasePackage.ImageDir
+    
 if os.path.isdir(args.path):
     # Get a list of images
     images = glob.glob('{}/*.mcs*'.format(args.path))
@@ -67,9 +73,9 @@ if os.path.isdir(args.path):
 
     idx = int(input('Enter image: '))
     image = images[idx]
-
 else:
     image = args.path
+
 
 #rogue.Logging.setFilter('pyrogue.SrpV3', rogue.Logging.Debug)
 

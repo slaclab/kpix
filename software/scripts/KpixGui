@@ -1,11 +1,14 @@
+#!/usr/bin/env python
+
 import rogue
 import pyrogue.gui
 import sys
 import argparse
 
 if '--local' in sys.argv:
-    pyrogue.addLibraryPath('../../firmware/common/python/')
-    pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
+    baseDir = os.path.dirname(os.path.realpath(__file__))
+    pyrogue.addLibraryPath(f'{baseDir}/../../firmware/common/python')
+    pyrogue.addLibraryPath(f'{baseDir}/../../firmware/submodules/surf/python')
 
 import KpixDaq
 
@@ -13,7 +16,7 @@ import KpixDaq
 # Set the argument parser
 parser = KpixDaq.DesyTrackerRootArgparser()
 
-args = parser.parse_known_args()
+args = parser.parse_known_args()[0]
 print(args)
 
 with KpixDaq.DesyTrackerRoot(**vars(args[0])) as root:

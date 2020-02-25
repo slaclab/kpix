@@ -11,8 +11,9 @@ import pyrogue
 import rogue
 
 if '--local' in sys.argv:
-    pyrogue.addLibraryPath('../../firmware/common/python')
-    pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
+    baseDir = os.path.dirname(os.path.realpath(__file__))
+    pyrogue.addLibraryPath(f'{baseDir}/../../firmware/common/python')
+    pyrogue.addLibraryPath(f'{baseDir}/../../firmware/submodules/surf/python')
 
 import KpixDaq
 
@@ -49,19 +50,7 @@ runParser.add_argument(
 
 if __name__ == "__main__":
     rootArgs, runArgs = rootParser.parse_known_args()
-    runArgs = runParser.parse_known_args(runArgs)
-
-    
-    # with KpixDaq.DesyTrackerRoot(pollEn=False, ip=args.ip, debug=args.debug) as root:
-    #     # Just reload the FPGA since its the most consistent way to get to a known start state
-    #     print('Reloading FPGA')
-    #     root.DesyTracker.AxiVersion.FpgaReload()
-    #     #root.waitOnUpdate()
-        
-    # # Sleep for 5 seconds to allow FPGA to load
-    # print('Sleeping')
-    # time.sleep(2)
-    # print('Done sleeping')
+    runArgs = runParser.parse_known_args(runArgs)[0]
 
     with KpixDaq.DesyTrackerRoot(**vars(rootArgs)) as root:
 
