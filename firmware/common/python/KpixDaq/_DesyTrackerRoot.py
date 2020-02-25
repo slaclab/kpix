@@ -81,8 +81,8 @@ class DesyTrackerRootArgparser(argparse.ArgumentParser):
         self.add_argument(
             "--serverPort",
             type = int,
-            default = 9099
-            help = "ZMQ Server Port"
+            default = 9099,
+            help = "ZMQ Server Port")
 
         self.add_argument(
             "--hwEmu", 
