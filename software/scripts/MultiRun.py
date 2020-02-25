@@ -10,60 +10,47 @@ import time
 import pyrogue
 import rogue
 
-pyrogue.addLibraryPath('../python')
-pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
+if '--local' in sys.argv:
+    pyrogue.addLibraryPath('../../firmware/common/python')
+    pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
 
 import KpixDaq
 
 #rogue.Logging.setFilter('pyrogue.SrpV3', rogue.Logging.Debug)
 
-parser = argparse.ArgumentParser()
+rootParser = KpixDaq.DesyTrackerRootArgparser()
+runParser = argparse.ArgumentParser()
 
-
-parser.add_argument(
-    "--ip", 
-    type     = str,
-    required = False,
-    default = '192.168.2.10',
-    help     = "IP address",
-)  
-
-parser.add_argument(
+runParser.add_argument(
     '--config', '-c',
     type = str,
     required = True,
     help = 'Configuration yaml file')
 
-parser.add_argument(
+runParser.add_argument(
     '--outfile', '-o',
     type = str,
     required = False,
     default = os.path.abspath(datetime.datetime.now().strftime("data/")),
     help = 'Output file name')
 
-
-parser.add_argument(
-    '--debug', '-d',
-    action = 'store_true',
-    required = False,
-    default = False)
-
-parser.add_argument(
+runParser.add_argument(
     '--runcount', '-r',
     type = int,
     required = False,
     default = 2**31-1)
 
-parser.add_argument(
+runParser.add_argument(
     '--time', '-t',
     type = int,
     required = False,
     default = 10)
 
 
-
 if __name__ == "__main__":
-    args = parser.parse_args()
+    rootArgs, runArgs = rootParser.parse_known_args()
+    runArgs = runParser.parse_known_args(runArgs)
+
     
     # with KpixDaq.DesyTrackerRoot(pollEn=False, ip=args.ip, debug=args.debug) as root:
     #     # Just reload the FPGA since its the most consistent way to get to a known start state
@@ -76,7 +63,7 @@ if __name__ == "__main__":
     # time.sleep(2)
     # print('Done sleeping')
 
-    with KpixDaq.DesyTrackerRoot(pollEn=False, ip=args.ip, debug=args.debug) as root:
+    with KpixDaq.DesyTrackerRoot(**vars(rootArgs)) as root:
 
         while True:
             print('Reading all')
@@ -87,7 +74,7 @@ if __name__ == "__main__":
             # Print the version info
             root.DesyTracker.AxiVersion.printStatus()
 
-            outfile = os.path.abspath(datetime.datetime.now().strftime(f"{args.outfile}/Run_%Y%m%d_%H%M%S.dat"))
+            outfile = os.path.abspath(datetime.datetime.now().strftime(f"{runArgs.outfile}/Run_%Y%m%d_%H%M%S.dat"))
 
             print(f'Opening data file: {outfile}')
             root.DataWriter.DataFile.setDisp(outfile)
@@ -100,17 +87,17 @@ if __name__ == "__main__":
             root.CountReset()
 
             print('Writing initial configuration')
-            root.LoadConfig(args.config)
+            root.LoadConfig(runArgs.config)
             root.ReadAll()
             root.waitOnUpdate()
 
-            root.DesyTrackerRunControl.MaxRunCount.set(args.runcount)
+            root.DesyTrackerRunControl.MaxRunCount.set(runArgs.runcount)
             try:
                 root.DesyTrackerRunControl.runState.setDisp('Running')
 
                 pyrogue.VariableWait([root.DesyTrackerRunControl.runState],
                                      lambda val: val[0].valueDisp == 'Stopped',
-                                     timeout=args.time)
+                                     timeout=runArgs.time)
 
                 root.DesyTrackerRunControl.runState.setDisp('Stopped')
                 root.DataWriter.Close()

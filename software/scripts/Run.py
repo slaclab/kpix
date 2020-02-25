@@ -10,31 +10,25 @@ import time
 import pyrogue
 import rogue
 
-pyrogue.addLibraryPath('../python')
-pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
+if '--local' in sys.argv:
+    pyrogue.addLibraryPath('../../firmware/common/python')
+    pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
 
 import KpixDaq
 
 #rogue.Logging.setFilter('pyrogue.SrpV3', rogue.Logging.Debug)
 
-parser = argparse.ArgumentParser()
+rootParser = KpixDaq.DesyTrackerRootArgparser()
+runParser = argparse.ArgumentParser()
 
 
-parser.add_argument(
-    "--ip", 
-    type     = str,
-    required = False,
-    default = '192.168.2.10',
-    help     = "IP address",
-)  
-
-parser.add_argument(
+runParser.add_argument(
     '--config', '-c',
     type = str,
     required = True,
     help = 'Configuration yaml file')
 
-parser.add_argument(
+runParser.add_argument(
     '--outfile', '-o',
     type = str,
     required = False,
@@ -42,13 +36,7 @@ parser.add_argument(
     help = 'Output file name')
 
 
-parser.add_argument(
-    '--debug', '-d',
-    action = 'store_true',
-    required = False,
-    default = False)
-
-parser.add_argument(
+runParser.add_argument(
     '--runcount', '-r',
     type = int,
     required = False,
@@ -56,20 +44,11 @@ parser.add_argument(
 
 
 if __name__ == "__main__":
-    args = parser.parse_args()
+    rootArgs, runArgs = rootParser.parse_known_args()
+    runArgs = runParser.parse_known_args(runArgs)
     
-    # with KpixDaq.DesyTrackerRoot(pollEn=False, ip=args.ip, debug=args.debug) as root:
-    #     # Just reload the FPGA since its the most consistent way to get to a known start state
-    #     print('Reloading FPGA')
-    #     root.DesyTracker.AxiVersion.FpgaReload()
-    #     #root.waitOnUpdate()
-        
-    # # Sleep for 5 seconds to allow FPGA to load
-    # print('Sleeping')
-    # time.sleep(2)
-    # print('Done sleeping')
 
-    with KpixDaq.DesyTrackerRoot(pollEn=False, ip=args.ip, debug=args.debug) as root:
+    with KpixDaq.DesyTrackerRoot(**vars(rootArgs)) as root:
         print('Reading all')
         # Read everything
         root.ReadAll()
@@ -78,13 +57,13 @@ if __name__ == "__main__":
         # Print the version info
         root.DesyTracker.AxiVersion.printStatus()
 
-        if os.path.isdir(args.outfile):
-            args.outfile = os.path.abspath(datetime.datetime.now().strftime(f"{args.outfile}/Run_%Y%m%d_%H%M%S.dat"))
+        if os.path.isdir(runArgs.outfile):
+            runArgs.outfile = os.path.abspath(datetime.datetime.now().strftime(f"{runArgs.outfile}/Run_%Y%m%d_%H%M%S.dat"))
 
-        input(f'Data file will be {args.outfile}. \n Hit any key to start run.')
+        input(f'Data file will be {runArgs.outfile}. \n Hit any key to start run.')
             
-        print(f'Opening data file: {args.outfile}')
-        root.DataWriter.DataFile.setDisp(args.outfile)
+        print(f'Opening data file: {runArgs.outfile}')
+        root.DataWriter.DataFile.setDisp(runArgs.outfile)
         root.DataWriter.Open()
 
         print(f"Hard Reset")
@@ -94,11 +73,11 @@ if __name__ == "__main__":
         root.CountReset()
             
         print('Writing initial configuration')
-        root.LoadConfig(args.config)
+        root.LoadConfig(runArgs.config)
         root.ReadAll()
         root.waitOnUpdate()
 
-        root.DesyTrackerRunControl.MaxRunCount.set(args.runcount)
+        root.DesyTrackerRunControl.MaxRunCount.set(runArgs.runcount)
 
         try:
             root.DesyTrackerRunControl.runState.setDisp('Running')

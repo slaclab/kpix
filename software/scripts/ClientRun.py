@@ -11,8 +11,9 @@ import click
 import pyrogue
 import rogue
 
-pyrogue.addLibraryPath('../python')
-pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
+if '--local' in sys.argv:
+    pyrogue.addLibraryPath('../../firmware/common/python')
+    pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
 
 import KpixDaq
 
@@ -50,12 +51,6 @@ parser.add_argument(
     default = os.path.abspath(datetime.datetime.now().strftime("data/Run_%Y%m%d_%H%M%S.dat")),
     help = 'Output file name')
 
-
-parser.add_argument(
-    '--debug', '-d',
-    action = 'store_true',
-    required = False,
-    default = False)
 
 parser.add_argument(
     '--runcount', '-r',

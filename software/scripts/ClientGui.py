@@ -4,8 +4,9 @@ import pyrogue.gui
 import sys
 import argparse
 
-pyrogue.addLibraryPath('../python/')
-pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
+if '--local' in sys.argv:
+    pyrogue.addLibraryPath('../../firmware/common/python')
+    pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
 
 import KpixDaq
 

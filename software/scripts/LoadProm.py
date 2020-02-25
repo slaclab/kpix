@@ -22,8 +22,10 @@ import pyrogue
 import rogue
 
 # Search paths
-pyrogue.addLibraryPath('../python')
-pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
+if '--local' in sys.argv:
+    basedir = os.path.dirname(os.path.realpath(__file__))
+    pyrogue.addLibraryPath(f'{baseDir}/../../firmware/common/python')
+    pyrogue.addLibraryPath(f'{baseDir}/../../firmware/submodules/surf/python')
 
 import KpixDaq
 
@@ -37,7 +39,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--path", '-p', 
     type     = str,
-    required = True,
+    required = False,
+    default = None,
     help     = "path to image",
 )
 
@@ -50,7 +53,8 @@ parser.add_argument(
 )  
 
 # Get the arguments
-args = parser.parse_args()
+args = parser.parse_known_args()[0]
+
 print(args)
 
 if os.path.isdir(args.path):

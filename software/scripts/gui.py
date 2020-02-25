@@ -3,55 +3,20 @@ import pyrogue.gui
 import sys
 import argparse
 
-pyrogue.addLibraryPath('../python/')
-pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
+if '--local' in sys.argv:
+    pyrogue.addLibraryPath('../../firmware/common/python/')
+    pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
 
 import KpixDaq
 
 #rogue.Logging.setFilter('pyrogue.SrpV3', rogue.Logging.Debug)
 # Set the argument parser
-parser = argparse.ArgumentParser()
+parser = KpixDaq.DesyTrackerRootArgparser()
 
-parser.add_argument(
-    "--ip", 
-    type     = str,
-    required = False,
-    default = '192.168.2.10',
-    help     = "IP address",
-)  
-
-parser.add_argument(
-    "--hwEmu", 
-    required = False,
-    action = 'store_true',
-    help     = "hardware emulation (false=normal operation, true=emulation)",
-)
-
-parser.add_argument(
-    "--sim", 
-    required = False,
-    action = 'store_true',
-    help     = "hardware emulation (false=normal operation, true=emulation)",
-)  
-
-parser.add_argument(
-    "--pollEn", 
-    required = False,
-    action = 'store_true',
-    help     = "enable auto-polling",
-)
-
-parser.add_argument(
-    "--debug", 
-    required = False,
-    action = 'store_true',
-    help     = "enable auto-polling",
-)
-
-args = parser.parse_args()
+args = parser.parse_known_args()
 print(args)
 
-with KpixDaq.DesyTrackerRoot(**vars(args)) as root:
+with KpixDaq.DesyTrackerRoot(**vars(args[0])) as root:
 
     # Create GUI
     appTop = pyrogue.gui.application(sys.argv)
