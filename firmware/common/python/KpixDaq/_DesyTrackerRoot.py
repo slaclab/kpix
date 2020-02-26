@@ -50,7 +50,7 @@ class DesyTrackerRoot(pyrogue.Root):
             self >> dataWriter.getYamlChannel()
 
             if debug:
-                fp = FrameInfo()
+                fp = KpixDaq.KpixStreamInfo()
                 dest1 >> fp
 
             self.add(dataWriter)
