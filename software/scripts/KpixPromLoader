@@ -25,7 +25,7 @@ import rogue
 
 # Search paths
 if '--local' in sys.argv:
-    basedir = os.path.dirname(os.path.realpath(__file__))
+    baseDir = os.path.dirname(os.path.realpath(__file__))
     pyrogue.addLibraryPath(f'{baseDir}/../../firmware/common/python')
     pyrogue.addLibraryPath(f'{baseDir}/../../firmware/submodules/surf/python')
 
@@ -95,7 +95,7 @@ with KpixDaq.DesyTrackerRoot(pollEn=False, ip=args.ip) as root:
     print(f'Load MCS file: {image}')
     prom.LoadMcsFile(image)
         
-    root.DesyTracker.AxiVersion.FpgaReload()
+    #root.DesyTracker.AxiVersion.FpgaReload()
         
 
 exit()

@@ -9,6 +9,7 @@ import time
 import click
 
 import pyrogue
+import pyrogue.interfaces
 import rogue
 
 if '--local' in sys.argv:
@@ -67,7 +68,7 @@ if __name__ == "__main__":
     # print('Sleeping')
     # time.sleep(2)
     # print('Done sleeping')
-    client = pyrogue.VirtualClient(addr=args.host, port=args.port)
+    client = pyrogue.interfaces.VirtualClient(addr=args.host, port=args.port)
 
     root = client.root
     
@@ -95,18 +96,23 @@ if __name__ == "__main__":
 
     print('Writing initial configuration')
     root.LoadConfig(args.config)
+    print("Reading registers")
     root.ReadAll()
+    print("Waiting for read")
     root.waitOnUpdate()
 
+    print("Set max run count")
     root.DesyTrackerRunControl.MaxRunCount.set(args.runcount)
 
     try:
+        print("starting run")
         root.DesyTrackerRunControl.runState.setDisp('Running')
+        print('started')
         last = 0
         with click.progressbar(
                 iterable=range(root.DesyTrackerRunControl.MaxRunCount.get()),
                 show_pos=True,
-                label=click.style('Running', fg='green')) as bar:
+                label=click.style('Client Running', fg='green')) as bar:
 
             while root.DesyTrackerRunControl.runState.getDisp() != 'Stopped':
                 rc = root.DesyTrackerRunControl.runCount.get()
