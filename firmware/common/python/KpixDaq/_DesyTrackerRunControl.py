@@ -90,7 +90,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                 print('Stopped')
             
             if self.runState.valueDisp() == 'Running':
-                #print("Starting run")
+                print("Starting run thread")
                 self._thread = threading.Thread(target=self._run)
                 self._thread.start()
             elif self.runState.valueDisp() == 'Calibration':
@@ -124,18 +124,18 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         return True
 
     def __prestart(self):
-        print('Resetting run count')
+        print('Prestart: Resetting run count')
         self.runCount.set(0)
         self.root.DataWriter.getDataChannel().setFrameCount(0)
         
-        print('Resetting Counters')
+        print('Prestart: Resetting Counters')
         self.root.CountReset()
         time.sleep(.2)
-        print('Reading system state')
+        print('Prestart: Reading system state')
         self.root.ReadAll()
         time.sleep(.2)
 
-        print('Starting Run')
+        print('Prestart: Starting Run')
         self.root.DesyTracker.KpixDaqCore.AcquisitionControl.Running.set(True)
         time.sleep(.2)        
 
