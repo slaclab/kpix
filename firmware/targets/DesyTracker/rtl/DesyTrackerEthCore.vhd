@@ -124,12 +124,14 @@ architecture mapping of DesyTrackerEthCore is
    signal mAxilWriteMasters : AxiLiteWriteMasterArray(SERVER_SIZE_C-1 downto 0);
    signal mAxilWriteSlaves  : AxiLiteWriteSlaveArray(SERVER_SIZE_C-1 downto 0);
 
-   signal acqReqValid   : sl;
-   signal startReqValid : sl;
-   signal ethCmd        : sl;
-   signal cmdValid      : sl;
-   signal acqCmdTmp     : sl;
-   signal startCmdTmp   : sl;
+   signal acqReqValid      : sl;
+   signal startReqValid    : sl;
+   signal acqReqValidReg   : sl;
+   signal startReqValidReg : sl;
+   signal ethCmd           : sl;
+   signal cmdValid         : sl;
+   signal acqCmdTmp        : sl;
+   signal startCmdTmp      : sl;
 
 begin
 
@@ -412,13 +414,25 @@ begin
    startReqValid <= rssiObMasters(1).tValid and toSl(rssiObMasters(1).tData(7 downto 0) = X"55") and
                     rssiObMasters(1).tLast;
 
+   U_RegisterVector_1 : entity surf.RegisterVector
+      generic map (
+         TPD_G   => TPD_G,
+         WIDTH_G => 2)
+      port map (
+         clk      => ethClk,             -- [in]
+         rst      => ethRst,             -- [in]
+         sig_i(0) => acqReqValid,        -- [in]
+         sig_i(1) => startReqValid,      -- [in]
+         reg_o(0) => acqReqValidReg,     -- [out]
+         reg_o(1) => startReqValidReg);  -- [out]
+
    U_SynchronizerOneShot_ACQUIRE : entity surf.SynchronizerOneShot
       generic map (
          TPD_G => TPD_G)
       port map (
          clk     => kpixClk200,         -- [in]
          rst     => kpixRst200,         -- [in]
-         dataIn  => acqReqValid,        -- [in]
+         dataIn  => acqReqValidReg,     -- [in]
          dataOut => acqCmd);            -- [out]
 
    U_SynchronizerOneShot_START : entity surf.SynchronizerOneShot
@@ -427,7 +441,7 @@ begin
       port map (
          clk     => kpixClk200,         -- [in]
          rst     => kpixRst200,         -- [in]
-         dataIn  => startReqValid,      -- [in]
+         dataIn  => startReqValidReg,   -- [in]
          dataOut => startCmd);          -- [out]
 
 

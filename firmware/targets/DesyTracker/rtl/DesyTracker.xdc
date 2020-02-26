@@ -14,6 +14,8 @@ create_generated_clock -name ethClkDiv2 [get_pins {U_DesyTrackerEthCore_1/U_MMCM
 create_generated_clock -name ethClk200 [get_pins {U_DesyTrackerEthCore_1/U_MMCM/MmcmGen.U_Mmcm/CLKOUT2}]
 create_generated_clock -name refClk156MHz    [get_pins {U_DesyTrackerEthCore_1/U_IBUFDS_GTE2/ODIV2}]
 
+create_generated_clock -name dnaDivClk [get_pins U_AxiVersion_1/GEN_DEVICE_DNA.DeviceDna_1/GEN_7SERIES.DeviceDna7Series_Inst/BUFR_Inst/O]
+
 create_clock -name tluClk -period 25.000 [get_ports {tluClkP}]
 
 create_generated_clock -name tluClk200 [get_pins {U_TluMonitor_1/U_MMCM/PllGen.U_Pll/CLKOUT0}]
@@ -27,7 +29,14 @@ set_clock_groups -physically_exclusive -group muxEthClk200 -group muxTluClk200
 #set_case_analysis 1 [get_pins {CLKMUX/S}]
 set_false_path -to [get_pins {U_TluMonitor_1/CLKMUX/S0}]
 
-create_generated_clock -name kpixClk -source [get_pins {U_TluMonitor_1/CLKMUX/O}] -divide_by 4 [get_pins {U_KpixDaqCore_1/U_KpixClockGen_1/KPIX_CLK_BUFG/O}]
+create_generated_clock -name ethKpixClk -divide_by 4 -add -master_clock ethClk200 -source [get_pins {U_TluMonitor_1/CLKMUX/O}]  \
+    [get_pins {U_KpixDaqCore_1/U_KpixClockGen_1/KPIX_CLK_BUFG/O}]
+
+create_generated_clock -name tluKpixClk -divide_by 4 -add -master_clock tluClk200 -source [get_pins {U_TluMonitor_1/CLKMUX/O}]  \
+    [get_pins {U_KpixDaqCore_1/U_KpixClockGen_1/KPIX_CLK_BUFG/O}]
+
+set_clock_groups -logically_exclusive -group tluKpixClk -group ethKpixClk
+
 
 #set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {U_TluMonitor_1/U_MMCM/clkOut[0]}]
 
@@ -40,24 +49,17 @@ set_clock_groups -asynchronous \
     -group [get_clocks -include_generated_clocks ethClkDiv2]
 
 set_clock_groups -asynchronous \
-    -group [get_clocks -include_generated_clocks ethClk200] \
-    -group [get_clocks -include_generated_clocks refClk156MHz]
-
-set_clock_groups -asynchronous \
-    -group [get_clocks -include_generated_clocks ethClk] \
-    -group [get_clocks -include_generated_clocks refClk156MHz]
-
-set_clock_groups -asynchronous \
     -group [get_clocks -include_generated_clocks gtRefClk] \
     -group [get_clocks -include_generated_clocks tluClk]
 
-# set_clock_groups -asynchronous \
-#     -group [get_clocks ethClk200] \
-#     -group [get_clocks tluClk200]
 
-# set_clock_groups -asynchronous \
-#     -group [get_clocks muxTluClk200] \
-#     -group [get_clocks ethClk]
+set_clock_groups -asynchronous \
+    -group [get_clocks ethClk] \
+    -group [get_clocks refClk156MHz]
+
+set_clock_groups -asynchronous \
+    -group [get_clocks ethClk] \
+    -group [get_clocks -include_generated_clocks dnaDivClk]
 
 
 
@@ -154,9 +156,14 @@ set_property -dict { PACKAGE_PIN AE21 IOSTANDARD LVCMOS25 } [get_ports { kpixDat
 set_property -dict { PACKAGE_PIN AF25 IOSTANDARD LVCMOS25 } [get_ports { kpixData[3][4] }];
 set_property -dict { PACKAGE_PIN AE26 IOSTANDARD LVCMOS25 } [get_ports { kpixData[3][5] }];
 
-set_input_delay -clock kpixClk 6 [get_ports kpixData[*][*]];
-set_output_delay -clock kpixClk 6 [get_ports kpixCmd[*][*]];
-set_output_delay -clock kpixClk 6 [get_ports kpixTrigP[*]];
+set_input_delay  -clock ethKpixClk 6 [get_ports kpixData[*][*]];
+set_output_delay -clock ethKpixClk 6 [get_ports kpixCmd[*][*]];
+set_output_delay -clock ethKpixClk 6 [get_ports kpixTrigP[*]];
+
+set_input_delay  -clock tluKpixClk 6 [get_ports kpixData[*][*]];
+set_output_delay -clock tluKpixClk 6 [get_ports kpixCmd[*][*]];
+set_output_delay -clock tluKpixClk 6 [get_ports kpixTrigP[*]];
+
 #set_output_delay -clock kpixClk 4 [get_ports kpixClkP[*]];
 set_property IOB TRUE [get_ports kpixCmd[*][*]]
 set_property IOB TRUE [get_ports kpixData[*][*]]
