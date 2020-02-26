@@ -40,7 +40,7 @@ class DesyTracker(pyrogue.Device):
             expand = True))
 
         if not sim:
-            self.add(KpixDaqEnvironmentMonitor(
+            self.add(KpixDaq.DesyTrackerEnvironmentMonitor(
                 name='EnvironmentMonitor',
                 expand=True))
 
