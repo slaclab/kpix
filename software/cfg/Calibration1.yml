@@ -2,12 +2,12 @@ DesyTrackerRoot:
   enable: 'True'
   ForceWrite: 'False'
   DesyTrackerRunControl:
-    CalMeanCount: 1
+    CalMeanCount: 500
     CalDacMin: 200
     CalDacMax: 255
     CalDacStep: 5
-    CalDacCount: 1
-    CalChanMin: 1000
+    CalDacCount: 5
+    CalChanMin: 000
     CalChanMax: 1023
   DesyTracker:
     enable: 'True'
@@ -119,9 +119,9 @@ DesyTrackerRoot:
           Chan_928_959: DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD
           Chan_960_991: DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD
           Chan_992_1023: DDDDDDDD DDDDDDDD DDDDDDDD DDDDDDDD
-        KpixAsic[6]:
+        KpixAsic[0]:
           enable: 'True'
-        KpixAsic[7]:
+        KpixAsic[1]:
           enable: 'False'
         KpixAsic[24]:
           enable: 'True'
