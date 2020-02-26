@@ -1,16 +1,16 @@
 import collections
 import pyrogue as pr
 
-class FlippedUInt(pr.UInt):
-    @classmethod
-    def toBytes(cls, value, bitSize):
-        value = int(f'{value:b}'.zfill(bitSize)[::-1], 2)
-        return pr.UInt.toBytes(value, bitSize)
+# class FlippedUInt(pr.UInt):
+#     @classmethod
+#     def toBytes(cls, value, bitSize):
+#         value = int(f'{value:b}'.zfill(bitSize)[::-1], 2)
+#         return pr.UInt.toBytes(value, bitSize)
 
-    @classmethod
-    def fromBytes(cls, ba, bitSize):
-        value = pr.UInt.fromBytes(ba, bitSize)
-        return int(f'{value:b}'.zfill(bitSize)[::-1], 2)
+#     @classmethod
+#     def fromBytes(cls, ba, bitSize):
+#         value = pr.UInt.fromBytes(ba, bitSize)
+#         return int(f'{value:b}'.zfill(bitSize)[::-1], 2)
 
 
 class KpixAsic(pr.Device):
