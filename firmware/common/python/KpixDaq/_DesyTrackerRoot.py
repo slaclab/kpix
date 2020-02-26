@@ -16,8 +16,6 @@ class DesyTrackerRoot(pyrogue.Root):
             sim=False,
             rssiEn=True,
             ip='192.168.2.10',
-            pollEn=False,
-            serverPort=9099,
             **kwargs):
         
         super().__init__(**kwargs)
@@ -81,7 +79,7 @@ class DesyTrackerRootArgparser(argparse.ArgumentParser):
         self.add_argument(
             "--serverPort",
             type = int,
-            default = 9099,
+            default = 0,
             help = "ZMQ Server Port")
 
         self.add_argument(
