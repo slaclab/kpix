@@ -34,7 +34,7 @@ entity KpixLocal is
    port (
 
       -- Kpix clock, reset
-      kpixClk    : in std_logic;        -- 20Mhz system clock
+      kpixClk : in std_logic;           -- 20Mhz system clock
 
       -- IO Ports
       debugOutA : out std_logic;        -- BNC Interface A output
@@ -167,10 +167,10 @@ architecture KpixLocal of KpixLocal is
       bunchCount => (others => '0'),
       subCount   => (others => '0'));
 
-   signal r          : RegType := REG_INIT_C;
+   signal r          : RegType          := REG_INIT_C;
    signal rin        : RegType;
    signal regClkRise : sl;
-   signal rdback : slv(16 downto 1) := X"0001";
+   signal rdback     : slv(16 downto 1) := X"0001";
 
 begin
 
@@ -215,13 +215,13 @@ begin
       temp_en         => open
       );
 
-   rdback_proc: process (kpixClk) is
+   rdback_proc : process (kpixClk) is
    begin
       if (rising_edge(kpixClk)) then
          rdback(16) <= rdback(1) after TPD_G;
          for i in 15 downto 1 loop
-            if (i=14 or i=13 or i=11) then
-               rdback(i) <= rdback(i+1) xor rdback(1) after TPD_G;  
+            if (i = 14 or i = 13 or i = 11) then
+               rdback(i) <= rdback(i+1) xor rdback(1) after TPD_G;
             else
                rdback(i) <= rdback(i+1) after TPD_G;
             end if;
@@ -316,12 +316,24 @@ begin
 
    end process comb;
 
-   kpixState.analogState  <= v8_analog_state;
-   kpixState.readoutState <= v8_read_state;
-   kpixState.prechargeBus <= v8_precharge_bus;
-   kpixState.trigInhibit  <= trig_inh;
-   kpixState.bunchCount   <= r.bunchCount;
-   kpixState.subCount     <= r.subCount;
+   U_RegisterVector_1 : entity surf.RegisterVector
+      generic map (
+         TPD_G   => TPD_G,
+         WIDTH_G => )
+      port map (
+         clk               => clk200,                  -- [in]
+         rst               => '0',                     -- [in]
+         sig_i(2 downto 0) => v8_analog_state,         -- [in]
+         sig_i(5 downto 3) => v8_read_state,           -- [in]
+         sig_i(6)          => v8_precharge_bus,        -- [in]
+         sig_i(7)          => trig_inh,                -- [in]
+         reg_o(2 downto 0) => kpixState.analog_state,  -- [out]
+         reg_o(5 downto 3) => kpixState.readoutState,  -- [out]
+         reg_o(6)          => kpixState.prechargeBus,  -- [out]
+         reg_o(7)          => kpixState.trigInhibit);  -- [out]
+
+   kpixState.bunchCount <= r.bunchCount;
+   kpixState.subCount   <= r.subCount;
 
    --------------------------------------------------------------------------------------------------
    -- Synchronize kpix core outputs to sysclk
