@@ -172,6 +172,8 @@ architecture KpixLocal of KpixLocal is
    signal regClkRise : sl;
    signal rdback     : slv(16 downto 1) := X"0001";
 
+   signal kpixStateFb : KpixStateOutType;
+
 begin
 
    calStrobeOut <= cal_strobe;
@@ -285,7 +287,7 @@ begin
       end if;
    end process;
 
-   comb : process (kpixClkPreRise, r, regClkRise, rst200, v8_analog_state) is
+   comb : process (kpixClkPreRise, kpixStateFb, r, regClkRise, rst200) is
       variable v : RegType;
    begin
       v := r;
@@ -296,7 +298,7 @@ begin
 
       -- v8_analog_state clock boundary crossing
       -- Ok for now but maybe there's a better way to do this
-      if (v8_analog_state = KPIX_ANALOG_SAMP_STATE_C) then
+      if (kpixStateFb.analogState = KPIX_ANALOG_SAMP_STATE_C) then
          if (regClkRise = '1') then
             v.div := not r.div;
             if (r.div = '1') then
@@ -327,13 +329,15 @@ begin
          sig_i(5 downto 3) => v8_read_state,           -- [in]
          sig_i(6)          => v8_precharge_bus,        -- [in]
          sig_i(7)          => trig_inh,                -- [in]
-         reg_o(2 downto 0) => kpixState.analog_state,  -- [out]
-         reg_o(5 downto 3) => kpixState.readoutState,  -- [out]
-         reg_o(6)          => kpixState.prechargeBus,  -- [out]
-         reg_o(7)          => kpixState.trigInhibit);  -- [out]
+         reg_o(2 downto 0) => kpixStateFb.analog_state,  -- [out]
+         reg_o(5 downto 3) => kpixStateFb.readoutState,  -- [out]
+         reg_o(6)          => kpixStateFb.prechargeBus,  -- [out]
+         reg_o(7)          => kpixStateFb.trigInhibit);  -- [out]
 
-   kpixState.bunchCount <= r.bunchCount;
-   kpixState.subCount   <= r.subCount;
+   kpixStateFb.bunchCount <= r.bunchCount;
+   kpixStateFb.subCount   <= r.subCount;
+
+   kpixState <= kpixStateFb;
 
    --------------------------------------------------------------------------------------------------
    -- Synchronize kpix core outputs to sysclk
