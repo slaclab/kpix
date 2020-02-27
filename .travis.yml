@@ -11,7 +11,7 @@ python:
   - 3.6
 
 git:
-  clone: false
+  submodules: false
   
 # Environment variables
 env:
