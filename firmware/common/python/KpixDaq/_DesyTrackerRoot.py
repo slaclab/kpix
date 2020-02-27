@@ -17,35 +17,34 @@ class DesyTrackerRoot(pyrogue.Root):
             rssiEn=True,
             ip='192.168.2.10',
             **kwargs):
-        
+
         super().__init__(**kwargs)
 
         if hwEmu:
             self.srp = pyrogue.interfaces.simulation.MemEmulate()
             self.dataStream = rogue.interfaces.stream.Master()
             self.cmd = rogue.interfaces.stream.Master()
-        
+
         else:
             if sim:
                 dest0 = rogue.interfaces.stream.TcpClient('localhost', 9000)
                 dest1 = rogue.interfaces.stream.TcpClient('localhost', 9002)
                 rssiEn = False
-                pollEn = False
-            
+
             else:
-                self.udp = pyrogue.protocols.UdpRssiPack( host=ip, port=8192, packVer=2 )                
+                self.udp = pyrogue.protocols.UdpRssiPack( host=ip, port=8192, packVer=2 )
                 dest0 = self.udp.application(dest=0)
                 dest1 = self.udp.application(dest=1)
 
             self.srp = rogue.protocols.srp.SrpV3()
             self.cmd = rogue.interfaces.stream.Master()
-            
+
             dataWriter = pyrogue.utilities.fileio.LegacyStreamWriter(name='DataWriter')
-            
+
             self.srp == dest0
             dest1 >> dataWriter.getDataChannel()
             dest1 << self.cmd
-            
+
             # Connect update stream
             self >> dataWriter.getYamlChannel()
 
@@ -55,7 +54,7 @@ class DesyTrackerRoot(pyrogue.Root):
 
             self.add(dataWriter)
             self.add(KpixDaq.DesyTrackerRunControl())
-            
+
         self.add(KpixDaq.DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, sim=sim, enabled=True, expand=True))
 
 
@@ -68,9 +67,9 @@ class DesyTrackerRoot(pyrogue.Root):
 class DesyTrackerRootArgparser(argparse.ArgumentParser):
     def __init__(self):
         super().__init__(add_help=False)
-        
+
         self.add_argument(
-            "--ip", 
+            "--ip",
             type     = str,
             required = False,
             default = '192.168.2.10',
@@ -83,25 +82,25 @@ class DesyTrackerRootArgparser(argparse.ArgumentParser):
             help = "ZMQ Server Port")
 
         self.add_argument(
-            "--hwEmu", 
+            "--hwEmu",
             required = False,
             action = 'store_true',
             help     = "hardware emulation (false=normal operation, true=emulation)")
 
         self.add_argument(
-            "--sim", 
+            "--sim",
             required = False,
             action   = 'store_true',
             help     = "hardware emulation (false=normal operation, true=emulation)")
 
         self.add_argument(
-            "--pollEn", 
+            "--pollEn",
             required = False,
             action   = 'store_true',
             help     = "enable auto-polling")
 
         self.add_argument(
-            "--debug", 
+            "--debug",
             required = False,
             action = 'store_true',
             help     = "enable data debug")
