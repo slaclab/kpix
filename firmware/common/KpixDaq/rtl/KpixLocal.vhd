@@ -323,13 +323,13 @@ begin
          TPD_G   => TPD_G,
          WIDTH_G => 8)
       port map (
-         clk               => clk200,                  -- [in]
-         rst               => '0',                     -- [in]
-         sig_i(2 downto 0) => v8_analog_state,         -- [in]
-         sig_i(5 downto 3) => v8_read_state,           -- [in]
-         sig_i(6)          => v8_precharge_bus,        -- [in]
-         sig_i(7)          => trig_inh,                -- [in]
-         reg_o(2 downto 0) => kpixStateFb.analog_state,  -- [out]
+         clk               => clk200,                    -- [in]
+         rst               => '0',                       -- [in]
+         sig_i(2 downto 0) => v8_analog_state,           -- [in]
+         sig_i(5 downto 3) => v8_read_state,             -- [in]
+         sig_i(6)          => v8_precharge_bus,          -- [in]
+         sig_i(7)          => trig_inh,                  -- [in]
+         reg_o(2 downto 0) => kpixStateFb.analogState,   -- [out]
          reg_o(5 downto 3) => kpixStateFb.readoutState,  -- [out]
          reg_o(6)          => kpixStateFb.prechargeBus,  -- [out]
          reg_o(7)          => kpixStateFb.trigInhibit);  -- [out]
