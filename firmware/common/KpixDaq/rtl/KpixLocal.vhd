@@ -319,7 +319,7 @@ begin
    U_RegisterVector_1 : entity surf.RegisterVector
       generic map (
          TPD_G   => TPD_G,
-         WIDTH_G => )
+         WIDTH_G => 8)
       port map (
          clk               => clk200,                  -- [in]
          rst               => '0',                     -- [in]
