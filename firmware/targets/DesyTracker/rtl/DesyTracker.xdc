@@ -162,13 +162,13 @@ set_property -dict { PACKAGE_PIN AE21 IOSTANDARD LVCMOS25 } [get_ports { kpixDat
 set_property -dict { PACKAGE_PIN AF25 IOSTANDARD LVCMOS25 } [get_ports { kpixData[3][4] }];
 set_property -dict { PACKAGE_PIN AE26 IOSTANDARD LVCMOS25 } [get_ports { kpixData[3][5] }];
 
-set_input_delay  -clock muxEthClk200 6 [get_ports kpixData[*][*]];
+#set_input_delay  -clock muxEthClk200 6 [get_ports kpixData[*][*]];
 #set_output_delay -clock muxEthClk200 6 [get_ports kpixCmd[*][*]];
-set_output_delay -clock muxEthClk200 6 [get_ports kpixTrigP[*]];
+#set_output_delay -clock muxEthClk200 6 [get_ports kpixTrigP[*]];
 
-set_input_delay  -clock muxTluClk200 6 [get_ports kpixData[*][*]] -add_delay;
+#set_input_delay  -clock muxTluClk200 6 [get_ports kpixData[*][*]] -add_delay;
 #set_output_delay -clock muxTluClk200 6 [get_ports kpixCmd[*][*]] -add_delay;
-set_output_delay -clock muxTluClk200 6 [get_ports kpixTrigP[*]] -add_delay;
+#set_output_delay -clock muxTluClk200 6 [get_ports kpixTrigP[*]] -add_delay;
 
 #set_output_delay -clock kpixClk 4 [get_ports kpixClkP[*]];
 set_property IOB TRUE [get_ports kpixCmd[*][*]]
