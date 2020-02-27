@@ -166,9 +166,9 @@ set_input_delay  -clock muxEthClk200 6 [get_ports kpixData[*][*]];
 set_output_delay -clock muxEthClk200 6 [get_ports kpixCmd[*][*]];
 set_output_delay -clock muxEthClk200 6 [get_ports kpixTrigP[*]];
 
-set_input_delay  -clock muxTluClk200 6 [get_ports kpixData[*][*]];
-set_output_delay -clock muxTluClk200 6 [get_ports kpixCmd[*][*]];
-set_output_delay -clock muxTluClk200 6 [get_ports kpixTrigP[*]];
+set_input_delay  -clock muxTluClk200 6 [get_ports kpixData[*][*]] -add_delay;
+set_output_delay -clock muxTluClk200 6 [get_ports kpixCmd[*][*]] -add_delay;
+set_output_delay -clock muxTluClk200 6 [get_ports kpixTrigP[*]] -add_delay;
 
 #set_output_delay -clock kpixClk 4 [get_ports kpixClkP[*]];
 set_property IOB TRUE [get_ports kpixCmd[*][*]]
