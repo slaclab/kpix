@@ -32,7 +32,7 @@ addons:
 
 stages:
     - name: software_check
-      if: (type == pull_request) or tag IS present
+      if: (type == pull_request) or (tag IS present) or (branch == master)
     - name: deploy_tag
       if: tag IS present
       
