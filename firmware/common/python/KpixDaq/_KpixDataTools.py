@@ -1,9 +1,8 @@
-import sys
 import rogue
 import pyrogue
 import numpy as np
 import scipy.stats as stats
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from collections import defaultdict
 from collections import Counter
 import ctypes
@@ -18,9 +17,9 @@ nesteddict = lambda:defaultdict(nesteddict)
 c_uint = ctypes.c_uint
 
 class KpixSampleRaw(ctypes.LittleEndianStructure):
-    _fields_ = [                          
+    _fields_ = [
         ('row', c_uint, 5), #4:0
-        ('col', c_uint, 5), #9:5  
+        ('col', c_uint, 5), #9:5
         ('bucket', c_uint, 2), #11:10
         ('triggerFlag', c_uint, 1), #12
         ('rangeFlag', c_uint, 1), #13
@@ -32,7 +31,7 @@ class KpixSampleRaw(ctypes.LittleEndianStructure):
         ('dmy2', c_uint, 3), #47:45
         ('timestamp', c_uint, 13), #60:48
     ]
-         
+
     _pack_ = 1
 
 class KpixSample(ctypes.Union):
@@ -43,7 +42,7 @@ class KpixSample(ctypes.Union):
 
     def __init__(self, word):
         self.asWord = word
-    
+
 
 def toInt(ba):
     return int.from_bytes(ba, 'little')
@@ -61,7 +60,7 @@ def parseSample(ba, timestamp):
 
     d['type'] = getField(value, 31, 28)
     d['kpixId'] = getField(value, 27, 16)
-    
+
     if d['type'] == 3:
         d['firstRuntime'] = getField(value, 63, 32)
     elif d['type'] == 1:
@@ -73,7 +72,7 @@ def parseSample(ba, timestamp):
         d['subCount'] = getField(value, 2, 0)
         d['jitter'] = ((d['runtime']-timestamp)*5) - ((3000+d['bunchCount']*8+d['subCount'])*320)
     else:
-        d['row'] = getField(value, 4, 0)        
+        d['row'] = getField(value, 4, 0)
         d['col'] = getField(value, 9, 5)
         d['bucket'] = getField(value, 11, 10)
         d['triggerFlag'] = getField(value, 12, 12)
@@ -106,7 +105,7 @@ def parseFrame(ba):
     data = (rawSamples[i:i+8] for i in range(0, len(rawSamples), 8))
     runtimes = []
     timestampCount = 0
-    
+
     for raw in data:
         sample = parseSample(raw, timestamp)
 
@@ -119,11 +118,11 @@ def parseFrame(ba):
 
         if sample['type'] == 0:
             kpixCounter[sample['kpixId']] += 1
-                  
+
     print(f'Got {timestampCount} timestamps')
     print(kpixCounter)
     return d
-            
+
 #        if sample['kpixId'] == 24:
 #            print(f'Found local kpix sample: {sample}')
 
@@ -138,7 +137,7 @@ def parseFrame(ba):
 
     #print(f'All Runtimes: {runtimes}')
     s = set((x['firstRuntime']-d['runtime'] for x in runtimes))
-    #print(f'Runtimes: {s}')   
+    #print(f'Runtimes: {s}')
     if len(s) != 1:
         print('-----')
         print("Runtimes do not match!")
@@ -147,23 +146,23 @@ def parseFrame(ba):
         print('-----')
 
     return d
-    
+
 class KpixStreamInfo(rogue.interfaces.stream.Slave):
     def __init__(self, ):
         rogue.interfaces.stream.Slave.__init__(self)
 
     def _acceptFrame(self, frame):
-       if frame.getError():
+        if frame.getError():
             print('Frame Error!')
             return
 
-       ba = bytearray(frame.getPayload())
-       frame.read(ba, 0)
-       print(f'Got Frame on channel {frame.getChannel()}: {len(ba)} bytes')       
-       if frame.getChannel() == 0:
-           d = parseFrame(ba)
-           print(d)
-           
+        ba = bytearray(frame.getPayload())
+        frame.read(ba, 0)
+        print(f'Got Frame on channel {frame.getChannel()}: {len(ba)} bytes')
+        if frame.getChannel() == 0:
+            d = parseFrame(ba)
+            print(d)
+
 
 #        for k, kpix in d['samples'].items():
 #            print(k)
@@ -179,16 +178,16 @@ class KpixStreamInfo(rogue.interfaces.stream.Slave):
 #                        else:
 #                            l.append(f'{row[c]:04x} ')
 #                    print(''.join(l))
-           
-           
-       
-        
+
+
+
+
 class KpixRunAnalyzer(rogue.interfaces.stream.Slave):
     def __init__(self):
         rogue.interfaces.stream.Slave.__init__(self)
 
         self.parsedData = []
-        
+
     def _acceptFrame(self, frame):
 
         if frame.getError():
@@ -196,7 +195,7 @@ class KpixRunAnalyzer(rogue.interfaces.stream.Slave):
             return
 
         ba = bytearray(frame.getPayload())
-        frame.read(ba, 0)        
+        frame.read(ba, 0)
         if frame.getChannel() == 0:
             self.parsedData.append(parseFrame(ba))
         else:
@@ -204,7 +203,7 @@ class KpixRunAnalyzer(rogue.interfaces.stream.Slave):
 
 
     def process(self):
-        
+
         #data = [[[[] for bucket in range(4)] for chanel in range(1024)] for kpix in range(24)]
         self.dictData = nesteddict()
 
@@ -216,7 +215,7 @@ class KpixRunAnalyzer(rogue.interfaces.stream.Slave):
                 channel = sample['col']*32+sample['row']
                 bucket = sample['bucket']
                 adc = sample['adc']
-                
+
                 self.dictData[kpix][channel][bucket][runtime] = adc
 
     def noise(self):
@@ -260,24 +259,24 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
         ba = np.zeros(frame.getPayload(), dtype=np.uint8)
         frame.read(ba, 0)
 
-        active = set([0,6])
-        done = []
-        
+#        active = set([0,6])
+#        done = []
+
         if frame.getChannel() == 0:
 
-            runControlDict = self.state["DesyTrackerRoot"]["DesyTrackerRunControl"]            
+            runControlDict = self.state["DesyTrackerRoot"]["DesyTrackerRunControl"]
             calState = runControlDict['CalState']
             calChannel = runControlDict['CalChannel']
             calDac = runControlDict['CalDac']
-            calMeanCount = runControlDict['CalMeanCount']
-            calDacCount = runControlDict['CalDacCount']
+            #calMeanCount = runControlDict['CalMeanCount']
+            #calDacCount = runControlDict['CalDacCount']
 
             #numDacs = (runControlDict['CalDacMax']-runControlDict['CalDacMin'])/runControlDict['CalDacStep']
             #dacCount = runControlDict['CalDacCount']
 
             #parsedFrame = parseFrame(ba)
-            
-            
+
+
             self.frameCount += 1
             sample = KpixSample(0)
             #(rawSamples[i:i+8] for i in range(0, len(rawSamples), 8))
@@ -289,17 +288,17 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
             runtime = int.from_bytes(ba[4:12], 'little')
             print(f'Got Data Frame. Runtime: {runtime}')
             #print(f'CalState: {calState.__dict__}')
-            
+
             for seg in dv:
-                #word = 
+                #word =
                 #self.sampleCount += 1
                 #sample.asWord = int.from_bytes(seg, 'little', signed=False)
                 sample.asWord = seg.ctypes.data_as(ctypes.POINTER(ctypes.c_uint64)).contents.value
                 #print(f'Kpix: {sample.fields.kpixId}, row: {sample.fields.row}, col: {sample.fields.col}, bucket: {sample.fields.bucket}')
                 if sample.fields.type != 0:
                     continue # Temperature type
-                
-            
+
+
                 fields = sample.fields
                 channel = fields.col*32 + fields.row
                 kpix = fields.kpixId
@@ -318,7 +317,7 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
 
                     # This works
                     #self.dataDict[kpix][channel][bucket]['baseline']['data'][runtime] = adc
-                        
+
                     #count = self.counts[kpix][channel, bucket]
                     #print(f'Kpix: {kpix}, channel: {channel}, bucket: {bucket}, type: {sample.fields.type}, adc: {adc}')
                     #self.baselines[kpix][channel, bucket, count] = adc
@@ -331,15 +330,15 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
 
                     if channel == calChannel:
                         #count = self.counts[kpix][channel, bucket, calDac]
-                        #print(f'Kpix: {kpix}, channel: {channel}, bucket: {bucket}, dac: {calDac}, count: {count}, type: {sample.fields.type}')                        
+                        #print(f'Kpix: {kpix}, channel: {channel}, bucket: {bucket}, dac: {calDac}, count: {count}, type: {sample.fields.type}')
                         #self.injections[kpix][channel, bucket, calDac, count] = adc
                         #self.counts[kpix][channel, bucket, calDac] = count + 1
                         if len(self.dataDict[kpix][channel][bucket]['injection'][calDac]) > 0:
                             print(f"Current: {self.dataDict[kpix][channel][bucket]['injection'][calDac]}")
                             print(f'New sample: kpix: {kpix}, channel {channel}, bucket: {bucket}, adc: {adc}')
-                            
+
                         self.dataDict[kpix][channel][bucket]['injection'][calDac][runtime] = adc
-                    
+
         elif frame.getChannel() == 6:
             print("Got YAML Frame")
             yamlString = bytearray(ba).rstrip(bytearray(1)).decode('utf-8')
@@ -362,7 +361,7 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
                     b['baseline']['std'] = std
                     ret[kpix][channel][bucket] = (mean, std)
                     print(f"Channel {channel}, bucket {bucket}: mean = {mean}, std = {std}")
-                    
+
         return ret
 
     def plot_baseline_heatmaps(self, kpix):
@@ -371,14 +370,14 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
         plt.xlabel('Channel')
         plt.ylabel('ADC')
         plt.title('Baseline historam all channels')
-        
+
         for bucket in range(4):
-            
+
             d = self.baselines[kpix][:, bucket]
             ymin = np.min(d)
             ymax = np.max(d)
             print(f'minAdc={ymin}, maxAdc={ymax}')
-        
+
             bins = list(range(ymin, ymax+1))
 
             # Create a histogram for each channel
@@ -394,16 +393,16 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
 
             img = ax.imshow(h2d.T, vmin=zmin, vmax=zmax, extent=[0, len(h2d), ymin, ymax], aspect='auto')
             fig.colorbar(img)
-            
+
         plt.show()
 
     def plot_baseline_heatmaps_dict(self, kpix):
 
         fig = plt.figure()
         fig.suptitle('Baseline historam all channels')
-        
+
         for bucket in range(4):
-            
+
             keys = self.dataDict[kpix].keys()
             d = [list(self.dataDict[kpix][channel][bucket]['baseline']['data'].values()) for channel in keys]
 
@@ -412,7 +411,7 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
             ymax = np.max(d)
 
             bins = list(range(ymin, ymax+1))
-            
+
             # Create a histogram for each channel
             h2d = np.array([np.histogram(x, bins=bins)[0] for x in d])
 
@@ -429,9 +428,9 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
             img = ax.imshow(h2d.T, vmin=zmin, vmax=zmax, extent=[0, len(h2d), ymin, ymax], aspect='auto')
             plt.colorbar(img, ax=ax)
 
-            
+
         plt.show()
-        
+
 
     def plot_injection_fit(self, kpix, channel):
         plt.figure(1)
@@ -442,7 +441,7 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
         for bucket in range(4):
             plt.subplot(4, 1, bucket+1)
             plt.title(f'Bucket {bucket}')
-            
+
             d = self.injections[kpix][channel, bucket, 200:]
             dacs = np.array(list(range(200,256)))
             adcs = d
@@ -456,11 +455,11 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
             plt.plot(x, m*x+b, '--r', label='fit')
             plt.text(np.min(x)+10, np.max(y)-100, f'm={m}, b={b}, r={r}, p={p}, err={err}')
 
-            
+
         plt.legend()
         plt.show()
-        
-#        print('-------')        
+
+#        print('-------')
 #         if typeField == 0:
 #             print('Parsed Data Sample:')
 #             print(f'KPIX: {kpixId}')
@@ -475,10 +474,10 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
 #             print(f'Emptyflag: {emptyFlag}')
 #         elif typeField == 1:
 #             print('Parsed Temperature Sample')
-#             print(f'KPIX: {kpixId}')            
+#             print(f'KPIX: {kpixId}')
 #             print(f'Temperature: {getField(value, 7, 0)}')
 #             print(f'TempCount: {getField(value, 31, 24)}')
 #         else:
 #             print(f'Unknown type field: {typeField}')
-            
-#         print('-------')                        
+
+#         print('-------')

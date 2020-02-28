@@ -29,9 +29,7 @@ class EventBuilder(pr.Device):
                 0b000: "WAIT_ACQUIRE_S",
                 0b001: "WRITE_HEADER_S",
                 0b010: "WAIT_DIGITIZE_S",
-                0b011: "READ_TIMESTAMPS_S", 
+                0b011: "READ_TIMESTAMPS_S",
                 0b100: "WAIT_READOUT_S",
                 0b101: "GATHER_DATA_S",
-                0b111: "INVALID"}));
-        
-        
+                0b111: "INVALID"}))

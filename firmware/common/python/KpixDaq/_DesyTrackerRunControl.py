@@ -85,10 +85,10 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             if self._thread is not None and self._thread != threading.current_thread():
                 print('Join')
                 self._thread.join()
-                self.thread = None;
+                self.thread = None
                 #self.root.ReadAll()
                 print('Stopped')
-            
+
             if self.runState.valueDisp() == 'Running':
                 print("Starting run thread")
                 self._thread = threading.Thread(target=self._run)
@@ -104,13 +104,13 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         if self.runRate.valueDisp() == 'Auto':
             runCount = self.runCount.value() +1
             frameCount = self.root.DataWriter.getDataChannel().getFrameCount()
-            #print(f'Current count is: {current}. Waiting for: {waitfor}')            
+            #print(f'Current count is: {current}. Waiting for: {waitfor}')
             if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, int(self.TimeoutWait.value()*1000000)):
                 frameCount = self.root.DataWriter.getDataChannel().getFrameCount()
                 print('Timed out waiting for data')
                 print(f'Current frame count is: {frameCount}. Waiting for: {runCount}')
                 print('Waiting again')
-                start = time.time()                
+                start = time.time()
                 if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, int(self.TimeoutWait.value()*1000000)):
                     print('Timed out again')
                     return False
@@ -120,14 +120,14 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             delay = 1.0 / self.runRate.value()
             time.sleep(delay)
 
-        self.runCount += 1        
+        self.runCount += 1
         return True
 
     def __prestart(self):
         print('Prestart: Resetting run count')
         self.runCount.set(0)
         self.root.DataWriter.getDataChannel().setFrameCount(0)
-        
+
         print('Prestart: Resetting Counters')
         self.root.CountReset()
         time.sleep(.2)
@@ -137,13 +137,13 @@ class DesyTrackerRunControl(pyrogue.RunControl):
 
         print('Prestart: Starting Run')
         self.root.DesyTracker.KpixDaqCore.AcquisitionControl.Running.set(True)
-        time.sleep(.2)        
+        time.sleep(.2)
 
     def __endRun(self):
         print('')
         print('Stopping Run')
-        self.root.DesyTracker.KpixDaqCore.AcquisitionControl.Running.set(False)        
-        
+        self.root.DesyTracker.KpixDaqCore.AcquisitionControl.Running.set(False)
+
     def _run(self):
         self.__prestart()
 
@@ -161,7 +161,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             lastFrameCount = 0
 
             while self.runState.valueDisp() == 'Running' and bar.finished is False:
-                if mode == 'EthAcquire':                
+                if mode == 'EthAcquire':
                     self.__triggerAndWait()
                     bar.update(1)
                 else:
@@ -175,7 +175,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         print('_run Exiting')
         self.__endRun()
         if self.runState.valueDisp() != 'Stopped':
-            self.runState.setDisp('Stopped')                                    
+            self.runState.setDisp('Stopped')
 
 
     def _calibrate(self):
@@ -187,7 +187,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         dacCount = self.CalDacCount.value()
         firstChan = self.CalChanMin.value()
         lastChan = self.CalChanMax.value()
-        
+
         # Configure firmware for calibration
         acqCtrl = self.root.DesyTracker.KpixDaqCore.AcquisitionControl
         acqCtrl.ExtTrigSrc.setDisp('Disabled', write=True)
@@ -202,24 +202,24 @@ class DesyTrackerRunControl(pyrogue.RunControl):
 
         # Put asics in calibration mode
         kpixAsics = [self.root.DesyTracker.KpixDaqCore.KpixAsicArray.KpixAsic[i] for i in range(24)]
-        kpixAsics = [kpix for kpix in kpixAsics if kpix.enable.get()==True] #small speed hack maybe
+        kpixAsics = [kpix for kpix in kpixAsics if kpix.enable.get() is True] #small speed hack maybe
         for kpix in kpixAsics:
             kpix.setCalibrationMode()
 
         # Restart the run count
         self.__prestart()
-        
+
         self.root.DesyTracker.EthStart()
 
         time.sleep(1)
 
-        # First do baselines        
+        # First do baselines
         self.CalState.set('Baseline')
         with click.progressbar(
                 iterable= range(meanCount),
                 show_pos = True,
                 label = click.style('Running baseline: ', fg='green')) as bar:
-            
+
             for i in bar:
                 if self.runState.valueDisp() == 'Calibration':
                     self.__triggerAndWait()
@@ -234,18 +234,18 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         dacSweep = range(dacMin, dacMax+1, dacStep)
         dacLoops = len(list(dacSweep))
         totalLoops = chanLoops * dacLoops
-        
+
 
         def getDacChan(item):
             return f'Channel: {channel}, DAC: {dac}'
-        
+
         # Calibration
         self.CalState.set('Inject')
-        
+
         with click.progressbar(
                 length = totalLoops,
                 show_pos = True,
-                item_show_func=getDacChan, 
+                item_show_func=getDacChan,
                 label = click.style('Running Injection: ', fg='green'))  as bar:
 
             for channel in chanSweep:
@@ -263,7 +263,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                             # This occasionally fails so retry 10 times
                             for retry in range(10):
                                 try:
-                                    start = time.time()
+                                    #start = time.time()
                                     kpix.setCalibration(channel, dac)
                                     #print(f'Set new kpix settings in {time.time()-start} seconds')
                                     break
@@ -272,7 +272,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                                         raise e
                                     else:
                                         print(f'{kpix.path}.setCalibration({channel}, {dac}) failed. Retrying')
-                                
+
                     # Send acquire command and wait for response
                     for count in range(dacCount):
                         if self.runState.valueDisp() == 'Calibration':
@@ -280,10 +280,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                         else:
                             self.__endRun()
                             return
-                        
+
         self.__endRun()
         if self.runState.getDisp() != 'Stopped':
             self.runState.setDisp('Stopped')
-   
-
-    

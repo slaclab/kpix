@@ -1,4 +1,3 @@
-import collections
 import pyrogue as pr
 
 # class FlippedUInt(pr.UInt):
@@ -43,7 +42,7 @@ class KpixAsic(pr.Device):
         DAC_9 = 0x0029*4
         CONTROL = 0x0030*4
         CHAN_MODE_A = list(range(0x0040*4, 0x0060*4, 4))
-        CHAN_MODE_B = list(range(0x0060*4, 0x0080*4, 4))        
+        CHAN_MODE_B = list(range(0x0060*4, 0x0080*4, 4))
 
         # Status regs
         self.add(pr.RemoteVariable(
@@ -185,7 +184,7 @@ class KpixAsic(pr.Device):
             dependencies = [self.BunchClockCountRaw],
             linkedGet = lambda: self.BunchClockCountRaw.value() + 1,
             linkedSet = lambda value, write: self.BunchClockCountRaw.set(value - 1, write)))
-        
+
 
         self.add(pr.RemoteVariable(
             name = 'TimePowerUpOn',
@@ -238,7 +237,7 @@ class KpixAsic(pr.Device):
                 self.add(pr.RemoteVariable(
                     name = f'{name}Raw{i}',
                     offset = offset,
-                    bitOffset = i*8,                    
+                    bitOffset = i*8,
                     bitSize = 8,
                     hidden = True))
             raws = [self.node(f'{name}Raw{i}') for i in range(4)]
@@ -281,11 +280,11 @@ class KpixAsic(pr.Device):
         makeDacVar(name = 'DacShaperBias', offset=DAC_6)
         makeDacVar(name = 'DacDefaultAnalog', offset=DAC_7)
         makeDacVar(name = 'DacThresholdA', offset=DAC_8)
-        makeDacVar(name = 'DacThresholdB', offset=DAC_9)        
-        
+        makeDacVar(name = 'DacThresholdB', offset=DAC_9)
+
 
         #DacCalibrationCharge
-        
+
         self.add(pr.RemoteVariable(
             name = 'CntrlDisPerReset',
             offset=CONTROL,
@@ -351,7 +350,7 @@ class KpixAsic(pr.Device):
                 5: '48x',
                 6: '56x',
                 7: '64x'}))
-        
+
         self.add(pr.RemoteVariable(
             name = 'CntrlCalibHigh',
             offset=CONTROL,
@@ -468,15 +467,15 @@ class KpixAsic(pr.Device):
              (1,0): 'A',
              (1,1): 'C'}
         drev = {v:k for k,v in d.items()}
-        
+
         def getChanMode(dev, var):
-            l = []
+            li = []
             a = var.dependencies[0].value()
             b = var.dependencies[1].value()
             for row in range(32):
                 val = ((((b >> (row)) & 1) ), ((a >> (row)) & 1))
-                l.append(d[val])
-            s =  ' '.join([''.join(x for x in l[i:i+8]) for i in range(0, 32, 8)])
+                li.append(d[val])
+            s =  ' '.join([''.join(x for x in li[i:i+8]) for i in range(0, 32, 8)])
             #print(f'getChanMode = {s}')
             return s
 
@@ -490,7 +489,7 @@ class KpixAsic(pr.Device):
                 regB |= b << (row)
 
             #print(f'setChanMode(value={value}) - regA={regA:x}, regB = {regB:x}')
-                
+
             var.dependencies[0].set(value = regA, write=write)
             var.dependencies[1].set(value = regB, write=write)
 
@@ -510,8 +509,8 @@ class KpixAsic(pr.Device):
 #                     name = f'Chan[{col}][{row}]',
 #                     mode = 'WO',
 #                     dependencies = [colModes[col]]
-#                     linkedSet = lambda dev,var,value,write: 
-                    
+#                     linkedSet = lambda dev,var,value,write:
+
 
 #    def readBlocks(self, recurse=True, variable=None, checkEach=False):
 #        super().readBlocks(recurse=recurse, variable=variable, checkEach=True)
@@ -531,10 +530,10 @@ class KpixAsic(pr.Device):
 #                 bitOffset = 0,
 #                 bitSize = 32,
 #                 mode = 'RW'))
-            
+
 
         # Channel mode variables
- #        for col in range(32):
+#        for col in range(32):
 #             for row in range(32):
 #                 self.add(pr.RemoteVariable(
 #                     name = f'ChanMode_{col}_{row}',
@@ -552,7 +551,7 @@ class KpixAsic(pr.Device):
 #         def getChanMode(dev, var):
 #             # Combine into a string with a space every 8 chars
 #             return ' '.join([''.join(dep.valueDisp() for dep in var.dependencies[i:i+8]) for i in range(0, 32, 8)])
-        
+
 #         def setChanMode(dev, var, value):
 #             value = ''.join(value.split()) # remove whitespace
 #             for i, dep in enumerate(var.dependencies):
@@ -575,7 +574,7 @@ class KpixAsic(pr.Device):
     def setCalibration(self, channel, dac):
         row = channel%32
         col = channel//32
-        
+
         self.DacCalibration.set(dac, write=False)
 
         # Turn off last cal channel
@@ -590,7 +589,7 @@ class KpixAsic(pr.Device):
         self.writeBlocks()
         self.verifyBlocks()
         self.checkBlocks()
-        
+
 
 class LocalKpix(KpixAsic):
     def __init__(self, **kwargs):
@@ -607,7 +606,7 @@ class LocalKpix(KpixAsic):
         #print('-------')
         #print('')
 
-        
+
     def writeBlocks(self, force=False, recurse=True, variable=None, checkEach=False):
         if variable is None:
             #print('Blocks:')
@@ -624,23 +623,23 @@ class LocalKpix(KpixAsic):
             print(self._getBlocks(variable))
             super().writeBlocks(force=force, recurse=recurse, variable=variable, checkEach=checkEach)
 
-        
+
     def readBlocks(self, recurse=True, variable=None, checkEach=False):
         if variable is None:
             super().readBlocks(recurse=recurse, variable=self.activeVariables, checkEach=True)
         else:
             if isinstance(variable, pr.BaseVariable):
                 variable = [variable]
-            variable = [x for x in variable if x in self.activeVariables]            
+            variable = [x for x in variable if x in self.activeVariables]
             super().readBlocks(recurse=recurse, variable=variable, checkEach=True)
-        
+
     def verifyBlocks(self, recurse=True, variable=None, checkEach=False):
         if variable is None:
             super().verifyBlocks(recurse=recurse, variable=self.activeVariables, checkEach=checkEach)
         else:
             if isinstance(variable, pr.BaseVariable):
                 variable = [variable]
-            variable = [x for x in variable if x in self.activeVariables]            
+            variable = [x for x in variable if x in self.activeVariables]
             super().verifyBlocks(recurse=recurse, variable=variable, checkEach=True)
 
     def checkBlocks(self, recurse=True, variable=None):
@@ -649,22 +648,22 @@ class LocalKpix(KpixAsic):
         else:
             if isinstance(variable, pr.BaseVariable):
                 variable = [variable]
-            variable = [x for x in variable if x in self.activeVariables]            
+            variable = [x for x in variable if x in self.activeVariables]
             super().checkBlocks(recurse=recurse, variable=variable)
 
 
-# Manipulate entire array together    
+# Manipulate entire array together
 # class KpixArray(pr.Device):
 #     def __init__(self, array, **kwargs):
 #         super().__init__(**kwargs)
 
 #         for v in array[0].variables if v.name != 'enable':
 #             allVars = [d.node(v.name) for d in array if d.node(v.name) is not None]
-            
+
 #             def ls(value, write):
 #                 for x in allVars:
 #                     v.set(value=value, write=write)
-                
+
 #             self.add(pr.LinkVariable(
 #                 name = v.name,
 #                 dependencies = allVars,
