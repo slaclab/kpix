@@ -4,10 +4,18 @@ GitBase: ..
 TopRoguePackage: KpixDaq
 
 RoguePackages:
-   - common/KpixDaq/python
+   - common/python
 
 RogueScripts:
-  - ../software/scripts/timetoolGui
+  - ../software/scripts/KpixGui
+  - ../software/scripts/KpixRun
+  - ../software/scripts/KpixCalibration
+  - ../software/scripts/KpixPromLoader
+  - ../software/scripts/KpixServer  
+  - ../software/scripts/KpixClientGui
+  - ../software/scripts/KpixClientRun
+  - ../software/scripts/KpixFileReader
+  - ../software/scripts/KpixMultiRun
 
 CondaDependencies:
   - surf=v2.1.0
