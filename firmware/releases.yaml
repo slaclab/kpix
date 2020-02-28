@@ -10,7 +10,7 @@ RogueScripts:
   - ../software/scripts/timetoolGui
 
 CondaDependencies:
-  - surf=v2.0.7
+  - surf=v2.1.0
   - matplotlib
 
 RogueConfig:
