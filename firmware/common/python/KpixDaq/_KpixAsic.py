@@ -1,4 +1,3 @@
-import collections
 import pyrogue as pr
 
 # class FlippedUInt(pr.UInt):
@@ -470,13 +469,13 @@ class KpixAsic(pr.Device):
         drev = {v:k for k,v in d.items()}
 
         def getChanMode(dev, var):
-            l = []
+            li = []
             a = var.dependencies[0].value()
             b = var.dependencies[1].value()
             for row in range(32):
                 val = ((((b >> (row)) & 1) ), ((a >> (row)) & 1))
-                l.append(d[val])
-            s =  ' '.join([''.join(x for x in l[i:i+8]) for i in range(0, 32, 8)])
+                li.append(d[val])
+            s =  ' '.join([''.join(x for x in li[i:i+8]) for i in range(0, 32, 8)])
             #print(f'getChanMode = {s}')
             return s
 
@@ -534,7 +533,7 @@ class KpixAsic(pr.Device):
 
 
         # Channel mode variables
- #        for col in range(32):
+#        for col in range(32):
 #             for row in range(32):
 #                 self.add(pr.RemoteVariable(
 #                     name = f'ChanMode_{col}_{row}',

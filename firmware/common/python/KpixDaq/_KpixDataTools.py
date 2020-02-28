@@ -1,9 +1,8 @@
-import sys
 import rogue
 import pyrogue
 import numpy as np
 import scipy.stats as stats
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from collections import defaultdict
 from collections import Counter
 import ctypes
@@ -153,16 +152,16 @@ class KpixStreamInfo(rogue.interfaces.stream.Slave):
         rogue.interfaces.stream.Slave.__init__(self)
 
     def _acceptFrame(self, frame):
-       if frame.getError():
+        if frame.getError():
             print('Frame Error!')
             return
 
-       ba = bytearray(frame.getPayload())
-       frame.read(ba, 0)
-       print(f'Got Frame on channel {frame.getChannel()}: {len(ba)} bytes')
-       if frame.getChannel() == 0:
-           d = parseFrame(ba)
-           print(d)
+        ba = bytearray(frame.getPayload())
+        frame.read(ba, 0)
+        print(f'Got Frame on channel {frame.getChannel()}: {len(ba)} bytes')
+        if frame.getChannel() == 0:
+            d = parseFrame(ba)
+            print(d)
 
 
 #        for k, kpix in d['samples'].items():
@@ -260,8 +259,8 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
         ba = np.zeros(frame.getPayload(), dtype=np.uint8)
         frame.read(ba, 0)
 
-        active = set([0,6])
-        done = []
+#        active = set([0,6])
+#        done = []
 
         if frame.getChannel() == 0:
 
@@ -269,8 +268,8 @@ class KpixCalibration(rogue.interfaces.stream.Slave):
             calState = runControlDict['CalState']
             calChannel = runControlDict['CalChannel']
             calDac = runControlDict['CalDac']
-            calMeanCount = runControlDict['CalMeanCount']
-            calDacCount = runControlDict['CalDacCount']
+            #calMeanCount = runControlDict['CalMeanCount']
+            #calDacCount = runControlDict['CalDacCount']
 
             #numDacs = (runControlDict['CalDacMax']-runControlDict['CalDacMin'])/runControlDict['CalDacStep']
             #dacCount = runControlDict['CalDacCount']

@@ -32,4 +32,4 @@ class EventBuilder(pr.Device):
                 0b011: "READ_TIMESTAMPS_S",
                 0b100: "WAIT_READOUT_S",
                 0b101: "GATHER_DATA_S",
-                0b111: "INVALID"}));
+                0b111: "INVALID"}))

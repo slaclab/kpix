@@ -67,7 +67,7 @@ class KpixDataRx(pr.Device):
                 0b100: "RX_FRAME_DONE_S",
                 0b101: "RX_DUMP_S",
                 0b110: "RX_RESP_S",
-                0b111: "INVALID"}));
+                0b111: "INVALID"}))
 
         self.add(pr.RemoteVariable(
             name = 'TxState',
@@ -87,7 +87,7 @@ class KpixDataRx(pr.Device):
                 0b1000: "TX_WAIT_S",
                 0b1001: "TX_TEMP_S",
                 0b1010: "TX_RUNTIME_S",
-                0b1111: "INVALID" }));
+                0b1111: "INVALID" }))
 
 
 

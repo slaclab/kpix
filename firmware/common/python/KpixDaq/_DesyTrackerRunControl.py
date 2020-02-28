@@ -85,7 +85,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             if self._thread is not None and self._thread != threading.current_thread():
                 print('Join')
                 self._thread.join()
-                self.thread = None;
+                self.thread = None
                 #self.root.ReadAll()
                 print('Stopped')
 
@@ -202,7 +202,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
 
         # Put asics in calibration mode
         kpixAsics = [self.root.DesyTracker.KpixDaqCore.KpixAsicArray.KpixAsic[i] for i in range(24)]
-        kpixAsics = [kpix for kpix in kpixAsics if kpix.enable.get()==True] #small speed hack maybe
+        kpixAsics = [kpix for kpix in kpixAsics if kpix.enable.get() is True] #small speed hack maybe
         for kpix in kpixAsics:
             kpix.setCalibrationMode()
 
@@ -263,7 +263,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                             # This occasionally fails so retry 10 times
                             for retry in range(10):
                                 try:
-                                    start = time.time()
+                                    #start = time.time()
                                     kpix.setCalibration(channel, dac)
                                     #print(f'Set new kpix settings in {time.time()-start} seconds')
                                     break
