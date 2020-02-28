@@ -50,7 +50,7 @@ class AcquisitionControl(pr.Device):
             bitOffset=0,
             bitSize=4,
             enum = extTrigEnum))
-        
+
         self.add(pr.RemoteVariable(
             name = 'ExtAcquisitionSrc',
             mode = 'RW',

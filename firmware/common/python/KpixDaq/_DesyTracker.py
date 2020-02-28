@@ -15,8 +15,8 @@ class FrameInfo(rogue.interfaces.stream.Slave):
         print(f' Got frame with {frame.getPayload()} bytes')
 
 
-        
-        
+
+
 
 class DesyTracker(pyrogue.Device):
     def __init__(self, cmd, rssi, sim, **kwargs):
@@ -33,8 +33,8 @@ class DesyTracker(pyrogue.Device):
             f = self.root.cmd._reqFrame(1, False)
             f.write(bytearray([0x55]), 0)
             self.root.cmd._sendFrame(f)
-            
-                
+
+
         self.add(surf.axi.AxiVersion(
             offset = 0x0000,
             expand = True))
@@ -74,4 +74,3 @@ class DesyTracker(pyrogue.Device):
                 offset = 0x05000000,
                 addrMode = False,
                 hidden = True))
-

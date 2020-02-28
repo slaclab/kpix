@@ -30,8 +30,8 @@ class KpixDaqCore(pr.Device):
         self.add(KpixDataRxArray(
             offset = 0x200000,
             numKpix = numKpix))
-                
-                
+
+
 class KpixAsicArray(pr.Device):
     def __init__(self, numKpix, sysConfig, **kwargs):
         super().__init__(**kwargs)
@@ -45,14 +45,14 @@ class KpixAsicArray(pr.Device):
             # Link SysConfig.KpixEnable[x] to KpixAsic[x].enable
             self.KpixAsic[i].enable.addListener(sysConfig.KpixEnableUpdate)
 
-        
+
         # Internal KPIX
         self.add(KpixDaq.LocalKpix(
             name = f'KpixAsic[{numKpix}]',
             offset = 0x100000 + (numKpix*0x1000),
             enabled = True,
             expand = False))
-        
+
         self.KpixAsic[numKpix].enable.addListener(sysConfig.KpixEnableUpdate)
 
 #     def readBlocks(self, recurse=True, variable=None, checkEach=False):
@@ -67,4 +67,3 @@ class KpixDataRxArray(pr.Device):
                 name = f'KpixDataRx[{i}]',
                 offset = (i*0x100),
                 expand=False))
-                 

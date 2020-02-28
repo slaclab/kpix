@@ -7,7 +7,7 @@ import surf.devices.nxp
 import KpixDaq
 
 class DesyTrackerEnvironmentMonitor(pyrogue.Device):
-      def __init__(self, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         self.add(surf.xilinx.Xadc(
