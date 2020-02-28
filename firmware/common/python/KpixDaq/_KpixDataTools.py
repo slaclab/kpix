@@ -149,7 +149,7 @@ def parseFrame(ba):
     return d
     
 class KpixStreamInfo(rogue.interfaces.stream.Slave):
-    def __init__(self):
+    def __init__(self, ):
         rogue.interfaces.stream.Slave.__init__(self)
 
     def _acceptFrame(self, frame):
@@ -159,9 +159,11 @@ class KpixStreamInfo(rogue.interfaces.stream.Slave):
 
        ba = bytearray(frame.getPayload())
        frame.read(ba, 0)
+       print(f'Got Frame on channel {frame.getChannel()}: {len(ba)} bytes')       
        if frame.getChannel() == 0:
-           print(f'Got Frame: {len(ba)} bytes')
            d = parseFrame(ba)
+           print(d)
+           
 
 #        for k, kpix in d['samples'].items():
 #            print(k)

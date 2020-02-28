@@ -2,246 +2,7 @@ import threading
 import time
 import click
 
-import rogue
 import pyrogue
-import pyrogue.interfaces.simulation
-import pyrogue.protocols
-import pyrogue.utilities.fileio
-
-import surf.axi
-import surf.protocols.rssi
-import surf.devices.linear
-import surf.devices.nxp
-import surf.xilinx
-import surf.devices.micron
-
-import KpixDaq
-
-class FrameInfo(rogue.interfaces.stream.Slave):
-    def __init__(self):
-        rogue.interfaces.stream.Slave.__init__(self)
-
-    def _acceptFrame(self, frame):
-        print(f' Got frame with {frame.getPayload()} bytes')
-
-class DesyTrackerRoot(pyrogue.Root):
-    def __init__(self, debug=False, hwEmu=False, sim=False, rssiEn=True, ip='192.168.1.10', pollEn=False, serverPort=9099, **kwargs):
-        super().__init__(**kwargs)
-
-        if hwEmu:
-            self.srp = pyrogue.interfaces.simulation.MemEmulate()
-            self.dataStream = rogue.interfaces.stream.Master()
-            self.cmd = rogue.interfaces.stream.Master()
-        
-        else:
-            if sim:
-                dest0 = rogue.interfaces.stream.TcpClient('localhost', 9000)
-                dest1 = rogue.interfaces.stream.TcpClient('localhost', 9002)
-                rssiEn = False
-                pollEn = False
-            
-            else:
-                self.udp = pyrogue.protocols.UdpRssiPack( host=ip, port=8192, packVer=2 )                
-                dest0 = self.udp.application(dest=0)
-                dest1 = self.udp.application(dest=1)
-
-            self.srp = rogue.protocols.srp.SrpV3()
-            self.cmd = rogue.interfaces.stream.Master()
-            
-            dataWriter = pyrogue.utilities.fileio.LegacyStreamWriter(name='DataWriter')
-            
-            pyrogue.streamConnectBiDir(self.srp, dest0)
-            pyrogue.streamConnect(dest1, dataWriter.getDataChannel())
-            pyrogue.streamConnect(self.cmd, dest1)
-            pyrogue.streamConnect(self, dataWriter.getYamlChannel())
-
-            if debug:
-                fp = FrameInfo()
-                pyrogue.streamTap(dest1, fp) 
-
-            self.add(dataWriter)
-            self.add(DesyTrackerRunControl())
-            
-        self.add(DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, sim=sim, enabled=True, expand=True))
-
-        self.start(pollEn=pollEn, timeout=100000, serverPort=serverPort)
-
-    def stop(self):
-        self.udp._rssi.stop()
-        super().stop()
-
-
-class TluMonitor(pyrogue.Device):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.add(pyrogue.RemoteVariable(
-            name = 'TluClkFreqRaw',
-            offset = 0x00,
-            mode = 'RO',
-            base = pyrogue.UInt,
-        ))
-
-        self.add(pyrogue.LinkVariable(
-            name = 'TluClkFreq',
-            dependencies = [self.TluClkFreqRaw],
-            linkedGet = lambda: self.TluClkFreqRaw.value() * 1.0e-6,
-            value = 0.0,
-            pollInterval = 1,
-            units = 'MHz',
-            disp = '{:1.3f}',
-        ))
-
-        self.add(pyrogue.RemoteVariable(
-            name = 'TriggerCount',
-            offset = 0x04,
-            mode = 'RO',
-            pollInterval = 1,
-            base = pyrogue.UInt,
-        ))
-
-        self.add(pyrogue.RemoteVariable(
-            name = 'SpillCount',
-            offset = 0x08,
-            mode = 'RO',
-            pollInterval = 1,
-            base = pyrogue.UInt,
-        ))
-
-        self.add(pyrogue.RemoteVariable(
-            name = 'StartCount',
-            offset = 0x0C,
-            mode = 'RO',
-            pollInterval = 1,
-            base = pyrogue.UInt,
-        ))
-
-        self.add(pyrogue.RemoteCommand(
-            name = 'RstCounts',
-            offset = 0x10,
-            function = pyrogue.RemoteCommand.toggle
-        ))
-
-        self.add(pyrogue.RemoteVariable(
-            name = 'ClkSel',
-            offset = 0x20,
-            mode = 'RW',
-            base = pyrogue.UInt,
-            enum = {
-                0: 'EthClk',
-                1: 'TluClk',
-            }
-        ))
-
-    def countReset(self):
-        self.RstCounts()
-        
-class EnvironmentMonitor(pyrogue.Device):
-      def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.add(surf.xilinx.Xadc(
-            offset=0x03000000,
-            hidden=True))
-
-        self.add(surf.devices.linear.Ltc4151(
-            offset = 0x04000000,
-            senseRes = 0.02,
-            hidden=True))
-
-        self.add(surf.devices.nxp.Sa56004x(
-            description = "Board temperate monitor",
-            offset = 0x04000400,
-            hidden=True))
-
-        for i in range(4):
-            self.add(KpixDaq.Si7006(
-                name = f'Si7006[{i}]',
-                enabled = False,
-                offset = 0x07000000 + (i*0x1000)))
-
-        self.add(pyrogue.LinkVariable(
-            name = 'FpgaTemperature',
-            pollInterval = 1,
-            variable = self.Xadc.Temperature))
-
-        self.add(pyrogue.LinkVariable(
-            name = 'BoardTemperature',
-            pollInterval = 1,
-            variable = self.Sa56004x.LocalTemperature))
-
-        self.add(pyrogue.LinkVariable(
-            name = 'InputVoltage',
-            pollInterval = 1,
-            variable = self.Ltc4151.Vin))
-
-        self.add(pyrogue.LinkVariable(
-            name = 'InputCurrent',
-            pollInterval = 1,
-            variable = self.Ltc4151.Iin))
-
-        self.add(pyrogue.LinkVariable(
-            name = 'InputPower',
-            pollInterval = 1,
-            variable = self.Ltc4151.Pin))
-        
-        
-
-class DesyTracker(pyrogue.Device):
-    def __init__(self, cmd, rssi, sim, **kwargs):
-        super().__init__(**kwargs)
-
-        @self.command()
-        def EthAcquire():
-            f = self.root.cmd._reqFrame(1, False)
-            f.write(bytearray([0xAA]), 0)
-            self.root.cmd._sendFrame(f)
-
-        @self.command()
-        def EthStart():
-            f = self.root.cmd._reqFrame(1, False)
-            f.write(bytearray([0x55]), 0)
-            self.root.cmd._sendFrame(f)
-            
-                
-        self.add(surf.axi.AxiVersion(
-            offset = 0x0000,
-            expand = True))
-
-        if not sim:
-            
-            self.add(EnvironmentMonitor(expand=True))
-
-        extTrigEnum = {
-            0: 'BncTrig',
-            1: 'Lemo0',
-            2: 'Lemo1',
-            3: 'TluSpill',
-            4: 'TluStart',
-            5: 'TluTrigger',
-            6: 'EthAcquire',
-            7: 'EthStart'}
-
-        self.add(TluMonitor(
-            offset = 0x06000000,
-            expand = True))
-
-        self.add(KpixDaq.KpixDaqCore(
-            offset = 0x01000000,
-            numKpix = 24,
-            extTrigEnum = extTrigEnum,
-            expand = True))
-
-        if rssi and not sim:
-            self.add(surf.protocols.rssi.RssiCore(
-                offset = 0x02000000,
-                expand = False))
-
-        if not sim:
-            self.add(surf.devices.micron.AxiMicronN25Q(
-                offset = 0x05000000,
-                addrMode = False,
-                hidden = True))
 
 class DesyTrackerRunControl(pyrogue.RunControl):
     def __init__(self, **kwargs):
@@ -329,7 +90,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
                 print('Stopped')
             
             if self.runState.valueDisp() == 'Running':
-                #print("Starting run")
+                print("Starting run thread")
                 self._thread = threading.Thread(target=self._run)
                 self._thread.start()
             elif self.runState.valueDisp() == 'Calibration':
@@ -363,18 +124,18 @@ class DesyTrackerRunControl(pyrogue.RunControl):
         return True
 
     def __prestart(self):
-        print('Resetting run count')
+        print('Prestart: Resetting run count')
         self.runCount.set(0)
         self.root.DataWriter.getDataChannel().setFrameCount(0)
         
-        print('Resetting Counters')
+        print('Prestart: Resetting Counters')
         self.root.CountReset()
         time.sleep(.2)
-        print('Reading system state')
+        print('Prestart: Reading system state')
         self.root.ReadAll()
         time.sleep(.2)
 
-        print('Starting Run')
+        print('Prestart: Starting Run')
         self.root.DesyTracker.KpixDaqCore.AcquisitionControl.Running.set(True)
         time.sleep(.2)        
 

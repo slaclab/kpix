@@ -9,10 +9,13 @@ import time
 import click
 
 import pyrogue
+import pyrogue.interfaces
 import rogue
 
-pyrogue.addLibraryPath('../python')
-pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
+if '--local' in sys.argv:
+    baseDir = os.path.dirname(os.path.realpath(__file__))
+    pyrogue.addLibraryPath(f'{baseDir}/../../firmware/common/python')
+    pyrogue.addLibraryPath(f'{baseDir}/../../firmware/submodules/surf/python')
 
 import KpixDaq
 
@@ -52,12 +55,6 @@ parser.add_argument(
 
 
 parser.add_argument(
-    '--debug', '-d',
-    action = 'store_true',
-    required = False,
-    default = False)
-
-parser.add_argument(
     '--runcount', '-r',
     type = int,
     required = False,
@@ -65,19 +62,13 @@ parser.add_argument(
 
 
 if __name__ == "__main__":
-    args = parser.parse_args()
-    
-    # with KpixDaq.DesyTrackerRoot(pollEn=False, ip=args.ip, debug=args.debug) as root:
-    #     # Just reload the FPGA since its the most consistent way to get to a known start state
-    #     print('Reloading FPGA')
-    #     root.DesyTracker.AxiVersion.FpgaReload()
-    #     #root.waitOnUpdate()
+    args = parser.parse_known_args()[0]
         
     # # Sleep for 5 seconds to allow FPGA to load
     # print('Sleeping')
     # time.sleep(2)
     # print('Done sleeping')
-    client = pyrogue.VirtualClient(addr=args.host, port=args.port)
+    client = pyrogue.interfaces.VirtualClient(addr=args.host, port=args.port)
 
     root = client.root
     
@@ -105,18 +96,23 @@ if __name__ == "__main__":
 
     print('Writing initial configuration')
     root.LoadConfig(args.config)
+    print("Reading registers")
     root.ReadAll()
+    print("Waiting for read")
     root.waitOnUpdate()
 
+    print("Set max run count")
     root.DesyTrackerRunControl.MaxRunCount.set(args.runcount)
 
     try:
+        print("starting run")
         root.DesyTrackerRunControl.runState.setDisp('Running')
+        print('started')
         last = 0
         with click.progressbar(
                 iterable=range(root.DesyTrackerRunControl.MaxRunCount.get()),
                 show_pos=True,
-                label=click.style('Running', fg='green')) as bar:
+                label=click.style('Client Running', fg='green')) as bar:
 
             while root.DesyTrackerRunControl.runState.getDisp() != 'Stopped':
                 rc = root.DesyTrackerRunControl.runCount.get()
