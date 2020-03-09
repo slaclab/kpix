@@ -28,6 +28,7 @@ addons:
     packages:
       - python3
       - flake8
+      - jq
       
 
 stages:
@@ -69,8 +70,7 @@ jobs:
         - conda update -q conda conda-build
         # Download and unzip tag zipfile
         - cd $DOWNLOAD_DIR
-        - wget -O file.zip $DOWNLOAD_URL
-        - unzip file.zip
+        - python $TRAVIS_BUILD_DIR/releaseDownload.py --repo="slaclab/kpix" --tag="$TRAVIS_TAG"
 
       script:
         # Build conda package
