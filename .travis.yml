@@ -61,6 +61,9 @@ jobs:
       install:
         # Install Anaconda for the right architecture (linux or osx)
         - pip install -r requirements.txt
+        # Download and unzip tag zipfile        
+        - cd $DOWNLOAD_DIR
+        - python $TRAVIS_BUILD_DIR/releaseDownload.py --repo="slaclab/kpix" --tag="$TRAVIS_TAG"
         - cd $MINICONDA_DIR
         - wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh;
         - bash miniconda.sh -b -p $HOME/miniconda
@@ -69,9 +72,7 @@ jobs:
         - conda config --set always_yes yes
         - conda install conda-build anaconda-client conda-verify
         - conda update -q conda conda-build
-        # Download and unzip tag zipfile
-        - cd $DOWNLOAD_DIR
-        - python $TRAVIS_BUILD_DIR/releaseDownload.py --repo="slaclab/kpix" --tag="$TRAVIS_TAG"
+
 
       script:
         # Build conda package
