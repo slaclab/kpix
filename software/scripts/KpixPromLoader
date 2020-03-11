@@ -60,7 +60,7 @@ args = parser.parse_known_args()[0]
 print(args)
 
 if args.path is None:
-    BasePackage = importlib.import_module('desytracker')
+    BasePackage = importlib.import_module('KpixDaq')
     args.path = BasePackage.ImageDir
     
 if os.path.isdir(args.path):
