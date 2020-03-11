@@ -20,6 +20,8 @@ class DesyTrackerRoot(pyrogue.Root):
 
         super().__init__(**kwargs)
 
+        self.sim = sim
+
         if hwEmu:
             self.srp = pyrogue.interfaces.simulation.MemEmulate()
             self.dataStream = rogue.interfaces.stream.Master()
@@ -27,30 +29,30 @@ class DesyTrackerRoot(pyrogue.Root):
 
         else:
             if sim:
-                dest0 = rogue.interfaces.stream.TcpClient('localhost', 9000)
-                dest1 = rogue.interfaces.stream.TcpClient('localhost', 9002)
+                self.dest0 = rogue.interfaces.stream.TcpClient('localhost', 9000)
+                self.dest1 = rogue.interfaces.stream.TcpClient('localhost', 9002)
                 rssiEn = False
 
             else:
                 self.udp = pyrogue.protocols.UdpRssiPack( host=ip, port=8192, packVer=2 )
-                dest0 = self.udp.application(dest=0)
-                dest1 = self.udp.application(dest=1)
+                self.dest0 = self.udp.application(dest=0)
+                self.dest1 = self.udp.application(dest=1)
 
             self.srp = rogue.protocols.srp.SrpV3()
             self.cmd = rogue.interfaces.stream.Master()
 
             dataWriter = pyrogue.utilities.fileio.LegacyStreamWriter(name='DataWriter')
 
-            self.srp == dest0
-            dest1 >> dataWriter.getDataChannel()
-            dest1 << self.cmd
+            self.srp == self.dest0
+            self.dest1 >> dataWriter.getDataChannel()
+            self.dest1 << self.cmd
 
             # Connect update stream
             self >> dataWriter.getYamlChannel()
 
             if debug:
                 fp = KpixDaq.KpixStreamInfo()
-                dest1 >> fp
+                self.dest1 >> fp
 
             self.add(dataWriter)
             self.add(KpixDaq.DesyTrackerRunControl())
@@ -62,6 +64,10 @@ class DesyTrackerRoot(pyrogue.Root):
     def stop(self):
         if hasattr(self, 'udp'):
             self.udp._rssi.stop()
+        else:
+            # sim mode
+            self.dest0.close()
+            self.dest1.close()
         super().stop()
 
 class DesyTrackerRootArgparser(argparse.ArgumentParser):
