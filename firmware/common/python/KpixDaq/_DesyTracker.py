@@ -22,16 +22,19 @@ class DesyTracker(pyrogue.Device):
     def __init__(self, cmd, rssi, sim, **kwargs):
         super().__init__(**kwargs)
 
+        self.__acquireCmd = bytearray([0xAA])
+        self.__startCmd = bytearray([0x55])
+
         @self.command()
         def EthAcquire():
             f = self.root.cmd._reqFrame(1, False)
-            f.write(bytearray([0xAA]), 0)
+            f.write(self.__acquireCmd, 0)
             self.root.cmd._sendFrame(f)
 
         @self.command()
         def EthStart():
             f = self.root.cmd._reqFrame(1, False)
-            f.write(bytearray([0x55]), 0)
+            f.write(self.__startCmd, 0)
             self.root.cmd._sendFrame(f)
 
 
