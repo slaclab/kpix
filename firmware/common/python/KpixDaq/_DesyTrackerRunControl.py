@@ -62,7 +62,7 @@ class DesyTrackerRunControl(pyrogue.RunControl):
 
         self.add(pyrogue.LocalVariable(
             name = 'TimeoutWait',
-            value = .2,
+            value = 0.2,
             units = 'Seconds'))
 
         self.add(pyrogue.LocalVariable(
@@ -105,10 +105,13 @@ class DesyTrackerRunControl(pyrogue.RunControl):
             runCount = self.runCount.value() +1
             frameCount = self.root.DataWriter.getDataChannel().getFrameCount()
             #print(f'Current count is: {current}. Waiting for: {waitfor}')
+            start = time.time()
             if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, int(self.TimeoutWait.value()*1000000)):
+                end = time.time()
+                print(f'Timed out waiting for data after {end-start} seconds')
+                print(f'Current frame count was: {frameCount}. Waiting for: {runCount}')
                 frameCount = self.root.DataWriter.getDataChannel().getFrameCount()
-                print('Timed out waiting for data')
-                print(f'Current frame count is: {frameCount}. Waiting for: {runCount}')
+                print(f'Frame count now: {frameCount}')
                 print('Waiting again')
                 start = time.time()
                 if not self.root.DataWriter.getDataChannel().waitFrameCount(self.runCount.value()+1, int(self.TimeoutWait.value()*1000000)):
