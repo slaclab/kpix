@@ -25,7 +25,7 @@ use ieee.std_logic_1164.all;
 
 package Version is
 
-  constant FPGA_VERSION_C : std_logic_vector(31 downto 0) := x"D0000004";  -- MAKE_VERSION
+  constant FPGA_VERSION_C : std_logic_vector(31 downto 0) := x"E0000000";  -- MAKE_VERSION
 
 end Version;
 

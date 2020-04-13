@@ -23,12 +23,19 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-
+use ieee.std_logic_arith.all;
 
 library surf;
 use surf.StdRtlPkg.all;
-use work.VcPkg.all;
-use work.EthClientPackage.all;
+use surf.AxiLitePkg.all;
+use surf.AxiStreamPkg.all;
+use surf.SsiPkg.all;
+
+library v5_eth_core;
+use v5_eth_core.EthClientPackage.all;
+
+library kpix;
+use kpix.KpixPkg.all;
 
 entity EthFrontEnd is
    generic (
@@ -48,35 +55,33 @@ entity EthFrontEnd is
       gtpTxN : out sl;
       gtpTxP : out sl;
 
-      -- Special 200 MHz clock for commands
+      -- Master bus out
+      axilClk          : in  sl;
+      axilRst          : in  sl;
+      mAxilReadMaster  : out AxiLiteReadMasterType;
+      mAxilReadSlave   : in  AxiLiteReadSlaveType;
+      mAxilWriteMaster : out AxiLiteWriteMasterType;
+      mAxilWriteSlave  : in  AxiLiteWriteSlaveType;
+
+      -- Kpix 200 MHz reference
       clk200 : in sl;
       rst200 : in sl;
 
-      -- Local command signal
-      cmdSlaveOut : out VcCmdSlaveOutType;
+      -- Event builder stream (kpixClk200 domain)
+      ebAxisMaster : in  AxiStreamMasterType;
+      ebAxisSlave  : out AxiStreamSlaveType;
+      ebAxisCtrl   : out AxiStreamCtrlType;
 
-      -- Local register control signals
-      regSlaveIn  : in  VcRegSlaveInType;
-      regSlaveOut : out VcRegSlaveOutType;
-
-      -- Local data transfer signals
-      usBuff64In  : in  VcUsBuff64InType;
-      usBuff64Out : out VcUsBuff64OutType);
+      acqCmd   : out sl;
+      startCmd : out sl);
 end EthFrontEnd;
 
 
 -- Define architecture
-architecture EthFrontEnd of EthFrontEnd is
+architecture rtl of EthFrontEnd is
 
-   signal vcTx0In  : VcTxInType;
-   signal vcTx0Out : VcTxOutType;
+   constant AXIS_CONFIG_C : AxiStreamConfigType := ssiAxiStreamConfig(2);
 
-   signal vcTx1In  : VcTxInType;
-   signal vcTx1Out : VcTxOutType;
-
-   signal vcRxCommonOut : VcRxCommonOutType;
-   signal vcRx0Out      : VcRxOutType;
-   signal vcRx1Out      : VcRxOutType;
 
    -- Ethernet signals (Should cleanup Eth Client someday)
    signal udpTxValid   : sl;
@@ -102,38 +107,70 @@ architecture EthFrontEnd of EthFrontEnd is
    signal userRxEOF    : sl;
    signal userRxEOFE   : sl;
    signal userRxVc     : slv(1 downto 0);
+   signal user0TxValid : sl;
+   signal user0TxReady : sl;
+   signal user0TxData  : slv(15 downto 0);
+   signal user0TxSOF   : sl;
+   signal user0TxEOF   : sl;
+   signal user1TxValid : sl;
+   signal user1TxReady : sl;
+   signal user1TxData  : slv(15 downto 0);
+   signal user1TxSOF   : sl;
+   signal user1TxEOF   : sl;
+
+   -- Axi Stream
+   signal srpTxAxisMaster : AxiStreamMasterType;
+   signal srpTxAxisSlave  : AxiStreamSlaveType;
+   signal srpRxAxisMaster : AxiStreamMasterType;
+   signal srpRxAxisSlave  : AxiStreamSlaveType;
+   signal srpRxAxisCtrl   : AxiStreamCtrlType;
+
+   signal dataTxAxisMaster : AxiStreamMasterType;
+   signal dataTxAxisSlave  : AxiStreamSlaveType;
+   signal dataRxAxisMaster : AxiStreamMasterType;
+   signal dataRxAxisSlave  : AxiStreamSlaveType;
+   signal dataRxAxisCtrl   : AxiStreamCtrlType;
+
+   signal acqReqValid      : sl;
+   signal startReqValid    : sl;
+   signal acqReqValidReg   : sl;
+   signal startReqValidReg : sl;
+   signal ethCmd           : sl;
+   signal cmdValid         : sl;
+   signal acqCmdTmp        : sl;
+   signal startCmdTmp      : sl;
+
 
 begin
 
    -- Ethernet block
-   U_EthClientGtp : entity work.EthClientGtp
+   U_EthClientGtp : entity v5_eth_core.EthClientGtp
       generic map (
-         UdpPort => 8192
-         ) port map (
-            gtpClk      => gtpClk,
-            gtpClkOut   => gtpRefClkOut,
-            gtpClkRef   => gtpRefClk,
-            gtpClkRst   => gtpClkRst,
-            ipAddr      => IP_ADDR_G,
-            macAddr     => MAC_ADDR_G,
-            udpTxValid  => udpTxValid,
-            udpTxFast   => '0',
-            udpTxReady  => udpTxReady,
-            udpTxData   => udpTxData,
-            udpTxLength => udpTxLength,
-            udpRxValid  => udpRxValid,
-            udpRxData   => udpRxData,
-            udpRxGood   => udpRxGood,
-            udpRxError  => udpRxError,
-            udpRxCount  => udpRxCount,
-            gtpRxN      => gtpRxN,
-            gtpRxP      => gtpRxP,
-            gtpTxN      => gtpTxN,
-            gtpTxP      => gtpTxP
-            );
+         UdpPort => 8192)
+      port map (
+         gtpClk      => gtpClk,
+         gtpClkOut   => gtpRefClkOut,
+         gtpClkRef   => gtpRefClk,
+         gtpClkRst   => gtpClkRst,
+         ipAddr      => IP_ADDR_G,
+         macAddr     => MAC_ADDR_G,
+         udpTxValid  => udpTxValid,
+         udpTxFast   => '0',
+         udpTxReady  => udpTxReady,
+         udpTxData   => udpTxData,
+         udpTxLength => udpTxLength,
+         udpRxValid  => udpRxValid,
+         udpRxData   => udpRxData,
+         udpRxGood   => udpRxGood,
+         udpRxError  => udpRxError,
+         udpRxCount  => udpRxCount,
+         gtpRxN      => gtpRxN,
+         gtpRxP      => gtpRxP,
+         gtpTxN      => gtpTxN,
+         gtpTxP      => gtpTxP);
 
    -- Ethernet framer
-   U_EthFrame : entity work.EthUdpFrame
+   U_EthFrame : entity v5_eth_core.EthUdpFrame
       port map (
          gtpClk      => gtpClk,
          gtpClkRst   => gtpClkRst,
@@ -159,26 +196,25 @@ begin
          udpRxData   => udpRxData,
          udpRxGood   => udpRxGood,
          udpRxError  => udpRxError,
-         udpRxCount  => udpRxCount
-         );
+         udpRxCount  => udpRxCount);
 
    -- Demux
-   vcRxCommonOut.sof     <= userRxSOF;
-   vcRxCommonOut.eof     <= userRxEOF;
-   vcRxCommonOut.eofe    <= userRxEOFE;
-   vcRxCommonOut.data(0) <= userRxData;
-   vcRxCommonOut.data(1) <= (others => '0');
-   vcRxCommonOut.data(2) <= (others => '0');
-   vcRxCommonOut.data(3) <= (others => '0');
-   vcRx0Out.valid        <= userRxValid when userRxVc = "00" else '0';
-   vcRx1Out.valid        <= userRxValid when userRxVc = "01" else '0';
-   vcRx0Out.remBuffAFull <= '0';        -- EthClient doesn't drive these
-   vcRx0Out.remBuffFull  <= '0';        -- EthClient doesn't drive these
-   vcRx1Out.remBuffAFull <= '0';
-   vcRx1Out.remBuffFull  <= '0';
+--    vcRxCommonOut.sof     <= userRxSOF;
+--    vcRxCommonOut.eof     <= userRxEOF;
+--    vcRxCommonOut.eofe    <= userRxEOFE;
+--    vcRxCommonOut.data(0) <= userRxData;
+--    vcRxCommonOut.data(1) <= (others => '0');
+--    vcRxCommonOut.data(2) <= (others => '0');
+--    vcRxCommonOut.data(3) <= (others => '0');
+--    vcRx0Out.valid        <= userRxValid when userRxVc = "00" else '0';
+--    vcRx1Out.valid        <= userRxValid when userRxVc = "01" else '0';
+--    vcRx0Out.remBuffAFull <= '0';        -- EthClient doesn't drive these
+--    vcRx0Out.remBuffFull  <= '0';        -- EthClient doesn't drive these
+--    vcRx1Out.remBuffAFull <= '0';
+--    vcRx1Out.remBuffFull  <= '0';
 
    -- Arbiter
-   U_EthArb : entity work.EthArbiter
+   U_EthArb : entity v5_eth_core.EthArbiter
       port map (
          gtpClk       => gtpClk,
          gtpClkRst    => gtpClkRst,
@@ -188,16 +224,16 @@ begin
          userTxSOF    => userTxSOF,
          userTxEOF    => userTxEOF,
          userTxVc     => userTxVc,
-         user0TxValid => vcTx0In.valid,
-         user0TxReady => vcTx0Out.ready,
-         user0TxData  => vcTx0In.data(0),
-         user0TxSOF   => vcTx0In.sof,
-         user0TxEOF   => vcTx0In.eof,
-         user1TxValid => vcTx1In.valid,
-         user1TxReady => vcTx1Out.ready,
-         user1TxData  => vcTx1In.data(0),
-         user1TxSOF   => vcTx1In.sof,
-         user1TxEOF   => vcTx1In.eof,
+         user0TxValid => user0TxValid,
+         user0TxReady => user0TxReady,
+         user0TxData  => user0TxData,
+         user0TxSOF   => user0TxSOF,
+         user0TxEOF   => user0TxEOF,
+         user1TxValid => user1TxValid,
+         user1TxReady => user1TxReady,
+         user1TxData  => user1TxData,
+         user1TxSOF   => user1TxSOF,
+         user1TxEOF   => user1TxEOF,
          user2TxValid => '0',
          user2TxReady => open,
          user2TxData  => (others => '0'),
@@ -207,77 +243,124 @@ begin
          user3TxReady => open,
          user3TxData  => (others => '0'),
          user3TxSOF   => '0',
-         user3TxEOF   => '0'
-         );
+         user3TxEOF   => '0');
 
+   -- Translate to AxiStream
+   user0TxValid   <= srpTxAxisMaster.tValid;
+   user0TxData    <= srpTxAxisMaster.tData(15 downto 0);
+   user0TxEOF     <= srpTxAxisMaster.tLast;
+   user0TxSOF     <= srpTxAxisMaster.tUser(1);
+   srpTxAxisSlave <= (tready => user0TxReady);
 
-   -- VC0 RX, External command processor
-   VcCmdSlave_1 : entity work.VcCmdSlave
+   srpRxAxisMaster.tValid             <= userRxValid when userRxVc = "00" else '0';
+   srpRxAxisMaster.tData(15 downto 0) <= userRxData;
+   srpRxAxisMaster.tLast              <= userRxEOF;
+   srpRxAxisMaster.tUser(1)           <= userRxSOF;
+   srpRxAxisMaster.tUser(0)           <= userRxEOFE;
+
+   user1TxValid    <= dataTxAxisMaster.tValid;
+   user1TxData     <= dataTxAxisMaster.tData(15 downto 0);
+   user1TxEOF      <= dataTxAxisMaster.tLast;
+   user1TxSOF      <= dataTxAxisMaster.tUser(1);
+   dataTxAxisSlave <= (tReady => user1TxReady);
+
+   dataRxAxisMaster.tValid             <= userRxValid when userRxVc = "01" else '0';
+   dataRxAxisMaster.tData(15 downto 0) <= userRxData;
+   dataRxAxisMaster.tLast              <= userRxEOF;
+   dataRxAxisMaster.tUser(1)           <= userRxSOF;
+   dataRxAxisMaster.tUser(0)           <= userRxEOFE;
+
+   U_SRPv3 : entity surf.SrpV3AxiLite
       generic map (
-         TPD_G           => TPD_G,
-         RST_ASYNC_G     => false,
-         RX_LANE_G       => 0,
-         DEST_ID_G       => 0,
-         DEST_MASK_G     => 1,
-         GEN_SYNC_FIFO_G => false,
-         BRAM_EN_G       => true,
-         ETH_MODE_G      => true)
+         TPD_G               => TPD_G,
+         SLAVE_READY_EN_G    => false,
+         GEN_SYNC_FIFO_G     => false,
+         AXIL_CLK_FREQ_G     => 125.0e6,
+         AXI_STREAM_CONFIG_G => AXIS_CONFIG_C)
       port map (
-         vcRxOut             => vcRx0Out,
-         vcRxCommonOut       => vcRxCommonOut,
-         vcTxIn_locBuffAFull => vcTx0In.locBuffAFull,
-         vcTxIn_locBuffFull  => vcTx0In.locBuffFull,
-         cmdSlaveOut         => cmdSlaveOut,
-         locClk              => clk200,
-         locRst              => rst200,
-         vcRxClk             => gtpClk,
-         vcRxRst             => gtpClkRst);
+         -- Streaming Slave (Rx) Interface (sAxisClk domain) 
+         sAxisClk         => gtpClk,
+         sAxisRst         => gtpClkRst,
+         sAxisMaster      => srpRxAxisMaster,
+         sAxisSlave       => srpRxAxisSlave,
+         sAxisCtrl        => srpRxAxisCtrl,
+         -- Streaming Master (Tx) Data Interface (mAxisClk domain)
+         mAxisClk         => gtpClk,
+         mAxisRst         => gtpClkRst,
+         mAxisMaster      => srpTxAxisMaster,
+         mAxisSlave       => srpTxAxisSlave,
+         -- AXI Lite Bus (axilClk domain)
+         axilClk          => clk200,
+         axilRst          => rst200,
+         mAxilReadMaster  => mAxilReadMaster,
+         mAxilReadSlave   => mAxilReadSlave,
+         mAxilWriteMaster => mAxilWriteMaster,
+         mAxilWriteSlave  => mAxilWriteSlave);
 
-   -- VC0 Tx, Return data
-   VcUsBuff64Kpix_1 : entity work.VcUsBuff64Kpix
+   U_AxiStreamFifoV2_1 : entity surf.AxiStreamFifoV2
       generic map (
-         TPD_G             => TPD_G,
-         RST_ASYNC_G       => false,
-         GEN_SYNC_FIFO_G   => true,
-         BRAM_EN_G         => true,
-         FIFO_ADDR_WIDTH_G => 10)
+         TPD_G               => TPD_G,
+         INT_PIPE_STAGES_G   => 1,
+         PIPE_STAGES_G       => 1,
+         SLAVE_READY_EN_G    => false,
+         VALID_THOLD_G       => 1,
+         VALID_BURST_MODE_G  => false,
+         SYNTH_MODE_G        => "inferred",
+         MEMORY_TYPE_G       => "block",
+         GEN_SYNC_FIFO_G     => false,
+         FIFO_ADDR_WIDTH_G   => 12,
+         FIFO_FIXED_THRESH_G => true,
+         FIFO_PAUSE_THRESH_G => 2**12-32,
+         SLAVE_AXI_CONFIG_G  => EB_DATA_AXIS_CONFIG_C,
+         MASTER_AXI_CONFIG_G => AXIS_CONFIG_C)
       port map (
-         vcTxIn               => vcTx0In,
-         vcTxOut              => vcTx0Out,
-         vcRxOut_remBuffAFull => vcRx0Out.remBuffAFull,
-         vcRxOut_remBuffFull  => vcRx0Out.remBuffFull,
-         usBuff64In           => usBuff64In,
-         usBuff64Out          => usBuff64Out,
-         locClk               => gtpClk,
-         locRst               => gtpClkRst,
-         vcTxClk              => gtpClk,
-         vcTxRst              => gtpClkRst);
+         sAxisClk    => clk200,            -- [in]
+         sAxisRst    => rst200,            -- [in]
+         sAxisMaster => ebAxisMaster,      -- [in]
+         sAxisSlave  => ebAxisSlave,       -- [out]
+         sAxisCtrl   => ebAxisCtrl,        -- [out]
+         mAxisClk    => gtpClk,            -- [in]
+         mAxisRst    => gtpClkRst,         -- [in]
+         mAxisMaster => dataTxAxisMaster,  -- [out]
+         mAxisSlave  => dataTxAxisSlave);  -- [in]
 
-   -- VC1, Register Slave
-   VcRegSlave_1 : entity work.VcRegSlave
+   dataRxAxisSlave <= AXI_STREAM_SLAVE_FORCE_C;  -- always ready
+
+   acqReqValid <= dataRxAxisMaster.tValid and toSl(dataRxAxisMaster.tData(7 downto 0) = X"AA") and
+                  dataRxAxisMaster.tLast;
+
+   startReqValid <= dataRxAxisMaster.tValid and toSl(dataRxAxisMaster.tData(7 downto 0) = X"55") and
+                    dataRxAxisMaster.tLast;
+
+   U_RegisterVector_1 : entity surf.RegisterVector
       generic map (
-         RX_LANE_G      => 0,
-         RST_ASYNC_G    => false,
-         SYNC_RX_FIFO_G => true,
-         BRAM_EN_RX_G   => true,
-         TX_LANE_G      => 0,
-         SYNC_TX_FIFO_G => true,
-         BRAM_EN_TX_G   => true,
-         TPD_G          => TPD_G,
-         ETH_MODE_G     => true)
+         TPD_G   => TPD_G,
+         WIDTH_G => 2)
       port map (
-         vcRxOut       => vcRx1Out,
-         vcRxCommonOut => vcRxCommonOut,
-         vcTxIn        => vcTx1In,
-         vcTxOut       => vcTx1Out,
-         regSlaveIn    => regSlaveIn,
-         regSlaveOut   => regSlaveOut,
-         locClk        => gtpClk,
-         locRst        => gtpClkRst,
-         vcTxClk       => gtpClk,
-         vcTxRst       => gtpClkRst,
-         vcRxClk       => gtpClk,
-         vcRxRst       => gtpClkRst);
+         clk      => gtpClk,             -- [in]
+         rst      => gtpClkRst,          -- [in]
+         sig_i(0) => acqReqValid,        -- [in]
+         sig_i(1) => startReqValid,      -- [in]
+         reg_o(0) => acqReqValidReg,     -- [out]
+         reg_o(1) => startReqValidReg);  -- [out]
 
-end EthFrontEnd;
+   U_SynchronizerOneShot_ACQUIRE : entity surf.SynchronizerOneShot
+      generic map (
+         TPD_G => TPD_G)
+      port map (
+         clk     => clk200,             -- [in]
+         rst     => rst200,             -- [in]
+         dataIn  => acqReqValidReg,     -- [in]
+         dataOut => acqCmd);            -- [out]
+
+   U_SynchronizerOneShot_START : entity surf.SynchronizerOneShot
+      generic map (
+         TPD_G => TPD_G)
+      port map (
+         clk     => clk200,             -- [in]
+         rst     => rst200,             -- [in]
+         dataIn  => startReqValidReg,   -- [in]
+         dataOut => startCmd);          -- [out]
+
+end rtl;
 
