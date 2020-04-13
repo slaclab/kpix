@@ -1,0 +1,5 @@
+Wed May 23 23:05:06 2012
+
+Upgraded eth_fifo_18x1k from Fifo Generator 7.2 to Fifo Generator 8.4
+
+No changes made to parameter values.
