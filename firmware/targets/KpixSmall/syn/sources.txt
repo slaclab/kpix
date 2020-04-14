@@ -88,10 +88,9 @@ vhdl kpix "_PROJ_DIR_/../../common/KpixDaq/rtl/KpixLocal.vhd"
 vhdl kpix "_PROJ_DIR_/../../common/KpixDaq/rtl/KpixRegCntl.vhd"
 vhdl kpix "_PROJ_DIR_/../../common/KpixDaq/rtl/KpixRegRx.vhd"
 vhdl kpix "_PROJ_DIR_/../../common/KpixDaq/rtl/SysConfig.vhd"
-
+vhdl kpix "_PROJ_DIR_/../../common/KpixDaq/rtl/EthFrontEnd.vhd"
 
 vhdl work "_PROJ_DIR_/xil_cores/main_dcm.vhd"
-vhdl kpix "_PROJ_DIR_/rtl/EthFrontEnd.vhd"
 vhdl kpix "_PROJ_DIR_/rtl/KpixSmall.vhd"
 
 # Verilog Common 

@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2013-07-12
--- Last update: 2013-08-02
+-- Last update: 2020-04-13
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -21,13 +21,19 @@
 -------------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
-use work.StdRtlPkg.all;
-use work.EvrCorePkg.all;
+
 library unisim;
 use unisim.vcomponents.all;
 
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiLitePkg.all;
+
+library kpix;
+use kpix.EvrCorePkg.all;
+
 entity EvrGtp is
-   
+
    generic (
       TPD_G : time := 1 ns);
 
@@ -38,11 +44,16 @@ entity EvrGtp is
       gtpRxN     : in  sl;
       evrOut     : out EvrOutType;
 
-      sysClk           : in  sl;
-      sysRst           : in  sl;
-      evrConfigIntfIn  : in  EvrConfigIntfInType;
-      evrConfigIntfOut : out EvrConfigIntfOutType;
-      sysEvrOut        : out EvrOutType  -- Decoded EVR data sync'd to sysclk
+      sysClk          : in  sl;
+      sysRst          : in  sl;
+      axilReadMaster  : in  AxiLiteReadMasterType;
+      axilReadSlave   : out AxiLiteReadSlaveType;
+      axilWriteMaster : in  AxiLiteWriteMasterType;
+      axilWriteSlave  : out AxiLiteWriteSlaveType;
+
+--       evrConfigIntfIn  : in  EvrConfigIntfInType;
+--       evrConfigIntfOut : out EvrConfigIntfOutType;
+      sysEvrOut : out EvrOutType        -- Decoded EVR data sync'd to sysclk
       );
 
 end entity EvrGtp;
@@ -63,7 +74,7 @@ begin
          IB => gtpRefClkN,
          O  => gtpRefClkIn);
 
-   Gtp16FixedLatCore_1 : entity work.Gtp16FixedLatCore
+   Gtp16FixedLatCore_1 : entity surf.Gtp16FixedLatCore
       generic map (
          TPD_G           => TPD_G,
          SIM_PLL_PERDIV2 => X"0C8",
@@ -105,7 +116,7 @@ begin
          gtpTxDataK       => (others => '0'));
 
    -- Use aligned signal as reset for evrRecClk logic
-   RstSync_1 : entity work.RstSync
+   RstSync_1 : entity surf.RstSync
       generic map (
          TPD_G          => TPD_G,
          IN_POLARITY_G  => '0',
@@ -115,18 +126,20 @@ begin
          asyncRst => gtpRxAligned,
          syncRst  => evrRst);
 
-   EvrCore_1 : entity work.EvrCore
+   EvrCore_1 : entity kpix.EvrCore
       generic map (
          TPD_G => TPD_G)
       port map (
-         evrRecClk        => evrRecClk,
-         evrRst           => evrRst,
-         phyIn            => phy,
-         evrOut           => evrOut,
-         sysClk           => sysClk,
-         sysRst           => sysRst,
-         evrConfigIntfIn  => evrConfigIntfIn,
-         evrConfigIntfOut => evrConfigIntfOut,
-         sysEvrOut        => sysEvrOut);
+         evrRecClk       => evrRecClk,
+         evrRst          => evrRst,
+         phyIn           => phy,
+         evrOut          => evrOut,
+         sysClk          => sysClk,
+         sysRst          => sysRst,
+         axilReadMaster  => axilReadMaster,
+         axilReadSlave   => axilReadSlave,
+         axilWriteMaster => axilWriteMaster,
+         axilWriteSlave  => axilWriteSlave,
+         sysEvrOut       => sysEvrOut);
 
 end architecture rtl;

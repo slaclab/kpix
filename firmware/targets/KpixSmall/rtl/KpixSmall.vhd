@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-21
--- Last update: 2020-04-10
+-- Last update: 2020-04-14
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -263,7 +263,7 @@ begin
    -------------------------------------------------------------------------------------------------
    -- Ethernet core with SRPv3 and data fifo
    -------------------------------------------------------------------------------------------------
-   U_EthFrontEnd_1 : entity work.EthFrontEnd
+   U_EthFrontEnd_1 : entity kpix.EthFrontEnd
       generic map (
          TPD_G => TPD_G)
       port map (

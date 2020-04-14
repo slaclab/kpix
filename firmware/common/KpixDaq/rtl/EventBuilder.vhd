@@ -286,8 +286,9 @@ begin
 
       end case;
 
-      timestampAxisSlave <= v.timestampAxisSlave;
-      kpixDataRxSlaves   <= v.kpixDataRxSlaves;
+      -- We can get away with this to ease timing
+      timestampAxisSlave <= r.timestampAxisSlave;
+      kpixDataRxSlaves   <= r.kpixDataRxSlaves;
 
       if (rst200 = '1') then
          v := REG_INIT_C;

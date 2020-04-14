@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2013-07-10
--- Last update: 2013-08-01
+-- Last update: 2020-04-13
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -24,11 +24,16 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
-use work.StdRtlPkg.all;
-use work.EvrCorePkg.all;
+
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiLitePkg.all;
+
+library kpix;
+use kpix.EvrCorePkg.all;
 
 entity EvrCore is
-   
+
    generic (
       TPD_G : time := 1 ns);
 
@@ -42,12 +47,13 @@ entity EvrCore is
       evrOut : out EvrOutType;
 
       -- Register interface runs on separate system clock
-      sysClk           : in  sl;
-      sysRst           : in  sl;
-      evrConfigIntfIn  : in  EvrConfigIntfInType;
-      evrConfigIntfOut : out EvrConfigIntfOutType;
-      sysEvrOut        : out EvrOutType  -- Decoded EVR data sync'd to sysclk
-      );
+      sysClk          : in  sl;
+      sysRst          : in  sl;
+      axilReadMaster  : in  AxiLiteReadMasterType;
+      axilReadSlave   : out AxiLiteReadSlaveType;
+      axilWriteMaster : in  AxiLiteWriteMasterType;
+      axilWriteSlave  : out AxiLiteWriteSlaveType;
+      sysEvrOut       : out EvrOutType);  -- Decoded EVR data sync'd to sysclk
 
 end entity EvrCore;
 
@@ -63,12 +69,13 @@ architecture rtl of EvrCore is
       triggerWidth     : slv(15 downto 0);
       resetErrors      : sl;
    end record EvrConfigType;
-   constant EVR_CONFIG_INIT_C : EvrConfigType :=
-      (enabled          => '1',
-       triggerEventCode => X"28",
-       triggerDelay     => X"0004",
-       triggerWidth     => X"0004",
-       resetErrors      => '0');
+
+   constant EVR_CONFIG_INIT_C : EvrConfigType := (
+      enabled          => '1',
+      triggerEventCode => X"28",
+      triggerDelay     => X"0004",
+      triggerWidth     => X"0004",
+      resetErrors      => '0');
 
    -------------------------------------------------------------------------------------------------
    -- SysClk Registers + Signals
@@ -76,12 +83,15 @@ architecture rtl of EvrCore is
    type SysRegType is record
       resetErrorsHold  : slv(3 downto 0);
       evrConfig        : EvrConfigType;
-      evrConfigIntfOut : EvrConfigIntfOutType;
+      axilWriteSlave   : AxiLiteWriteSlaveType;
+      axilReadSlave    : AxiLiteReadSlaveType;
    end record SysRegType;
-   constant SYS_REG_INIT_C : SysRegType :=
-      (resetErrorsHold  => (others => '0'),
-       evrConfig        => EVR_CONFIG_INIT_C,
-       evrConfigIntfOut => EVR_CONFIG_INTF_OUT_INIT_C);
+
+   constant SYS_REG_INIT_C : SysRegType := (
+      resetErrorsHold  => (others => '0'),
+      evrConfig        => EVR_CONFIG_INIT_C,
+      axilWriteSlave   => AXI_LITE_WRITE_SLAVE_INIT_C,
+      axilReadSlave    => AXI_LITE_READ_SLAVE_INIT_C);
 
    signal sysR         : SysRegType := SYS_REG_INIT_C;
    signal sysRin       : SysRegType;
@@ -98,12 +108,13 @@ architecture rtl of EvrCore is
       trigHoldEn  : sl;
       evrOut      : EvrOutType;
    end record MainRegType;
-   constant MAIN_REG_INIT_C : MainRegType :=
-      (secondsTmp  => (others => '0'),
-       counter     => (others => '0'),
-       trigDelayEn => '0',
-       trigHoldEn  => '0',
-       evrOut      => EVR_OUT_INIT_C);
+
+   constant MAIN_REG_INIT_C : MainRegType := (
+      secondsTmp  => (others => '0'),
+      counter     => (others => '0'),
+      trigDelayEn => '0',
+      trigHoldEn  => '0',
+      evrOut      => EVR_OUT_INIT_C);
 
    signal mainR         : MainRegType := MAIN_REG_INIT_C;
    signal mainRin       : MainRegType;
@@ -115,65 +126,34 @@ begin
    -------------------------------------------------------------------------------------------------
    -- Register Interface Logic (sysClk)
    -------------------------------------------------------------------------------------------------
-   sysComb : process (sysR, evrConfigIntfIn, sysEvrOutInt) is
-      variable v : SysRegType;
+   sysComb : process (axilReadMaster, axilWriteMaster, sysEvrOutInt, sysR) is
+      variable v      : SysRegType;
+      variable axilEp : AxiLiteEndpointType;
+
    begin
       v := sysR;
-
-      v.evrConfigIntfOut.ack     := '0';
-      v.evrConfigIntfOut.dataOut := (others => '0');
 
       v.evrConfig.resetErrors := sysR.resetErrorsHold(0);
       v.resetErrorsHold       := '0' & sysR.resetErrorsHold(3 downto 1);
 
-      if (evrConfigIntfIn.req = '1') then
-         v.evrConfigIntfOut.ack := '1';
-         case (evrConfigIntfIn.addr) is
+      axiSlaveWaitTxn(axilEp, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
 
-            when X"00" =>
-               v.evrConfigIntfOut.dataOut(0) := sysR.evrConfig.enabled;
-               if (evrConfigIntfIn.wrEna = '1') then
-                  v.evrConfig.enabled := evrConfigIntfIn.dataIn(0);
-               end if;
+      axiSlaveRegister(axilEp, x"00", 0, v.evrConfig.enabled);
+      axiSlaveRegister(axilEp, x"04", 0, v.evrConfig.triggerDelay);
+      axiSlaveRegister(axilEp, x"08", 0, v.evrConfig.triggerWidth);
+      axiSlaveRegister(axilEp, x"0C", 0, v.evrConfig.triggerEventCode);
+      axiSlaveRegisterR(axilEp, x"10", 0, sysEvrOutInt.errors);
+      axiSlaveRegister(axilEp, X"14", 0, v.resetErrorsHold);
+      axiSlaveRegisterR(axilEp, x"18", 0, sysEvrOutInt.seconds);
+      axiSlaveRegisterR(axilEp, x"1C", 0, sysEvrOutInt.offset);
 
-            when X"01" =>
-               v.evrConfigIntfOut.dataOut(15 downto 0) := sysR.evrConfig.triggerDelay;
-               if (evrConfigIntfIn.wrEna = '1') then
-                  v.evrConfig.triggerDelay := evrConfigIntfIn.dataIn(15 downto 0);
-               end if;
-               
-            when X"02" =>
-               v.evrConfigIntfOut.dataOut(15 downto 0) := sysR.evrConfig.triggerWidth;
-               if (evrConfigIntfIn.wrEna = '1') then
-                  v.evrConfig.triggerWidth := evrConfigIntfIn.dataIn(15 downto 0);
-               end if;
+      axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
 
-            when X"03" =>
-               v.evrConfigIntfOut.dataOut(7 downto 0) := sysR.evrConfig.triggerEventCode;
-               if (evrConfigIntfIn.wrEna = '1') then
-                  v.evrConfig.triggerEventCode := evrConfigIntfIn.dataIn(7 downto 0);
-               end if;
+      sysRin <= v;
 
-            when X"04" =>
-               v.evrConfigIntfOut.dataOut(15 downto 0) := sysEvrOutInt.errors;
-               if (evrConfigIntfIn.wrEna = '1') then
-                  v.resetErrorsHold := (others => '1');
-               end if;
+      axilReadSlave  <= sysR.axilReadSlave;
+      axilWriteSlave <= sysR.axilWriteSlave;
 
-            when X"05" =>
-               v.evrConfigIntfOut.dataOut := sysEvrOutInt.seconds;
-
-            when X"06" =>
-               v.evrConfigIntfOut.dataOut := sysEvrOutInt.offset;
-               
-            when others =>
-               null;
-         end case;
-
-      end if;
-
-      sysRin           <= v;
-      evrConfigIntfOut <= sysR.evrConfigIntfOut;
    end process sysComb;
 
    sysSeq : process (sysClk) is
@@ -190,11 +170,11 @@ begin
    -------------------------------------------------------------------------------------------------
    -- Synchronize EVR config registers to EVR clock
    -------------------------------------------------------------------------------------------------
-   SynchronizerFifo_EvrConfig : entity work.SynchronizerFifo
+   SynchronizerFifo_EvrConfig : entity surf.SynchronizerFifo
       generic map (
-         TPD_G        => TPD_G,
-         BRAM_EN_G    => false,
-         DATA_WIDTH_G => 42)
+         TPD_G         => TPD_G,
+         MEMORY_TYPE_G => "distributed",
+         DATA_WIDTH_G  => 42)
       port map (
          rst                => sysRst,
          wr_clk             => sysClk,
@@ -215,11 +195,11 @@ begin
    -------------------------------------------------------------------------------------------------
    -- Synchronize EVR out to sysClk
    -------------------------------------------------------------------------------------------------
-   SynchronizerFifo_EvrOut : entity work.SynchronizerFifo
+   SynchronizerFifo_EvrOut : entity surf.SynchronizerFifo
       generic map (
-         TPD_G        => TPD_G,
-         BRAM_EN_G    => false,
-         DATA_WIDTH_G => 97)
+         TPD_G         => TPD_G,
+         MEMORY_TYPE_G => "distributed",
+         DATA_WIDTH_G  => 97)
       port map (
          rst                => evrRst,
          wr_clk             => evrRecClk,
@@ -313,7 +293,7 @@ begin
 
       mainRin <= v;
       evrOut  <= mainR.evrOut;
-      
+
    end process evrComb;
 
    mainSeq : process (evrRecClk) is
@@ -326,6 +306,6 @@ begin
          end if;
       end if;
    end process mainSeq;
-   
+
 
 end architecture rtl;
