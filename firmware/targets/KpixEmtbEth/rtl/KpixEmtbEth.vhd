@@ -39,7 +39,7 @@ entity KpixEmtbEth is
    generic (
       TPD_G              : time          := 1 ns;
       BUILD_INFO_G       : BuildInfoType := BUILD_INFO_DEFAULT_SLV_C;
-      NUM_KPIX_MODULES_G : natural       := 24);
+      NUM_KPIX_MODULES_G : natural       := 12);
    port (
       -- System clock, reset
       fpgaRstL   : in std_logic;
