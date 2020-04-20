@@ -116,9 +116,9 @@ DesyTrackerRoot:
           Chan_928_959: AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA
           Chan_960_991: AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA
           Chan_992_1023: AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA
-        KpixAsic[6]:
+        KpixAsic[0]:
           enable: 'True'
-        KpixAsic[7]:
+        KpixAsic[1]:
           enable: 'True'
         KpixAsic[24]:
           enable: 'True'

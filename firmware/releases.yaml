@@ -1,0 +1,39 @@
+
+GitBase: ..
+
+TopRoguePackage: KpixDaq
+
+RoguePackages:
+   - common/python
+
+RogueScripts:
+  - ../software/scripts/KpixGui
+  - ../software/scripts/KpixRun
+  - ../software/scripts/KpixCalibration
+  - ../software/scripts/KpixPromLoader
+  - ../software/scripts/KpixServer  
+  - ../software/scripts/KpixClientGui
+  - ../software/scripts/KpixClientRun
+  - ../software/scripts/KpixFileReader
+  - ../software/scripts/KpixMultiRun
+
+CondaDependencies:
+  - surf=v2.1.2
+  - matplotlib
+
+RogueConfig:
+
+Targets:
+   DesyTracker:
+      ImageDir: targets/DesyTracker/images
+      Extensions:
+      - mcs
+
+
+Releases:
+   DesyTracker:
+      Targets:
+      - DesyTracker
+      Types:
+      - Rogue
+

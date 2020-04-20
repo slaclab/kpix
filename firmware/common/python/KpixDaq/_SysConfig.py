@@ -7,7 +7,7 @@ class SysConfig(pr.Device):
         index = int(re.search('.*?KpixAsic\\[(.*?)\\]', path).groups()[0])
         if self.KpixEnable[index].value() != varValue.value:
             self.KpixEnable[index].set(varValue.value, write=True)
-    
+
     def __init__(self, numKpix, **kwargs):
         super().__init__(**kwargs)
 
@@ -76,8 +76,8 @@ class SysConfig(pr.Device):
             bitSize = 5,
             base = pr.UInt,
             enum = debugEnum))
-        
-                
+
+
 
         self.add(pr.RemoteCommand(
             name = 'KpixReset',
@@ -85,9 +85,9 @@ class SysConfig(pr.Device):
             bitOffset = 0,
             bitSize = 1,
             function = pr.RemoteCommand.touchOne))
-        
-        
-        
+
+
+
     def hardReset(self):
         print('Sending hard reset to KPIX ASIC array')
         self.KpixReset()

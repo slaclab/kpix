@@ -21,8 +21,12 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
-use work.StdRtlPkg.all;
-use work.KpixLocalPkg.all;
+
+library surf;
+use surf.StdRtlPkg.all;
+
+library kpix;
+use kpix.KpixLocalPkg.all;
 
 entity KpixLocal is
    generic (
@@ -30,7 +34,7 @@ entity KpixLocal is
    port (
 
       -- Kpix clock, reset
-      kpixClk    : in std_logic;        -- 20Mhz system clock
+      kpixClk : in std_logic;           -- 20Mhz system clock
 
       -- IO Ports
       debugOutA : out std_logic;        -- BNC Interface A output
@@ -163,10 +167,12 @@ architecture KpixLocal of KpixLocal is
       bunchCount => (others => '0'),
       subCount   => (others => '0'));
 
-   signal r          : RegType := REG_INIT_C;
+   signal r          : RegType          := REG_INIT_C;
    signal rin        : RegType;
    signal regClkRise : sl;
-   signal rdback : slv(16 downto 1) := X"0001";
+   signal rdback     : slv(16 downto 1) := X"0001";
+
+   signal kpixStateFb : KpixStateOutType;
 
 begin
 
@@ -211,13 +217,13 @@ begin
       temp_en         => open
       );
 
-   rdback_proc: process (kpixClk) is
+   rdback_proc : process (kpixClk) is
    begin
       if (rising_edge(kpixClk)) then
          rdback(16) <= rdback(1) after TPD_G;
          for i in 15 downto 1 loop
-            if (i=14 or i=13 or i=11) then
-               rdback(i) <= rdback(i+1) xor rdback(1) after TPD_G;  
+            if (i = 14 or i = 13 or i = 11) then
+               rdback(i) <= rdback(i+1) xor rdback(1) after TPD_G;
             else
                rdback(i) <= rdback(i+1) after TPD_G;
             end if;
@@ -260,7 +266,7 @@ begin
    -- Not really necessary since clk200 and kpixClk have synchronous edges,
    -- but it's easy to do edge detection this way.
    -------------------------------------------------------------------------------------------------
-   SynchronizerEdge_RegClk : entity work.SynchronizerEdge
+   SynchronizerEdge_RegClk : entity surf.SynchronizerEdge
       generic map (
          TPD_G => TPD_G)
       port map (
@@ -281,7 +287,7 @@ begin
       end if;
    end process;
 
-   comb : process (kpixClkPreRise, r, regClkRise, rst200, v8_analog_state) is
+   comb : process (kpixClkPreRise, kpixStateFb, r, regClkRise, rst200) is
       variable v : RegType;
    begin
       v := r;
@@ -292,7 +298,7 @@ begin
 
       -- v8_analog_state clock boundary crossing
       -- Ok for now but maybe there's a better way to do this
-      if (v8_analog_state = KPIX_ANALOG_SAMP_STATE_C) then
+      if (kpixStateFb.analogState = KPIX_ANALOG_SAMP_STATE_C) then
          if (regClkRise = '1') then
             v.div := not r.div;
             if (r.div = '1') then
@@ -312,18 +318,32 @@ begin
 
    end process comb;
 
-   kpixState.analogState  <= v8_analog_state;
-   kpixState.readoutState <= v8_read_state;
-   kpixState.prechargeBus <= v8_precharge_bus;
-   kpixState.trigInhibit  <= trig_inh;
-   kpixState.bunchCount   <= r.bunchCount;
-   kpixState.subCount     <= r.subCount;
+   U_RegisterVector_1 : entity surf.RegisterVector
+      generic map (
+         TPD_G   => TPD_G,
+         WIDTH_G => 8)
+      port map (
+         clk               => clk200,                    -- [in]
+         rst               => '0',                       -- [in]
+         sig_i(2 downto 0) => v8_analog_state,           -- [in]
+         sig_i(5 downto 3) => v8_read_state,             -- [in]
+         sig_i(6)          => v8_precharge_bus,          -- [in]
+         sig_i(7)          => trig_inh,                  -- [in]
+         reg_o(2 downto 0) => kpixStateFb.analogState,   -- [out]
+         reg_o(5 downto 3) => kpixStateFb.readoutState,  -- [out]
+         reg_o(6)          => kpixStateFb.prechargeBus,  -- [out]
+         reg_o(7)          => kpixStateFb.trigInhibit);  -- [out]
+
+   kpixStateFb.bunchCount <= r.bunchCount;
+   kpixStateFb.subCount   <= r.subCount;
+
+   kpixState <= kpixStateFb;
 
    --------------------------------------------------------------------------------------------------
    -- Synchronize kpix core outputs to sysclk
    --------------------------------------------------------------------------------------------------
 
---    SynchronizerFifo_KpixLocal : entity work.SynchronizerFifo
+--    SynchronizerFifo_KpixLocal : entity surf.SynchronizerFifo
 --       generic map (
 --          TPD_G        => TPD_G,
 --          BRAM_EN_G    => false,

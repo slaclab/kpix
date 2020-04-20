@@ -21,12 +21,16 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
-use work.StdRtlPkg.all;
-use work.AxiLitePkg.all;
-use work.AxiStreamPkg.all;
 
-use work.KpixLocalPkg.all;
-use work.KpixPkg.all;
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiLitePkg.all;
+use surf.AxiStreamPkg.all;
+
+
+library kpix;
+use kpix.KpixLocalPkg.all;
+use kpix.KpixPkg.all;
 
 entity AcquisitionControl is
 
@@ -134,7 +138,7 @@ architecture rtl of AcquisitionControl is
 begin
 
    EXT_SYNC_GEN : for i in 7 downto 0 generate
-      Synchronizer : entity work.SynchronizerEdge
+      Synchronizer : entity surf.SynchronizerEdge
          generic map (
             TPD_G => TPD_G)
          port map (
@@ -307,14 +311,14 @@ begin
    axisMaster.tData(15 downto 3)  <= kpixState.bunchCount;
    axisMaster.tData(2 downto 0)   <= kpixState.subCount;
    axisMaster.tKeep               <= (others => '1');
-   U_AxiStreamFifoV2_1 : entity work.AxiStreamFifoV2
+   U_AxiStreamFifoV2_1 : entity surf.AxiStreamFifoV2
       generic map (
          TPD_G               => TPD_G,
          INT_PIPE_STAGES_G   => 1,
          PIPE_STAGES_G       => 1,
          SLAVE_READY_EN_G    => false,
-         BRAM_EN_G           => true,
-         USE_BUILT_IN_G      => false,
+         MEMORY_TYPE_G       => "block",
+         SYNTH_MODE_G        => "inferred",
          GEN_SYNC_FIFO_G     => true,
          FIFO_ADDR_WIDTH_G   => 10,
          FIFO_PAUSE_THRESH_G => 2**10-1,

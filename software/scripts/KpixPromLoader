@@ -18,12 +18,16 @@ import argparse
 import glob
 import os
 import sys
+import importlib
+
 import pyrogue
 import rogue
 
 # Search paths
-pyrogue.addLibraryPath('../python')
-pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
+if '--local' in sys.argv:
+    baseDir = os.path.dirname(os.path.realpath(__file__))
+    pyrogue.addLibraryPath(f'{baseDir}/../../firmware/common/python')
+    pyrogue.addLibraryPath(f'{baseDir}/../../firmware/submodules/surf/python')
 
 import KpixDaq
 
@@ -37,7 +41,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--path", '-p', 
     type     = str,
-    required = True,
+    required = False,
+    default = None,
     help     = "path to image",
 )
 
@@ -50,9 +55,14 @@ parser.add_argument(
 )  
 
 # Get the arguments
-args = parser.parse_args()
+args = parser.parse_known_args()[0]
+
 print(args)
 
+if args.path is None:
+    BasePackage = importlib.import_module('KpixDaq')
+    args.path = BasePackage.ImageDir
+    
 if os.path.isdir(args.path):
     # Get a list of images
     images = glob.glob('{}/*.mcs*'.format(args.path))
@@ -63,9 +73,9 @@ if os.path.isdir(args.path):
 
     idx = int(input('Enter image: '))
     image = images[idx]
-
 else:
     image = args.path
+
 
 #rogue.Logging.setFilter('pyrogue.SrpV3', rogue.Logging.Debug)
 
@@ -85,7 +95,7 @@ with KpixDaq.DesyTrackerRoot(pollEn=False, ip=args.ip) as root:
     print(f'Load MCS file: {image}')
     prom.LoadMcsFile(image)
         
-    root.DesyTracker.AxiVersion.FpgaReload()
+    #root.DesyTracker.AxiVersion.FpgaReload()
         
 
 exit()

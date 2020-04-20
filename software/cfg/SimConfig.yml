@@ -21,19 +21,17 @@ DesyTrackerRoot:
 #        KpixEnable: '0x40'
       KpixClockGen:
         enable: 'True'
-        ClkSelReadout: 19
+        ClkSelReadout: 8
         ClkSelDigitize: '0x4'
-        ClkSelAcquire: 31
-        ClkSelIdle: 19
+        ClkSelAcquire: 8
+        ClkSelIdle: 4
         ClkSelPrecharge: 599
       AcquisitionControl:
         enable: 'True'
-        ExtTrigSrc: BncTrig
-        ExtTrigEn: 'False'
-        ExtTimestampSrc: BncTrig
-        ExtTimestampEn: 'False'
+        ExtTrigSrc: Disabled
+        ExtTimestampSrc: Disabled
         ExtAcquisitionSrc: EthAcquire
-        ExtAcquisitionEn: 'True'
+        ExtStartSrc: EthStart
         Calibrate: 'False'
       KpixAsicArray:
         enable: 'True'
@@ -117,7 +115,7 @@ DesyTrackerRoot:
           Chan_960_991: AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA
           Chan_992_1023: AAAAAAAA AAAAAAAA AAAAAAAA AAAAAAAA
         KpixAsic[0]:
-          enable: 'False'
+          enable: 'True'
         KpixAsic[1]:
           enable: 'False'
         KpixAsic[24]:

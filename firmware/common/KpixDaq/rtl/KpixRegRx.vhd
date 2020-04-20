@@ -25,11 +25,14 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
-use work.StdRtlPkg.all;
 
-use work.KpixPkg.all;
+library surf;
+use surf.StdRtlPkg.all;
 
-use work.KpixRegRxPkg.all;
+
+library kpix;
+use kpix.KpixPkg.all;
+use kpix.KpixRegRxPkg.all;
 
 entity KpixRegRx is
 

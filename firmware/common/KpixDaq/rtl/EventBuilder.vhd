@@ -20,13 +20,17 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
-use work.StdRtlPkg.all;
-use work.AxiStreamPkg.all;
-use work.AxiLitePkg.all;
-use work.SsiPkg.all;
 
-use work.KpixPkg.all;
-use work.KpixLocalPkg.all;
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiStreamPkg.all;
+use surf.AxiLitePkg.all;
+use surf.SsiPkg.all;
+
+
+library kpix;
+use kpix.KpixPkg.all;
+use kpix.KpixLocalPkg.all;
 
 entity EventBuilder is
 

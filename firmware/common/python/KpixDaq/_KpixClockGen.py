@@ -24,8 +24,8 @@ class KpixClockGen(pr.Device):
             dependencies = [self.ClkSelReadout],
             disp = '{:2.3f}',
             linkedGet = getPeriod))
-        
-        
+
+
         self.add(pr.RemoteVariable(
             name = 'ClkSelDigitize',
             mode = 'RW',
@@ -41,8 +41,8 @@ class KpixClockGen(pr.Device):
             dependencies = [self.ClkSelDigitize],
             disp = '{:2.3f}',
             linkedGet = getPeriod))
-            
-        
+
+
         self.add(pr.RemoteVariable(
             name = 'ClkSelAcquire',
             mode = 'RW',
@@ -75,7 +75,7 @@ class KpixClockGen(pr.Device):
             dependencies = [self.ClkSelIdle],
             disp = '{:2.3f}',
             linkedGet = getPeriod))
-        
+
         self.add(pr.RemoteVariable(
             name = 'ClkSelPrecharge',
             mode = 'RW',
@@ -109,6 +109,3 @@ class KpixClockGen(pr.Device):
             enum = {
                 1: 'Rise',
                 0: 'Fall'}))
-        
-        
-        
