@@ -44,6 +44,7 @@ entity KpixRegCntl is
       kpixClkPreRise : in sl;
       kpixClkPreFall : in sl;
       kpixClkSample  : in sl;
+      kpixClkOutput : in sl;
 
       -- AXI-Lite interface for registers
       axilReadMaster  : in  AxiLiteReadMasterType;
@@ -125,7 +126,7 @@ begin
    -------------------------------------------------------------------------------------------------
    -- Main Logic
    -------------------------------------------------------------------------------------------------
-   comb : process (acqControl, axilReadMaster, axilWriteMaster, kpixClkPreRise, kpixRegRxOut,
+   comb : process (acqControl, axilReadMaster, axilWriteMaster, kpixClkOutput, kpixRegRxOut,
                    kpixState, r, rst200, sysConfig) is
       variable v              : RegType;
       variable axiKpixAddrInt : natural;
@@ -153,8 +154,9 @@ begin
       -- Always assign to ease timing
       v.axilReadSlave.rdata := kpixRegRxOut(araddrInt).regData;
 
-      -- Do most everything to coincide with rising edge of clock      
-      if (kpixClkPreRise = '1') then
+      -- Shift new output when output strobe seen
+      -- Configured in KpixClkGen
+      if (kpixClkOutput = '1') then
 
          -- Don't drive anything by defualt
          v.kpixSerTxOut := (others => '0');

@@ -56,17 +56,18 @@ entity KpixClockGen is
       kpixClk        : out sl;
       kpixClkPreRise : out sl;
       kpixClkPreFall : out sl;
-      kpixClkSample  : out sl);
+      kpixClkSample  : out sl;
+      kpixClkOutput  : out sl);
 
 end entity KpixClockGen;
 
 architecture rtl of KpixClockGen is
 
-   constant CLK_SEL_READOUT_DEFAULT_C   : slv(7 downto 0)  := X"20";   
-   constant CLK_SEL_DIGITIZE_DEFAULT_C  : slv(7 downto 0)  := X"21";   
-   constant CLK_SEL_ACQUIRE_DEFAULT_C   : slv(7 downto 0)  := X"22";   
-   constant CLK_SEL_IDLE_DEFAULT_C      : slv(7 downto 0)  := X"23";   
-   constant CLK_SEL_PRECHARGE_DEFAULT_C : slv(11 downto 0) := X"024";  
+   constant CLK_SEL_READOUT_DEFAULT_C   : slv(7 downto 0)  := X"20";
+   constant CLK_SEL_DIGITIZE_DEFAULT_C  : slv(7 downto 0)  := X"21";
+   constant CLK_SEL_ACQUIRE_DEFAULT_C   : slv(7 downto 0)  := X"22";
+   constant CLK_SEL_IDLE_DEFAULT_C      : slv(7 downto 0)  := X"23";
+   constant CLK_SEL_PRECHARGE_DEFAULT_C : slv(11 downto 0) := X"024";
 
    -- Kpix Clock registers run on 200 MHz clock
    type RegType is record
@@ -78,6 +79,8 @@ architecture rtl of KpixClockGen is
       clkSelPrecharge  : slv(11 downto 0);
       sampleDelay      : slv(7 downto 0);
       sampleOnRise     : sl;
+      outputDelay      : slv(7 downto 0);
+      outputOnRise     : sl;
       axilWriteSlave   : AxiLiteWriteSlaveType;
       axilReadSlave    : AxiLiteReadSlaveType;
       -- Logic registers
@@ -88,6 +91,7 @@ architecture rtl of KpixClockGen is
       preRise          : sl;
       preFall          : sl;
       sample           : sl;
+      output           : sl;
    end record RegType;
 
    constant REG_INIT_C : RegType := (
@@ -98,6 +102,8 @@ architecture rtl of KpixClockGen is
       clkSelPrecharge  => CLK_SEL_PRECHARGE_DEFAULT_C,
       sampleDelay      => X"00",
       sampleOnRise     => '0',
+      outputDelay      => X"00",
+      outputOnRise     => '0',
       axilWriteSlave   => AXI_LITE_WRITE_SLAVE_INIT_C,
       axilReadSlave    => AXI_LITE_READ_SLAVE_INIT_C,
       startAcquireLast => '0',
@@ -106,10 +112,11 @@ architecture rtl of KpixClockGen is
       clkDiv           => '0',
       preRise          => '0',
       preFall          => '0',
-      sample           => '0');
+      sample           => '0',
+      output           => '0');
 
-   signal r          : RegType := REG_INIT_C;
-   signal rin        : RegType;
+   signal r   : RegType := REG_INIT_C;
+   signal rin : RegType;
 
 
 begin
@@ -140,6 +147,8 @@ begin
       axiSlaveRegister(axilEp, X"10", 0, v.clkSelPrecharge);
       axiSlaveRegister(axilEp, X"14", 0, v.sampleDelay);
       axiSlaveRegister(axilEp, X"14", 31, v.sampleOnRise);
+      axiSlaveRegister(axilEp, X"18", 0, v.outputDelay);
+      axiSlaveRegister(axilEp, X"18", 31, v.outputOnRise);
 
       axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
       ----------------------------------------------------------------------------------------------
@@ -149,6 +158,7 @@ begin
       v.preRise          := '0';
       v.preFall          := '0';
       v.sample           := '0';
+      v.output           := '0';
 
       v.divCount := r.divCount + 1;
 
@@ -188,6 +198,11 @@ begin
          v.sample := (r.sampleOnRise xnor r.clkDiv);
       end if;
 
+      -- Create output strobe
+      if (r.divCount = r.outputDelay) then
+         v.output := (r.outputOnRise xnor r.clkDiv);
+      end if;
+
       -- startAcquire effectively resets kpix clock to ensure fixed time between acquire pulse and command
       if (acqControl.startAcquire = '1' and r.startAcquireLast = '0') then
          v.divCount := (others => '0');
@@ -207,6 +222,7 @@ begin
       kpixClkPreRise <= r.preRise;
       kpixClkPreFall <= r.preFall;
       kpixClkSample  <= r.sample;
+      kpixClkOutput  <= r.output;
    end process comb;
 
    -- Use BUFG for kpixClk
