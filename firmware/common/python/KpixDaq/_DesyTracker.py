@@ -4,6 +4,8 @@ import pyrogue
 import surf.axi
 import surf.protocols.rssi
 import surf.devices.micron
+import surf.ethernet.gige
+import surf.ethernet.udp
 
 import KpixDaq
 
@@ -71,6 +73,13 @@ class DesyTracker(pyrogue.Device):
             self.add(surf.protocols.rssi.RssiCore(
                 offset = 0x02000000,
                 expand = False))
+
+            self.add(surf.ethernet.gige.GigEthReg(
+                offset = 0x02100000))
+
+            self.add(surf.ethernet.udp.UdpEngine(
+                offset = 0x02200000,
+                numSrv = 1))
 
         if not sim:
             self.add(surf.devices.micron.AxiMicronN25Q(

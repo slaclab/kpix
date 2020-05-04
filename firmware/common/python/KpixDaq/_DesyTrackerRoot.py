@@ -59,7 +59,7 @@ class DesyTrackerRoot(pyrogue.Root):
 
         self.add(KpixDaq.DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, sim=sim, enabled=True, expand=True))
 
-
+        self.add(self.udp)
 
     def stop(self):
         if hasattr(self, 'udp'):
