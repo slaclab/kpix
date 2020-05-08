@@ -6,6 +6,7 @@ import surf.protocols.rssi
 import surf.devices.micron
 import surf.ethernet.gige
 import surf.ethernet.udp
+import surf.xilinx
 
 import KpixDaq
 
@@ -76,6 +77,9 @@ class DesyTracker(pyrogue.Device):
 
             self.add(surf.ethernet.gige.GigEthReg(
                 offset = 0x02100000))
+
+            self.add(surf.xilinx.Gtxe2Channel(
+                offset = 0x02101000))
 
             self.add(surf.ethernet.udp.UdpEngine(
                 offset = 0x02200000,

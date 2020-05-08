@@ -135,7 +135,7 @@ architecture rtl of DesyTracker is
          connectivity  => X"FFFF"),
       AXIL_ETH_CORE_C  => (
          baseAddr      => X"02000000",
-         addrBits      => 10,
+         addrBits      => 24,
          connectivity  => X"FFFF"),
       AXIL_XADC_C      => (
          baseAddr      => X"03000000",
@@ -366,10 +366,11 @@ begin
    -------------------------------------------------------------------------------------------------
    -- Ethernet core with SRPv3-AxiLite and Data FIFO
    -------------------------------------------------------------------------------------------------
-   U_DesyTrackerEthCore_1 : entity work.DesyTrackerEthCore
+   U_DesyTrackerEthCore_1 : entity kpix.DesyTrackerEthCore
       generic map (
          TPD_G        => TPD_G,
          SIMULATION_G => SIMULATION_G,
+         AXIL_BASE_ADDR_G => AXIL_XBAR_CONFIG_C(AXIL_ETH_CORE_C).baseAddr,
          DHCP_G       => DHCP_G,
          IP_ADDR_G    => IP_ADDR_G)
       port map (
@@ -625,7 +626,7 @@ begin
    ---------------------------------------
    -- TLU MON
    ---------------------------------------
-   U_TluMonitor_1 : entity work.TluMonitor
+   U_TluMonitor_1 : entity kpix.TluMonitor
       generic map (
          TPD_G => TPD_G)
       port map (

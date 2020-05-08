@@ -37,11 +37,12 @@ use unisim.vcomponents.all;
 
 entity DesyTrackerEthCore is
    generic (
-      TPD_G          : time             := 1 ns;
-      SIMULATION_G   : boolean          := false;
-      SIM_PORT_NUM_G : integer          := 9000;
-      DHCP_G         : boolean          := false;         -- true = DHCP, false = static address
-      IP_ADDR_G      : slv(31 downto 0) := x"0A01A8C0");  -- 192.168.1.10 (before DHCP)
+      TPD_G            : time             := 1 ns;
+      SIMULATION_G     : boolean          := false;
+      SIM_PORT_NUM_G   : integer          := 9000;
+      AXIL_BASE_ADDR_G : slv(31 downto 0) := X"00000000";
+      DHCP_G           : boolean          := false;         -- true = DHCP, false = static address
+      IP_ADDR_G        : slv(31 downto 0) := x"0A01A8C0");  -- 192.168.1.10 (before DHCP)
    port (
       refClkOut        : out sl;
       -- AXI-Lite Interface (clk200 domain)
@@ -94,19 +95,19 @@ architecture mapping of DesyTrackerEthCore is
    constant AXIL_NUM_C  : integer := 3;
    constant AXIL_RSSI_C : integer := 0;
    constant AXIL_ETH_C  : integer := 1;
-   constant AXIL_UDP_C  : integer := 2; 
+   constant AXIL_UDP_C  : integer := 2;
 
    constant AXIL_XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(AXIL_NUM_C-1 downto 0) := (
       AXIL_RSSI_C     => (
-         baseAddr     => X"00000000",
-         addrBits     => 10,
+         baseAddr     => AXIL_BASE_ADDR_G + X"000000",
+         addrBits     => 12,
          connectivity => X"FFFF"),
       AXIL_ETH_C      => (
-         baseAddr     => X"00100000",
+         baseAddr     => AXIL_BASE_ADDR_G + X"100000",
          addrBits     => 16,
          connectivity => X"FFFF"),
       AXIL_UDP_C      => (
-         baseAddr     => X"00200000",
+         baseAddr     => AXIL_BASE_ADDR_G + X"200000",
          addrBits     => 16,
          connectivity => X"FFFF"));
 
@@ -257,8 +258,11 @@ begin
       -------------------------
       U_ETH_PHY_MAC : entity surf.GigEthGtx7
          generic map (
-            TPD_G         => TPD_G,
-            AXIS_CONFIG_G => EMAC_AXIS_CONFIG_C)
+            TPD_G                   => TPD_G,
+            EN_AXI_REG_G            => true,
+            AXIL_BASE_ADDR_G        => AXIL_XBAR_CONFIG_C(AXIL_ETH_C).baseAddr,
+            AXIL_CLK_IS_SYSCLK125_G => true,
+            AXIS_CONFIG_G           => EMAC_AXIS_CONFIG_C)
          port map (
             -- Local Configurations
             localMac           => localMac,
@@ -307,26 +311,26 @@ begin
             COMM_TIMEOUT_G => 30)
          port map (
             -- Local Configurations
-            localMac           => localMac,
-            localIp            => IP_ADDR_G,
+            localMac        => localMac,
+            localIp         => IP_ADDR_G,
             -- Interface to Ethernet Media Access Controller (MAC)
-            obMacMaster        => rxMaster,
-            obMacSlave         => rxSlave,
-            ibMacMaster        => txMaster,
-            ibMacSlave         => txSlave,
+            obMacMaster     => rxMaster,
+            obMacSlave      => rxSlave,
+            ibMacMaster     => txMaster,
+            ibMacSlave      => txSlave,
             -- Interface to UDP Server engine(s)
-            obServerMasters    => obServerMasters,
-            obServerSlaves     => obServerSlaves,
-            ibServerMasters    => ibServerMasters,
-            ibServerSlaves     => ibServerSlaves,
+            obServerMasters => obServerMasters,
+            obServerSlaves  => obServerSlaves,
+            ibServerMasters => ibServerMasters,
+            ibServerSlaves  => ibServerSlaves,
             -- AXI Lite debug interface
             axilReadMaster  => locAxilReadMasters(AXIL_UDP_C),
             axilReadSlave   => locAxilReadSlaves(AXIL_UDP_C),
             axilWriteMaster => locAxilWriteMasters(AXIL_UDP_C),
             axilWriteSlave  => locAxilWriteSlaves(AXIL_UDP_C),
             -- Clock and Reset
-            clk                => ethClk,
-            rst                => ethRst);
+            clk             => ethClk,
+            rst             => ethRst);
 
       ------------------------------------------
       -- Software's RSSI Server Interface @ 8192
