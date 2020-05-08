@@ -59,12 +59,13 @@ class DesyTrackerRoot(pyrogue.Root):
 
         self.add(KpixDaq.DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, sim=sim, enabled=True, expand=True))
 
-        self.add(self.udp)
+        if hasattr(self, 'udp'):
+            self.add(self.udp)
 
     def stop(self):
         if hasattr(self, 'udp'):
             self.udp._rssi.stop()
-        else:
+        elif hasattr(self, 'dest0'):
             # sim mode
             self.dest0.close()
             self.dest1.close()
