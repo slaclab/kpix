@@ -73,7 +73,7 @@ class DesyTracker(pyrogue.Device):
         if rssi and not sim:
             self.add(KpixDaq.DesyTrackerEthCore(
                 offset = 0x2000000))
-            
+
         if not sim:
             self.add(surf.devices.micron.AxiMicronN25Q(
                 offset = 0x05000000,
