@@ -122,7 +122,8 @@ architecture rtl of KpixDaqCore is
    signal kpixClk        : sl;
    signal kpixClkPreRise : sl;
    signal kpixClkPreFall : sl;
-   signal kpixClkSample : sl;   
+   signal kpixClkSample  : sl;
+   signal kpixClkOutput  : sl;
 
    -- Front end accessible registers
    signal sysConfig : SysConfigType;
@@ -222,7 +223,8 @@ begin
          kpixClk         => kpixClk,                                -- [out]
          kpixClkPreRise  => kpixClkPreRise,                         -- [out]
          kpixClkPreFall  => kpixClkPreFall,                         -- [out]
-         kpixClkSample   => kpixClkSample);                         -- [out]
+         kpixClkSample   => kpixClkSample,                          -- [out]
+         kpixClkOutput   => kpixClkOutput);                         -- [out]
 
    --------------------------------------------------------------------------------------------------
    -- Acquisition Control
@@ -261,6 +263,7 @@ begin
          kpixClkPreRise  => kpixClkPreRise,                         -- [in]
          kpixClkPreFall  => kpixClkPreFall,                         -- [in]
          kpixClkSample   => kpixClkSample,                          -- [in]
+         kpixClkOutput   => kpixClkOutput,                          -- [in]
          axilReadMaster  => locAxilReadMasters(AXIL_KPIX_REGS_C),   -- [in]
          axilReadSlave   => locAxilReadSlaves(AXIL_KPIX_REGS_C),    -- [out]
          axilWriteMaster => locAxilWriteMasters(AXIL_KPIX_REGS_C),  -- [in]

@@ -5,7 +5,7 @@
 -- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2012-05-03
--- Last update: 2019-04-19
+-- Last update: 2020-04-30
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ entity KpixRegRx is
       -- Kpix clock info
       kpixClkPreRise : in  sl;
       kpixClkPreFall : in  sl;
-      kpixClkSample : in sl;
+      kpixClkSample  : in  sl;
       kpixSerRxIn    : in  sl;          -- Serial Data from KPIX      
       kpixRegRxOut   : out KpixRegRxOutType
       );
@@ -162,14 +162,14 @@ begin
 
       rin          <= v;
       kpixRegRxOut <= r.kpixRegRxOut;
-      
+
    end process comb;
-   
+
    seq : process (clk200) is
    begin
       if (rising_edge(clk200)) then
          r <= rin after TPD_G;
       end if;
    end process seq;
-   
+
 end architecture rtl;
