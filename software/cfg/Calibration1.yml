@@ -6,9 +6,10 @@ DesyTrackerRoot:
     CalDacMin: 200
     CalDacMax: 255
     CalDacStep: 5
-    CalDacCount: 5
+    CalDacCount: 10
     CalChanMin: 000
     CalChanMax: 1023
+    TimeoutWait: 1
   DesyTracker:
     enable: 'True'
     AxiVersion:
@@ -122,7 +123,7 @@ DesyTrackerRoot:
         KpixAsic[0]:
           enable: 'True'
         KpixAsic[1]:
-          enable: 'False'
+          enable: 'True'
         KpixAsic[24]:
           enable: 'True'
       KpixDataRxArray:
