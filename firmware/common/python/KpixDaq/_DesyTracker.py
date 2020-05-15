@@ -71,20 +71,9 @@ class DesyTracker(pyrogue.Device):
             expand = True))
 
         if rssi and not sim:
-            self.add(surf.protocols.rssi.RssiCore(
-                offset = 0x02000000,
-                expand = False))
-
-            self.add(surf.ethernet.gige.GigEthReg(
-                offset = 0x02100000))
-
-            self.add(surf.xilinx.Gtxe2Channel(
-                offset = 0x02101000))
-
-            self.add(surf.ethernet.udp.UdpEngine(
-                offset = 0x02200000,
-                numSrv = 1))
-
+            self.add(KpixDaq.DesyTrackerEthCore(
+                offset = 0x2000000))
+            
         if not sim:
             self.add(surf.devices.micron.AxiMicronN25Q(
                 offset = 0x05000000,

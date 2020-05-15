@@ -1,4 +1,5 @@
 from KpixDaq._DesyTracker import *
+from KpixDaq._DesyTrackerEthCore import *
 from KpixDaq._DesyTrackerRoot import *
 from KpixDaq._DesyTrackerEnvironmentMonitor import *
 from KpixDaq._DesyTrackerRunControl import *
