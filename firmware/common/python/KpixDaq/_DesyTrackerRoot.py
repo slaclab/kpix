@@ -124,3 +124,9 @@ class DesyTrackerRootArgparser(argparse.ArgumentParser):
             required = False,
             action = 'store_true',
             help     = "enable data debug")
+
+        self.add_argument(
+            "--prbsEn",
+            required = False,
+            action = 'store_true',
+            help = 'Enable PRBS')
