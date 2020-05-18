@@ -37,11 +37,12 @@ use unisim.vcomponents.all;
 
 entity DesyTrackerEthCore is
    generic (
-      TPD_G          : time             := 1 ns;
-      SIMULATION_G   : boolean          := false;
-      SIM_PORT_NUM_G : integer          := 9000;
-      DHCP_G         : boolean          := false;         -- true = DHCP, false = static address
-      IP_ADDR_G      : slv(31 downto 0) := x"0A01A8C0");  -- 192.168.1.10 (before DHCP)
+      TPD_G            : time             := 1 ns;
+      SIMULATION_G     : boolean          := false;
+      SIM_PORT_NUM_G   : integer          := 9000;
+      AXIL_BASE_ADDR_G : slv(31 downto 0) := X"00000000";
+      DHCP_G           : boolean          := false;         -- true = DHCP, false = static address
+      IP_ADDR_G        : slv(31 downto 0) := x"0A01A8C0");  -- 192.168.1.10 (before DHCP)
    port (
       refClkOut        : out sl;
       -- AXI-Lite Interface (clk200 domain)
@@ -91,6 +92,25 @@ architecture mapping of DesyTrackerEthCore is
    constant AXIS_CONFIG_C : AxiStreamConfigType := ssiAxiStreamConfig(8);
 --   constant AXIS_CONFIG_C : AxiStreamConfigArray(RSSI_SIZE_C-1 downto 0) := (others => ssiAxiStreamConfig(8));
 
+   constant AXIL_NUM_C  : integer := 3;
+   constant AXIL_RSSI_C : integer := 0;
+   constant AXIL_ETH_C  : integer := 1;
+   constant AXIL_UDP_C  : integer := 2;
+
+   constant AXIL_XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(AXIL_NUM_C-1 downto 0) := (
+      AXIL_RSSI_C     => (
+         baseAddr     => AXIL_BASE_ADDR_G + X"000000",
+         addrBits     => 12,
+         connectivity => X"FFFF"),
+      AXIL_ETH_C      => (
+         baseAddr     => AXIL_BASE_ADDR_G + X"100000",
+         addrBits     => 16,
+         connectivity => X"FFFF"),
+      AXIL_UDP_C      => (
+         baseAddr     => AXIL_BASE_ADDR_G + X"200000",
+         addrBits     => 16,
+         connectivity => X"FFFF"));
+
    signal gtClkDiv2  : sl;
    signal refClk     : sl;
    signal refRst     : sl;
@@ -119,10 +139,10 @@ architecture mapping of DesyTrackerEthCore is
    signal rssiObMasters : AxiStreamMasterArray(RSSI_SIZE_C-1 downto 0);
    signal rssiObSlaves  : AxiStreamSlaveArray(RSSI_SIZE_C-1 downto 0);
 
-   signal mAxilReadMasters  : AxiLiteReadMasterArray(SERVER_SIZE_C-1 downto 0);
-   signal mAxilReadSlaves   : AxiLiteReadSlaveArray(SERVER_SIZE_C-1 downto 0);
-   signal mAxilWriteMasters : AxiLiteWriteMasterArray(SERVER_SIZE_C-1 downto 0);
-   signal mAxilWriteSlaves  : AxiLiteWriteSlaveArray(SERVER_SIZE_C-1 downto 0);
+   signal locAxilReadMasters  : AxiLiteReadMasterArray(AXIL_NUM_C-1 downto 0);
+   signal locAxilReadSlaves   : AxiLiteReadSlaveArray(AXIL_NUM_C-1 downto 0)  := (others => AXI_LITE_READ_SLAVE_EMPTY_DECERR_C);
+   signal locAxilWriteMasters : AxiLiteWriteMasterArray(AXIL_NUM_C-1 downto 0);
+   signal locAxilWriteSlaves  : AxiLiteWriteSlaveArray(AXIL_NUM_C-1 downto 0) := (others => AXI_LITE_WRITE_SLAVE_EMPTY_DECERR_C);
 
    signal acqReqValid      : sl;
    signal startReqValid    : sl;
@@ -212,6 +232,25 @@ begin
          rstOut(2) => locRst200,
          locked    => open);
 
+   U_XBAR : entity surf.AxiLiteCrossbar
+      generic map (
+         TPD_G              => TPD_G,
+         NUM_SLAVE_SLOTS_G  => 1,
+         NUM_MASTER_SLOTS_G => AXIL_NUM_C,
+         MASTERS_CONFIG_G   => AXIL_XBAR_CONFIG_C)
+      port map (
+         axiClk              => ethClk,
+         axiClkRst           => ethRst,
+         sAxiWriteMasters(0) => sAxilWriteMaster,
+         sAxiWriteSlaves(0)  => sAxilWriteSlave,
+         sAxiReadMasters(0)  => sAxilReadMaster,
+         sAxiReadSlaves(0)   => sAxilReadSlave,
+         mAxiWriteMasters    => locAxilWriteMasters,
+         mAxiWriteSlaves     => locAxilWriteSlaves,
+         mAxiReadMasters     => locAxilReadMasters,
+         mAxiReadSlaves      => locAxilReadSlaves);
+
+
    REAL_ETH_GEN : if (not SIMULATION_G) generate
 
       -------------------------
@@ -219,29 +258,39 @@ begin
       -------------------------
       U_ETH_PHY_MAC : entity surf.GigEthGtx7
          generic map (
-            TPD_G         => TPD_G,
-            AXIS_CONFIG_G => EMAC_AXIS_CONFIG_C)
+            TPD_G                   => TPD_G,
+            EN_AXI_REG_G            => true,
+            AXIL_BASE_ADDR_G        => AXIL_XBAR_CONFIG_C(AXIL_ETH_C).baseAddr,
+            AXIL_CLK_IS_SYSCLK125_G => true,
+            AXIS_CONFIG_G           => EMAC_AXIS_CONFIG_C)
          port map (
             -- Local Configurations
-            localMac    => localMac,
+            localMac           => localMac,
             -- Streaming DMA Interface 
-            dmaClk      => ethClk,
-            dmaRst      => ethRst,
-            dmaIbMaster => rxMaster,
-            dmaIbSlave  => rxSlave,
-            dmaObMaster => txMaster,
-            dmaObSlave  => txSlave,
+            dmaClk             => ethClk,
+            dmaRst             => ethRst,
+            dmaIbMaster        => rxMaster,
+            dmaIbSlave         => rxSlave,
+            dmaObMaster        => txMaster,
+            dmaObSlave         => txSlave,
+            -- AXI Lite debug interface
+            axiLiteClk         => ethClk,
+            axiLiteRst         => ethRst,
+            axiLiteReadMaster  => locAxilReadMasters(AXIL_ETH_C),
+            axiLiteReadSlave   => locAxilReadSlaves(AXIL_ETH_C),
+            axiLiteWriteMaster => locAxilWriteMasters(AXIL_ETH_C),
+            axiLiteWriteSlave  => locAxilWriteSlaves(AXIL_ETH_C),
             -- PHY + MAC signals
-            sysClk62    => ethClkDiv2,
-            sysClk125   => ethClk,
-            sysRst125   => ethRst,
-            extRst      => refRst,
-            phyReady    => phyReady,
+            sysClk62           => ethClkDiv2,
+            sysClk125          => ethClk,
+            sysRst125          => ethRst,
+            extRst             => refRst,
+            phyReady           => phyReady,
             -- MGT Ports
-            gtTxP       => gtTxP,
-            gtTxN       => gtTxN,
-            gtRxP       => gtRxP,
-            gtRxN       => gtRxN);
+            gtTxP              => gtTxP,
+            gtTxN              => gtTxN,
+            gtRxP              => gtRxP,
+            gtRxN              => gtRxN);
 
       ----------------------
       -- IPv4/ARP/UDP Engine
@@ -274,6 +323,11 @@ begin
             obServerSlaves  => obServerSlaves,
             ibServerMasters => ibServerMasters,
             ibServerSlaves  => ibServerSlaves,
+            -- AXI Lite debug interface
+            axilReadMaster  => locAxilReadMasters(AXIL_UDP_C),
+            axilReadSlave   => locAxilReadSlaves(AXIL_UDP_C),
+            axilWriteMaster => locAxilWriteMasters(AXIL_UDP_C),
+            axilWriteSlave  => locAxilWriteSlaves(AXIL_UDP_C),
             -- Clock and Reset
             clk             => ethClk,
             rst             => ethRst);
@@ -319,10 +373,10 @@ begin
             -- AXI-Lite Interface
             axiClk_i          => ethClk,
             axiRst_i          => ethRst,
-            axilReadMaster    => sAxilReadMaster,
-            axilReadSlave     => sAxilReadSlave,
-            axilWriteMaster   => sAxilWriteMaster,
-            axilWriteSlave    => sAxilWriteSlave,
+            axilReadMaster    => locAxilReadMasters(AXIL_RSSI_C),
+            axilReadSlave     => locAxilReadSlaves(AXIL_RSSI_C),
+            axilWriteMaster   => locAxilWriteMasters(AXIL_RSSI_C),
+            axilWriteSlave    => locAxilWriteSlaves(AXIL_RSSI_C),
             -- Internal statuses
             statusReg_o       => rssiStatus);
 
