@@ -36,6 +36,22 @@ class AcquisitionControl(pr.Device):
             base = pr.UInt))
 
         self.add(pr.RemoteVariable(
+            name = 'AcqRateRaw',
+            mode = 'RO',
+            offset = 0x50,
+            bitSize = 32,
+            bitOffset = 0,
+            pollInterval = 1,
+            hidden = True))
+
+        self.add(pr.LinkVariable(
+            name = 'AcqRate',
+            dependencies = [self.AcqRateRaw],
+            units = 'Hz',
+            disp = '{:0.3f}',
+            linkedGet = lambda: 1.0/((self.AcqRateRaw.value()+1) * 5.0e-9))            
+
+        self.add(pr.RemoteVariable(
             name = 'ExtTrigSrc',
             mode = 'RW',
             offset= 0x00,
