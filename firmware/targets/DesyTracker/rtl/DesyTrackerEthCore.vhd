@@ -578,7 +578,7 @@ begin
          mAxisMaster     => rssiIbMasters(TDEST_PRBS_C),          -- [out]
          mAxisSlave      => rssiIbSlaves(TDEST_PRBS_C),           -- [in]
          locClk          => ethClk,                               -- [in]
-         locRst          => ethClk,                               -- [in]
+         locRst          => ethRst,                               -- [in]
 --          trig            => trig,             -- [in]
 --          packetLength    => packetLength,     -- [in]
 --          forceEofe       => forceEofe,        -- [in]
