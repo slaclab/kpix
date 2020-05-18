@@ -134,6 +134,7 @@ architecture rtl of AcquisitionControl is
    signal extTriggerRise : slv(7 downto 0);
    signal axisMaster     : AxiStreamMasterType := AXI_STREAM_MASTER_INIT_C;
    signal axisCtrl       : AxiStreamCtrlType;
+   signal trigRateOut    : slv(31 downto 0);
 
 begin
 
@@ -150,6 +151,27 @@ begin
             fallingEdge => open);
    end generate EXT_SYNC_GEN;
 
+   U_SyncTrigRate_1 : entity surf.SyncTrigRate
+      generic map (
+         TPD_G          => TPD_G,
+         COMMON_CLK_G   => true,
+         ONE_SHOT_G     => false,
+         IN_POLARITY_G  => '1',
+         COUNT_EDGES_G  => false,
+         REF_CLK_FREQ_G => 200.0E+6,
+         REFRESH_RATE_G => 1.0,
+         CNT_WIDTH_G    => 32)
+      port map (
+         trigIn      => r.acqControl.startReadout,  -- [in]
+--         trigRateUpdated => trigRateUpdated,  -- [out]
+         trigRateOut => trigRateOut,                -- [out]
+--          trigRateOutMax  => trigRateOutMax,   -- [out]
+--          trigRateOutMin  => trigRateOutMin,   -- [out]
+         locClk      => clk200,                     -- [in]
+         locRst      => rst200,                     -- [in]
+         refClk      => clk200,                     -- [in]
+         refRst      => rst200);                    -- [in]
+
 
    sync : process (clk200) is
    begin
@@ -160,7 +182,7 @@ begin
 
 
    comb : process (axilReadMaster, axilWriteMaster, axisCtrl, extTriggerRise, kpixState, r, rst200,
-                   sysConfig) is
+                   sysConfig, trigRateOut) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
    begin
@@ -201,6 +223,8 @@ begin
       for i in 7 downto 0 loop
          axiSlaveRegisterR(axilEp, X"30"+toSlv(i*4, 8), 0, r.extCounters(i));
       end loop;
+
+      axiSlaveRegisterR(axilEp, X"50", 0, trigRateOut);
 
       axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_DECERR_C);
 

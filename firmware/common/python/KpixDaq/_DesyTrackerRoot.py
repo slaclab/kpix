@@ -5,6 +5,7 @@ import pyrogue
 import pyrogue.interfaces.simulation
 import pyrogue.protocols
 import pyrogue.utilities.fileio
+import pyrogue.utilities.prbs
 
 import KpixDaq
 
@@ -15,6 +16,7 @@ class DesyTrackerRoot(pyrogue.Root):
             hwEmu=False,
             sim=False,
             rssiEn=True,
+            prbsEn=False,
             ip='192.168.2.10',
             **kwargs):
 
@@ -37,6 +39,9 @@ class DesyTrackerRoot(pyrogue.Root):
                 self.udp = pyrogue.protocols.UdpRssiPack( host=ip, port=8192, packVer=2 )
                 self.dest0 = self.udp.application(dest=0)
                 self.dest1 = self.udp.application(dest=1)
+                if prbsEn:
+                    self.dest2 = self.udp.application(dest=2)
+                    self.dest3 = self.udp.application(dest=3)
 
             self.srp = rogue.protocols.srp.SrpV3()
             self.cmd = rogue.interfaces.stream.Master()
@@ -59,12 +64,21 @@ class DesyTrackerRoot(pyrogue.Root):
 
         self.add(KpixDaq.DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, sim=sim, enabled=True, expand=True))
 
+        if hasattr(self, 'udp'):
+            self.add(self.udp)
 
+        if prbsEn:
+            self.add(pyrogue.utilities.prbs.PrbsTx(stream=self.dest2))            
+            self.add(pyrogue.utilities.prbs.PrbsRx(stream=self.dest2))
+
+            self.add(pyrogue.utilities.prbs.PrbsTx(name='PrbsTxLoopback', stream=self.dest3))            
+            self.add(pyrogue.utilities.prbs.PrbsRx(name='PrbsRxLoopback', stream=self.dest3))
+                     
 
     def stop(self):
         if hasattr(self, 'udp'):
             self.udp._rssi.stop()
-        else:
+        elif hasattr(self, 'dest0'):
             # sim mode
             self.dest0.close()
             self.dest1.close()
@@ -110,3 +124,9 @@ class DesyTrackerRootArgparser(argparse.ArgumentParser):
             required = False,
             action = 'store_true',
             help     = "enable data debug")
+
+        self.add_argument(
+            "--prbsEn",
+            required = False,
+            action = 'store_true',
+            help = 'Enable PRBS')

@@ -21,6 +21,7 @@ class Si7006(pr.Device):
             offset = (0xE5 << 2),
             bitOffset = 0,
             bitSize = 16,
+            pollInterval = 1,
             base = pr.UInt))
 
         self.add(pr.LinkVariable(
@@ -38,6 +39,7 @@ class Si7006(pr.Device):
             offset = (0xE3 << 2),
             bitOffset = 0,
             bitSize = 16,
+            pollInterval = 1,
             base = pr.UInt))
 
         self.add(pr.LinkVariable(

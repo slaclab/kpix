@@ -109,3 +109,21 @@ class KpixClockGen(pr.Device):
             enum = {
                 1: 'Rise',
                 0: 'Fall'}))
+
+        self.add(pr.RemoteVariable(
+            name = 'OutputDelay',
+            mode = 'RW',
+            offset = 0x18,
+            bitOffset = 0,
+            bitSize = 8,
+            disp = '{:d}'))
+
+        self.add(pr.RemoteVariable(
+            name = 'OutputEdge',
+            mode = 'RW',
+            offset = 0x18,
+            bitOffset = 31,
+            bitSize = 1,
+            enum = {
+                1: 'Rise',
+                0: 'Fall'}))

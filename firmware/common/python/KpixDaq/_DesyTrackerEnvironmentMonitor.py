@@ -28,6 +28,7 @@ class DesyTrackerEnvironmentMonitor(pyrogue.Device):
             self.add(KpixDaq.Si7006(
                 name = f'Si7006[{i}]',
                 enabled = False,
+                expand = True,
                 offset = 0x07000000 + (i*0x1000)))
 
         self.add(pyrogue.LinkVariable(
