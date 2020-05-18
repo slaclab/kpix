@@ -1,6 +1,7 @@
 import pyrogue as pr
 
 import surf.protocols.rssi
+import surf.protocols.ssi
 import surf.ethernet.udp
 
 class DesyTrackerEthCore(pr.Device):
