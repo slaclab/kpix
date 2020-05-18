@@ -88,28 +88,43 @@ architecture mapping of DesyTrackerEthCore is
    constant SERVER_SIZE_C  : positive                  := 1;
    constant SERVER_PORTS_C : PositiveArray(0 downto 0) := (0 => 8192);
 
-   constant RSSI_SIZE_C   : positive            := 2;
+   constant RSSI_SIZE_C   : positive            := 4;
    constant AXIS_CONFIG_C : AxiStreamConfigType := ssiAxiStreamConfig(8);
 --   constant AXIS_CONFIG_C : AxiStreamConfigArray(RSSI_SIZE_C-1 downto 0) := (others => ssiAxiStreamConfig(8));
 
-   constant AXIL_NUM_C  : integer := 3;
-   constant AXIL_RSSI_C : integer := 0;
-   constant AXIL_ETH_C  : integer := 1;
-   constant AXIL_UDP_C  : integer := 2;
+   constant AXIL_NUM_C     : integer := 5;
+   constant AXIL_RSSI_C    : integer := 0;
+   constant AXIL_ETH_C     : integer := 1;
+   constant AXIL_UDP_C     : integer := 2;
+   constant AXIL_PRBS_TX_C : integer := 3;
+   constant AXIL_PRBS_RX_C : integer := 4;
 
    constant AXIL_XBAR_CONFIG_C : AxiLiteCrossbarMasterConfigArray(AXIL_NUM_C-1 downto 0) := (
-      AXIL_RSSI_C     => (
-         baseAddr     => AXIL_BASE_ADDR_G + X"000000",
-         addrBits     => 12,
-         connectivity => X"FFFF"),
       AXIL_ETH_C      => (
-         baseAddr     => AXIL_BASE_ADDR_G + X"100000",
+         baseAddr     => AXIL_BASE_ADDR_G + X"000000",
          addrBits     => 16,
          connectivity => X"FFFF"),
       AXIL_UDP_C      => (
-         baseAddr     => AXIL_BASE_ADDR_G + X"200000",
-         addrBits     => 16,
+         baseAddr     => AXIL_BASE_ADDR_G + X"010000",
+         addrBits     => 12,
+         connectivity => X"FFFF"),
+      AXIL_RSSI_C     => (
+         baseAddr     => AXIL_BASE_ADDR_G + X"011000",
+         addrBits     => 12,
+         connectivity => X"FFFF"),
+      AXIL_PRBS_RX_C  => (
+         baseAddr     => AXIL_BASE_ADDR_G + X"012000",
+         addrBits     => 8,
+         connectivity => X"FFFF"),
+      AXIL_PRBS_TX_C  => (
+         baseAddr     => AXIL_BASE_ADDR_G + X"012100",
+         addrBits     => 8,
          connectivity => X"FFFF"));
+
+   constant TDEST_SRP_C       : integer := 0;
+   constant TDEST_TRIG_DATA_C : integer := 1;
+   constant TDEST_PRBS_C      : integer := 2;
+   constant TDEST_LOOPBACK_C  : integer := 3;
 
    signal gtClkDiv2  : sl;
    signal refClk     : sl;
@@ -342,10 +357,12 @@ begin
             ILEAVE_ON_NOTVALID_G => true,
             MAX_SEG_SIZE_G       => 1024,
             SEGMENT_ADDR_SIZE_G  => 7,
-            APP_STREAMS_G        => 2,
+            APP_STREAMS_G        => 4,
             APP_STREAM_ROUTES_G  => (
                0                 => X"00",
-               1                 => X"01"),
+               1                 => X"01",
+               2                 => X"02",
+               3                 => X"03"),
             CLK_FREQUENCY_G      => 125.0E+6,
             TIMEOUT_UNIT_G       => 1.0E-3,  -- In units of seconds
             SERVER_G             => true,
@@ -353,7 +370,11 @@ begin
             BYPASS_CHUNKER_G     => false,
             WINDOW_ADDR_SIZE_G   => 3,
             PIPE_STAGES_G        => 1,
-            APP_AXIS_CONFIG_G    => (0 => AXIS_CONFIG_C, 1 => AXIS_CONFIG_C),
+            APP_AXIS_CONFIG_G    => (
+               0                 => AXIS_CONFIG_C,
+               1                 => AXIS_CONFIG_C,
+               2                 => AXIS_CONFIG_C,
+               3                 => AXIS_CONFIG_C),
             TSP_AXIS_CONFIG_G    => EMAC_AXIS_CONFIG_C,
             INIT_SEQ_N_G         => 16#80#)
          port map (
@@ -415,13 +436,13 @@ begin
          -- Streaming Slave (Rx) Interface (sAxisClk domain) 
          sAxisClk         => ethClk,
          sAxisRst         => ethRst,
-         sAxisMaster      => rssiObMasters(0),
-         sAxisSlave       => rssiObSlaves(0),
+         sAxisMaster      => rssiObMasters(TDEST_SRP_C),
+         sAxisSlave       => rssiObSlaves(TDEST_SRP_C),
          -- Streaming Master (Tx) Data Interface (mAxisClk domain)
          mAxisClk         => ethClk,
          mAxisRst         => ethRst,
-         mAxisMaster      => rssiIbMasters(0),
-         mAxisSlave       => rssiIbSlaves(0),
+         mAxisMaster      => rssiIbMasters(TDEST_SRP_C),
+         mAxisSlave       => rssiIbSlaves(TDEST_SRP_C),
          -- AXI Lite Bus (axilClk domain)
          axilClk          => ethClk,
          axilRst          => ethRst,
@@ -450,23 +471,25 @@ begin
          SLAVE_AXI_CONFIG_G  => EB_DATA_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => AXIS_CONFIG_C)
       port map (
-         sAxisClk    => kpixClk200,        -- [in]
-         sAxisRst    => kpixRst200,        -- [in]
-         sAxisMaster => ebAxisMaster,      -- [in]
-         sAxisSlave  => ebAxisSlave,       -- [out]
-         sAxisCtrl   => ebAxisCtrl,        -- [out]
-         mAxisClk    => ethClk,            -- [in]
-         mAxisRst    => ethRst,            -- [in]
-         mAxisMaster => rssiIbMasters(1),  -- [out]
-         mAxisSlave  => rssiIbSlaves(1));  -- [in]
+         sAxisClk    => kpixClk200,                        -- [in]
+         sAxisRst    => kpixRst200,                        -- [in]
+         sAxisMaster => ebAxisMaster,                      -- [in]
+         sAxisSlave  => ebAxisSlave,                       -- [out]
+         sAxisCtrl   => ebAxisCtrl,                        -- [out]
+         mAxisClk    => ethClk,                            -- [in]
+         mAxisRst    => ethRst,                            -- [in]
+         mAxisMaster => rssiIbMasters(TDEST_TRIG_DATA_C),  -- [out]
+         mAxisSlave  => rssiIbSlaves(TDEST_TRIG_DATA_C));  -- [in]
 
-   rssiObSlaves(1) <= AXI_STREAM_SLAVE_FORCE_C;  -- always ready
+   rssiObSlaves(TDEST_TRIG_DATA_C) <= AXI_STREAM_SLAVE_FORCE_C;  -- always ready
 
-   acqReqValid <= rssiObMasters(1).tValid and toSl(rssiObMasters(1).tData(7 downto 0) = X"AA") and
-                  rssiObMasters(1).tLast;
+   acqReqValid <= rssiObMasters(TDEST_TRIG_DATA_C).tValid and
+                  toSl(rssiObMasters(TDEST_TRIG_DATA_C).tData(7 downto 0) = X"AA") and
+                  rssiObMasters(TDEST_TRIG_DATA_C).tLast;
 
-   startReqValid <= rssiObMasters(1).tValid and toSl(rssiObMasters(1).tData(7 downto 0) = X"55") and
-                    rssiObMasters(1).tLast;
+   startReqValid <= rssiObMasters(TDEST_TRIG_DATA_C).tValid and
+                    toSl(rssiObMasters(TDEST_TRIG_DATA_C).tData(7 downto 0) = X"55") and
+                    rssiObMasters(TDEST_TRIG_DATA_C).tLast;
 
    U_RegisterVector_1 : entity surf.RegisterVector
       generic map (
@@ -497,6 +520,106 @@ begin
          rst     => kpixRst200,         -- [in]
          dataIn  => startReqValidReg,   -- [in]
          dataOut => startCmd);          -- [out]
+
+
+   -------------------------------------------------------------------------------------------------
+   -- TDEST 0x2
+   -- PRBS
+   -------------------------------------------------------------------------------------------------
+   U_SsiPrbsRx_1 : entity surf.SsiPrbsRx
+      generic map (
+         TPD_G                     => TPD_G,
+         STATUS_CNT_WIDTH_G        => 32,
+         SLAVE_READY_EN_G          => true,
+         GEN_SYNC_FIFO_G           => true,
+--          FIFO_ADDR_WIDTH_G         => FIFO_ADDR_WIDTH_G,
+--          FIFO_PAUSE_THRESH_G       => FIFO_PAUSE_THRESH_G,
+--          SYNTH_MODE_G              => SYNTH_MODE_G,
+--          MEMORY_TYPE_G             => MEMORY_TYPE_G,
+--          PRBS_SEED_SIZE_G          => PRBS_SEED_SIZE_G,
+--          PRBS_TAPS_G               => PRBS_TAPS_G,
+         SLAVE_AXI_STREAM_CONFIG_G => AXIS_CONFIG_C,
+         SLAVE_AXI_PIPE_STAGES_G   => 1)
+      port map (
+         sAxisClk       => ethClk,                               -- [in]
+         sAxisRst       => ethRst,                               -- [in]
+         sAxisMaster    => rssiObMasters(TDEST_PRBS_C),          -- [in]
+         sAxisSlave     => rssiObSlaves(TDEST_PRBS_C),           -- [out]
+--         sAxisCtrl       => sAxisCtrl,        -- [out]
+         axiClk         => ethClk,                               -- [in]
+         axiRst         => ethRst,                               -- [in]
+         axiReadMaster  => locAxilReadMasters(AXIL_PRBS_RX_C),   -- [in]
+         axiReadSlave   => locAxilReadSlaves(AXIL_PRBS_RX_C),    -- [out]
+         axiWriteMaster => locAxilWriteMasters(AXIL_PRBS_RX_C),  -- [in]
+         axiWriteSlave  => locAxilWriteSlaves(AXIL_PRBS_RX_C));  -- [out]
+
+   U_SsiPrbsTx_1 : entity surf.SsiPrbsTx
+      generic map (
+         TPD_G                      => TPD_G,
+--          AXI_EN_G                   => AXI_EN_G,
+--          AXI_DEFAULT_PKT_LEN_G      => AXI_DEFAULT_PKT_LEN_G,
+--          AXI_DEFAULT_TRIG_DLY_G     => AXI_DEFAULT_TRIG_DLY_G,
+--          VALID_THOLD_G              => VALID_THOLD_G,
+--          VALID_BURST_MODE_G         => VALID_BURST_MODE_G,
+--          SYNTH_MODE_G               => SYNTH_MODE_G,
+--          MEMORY_TYPE_G              => MEMORY_TYPE_G,
+         GEN_SYNC_FIFO_G            => true,
+--          CASCADE_SIZE_G             => CASCADE_SIZE_G,
+--          FIFO_ADDR_WIDTH_G          => FIFO_ADDR_WIDTH_G,
+--          FIFO_PAUSE_THRESH_G        => FIFO_PAUSE_THRESH_G,
+--          PRBS_SEED_SIZE_G           => PRBS_SEED_SIZE_G,
+--          PRBS_TAPS_G                => PRBS_TAPS_G,
+--          PRBS_INCREMENT_G           => PRBS_INCREMENT_G,
+         MASTER_AXI_STREAM_CONFIG_G => AXIS_CONFIG_C,
+         MASTER_AXI_PIPE_STAGES_G   => 1)
+      port map (
+         mAxisClk        => ethClk,                               -- [in]
+         mAxisRst        => ethRst,                               -- [in]
+         mAxisMaster     => rssiIbMasters(TDEST_PRBS_C),          -- [out]
+         mAxisSlave      => rssiIbSlaves(TDEST_PRBS_C),           -- [in]
+         locClk          => ethClk,                               -- [in]
+         locRst          => ethClk,                               -- [in]
+--          trig            => trig,             -- [in]
+--          packetLength    => packetLength,     -- [in]
+--          forceEofe       => forceEofe,        -- [in]
+--          busy            => busy,             -- [out]
+--          tDest           => tDest,            -- [in]
+--          tId             => tId,              -- [in]
+         axilReadMaster  => locAxilReadMasters(AXIL_PRBS_TX_C),   -- [in]
+         axilReadSlave   => locAxilReadSlaves(AXIL_PRBS_TX_C),    -- [out]
+         axilWriteMaster => locAxilWriteMasters(AXIL_PRBS_TX_C),  -- [in]
+         axilWriteSlave  => locAxilWriteSlaves(AXIL_PRBS_TX_C));  -- [out]
+
+   -------------------------------------------------------------------------------------------------
+   -- TDEST 0x3
+   -- Loopback
+   -------------------------------------------------------------------------------------------------
+   U_AxiStreamFifoV2_LOOPBACK : entity surf.AxiStreamFifoV2
+      generic map (
+         TPD_G               => TPD_G,
+         INT_PIPE_STAGES_G   => 1,
+         PIPE_STAGES_G       => 1,
+         SLAVE_READY_EN_G    => true,
+         VALID_THOLD_G       => 1,
+         VALID_BURST_MODE_G  => false,
+         SYNTH_MODE_G        => "inferred",
+         MEMORY_TYPE_G       => "block",
+         GEN_SYNC_FIFO_G     => false,
+         FIFO_ADDR_WIDTH_G   => 9,
+         FIFO_FIXED_THRESH_G => true,
+--         FIFO_PAUSE_THRESH_G => 2**12-32,
+         SLAVE_AXI_CONFIG_G  => AXIS_CONFIG_C,
+         MASTER_AXI_CONFIG_G => AXIS_CONFIG_C)
+      port map (
+         sAxisClk    => ethClk,                           -- [in]
+         sAxisRst    => ethRst,                           -- [in]
+         sAxisMaster => rssiObMasters(TDEST_LOOPBACK_C),  -- [in]
+         sAxisSlave  => rssiObSlaves(TDEST_LOOPBACK_C),   -- [out]
+         mAxisClk    => ethClk,                           -- [in]
+         mAxisRst    => ethRst,                           -- [in]
+         mAxisMaster => rssiIbMasters(TDEST_LOOPBACK_C),  -- [out]
+         mAxisSlave  => rssiIbSlaves(TDEST_LOOPBACK_C));  -- [in]
+
 
 
 end mapping;
