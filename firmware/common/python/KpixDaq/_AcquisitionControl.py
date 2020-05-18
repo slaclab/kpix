@@ -49,7 +49,7 @@ class AcquisitionControl(pr.Device):
             dependencies = [self.AcqRateRaw],
             units = 'Hz',
             disp = '{:0.3f}',
-            linkedGet = lambda: 1.0/((self.AcqRateRaw.value()+1) * 5.0e-9))            
+            linkedGet = lambda: 1.0/((self.AcqRateRaw.value()+1) * 5.0e-9)))            
 
         self.add(pr.RemoteVariable(
             name = 'ExtTrigSrc',
