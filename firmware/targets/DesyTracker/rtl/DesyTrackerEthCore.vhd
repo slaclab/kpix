@@ -93,9 +93,9 @@ architecture mapping of DesyTrackerEthCore is
 --   constant AXIS_CONFIG_C : AxiStreamConfigArray(RSSI_SIZE_C-1 downto 0) := (others => ssiAxiStreamConfig(8));
 
    constant AXIL_NUM_C     : integer := 5;
-   constant AXIL_RSSI_C    : integer := 0;
-   constant AXIL_ETH_C     : integer := 1;
-   constant AXIL_UDP_C     : integer := 2;
+   constant AXIL_ETH_C     : integer := 0;
+   constant AXIL_UDP_C     : integer := 1;
+   constant AXIL_RSSI_C    : integer := 2;
    constant AXIL_PRBS_TX_C : integer := 3;
    constant AXIL_PRBS_RX_C : integer := 4;
 
