@@ -157,7 +157,7 @@ begin
          COMMON_CLK_G   => true,
          ONE_SHOT_G     => false,
          IN_POLARITY_G  => '1',
-         COUNT_EDGES_G  => false,
+         COUNT_EDGES_G  => true,
          REF_CLK_FREQ_G => 200.0E+6,
          REFRESH_RATE_G => 1.0,
          CNT_WIDTH_G    => 32)
