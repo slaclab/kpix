@@ -23,4 +23,4 @@ class DesyTrackerEthCore(pr.Device):
             offset = 0x012000))
 
         self.add(surf.protocols.ssi.SsiPrbsTx(
-            offset = 0x012100))
+            offset = 0x013000))

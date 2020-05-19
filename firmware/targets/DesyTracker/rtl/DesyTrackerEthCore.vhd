@@ -114,10 +114,10 @@ architecture mapping of DesyTrackerEthCore is
          connectivity => X"FFFF"),
       AXIL_PRBS_RX_C  => (
          baseAddr     => AXIL_BASE_ADDR_G + X"012000",
-         addrBits     => 8,
+         addrBits     => 12,
          connectivity => X"FFFF"),
       AXIL_PRBS_TX_C  => (
-         baseAddr     => AXIL_BASE_ADDR_G + X"012100",
+         baseAddr     => AXIL_BASE_ADDR_G + X"013000",
          addrBits     => 8,
          connectivity => X"FFFF"));
 
