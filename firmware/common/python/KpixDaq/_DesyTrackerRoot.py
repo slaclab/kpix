@@ -12,11 +12,10 @@ import KpixDaq
 class DesyTrackerRoot(pyrogue.Root):
     def __init__(
             self,
-            debug=False,
+            dataDebug=False,
             hwEmu=False,
             sim=False,
-            rssiEn=True,
-            prbsEn=False,
+            ethDebug=False,
             ip='192.168.2.10',
             **kwargs):
 
@@ -39,7 +38,7 @@ class DesyTrackerRoot(pyrogue.Root):
                 self.udp = pyrogue.protocols.UdpRssiPack( host=ip, port=8192, packVer=2 )
                 self.dest0 = self.udp.application(dest=0)
                 self.dest1 = self.udp.application(dest=1)
-                if prbsEn:
+                if ethDebug:
                     self.dest2 = self.udp.application(dest=2)
                     self.dest3 = self.udp.application(dest=3)
 
@@ -55,19 +54,17 @@ class DesyTrackerRoot(pyrogue.Root):
             # Connect update stream
             self >> dataWriter.getYamlChannel()
 
-            if debug:
+            if dataDebug:
                 fp = KpixDaq.KpixStreamInfo()
                 self.dest1 >> fp
 
             self.add(dataWriter)
             self.add(KpixDaq.DesyTrackerRunControl())
 
-        self.add(KpixDaq.DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, rssi=rssiEn, sim=sim, enabled=True, expand=True))
+        self.add(KpixDaq.DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, ethDebug=ethDebug, sim=sim, enabled=True, expand=True))
 
-        if hasattr(self, 'udp'):
-            self.add(self.udp)
-
-        if prbsEn:
+        if ethDebug:
+            self.add(self.udp)            
             self.add(pyrogue.utilities.prbs.PrbsTx(stream=self.dest2))            
             self.add(pyrogue.utilities.prbs.PrbsRx(stream=self.dest2))
 
@@ -120,13 +117,13 @@ class DesyTrackerRootArgparser(argparse.ArgumentParser):
             help     = "enable auto-polling")
 
         self.add_argument(
-            "--debug",
+            "--dataDebug",
             required = False,
             action = 'store_true',
             help     = "enable data debug")
 
         self.add_argument(
-            "--prbsEn",
+            "--ethDebug",
             required = False,
             action = 'store_true',
             help = 'Enable PRBS')
