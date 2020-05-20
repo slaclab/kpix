@@ -22,7 +22,7 @@ class FrameInfo(rogue.interfaces.stream.Slave):
 
 
 class DesyTracker(pyrogue.Device):
-    def __init__(self, cmd, rssi, sim, **kwargs):
+    def __init__(self, cmd, ethDebug, sim, **kwargs):
         super().__init__(**kwargs)
 
         self.__acquireCmd = bytearray([0xAA])
@@ -70,7 +70,7 @@ class DesyTracker(pyrogue.Device):
             extTrigEnum = extTrigEnum,
             expand = True))
 
-        if rssi and not sim:
+        if ethDebug and not sim:
             self.add(KpixDaq.DesyTrackerEthCore(
                 offset = 0x2000000))
 

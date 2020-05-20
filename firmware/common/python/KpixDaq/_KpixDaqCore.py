@@ -55,10 +55,6 @@ class KpixAsicArray(pr.Device):
 
         self.KpixAsic[numKpix].enable.addListener(sysConfig.KpixEnableUpdate)
 
-#     def readBlocks(self, recurse=True, variable=None, checkEach=False):
-#         self._root.checkBlocks()
-#         pr.Device.readBlocks(self, recurse, variable, checkEach=True)
-
 class KpixDataRxArray(pr.Device):
     def __init__(self, numKpix, **kwargs):
         super().__init__(**kwargs)
