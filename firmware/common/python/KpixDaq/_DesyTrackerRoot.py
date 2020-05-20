@@ -64,13 +64,13 @@ class DesyTrackerRoot(pyrogue.Root):
         self.add(KpixDaq.DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, ethDebug=ethDebug, sim=sim, enabled=True, expand=True))
 
         if ethDebug:
-            self.add(self.udp)            
-            self.add(pyrogue.utilities.prbs.PrbsTx(stream=self.dest2))            
+            self.add(self.udp)
+            self.add(pyrogue.utilities.prbs.PrbsTx(stream=self.dest2))
             self.add(pyrogue.utilities.prbs.PrbsRx(stream=self.dest2))
 
-            self.add(pyrogue.utilities.prbs.PrbsTx(name='PrbsTxLoopback', stream=self.dest3))            
+            self.add(pyrogue.utilities.prbs.PrbsTx(name='PrbsTxLoopback', stream=self.dest3))
             self.add(pyrogue.utilities.prbs.PrbsRx(name='PrbsRxLoopback', stream=self.dest3))
-                     
+
 
     def stop(self):
         if hasattr(self, 'udp'):
