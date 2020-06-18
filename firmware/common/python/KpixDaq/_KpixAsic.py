@@ -592,6 +592,7 @@ class KpixAsic(pr.Device):
 
 
 class LocalKpix(KpixAsic):
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.activeVariables = self.find(name='(Stat)') + self.find(name='(Cal)') + self.find(name='(Time)') + self.find(name='(Cfg)') + self.find(name='(TrigInhibitOff)')
