@@ -195,28 +195,22 @@ begin
                v.busy                            := '1';
                v.burn                            := ebAxisCtrl.pause;
                v.state                           := WRITE_HEADER_S;
-               -- Write Event number and timestamp in SOF
-               v.ebAxisMaster.tValid             := '1';
-               v.ebAxisMaster.tData(63 downto 0) := r.timestamp(31 downto 0) & r.eventNumber;
-               ssiSetUserSof(EB_DATA_AXIS_CONFIG_C, v.ebAxisMaster, '1');
             end if;
 
          when WRITE_HEADER_S =>
             v.counter             := r.counter + 1;
             v.ebAxisMaster.tValid := '1';
-            -- Place EVR data in header if it is the acqusition trigger source
---               if (triggerRegsIn.acquisitionSrc = TRIGGER_ACQ_EVR_C and r.counter = 0) then
---                  writeFifo(evrOut.offset & evrOut.seconds);
---               else
-
---               end if;
             if (r.counter = 0) then
-               v.ebAxisMaster.tData(31 downto 0) := r.timestamp(63 downto 32);
+               v.ebAxisMaster.tData(63 downto 0) := r.timestamp(31 downto 0) & r.eventNumber;
+               ssiSetUserSof(EB_DATA_AXIS_CONFIG_C, v.ebAxisMaster, '1');               
             end if;
             if (r.counter = 1) then
-               v.ebAxisMaster.tData(0) := r.burn;
+               v.ebAxisMaster.tData(31 downto 0) := r.timestamp(63 downto 32);
             end if;
             if (r.counter = 2) then
+               v.ebAxisMaster.tData(0) := r.burn;
+            end if;
+            if (r.counter = 3) then
                v.state := WAIT_DIGITIZE_S;
             end if;
 
