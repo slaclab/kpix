@@ -28,8 +28,6 @@ addons:
     packages:
       - python3
       - flake8
-      - jq
-
 
 stages:
     - name: software_check
