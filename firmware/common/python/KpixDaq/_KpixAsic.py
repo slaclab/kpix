@@ -503,68 +503,6 @@ class KpixAsic(pr.Device):
                 linkedSet = setChanMode))
         self.add(colModes)
 
-#         for col in range(32):
-#             for row in range(32):
-#                 self.add(pr.LinkVariable(
-#                     name = f'Chan[{col}][{row}]',
-#                     mode = 'WO',
-#                     dependencies = [colModes[col]]
-#                     linkedSet = lambda dev,var,value,write:
-
-
-#    def readBlocks(self, recurse=True, variable=None, checkEach=False):
-#        super().readBlocks(recurse=recurse, variable=variable, checkEach=True)
-
-#         for i, offset in enumerate(CHAN_MODE_A):
-#             self.add(pr.RemoteVariable(
-#                 name = f'CHAN_MODE_A[{i}]',
-#                 offset = offset,
-#                 bitOffset = 0,
-#                 bitSize = 32,
-#                 mode = 'RW'))
-
-#         for i, offset in enumerate(CHAN_MODE_B):
-#             self.add(pr.RemoteVariable(
-#                 name = f'CHAN_MODE_B[{i}]',
-#                 offset = offset,
-#                 bitOffset = 0,
-#                 bitSize = 32,
-#                 mode = 'RW'))
-
-
-        # Channel mode variables
-#        for col in range(32):
-#             for row in range(32):
-#                 self.add(pr.RemoteVariable(
-#                     name = f'ChanMode_{col}_{row}',
-#                     mode = 'RW',
-#                     offset = [CHAN_MODE_A[col], CHAN_MODE_B[col]],
-#                     bitOffset = 31-row,
-#                     bitSize = 1,
-#                     hidden = True,
-#                     enum = {
-#                         0b00: 'B',
-#                         0b01: 'D',
-#                         0b10: 'A',
-#                         0b11: 'C'}))
-
-#         def getChanMode(dev, var):
-#             # Combine into a string with a space every 8 chars
-#             return ' '.join([''.join(dep.valueDisp() for dep in var.dependencies[i:i+8]) for i in range(0, 32, 8)])
-
-#         def setChanMode(dev, var, value):
-#             value = ''.join(value.split()) # remove whitespace
-#             for i, dep in enumerate(var.dependencies):
-#                 dep.setDisp(value[i], write=(i==31)) # Only write on last value
-
-
-#         for col in range(32):
-#             self.add(pr.LinkVariable(
-#                 name = f'Chan_{col*32:d}_{col*32+31:d}',
-#                 mode = 'RW',
-#                 dependencies = [self.node(f'ChanMode_{col}_{row}') for row in range(32)],
-#                 linkedGet = getChanMode,
-#                 linkedSet = setChanMode))
 
     def setCalibrationMode(self):
         self.CntrlCalSource.setDisp("Internal", write=True)
@@ -592,7 +530,7 @@ class KpixAsic(pr.Device):
 
 
 class LocalKpix(KpixAsic):
-    
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.activeVariables = self.find(name='(Stat)') + self.find(name='(Cal)') + self.find(name='(Time)') + self.find(name='(Cfg)') + self.find(name='(TrigInhibitOff)')
