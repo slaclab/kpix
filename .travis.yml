@@ -35,7 +35,6 @@ stages:
     - name: deploy_tag
       if: tag IS present
 
-
 # Generate and deploy documentation
 jobs:
   include:
