@@ -4,6 +4,9 @@ import pyrogue
 import surf.axi
 import surf.protocols.rssi
 import surf.devices.micron
+import surf.ethernet.gige
+import surf.ethernet.udp
+import surf.xilinx
 
 import KpixDaq
 
@@ -19,7 +22,7 @@ class FrameInfo(rogue.interfaces.stream.Slave):
 
 
 class DesyTracker(pyrogue.Device):
-    def __init__(self, cmd, rssi, sim, **kwargs):
+    def __init__(self, cmd, ethDebug, sim, **kwargs):
         super().__init__(**kwargs)
 
         self.__acquireCmd = bytearray([0xAA])
@@ -65,12 +68,12 @@ class DesyTracker(pyrogue.Device):
             offset = 0x01000000,
             numKpix = 24,
             extTrigEnum = extTrigEnum,
+            sim = sim,
             expand = True))
 
-        if rssi and not sim:
-            self.add(surf.protocols.rssi.RssiCore(
-                offset = 0x02000000,
-                expand = False))
+        if ethDebug and not sim:
+            self.add(KpixDaq.DesyTrackerEthCore(
+                offset = 0x2000000))
 
         if not sim:
             self.add(surf.devices.micron.AxiMicronN25Q(

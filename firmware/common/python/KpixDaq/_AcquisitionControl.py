@@ -36,6 +36,16 @@ class AcquisitionControl(pr.Device):
             base = pr.UInt))
 
         self.add(pr.RemoteVariable(
+            name = 'AcqRate',
+            mode = 'RO',
+            offset = 0x50,
+            bitSize = 32,
+            bitOffset = 0,
+            pollInterval = 1,
+            units = 'Hz',
+            disp = '{:d}'))
+
+        self.add(pr.RemoteVariable(
             name = 'ExtTrigSrc',
             mode = 'RW',
             offset= 0x00,

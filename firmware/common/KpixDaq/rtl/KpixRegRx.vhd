@@ -1,21 +1,15 @@
 -------------------------------------------------------------------------------
--- Title      : 
+-- Title      : KPIX Register Response Deserializer
 -------------------------------------------------------------------------------
--- File       : 
--- Author     : Benjamin Reese  <bareese@slac.stanford.edu>
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2012-05-03
--- Last update: 2019-04-19
--- Platform   : 
--- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
--- Description: 
+-- Description: Deserializes KPIX register response serial stream.
 -------------------------------------------------------------------------------
--- This file is part of 'kpix-dev'.
+-- This file is part of 'KPIX'.
 -- It is subject to the license terms in the LICENSE.txt file found in the 
 -- top-level directory of this distribution and at: 
 --    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
--- No part of 'kpix-dev', including this file, 
+-- No part of 'KPIX', including this file, 
 -- may be copied, modified, propagated, or distributed except according to 
 -- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
@@ -46,7 +40,7 @@ entity KpixRegRx is
       -- Kpix clock info
       kpixClkPreRise : in  sl;
       kpixClkPreFall : in  sl;
-      kpixClkSample : in sl;
+      kpixClkSample  : in  sl;
       kpixSerRxIn    : in  sl;          -- Serial Data from KPIX      
       kpixRegRxOut   : out KpixRegRxOutType
       );
@@ -162,14 +156,14 @@ begin
 
       rin          <= v;
       kpixRegRxOut <= r.kpixRegRxOut;
-      
+
    end process comb;
-   
+
    seq : process (clk200) is
    begin
       if (rising_edge(clk200)) then
          r <= rin after TPD_G;
       end if;
    end process seq;
-   
+
 end architecture rtl;

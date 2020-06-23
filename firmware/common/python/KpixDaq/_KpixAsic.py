@@ -1,74 +1,61 @@
 import pyrogue as pr
 
-# class FlippedUInt(pr.UInt):
-#     @classmethod
-#     def toBytes(cls, value, bitSize):
-#         value = int(f'{value:b}'.zfill(bitSize)[::-1], 2)
-#         return pr.UInt.toBytes(value, bitSize)
-
-#     @classmethod
-#     def fromBytes(cls, ba, bitSize):
-#         value = pr.UInt.fromBytes(ba, bitSize)
-#         return int(f'{value:b}'.zfill(bitSize)[::-1], 2)
-
-
-class KpixAsic(pr.Device):
+class KpixLocal(pr.Device):
     def __init__(self, sysConfig=None, version=12, **kwargs):
         super().__init__(**kwargs)
 
         self.forceCheckEach = True
 
-        self.calChannel = 0
 
-        STATUS = 0x0000*4
-        CONFIG = 0x0001*4
-        TIMER_A = 0x0008*4
-        TIMER_B = 0x0009*4
-        TIMER_C = 0x000A*4
-        TIMER_D = 0x000B*4
-        TIMER_E = 0x000C*4
-        TIMER_F = 0x000D*4
-        CAL_DELAY_0 = 0x0010*4
-        CAL_DELAY_1 = 0x0011*4
-        DAC_0 = 0x0020*4
-        DAC_1 = 0x0021*4
-        DAC_2 = 0x0022*4
-        DAC_3 = 0x0023*4
-        DAC_4 = 0x0024*4
-        DAC_5 = 0x0025*4
-        DAC_6 = 0x0026*4
-        DAC_7 = 0x0027*4
-        DAC_8 = 0x0028*4
-        DAC_9 = 0x0029*4
-        CONTROL = 0x0030*4
-        CHAN_MODE_A = list(range(0x0040*4, 0x0060*4, 4))
-        CHAN_MODE_B = list(range(0x0060*4, 0x0080*4, 4))
+        self.STATUS = 0x0000*4
+        self.CONFIG = 0x0001*4
+        self.TIMER_A = 0x0008*4
+        self.TIMER_B = 0x0009*4
+        self.TIMER_C = 0x000A*4
+        self.TIMER_D = 0x000B*4
+        self.TIMER_E = 0x000C*4
+        self.TIMER_F = 0x000D*4
+        self.CAL_DELAY_0 = 0x0010*4
+        self.CAL_DELAY_1 = 0x0011*4
+        self.DAC_0 = 0x0020*4
+        self.DAC_1 = 0x0021*4
+        self.DAC_2 = 0x0022*4
+        self.DAC_3 = 0x0023*4
+        self.DAC_4 = 0x0024*4
+        self.DAC_5 = 0x0025*4
+        self.DAC_6 = 0x0026*4
+        self.DAC_7 = 0x0027*4
+        self.DAC_8 = 0x0028*4
+        self.DAC_9 = 0x0029*4
+        self.CONTROL = 0x0030*4
+        self.CHAN_MODE_A = list(range(0x0040*4, 0x0060*4, 4))
+        self.CHAN_MODE_B = list(range(0x0060*4, 0x0080*4, 4))
 
         # Status regs
         self.add(pr.RemoteVariable(
             name = 'StatCmdPerr',
-            offset=STATUS,
+            offset=self.STATUS,
             mode='RO',
             bitOffset=0,
             bitSize=1))
 
         self.add(pr.RemoteVariable(
             name = 'StatDataPerr',
-            offset=STATUS,
+            offset=self.STATUS,
             mode='RO',
             bitOffset=1,
             bitSize=1))
 
         self.add(pr.RemoteVariable(
             name = 'StatTempEn',
-            offset=STATUS,
+            offset=self.STATUS,
             mode='RO',
             bitOffset=2,
             bitSize=1))
 
         self.add(pr.RemoteVariable(
             name = 'StatTempIdValue',
-            offset=STATUS,
+            offset=self.STATUS,
             mode='RO',
             bitOffset=24,
             bitSize=8))
@@ -76,28 +63,28 @@ class KpixAsic(pr.Device):
         # Config Regs
         self.add(pr.RemoteVariable(
             name = 'CfgAutoReadDisable',
-            offset=CONFIG,
+            offset=self.CONFIG,
             bitOffset=2,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
             name = 'CfgForceTemp',
-            offset=CONFIG,
+            offset=self.CONFIG,
             bitOffset=3,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
             name = 'CfgDisableTemp',
-            offset=CONFIG,
+            offset=self.CONFIG,
             bitOffset=4,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
             name = 'CfgAutoStatusReadEn',
-            offset=CONFIG,
+            offset=self.CONFIG,
             bitOffset=5,
             bitSize=1,
             base=pr.Bool))
@@ -106,61 +93,61 @@ class KpixAsic(pr.Device):
 
         self.add(pr.RemoteVariable(
             name = 'TimeResetOn',
-            offset=TIMER_A,
+            offset=self.TIMER_A,
             bitOffset=0,
             bitSize=16))
 
         self.add(pr.RemoteVariable(
             name = 'TimeResetOff',
-            offset=TIMER_A,
+            offset=self.TIMER_A,
             bitOffset=16,
             bitSize=16))
 
         self.add(pr.RemoteVariable(
             name = 'TimeOffsetNullOff',
-            offset=TIMER_B,
+            offset=self.TIMER_B,
             bitOffset=0,
             bitSize=16))
 
         self.add(pr.RemoteVariable(
             name = 'TimeLeakageNullOff',
-            offset=TIMER_B,
+            offset=self.TIMER_B,
             bitOffset=16,
             bitSize=16))
 
         self.add(pr.RemoteVariable(
             name = 'TimeDeselDelay',
-            offset=TIMER_F,
+            offset=self.TIMER_F,
             bitOffset=0,
             bitSize=8))
 
         self.add(pr.RemoteVariable(
             name = 'TimeBunchClkDelay',
-            offset=TIMER_F,
+            offset=self.TIMER_F,
             bitOffset=8,
             bitSize=16))
 
         self.add(pr.RemoteVariable(
             name = 'TimeDigitizeDelay',
-            offset=TIMER_F,
+            offset=self.TIMER_F,
             bitOffset=24,
             bitSize=8))
 
         self.add(pr.RemoteVariable(
             name = 'TimePowerUpDigOn',
-            offset=TIMER_C,
+            offset=self.TIMER_C,
             bitOffset=0,
             bitSize=16))
 
         self.add(pr.RemoteVariable(
             name = 'TimeThreshOff',
-            offset=TIMER_C,
+            offset=self.TIMER_C,
             bitOffset=16,
             bitSize=16))
 
         self.add(pr.RemoteVariable(
             name = 'TimerD',
-            offset=TIMER_D,
+            offset=self.TIMER_D,
             bitOffset=0,
             bitSize=32,
             hidden=True))
@@ -174,7 +161,7 @@ class KpixAsic(pr.Device):
         # setComp(0,1,1,'')
         self.add(pr.RemoteVariable(
             name = 'BunchClockCountRaw',
-            offset=TIMER_E,
+            offset=self.TIMER_E,
             bitOffset=0,
             bitSize=16,
             hidden=True))
@@ -188,7 +175,7 @@ class KpixAsic(pr.Device):
 
         self.add(pr.RemoteVariable(
             name = 'TimePowerUpOn',
-            offset=TIMER_E,
+            offset=self.TIMER_E,
             bitOffset=16,
             bitSize=16))
 
@@ -196,31 +183,31 @@ class KpixAsic(pr.Device):
         # Calibration Stuff
         self.add(pr.RemoteVariable(
             name = 'Cal0Delay',
-            offset=CAL_DELAY_0,
+            offset=self.CAL_DELAY_0,
             bitOffset=0,
             bitSize=13))
 
         self.add(pr.RemoteVariable(
             name = 'Cal1Delay',
-            offset=CAL_DELAY_0,
+            offset=self.CAL_DELAY_0,
             bitOffset=16,
             bitSize=13))
 
         self.add(pr.RemoteVariable(
             name = 'Cal2Delay',
-            offset=CAL_DELAY_1,
+            offset=self.CAL_DELAY_1,
             bitOffset=0,
             bitSize=13))
 
         self.add(pr.RemoteVariable(
             name = 'Cal3Delay',
-            offset=CAL_DELAY_1,
+            offset=self.CAL_DELAY_1,
             bitOffset=16,
             bitSize=13))
 
         self.add(pr.RemoteVariable(
             name = 'CalCount',
-            offset=[CAL_DELAY_0, CAL_DELAY_0, CAL_DELAY_1, CAL_DELAY_1],
+            offset=[self.CAL_DELAY_0, self.CAL_DELAY_0, self.CAL_DELAY_1, self.CAL_DELAY_1],
             bitOffset=[15, 31, 15, 31],
             bitSize=[1, 1, 1, 1],
             enum = {
@@ -229,6 +216,23 @@ class KpixAsic(pr.Device):
                 0x3: '2',
                 0x7: '3',
                 0xf: '4'}))
+
+    def _setDict(self, d, writeEach, modes, incGroups, excGroups):
+        # Awful hack to ignore dict set of variables that don't exist
+        # This allows KpixAsic variables to appear in config file for
+        # the local kpix.
+        variables = self.variables
+        filtD = {k: v for k, v in d.items() if k in variables}
+        super()._setDict(filtD, writeEach, modes, incGroups, excGroups)
+
+
+class KpixAsic(KpixLocal):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.enable.hidden = False
+        self.calChannel = 0
 
         # These registers dont exist in the local kpix
         def makeDacVar(name, offset):
@@ -271,51 +275,48 @@ class KpixAsic(pr.Device):
                 dependencies = [self.node(name)],
                 linkedGet = dacToVolt))
 
-        makeDacVar(name = 'DacPreThresholdA', offset=DAC_0)
-        makeDacVar(name = 'DacPreThresholdB', offset=DAC_1)
-        makeDacVar(name = 'DacRampThresh', offset=DAC_2)
-        makeDacVar(name = 'DacRangeThreshold', offset=DAC_3)
-        makeDacVar(name = 'DacCalibration', offset=DAC_4)
-        makeDacVar(name = 'DacEventThreshold', offset=DAC_5)
-        makeDacVar(name = 'DacShaperBias', offset=DAC_6)
-        makeDacVar(name = 'DacDefaultAnalog', offset=DAC_7)
-        makeDacVar(name = 'DacThresholdA', offset=DAC_8)
-        makeDacVar(name = 'DacThresholdB', offset=DAC_9)
-
-
-        #DacCalibrationCharge
+        makeDacVar(name = 'DacPreThresholdA', offset=self.DAC_0)
+        makeDacVar(name = 'DacPreThresholdB', offset=self.DAC_1)
+        makeDacVar(name = 'DacRampThresh', offset=self.DAC_2)
+        makeDacVar(name = 'DacRangeThreshold', offset=self.DAC_3)
+        makeDacVar(name = 'DacCalibration', offset=self.DAC_4)
+        makeDacVar(name = 'DacEventThreshold', offset=self.DAC_5)
+        makeDacVar(name = 'DacShaperBias', offset=self.DAC_6)
+        makeDacVar(name = 'DacDefaultAnalog', offset=self.DAC_7)
+        makeDacVar(name = 'DacThresholdA', offset=self.DAC_8)
+        makeDacVar(name = 'DacThresholdB', offset=self.DAC_9)
 
         self.add(pr.RemoteVariable(
             name = 'CntrlDisPerReset',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=0,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
             name = 'CntrlEnDcReset',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=1,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
             name = 'CntrlHighGain',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=2,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
             name = 'CntrlNearNeighbor',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=3,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
             name = 'CntrlCalSource',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=[6, 4], # I'm pretty sure this wont work
             bitSize=[1, 1],
             enum = {
@@ -326,7 +327,7 @@ class KpixAsic(pr.Device):
 
         self.add(pr.RemoteVariable(
             name = 'CntrlForceTrigSource',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=[7, 5], # I'm pretty sure this wont work
             bitSize=[1, 1],
             enum = {
@@ -337,7 +338,7 @@ class KpixAsic(pr.Device):
 
         self.add(pr.RemoteVariable(
             name = 'CntrlHoldTime',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=8,
             bitSize=3,
             base=pr.UIntReversed,
@@ -353,28 +354,28 @@ class KpixAsic(pr.Device):
 
         self.add(pr.RemoteVariable(
             name = 'CntrlCalibHigh',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=11,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
             name = 'CntrlShortIntEn',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=12,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
             name = 'CntrlForceLowGain',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=13,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
             name = 'CntrlLeakNullDisable',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=14,
             bitSize=1,
             base=pr.Bool))
@@ -382,7 +383,7 @@ class KpixAsic(pr.Device):
 
         self.add(pr.RemoteVariable(
             name = 'CntrlPolarity',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=15,
             bitSize=1,
             enum = {
@@ -391,7 +392,7 @@ class KpixAsic(pr.Device):
 
         self.add(pr.RemoteVariable(
             name = 'CntrlTrigDisable',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=16,
             bitSize=1,
             base=pr.Bool))
@@ -399,14 +400,14 @@ class KpixAsic(pr.Device):
 
         self.add(pr.RemoteVariable(
             name = 'CntrlDisPwrCycle',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=24,
             bitSize=1,
             base=pr.Bool))
 
         self.add(pr.RemoteVariable(
             name = 'CntrlFeCurr',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=25,
             bitSize=3,
             base = pr.UIntReversed,
@@ -423,7 +424,7 @@ class KpixAsic(pr.Device):
 
         self.add(pr.RemoteVariable(
             name = 'CntrlDiffTime',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=28,
             bitSize=2,
             enum = {
@@ -434,7 +435,7 @@ class KpixAsic(pr.Device):
 
         self.add(pr.RemoteVariable(
             name = 'CntrlMonSource',
-            offset=CONTROL,
+            offset=self.CONTROL,
             bitOffset=30,
             bitSize=2,
             base = pr.UIntReversed,
@@ -444,7 +445,7 @@ class KpixAsic(pr.Device):
                 2: 'Shaper',
                 3: '-'}))
 
-        for i, addr in enumerate(CHAN_MODE_A):
+        for i, addr in enumerate(self.CHAN_MODE_A):
             self.add(pr.RemoteVariable(
                 name = f'ChanModeA_{i}',
                 offset = addr,
@@ -453,7 +454,7 @@ class KpixAsic(pr.Device):
                 bitSize = 32,
                 hidden = True))
 
-        for i, addr in enumerate(CHAN_MODE_B):
+        for i, addr in enumerate(self.CHAN_MODE_B):
             self.add(pr.RemoteVariable(
                 name = f'ChanModeB_{i}',
                 offset = addr,
@@ -503,68 +504,6 @@ class KpixAsic(pr.Device):
                 linkedSet = setChanMode))
         self.add(colModes)
 
-#         for col in range(32):
-#             for row in range(32):
-#                 self.add(pr.LinkVariable(
-#                     name = f'Chan[{col}][{row}]',
-#                     mode = 'WO',
-#                     dependencies = [colModes[col]]
-#                     linkedSet = lambda dev,var,value,write:
-
-
-#    def readBlocks(self, recurse=True, variable=None, checkEach=False):
-#        super().readBlocks(recurse=recurse, variable=variable, checkEach=True)
-
-#         for i, offset in enumerate(CHAN_MODE_A):
-#             self.add(pr.RemoteVariable(
-#                 name = f'CHAN_MODE_A[{i}]',
-#                 offset = offset,
-#                 bitOffset = 0,
-#                 bitSize = 32,
-#                 mode = 'RW'))
-
-#         for i, offset in enumerate(CHAN_MODE_B):
-#             self.add(pr.RemoteVariable(
-#                 name = f'CHAN_MODE_B[{i}]',
-#                 offset = offset,
-#                 bitOffset = 0,
-#                 bitSize = 32,
-#                 mode = 'RW'))
-
-
-        # Channel mode variables
-#        for col in range(32):
-#             for row in range(32):
-#                 self.add(pr.RemoteVariable(
-#                     name = f'ChanMode_{col}_{row}',
-#                     mode = 'RW',
-#                     offset = [CHAN_MODE_A[col], CHAN_MODE_B[col]],
-#                     bitOffset = 31-row,
-#                     bitSize = 1,
-#                     hidden = True,
-#                     enum = {
-#                         0b00: 'B',
-#                         0b01: 'D',
-#                         0b10: 'A',
-#                         0b11: 'C'}))
-
-#         def getChanMode(dev, var):
-#             # Combine into a string with a space every 8 chars
-#             return ' '.join([''.join(dep.valueDisp() for dep in var.dependencies[i:i+8]) for i in range(0, 32, 8)])
-
-#         def setChanMode(dev, var, value):
-#             value = ''.join(value.split()) # remove whitespace
-#             for i, dep in enumerate(var.dependencies):
-#                 dep.setDisp(value[i], write=(i==31)) # Only write on last value
-
-
-#         for col in range(32):
-#             self.add(pr.LinkVariable(
-#                 name = f'Chan_{col*32:d}_{col*32+31:d}',
-#                 mode = 'RW',
-#                 dependencies = [self.node(f'ChanMode_{col}_{row}') for row in range(32)],
-#                 linkedGet = getChanMode,
-#                 linkedSet = setChanMode))
 
     def setCalibrationMode(self):
         self.CntrlCalSource.setDisp("Internal", write=True)
@@ -591,65 +530,6 @@ class KpixAsic(pr.Device):
         self.checkBlocks()
 
 
-class LocalKpix(KpixAsic):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.activeVariables = self.find(name='(Stat)') + self.find(name='(Cal)') + self.find(name='(Time)') + self.find(name='(Cfg)') + self.find(name='(TrigInhibitOff)')
-        #self.activeVariables.remove(self.TimeBunchClkDelay)
-        for v in self.variables.values():
-            if v not in self.activeVariables:
-                v.hidden = True
-        self.enable.hidden = False
-        #print('LocalKpix Variables:')
-        #for v in self.activeVariables:
-        #    print(v.name)
-        #print('-------')
-        #print('')
-
-
-    def writeBlocks(self, force=False, recurse=True, variable=None, checkEach=False):
-        if variable is None:
-            #print('Blocks:')
-            #for b in self._getBlocks(self.activeVariables):
-            #    print(b)
-            #print('-----')
-            #print('')
-            super().writeBlocks(force=force, recurse=recurse, variable=self.activeVariables, checkEach=checkEach)
-        else:
-            if isinstance(variable, pr.BaseVariable):
-                variable = [variable]
-            variable = [x for x in variable if x in self.activeVariables]
-            print('Blocks')
-            print(self._getBlocks(variable))
-            super().writeBlocks(force=force, recurse=recurse, variable=variable, checkEach=checkEach)
-
-
-    def readBlocks(self, recurse=True, variable=None, checkEach=False):
-        if variable is None:
-            super().readBlocks(recurse=recurse, variable=self.activeVariables, checkEach=True)
-        else:
-            if isinstance(variable, pr.BaseVariable):
-                variable = [variable]
-            variable = [x for x in variable if x in self.activeVariables]
-            super().readBlocks(recurse=recurse, variable=variable, checkEach=True)
-
-    def verifyBlocks(self, recurse=True, variable=None, checkEach=False):
-        if variable is None:
-            super().verifyBlocks(recurse=recurse, variable=self.activeVariables, checkEach=checkEach)
-        else:
-            if isinstance(variable, pr.BaseVariable):
-                variable = [variable]
-            variable = [x for x in variable if x in self.activeVariables]
-            super().verifyBlocks(recurse=recurse, variable=variable, checkEach=True)
-
-    def checkBlocks(self, recurse=True, variable=None):
-        if variable is None:
-            super().checkBlocks(recurse=recurse, variable=self.activeVariables)
-        else:
-            if isinstance(variable, pr.BaseVariable):
-                variable = [variable]
-            variable = [x for x in variable if x in self.activeVariables]
-            super().checkBlocks(recurse=recurse, variable=variable)
 
 
 # Manipulate entire array together
