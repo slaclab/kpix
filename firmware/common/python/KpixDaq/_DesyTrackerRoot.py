@@ -32,7 +32,6 @@ class DesyTrackerRoot(pyrogue.Root):
             if sim:
                 self.dest0 = rogue.interfaces.stream.TcpClient('localhost', 9000)
                 self.dest1 = rogue.interfaces.stream.TcpClient('localhost', 9002)
-                rssiEn = False
 
             else:
                 self.udp = pyrogue.protocols.UdpRssiPack( host=ip, port=8192, packVer=2 )
