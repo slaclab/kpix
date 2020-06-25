@@ -2,7 +2,7 @@ import pyrogue as pr
 import KpixDaq
 
 class KpixDaqCore(pr.Device):
-    def __init__(self, numKpix, extTrigEnum=None, **kwargs):
+    def __init__(self, numKpix, extTrigEnum=None, sim=False, **kwargs):
         super().__init__(**kwargs)
 
         self.numKpix = numKpix
@@ -24,7 +24,8 @@ class KpixDaqCore(pr.Device):
         self.add(KpixAsicArray(
             sysConfig = self.SysConfig,
             offset = 0x100000,
-            numKpix = numKpix))
+            numKpix = numKpix,
+            sim = sim))
 
 
         self.add(KpixDataRxArray(
@@ -33,10 +34,11 @@ class KpixDaqCore(pr.Device):
 
 
 class KpixAsicArray(pr.Device):
-    def __init__(self, numKpix, sysConfig, **kwargs):
+    def __init__(self, numKpix, sysConfig, sim, **kwargs):
         super().__init__(**kwargs)
+        KpixClass = KpixDaq.KpixAsic if sim is False else KpixDaq.KpixLocal
         for i in range(numKpix):
-            self.add(KpixDaq.KpixAsic(
+            self.add(KpixClass(
                 name = f'KpixAsic[{i}]',
                 offset = 0x100000 + (i*0x1000),
                 enabled = False,
@@ -47,7 +49,7 @@ class KpixAsicArray(pr.Device):
 
 
         # Internal KPIX
-        self.add(KpixDaq.LocalKpix(
+        self.add(KpixDaq.KpixLocal(
             name = f'KpixAsic[{numKpix}]',
             offset = 0x100000 + (numKpix*0x1000),
             enabled = True,

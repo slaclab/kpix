@@ -68,6 +68,7 @@ class DesyTracker(pyrogue.Device):
             offset = 0x01000000,
             numKpix = 24,
             extTrigEnum = extTrigEnum,
+            sim = sim,
             expand = True))
 
         if ethDebug and not sim:

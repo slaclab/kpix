@@ -117,7 +117,7 @@ DesyTrackerRoot:
         KpixAsic[0]:
           enable: 'True'
         KpixAsic[1]:
-          enable: 'False'
+          enable: 'True'
         KpixAsic[24]:
           enable: 'True'
       KpixDataRxArray:
