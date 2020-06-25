@@ -529,7 +529,7 @@ class KpixAsic(KpixLocal):
         self.verifyBlocks()
         self.checkBlocks()
 
-        
+
 
 
 # Manipulate entire array together
