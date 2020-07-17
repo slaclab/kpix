@@ -18,7 +18,7 @@ RogueScripts:
   - ../software/scripts/KpixMultiRun
 
 CondaDependencies:
-  - surf=v2.3.0
+  - surf=v2.6.7
   - matplotlib
 
 RogueConfig:
