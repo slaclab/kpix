@@ -4,7 +4,7 @@ class Si7006(pr.Device):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.forceCheckEach = True
+        #self.forceCheckEach = True
 
 #        self.add(pr.RemoteVariable(
 #            name = 'Temp',
