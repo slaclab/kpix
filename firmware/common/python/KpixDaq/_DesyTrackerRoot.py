@@ -73,7 +73,7 @@ class DesyTrackerRoot(pyrogue.Root):
 
     def stop(self):
         if hasattr(self, 'udp'):
-            self.udp._rssi.stop()
+            self.udp._rssi._stop()
         elif hasattr(self, 'dest0'):
             # sim mode
             self.dest0.close()
