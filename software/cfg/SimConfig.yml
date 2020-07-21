@@ -21,9 +21,9 @@ DesyTrackerRoot:
 #        KpixEnable: '0x40'
       KpixClockGen:
         enable: 'True'
-        ClkSelReadout: 8
-        ClkSelDigitize: '0x4'
-        ClkSelAcquire: 8
+        ClkSelReadout: 4
+        ClkSelDigitize: 4
+        ClkSelAcquire: 4
         ClkSelIdle: 4
         ClkSelPrecharge: 599
       AcquisitionControl:

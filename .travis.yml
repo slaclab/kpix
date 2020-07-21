@@ -2,7 +2,7 @@
 sudo: true
 
 # Setup for Ubuntu Bionic (18.04)
-dist: bionic
+dist: focal
 
 language:
   - python
@@ -28,15 +28,12 @@ addons:
     packages:
       - python3
       - flake8
-      - jq
-
 
 stages:
     - name: software_check
       if: (type == pull_request) or (tag IS present) or (branch == master)
     - name: deploy_tag
       if: tag IS present
-
 
 # Generate and deploy documentation
 jobs:
