@@ -14,6 +14,10 @@ DesyTrackerRoot:
     AxiVersion:
       enable: 'True'
       ScratchPad: '0xDEADBEEF'
+    EnvironmentMonitor:
+      enable: 'True'
+      Si7006[0]:
+        enable: 'True'
     KpixDaqCore:
       enable: 'True'
       SysConfig:
