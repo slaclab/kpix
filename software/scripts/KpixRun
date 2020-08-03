@@ -78,6 +78,8 @@ if __name__ == "__main__":
             
         print('Writing initial configuration')
         root.LoadConfig(runArgs.config)
+        root.waitOnUpdate()
+        
         root.ReadAll()
         root.waitOnUpdate()
 

@@ -18,9 +18,6 @@ class FrameInfo(rogue.interfaces.stream.Slave):
         print(f' Got frame with {frame.getPayload()} bytes')
 
 
-
-
-
 class DesyTracker(pyrogue.Device):
     def __init__(self, cmd, ethDebug, sim, **kwargs):
         super().__init__(**kwargs)

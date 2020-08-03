@@ -8,8 +8,11 @@ class SysConfig(pr.Device):
         if self.KpixEnable[index].value() != varValue.value:
             self.KpixEnable[index].set(varValue.value, write=True)
 
+
     def __init__(self, numKpix, **kwargs):
         super().__init__(**kwargs)
+
+#        self.forceCheckEach = True
 
         self.add(pr.RemoteVariable(
             name = 'RawDataMode',

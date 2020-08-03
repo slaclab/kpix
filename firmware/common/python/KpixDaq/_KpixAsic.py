@@ -6,7 +6,6 @@ class KpixLocal(pr.Device):
 
         self.forceCheckEach = True
 
-
         self.STATUS = 0x0000*4
         self.CONFIG = 0x0001*4
         self.TIMER_A = 0x0008*4

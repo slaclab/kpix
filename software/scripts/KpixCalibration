@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     rootArgs = rootParser.parse_known_args()[0]
     runArgs = runParser.parse_known_args()[0]
-    
+
     with KpixDaq.DesyTrackerRoot(**vars(rootArgs)) as root:
 
         root.ReadAll()
@@ -48,19 +48,20 @@ if __name__ == "__main__":
 
         if os.path.isdir(runArgs.outfile):
             runArgs.outfile = os.path.abspath(datetime.datetime.now().strftime(f"{runArgs.outfile}/Calibration_%Y%m%d_%H%M%S.dat"))
-            
+
         print(f'Opening data file: {runArgs.outfile}')
         root.DataWriter.DataFile.setDisp(runArgs.outfile)
         root.DataWriter.Open()
 
         print(f"Hard Reset")
         root.HardReset()
-        
-        print(f"Count Reset")        
+
+        print(f"Count Reset")
         root.CountReset()
-            
+
         print('Writing initial configuration')
         root.LoadConfig(runArgs.config)
+        root.waitOnUpdate()
         root.ReadAll()
         root.waitOnUpdate()
 
@@ -70,6 +71,4 @@ if __name__ == "__main__":
             root.DataWriter.Close()
         except (KeyboardInterrupt):
             root.DesyTrackerRunControl.runState.setDisp('Stopped')
-            root.DataWriter.Close()            
-            
-        
+            root.DataWriter.Close()
