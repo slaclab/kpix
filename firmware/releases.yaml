@@ -20,6 +20,7 @@ RogueScripts:
 CondaDependencies:
   - surf=v2.8.0
   - matplotlib
+  - rogue>=5.2.1
 
 RogueConfig:
 
