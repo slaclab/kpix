@@ -248,22 +248,25 @@ architecture rtl of KpixDataRx is
 
 begin
 
-   U_SimpleDualPortRam_1 : entity surf.SimpleDualPortRam
+   U_SimpleDualPortRam_1 : entity surf.SimpleDualPortRamXpm
       generic map (
-         TPD_G         => TPD_G,
-         MEMORY_TYPE_G => "block",
-         DOB_REG_G     => false,
-         DATA_WIDTH_G  => RAM_DATA_WIDTH_C,
-         ADDR_WIDTH_G  => RAM_ADDR_WIDTH_C)
+         TPD_G          => TPD_G,
+         COMMON_CLK_G => true,
+--         SYNTH_MODE_G => "xpm",
+         MEMORY_TYPE_G  => "block",
+--         DOB_REG_G     => false,
+         READ_LATENCY_G => 1,
+         DATA_WIDTH_G   => RAM_DATA_WIDTH_C,
+         ADDR_WIDTH_G   => RAM_ADDR_WIDTH_C)
       port map (
-         clka  => clk200,               -- [in]
-         wea   => r.rxRamWrEn,          -- [in]
-         addra => r.rxRamWrAddr,        -- [in]
-         dina  => r.rxRamWrData,        -- [in]
-         clkb  => clk200,               -- [in]
-         rstb  => rst200,               -- [in]
-         addrb => txRamRdAddr,          -- [in]
-         doutb => txRamRdData);         -- [out]
+         clka   => clk200,              -- [in]
+         wea(0) => r.rxRamWrEn,         -- [in]
+         addra  => r.rxRamWrAddr,       -- [in]
+         dina   => r.rxRamWrData,       -- [in]
+         clkb   => clk200,              -- [in]
+         rstb   => rst200,              -- [in]
+         addrb  => txRamRdAddr,         -- [in]
+         doutb  => txRamRdData);        -- [out]
 
 
    rxStateEnum <= "000" when r.rxState = RX_IDLE_S else

@@ -274,6 +274,7 @@ begin
       U_ETH_PHY_MAC : entity surf.GigEthGtx7
          generic map (
             TPD_G                   => TPD_G,
+            SYNTH_MODE_G            => "xpm",
             EN_AXI_REG_G            => true,
             AXIL_BASE_ADDR_G        => AXIL_XBAR_CONFIG_C(AXIL_ETH_C).baseAddr,
             AXIL_CLK_IS_SYSCLK125_G => true,
@@ -323,7 +324,8 @@ begin
             -- General IPv4/ARP/DHCP Generics
             DHCP_G         => DHCP_G,
             CLK_FREQ_G     => 125.0E+6,
-            COMM_TIMEOUT_G => 30)
+            COMM_TIMEOUT_G => 30,
+            SYNTH_MODE_G   => "xpm")
          port map (
             -- Local Configurations
             localMac        => localMac,
@@ -353,6 +355,7 @@ begin
       U_RssiServer : entity surf.RssiCoreWrapper
          generic map (
             TPD_G                => TPD_G,
+            SYNTH_MODE_G         => "xpm",
             APP_ILEAVE_EN_G      => true,
             ILEAVE_ON_NOTVALID_G => true,
             MAX_SEG_SIZE_G       => 1024,
@@ -431,7 +434,8 @@ begin
          SLAVE_READY_EN_G    => true,
          GEN_SYNC_FIFO_G     => true,
          AXIL_CLK_FREQ_G     => 125.0e6,
-         AXI_STREAM_CONFIG_G => AXIS_CONFIG_C)
+         AXI_STREAM_CONFIG_G => AXIS_CONFIG_C,
+         FIFO_SYNTH_MODE_G   => "xpm")
       port map (
          -- Streaming Slave (Rx) Interface (sAxisClk domain) 
          sAxisClk         => ethClk,

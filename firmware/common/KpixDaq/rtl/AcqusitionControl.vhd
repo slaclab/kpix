@@ -339,7 +339,7 @@ begin
          PIPE_STAGES_G       => 1,
          SLAVE_READY_EN_G    => false,
          MEMORY_TYPE_G       => "block",
-         SYNTH_MODE_G        => "inferred",
+         SYNTH_MODE_G        => "xpm",
          GEN_SYNC_FIFO_G     => true,
          FIFO_ADDR_WIDTH_G   => 10,
          FIFO_PAUSE_THRESH_G => 2**10-1,
