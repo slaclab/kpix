@@ -72,11 +72,13 @@ if __name__ == "__main__":
             print(f"Hard Reset")
             root.HardReset()
 
-            print(f"Count Reset")        
+            print(f"Count Reset")
             root.CountReset()
 
             print('Writing initial configuration')
             root.LoadConfig(runArgs.config)
+            root.waitOnUpdate()
+
             root.ReadAll()
             root.waitOnUpdate()
 
@@ -90,13 +92,12 @@ if __name__ == "__main__":
 
                 root.DesyTrackerRunControl.runState.setDisp('Stopped')
                 root.DataWriter.Close()
-                print(f'Ending run')                
+                print(f'Ending run')
                 #root.DesyTrackerRunControl.waitStopped()
             except (KeyboardInterrupt):
                 print('Caught interrupt')
                 root.DesyTrackerRunControl.runState.setDisp('Stopped')
                 root.DataWriter.Close()
                 print(f'Ending run')
-                
+
             print(f'Ended')
-        

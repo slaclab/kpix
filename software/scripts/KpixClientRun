@@ -25,7 +25,7 @@ parser = argparse.ArgumentParser()
 
 
 parser.add_argument(
-    "--host", 
+    "--host",
     type     = str,
     required = False,
     default = 'localhost',
@@ -63,7 +63,7 @@ parser.add_argument(
 
 if __name__ == "__main__":
     args = parser.parse_known_args()[0]
-        
+
     # # Sleep for 5 seconds to allow FPGA to load
     # print('Sleeping')
     # time.sleep(2)
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     client = pyrogue.interfaces.VirtualClient(addr=args.host, port=args.port)
 
     root = client.root
-    
+
     print('Reading all')
     # Read everything
     root.ReadAll()
@@ -91,11 +91,13 @@ if __name__ == "__main__":
     print(f"Hard Reset")
     root.HardReset()
 
-    print(f"Count Reset")        
+    print(f"Count Reset")
     root.CountReset()
 
     print('Writing initial configuration')
     root.LoadConfig(args.config)
+    print("Waiting on load")
+    root.waitOnUpdate()
     print("Reading registers")
     root.ReadAll()
     print("Waiting for read")
@@ -119,10 +121,9 @@ if __name__ == "__main__":
                 bar.update(rc-last)
                 last = rc
 
-        
+
                 #root.DesyTrackerRunControl.waitStopped()
     except (KeyboardInterrupt):
         root.DesyTrackerRunControl.runState.setDisp('Stopped')
-        
-    root.DataWriter.Close()            
-        
+
+    root.DataWriter.Close()
