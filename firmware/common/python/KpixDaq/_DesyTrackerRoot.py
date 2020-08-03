@@ -28,14 +28,17 @@ class DesyTrackerRoot(pyrogue.Root):
             dataStream = rogue.interfaces.stream.Master()
             cmd = rogue.interfaces.stream.Master()
 
-            self.manage(srp, dataStream, cmd)
+            self.addInterface(srp)
+            self.addInterface(dataStream)
+            self.addInterface(cmd)
 
         else:
             if sim:
                 dest0 = rogue.interfaces.stream.TcpClient('localhost', 9000)
                 dest1 = rogue.interfaces.stream.TcpClient('localhost', 9002)
 
-                self.manage(dest0, dest1)
+                self.addInterface(dest0)
+                self.addInterface(dest1)
 
             else:
                 udp = pyrogue.protocols.UdpRssiPack( host=ip, port=8192, packVer=2 )
@@ -45,12 +48,13 @@ class DesyTrackerRoot(pyrogue.Root):
                     dest2 = udp.application(dest=2)
                     dest3 = udp.application(dest=3)
 
-                self.manage(udp, dest0, dest1, dest2, dest3)
+                self.addInterface(udp)
 
             srp = rogue.protocols.srp.SrpV3()
             cmd = rogue.interfaces.stream.Master()
 
-            self.manage(srp, cmd)
+            self.addInterface(srp)
+            self.addInterface(cmd)
 
             dataWriter = pyrogue.utilities.fileio.LegacyStreamWriter(name='DataWriter')
 

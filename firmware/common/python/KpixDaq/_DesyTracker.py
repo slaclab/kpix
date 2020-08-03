@@ -30,15 +30,15 @@ class DesyTracker(pyrogue.Device):
 
         @self.command()
         def EthAcquire():
-            f = self.root.cmd._reqFrame(1, False)
+            f = cmd._reqFrame(1, False)
             f.write(self.__acquireCmd, 0)
-            self.root.cmd._sendFrame(f)
+            cmd._sendFrame(f)
 
         @self.command()
         def EthStart():
-            f = self.root.cmd._reqFrame(1, False)
+            f = cmd._reqFrame(1, False)
             f.write(self.__startCmd, 0)
-            self.root.cmd._sendFrame(f)
+            cmd._sendFrame(f)
 
 
         self.add(surf.axi.AxiVersion(
