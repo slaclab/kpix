@@ -6,10 +6,14 @@ class SysConfig(pr.Device):
     def KpixEnableUpdate(self, path, varValue):
         index = int(re.search('.*?KpixAsic\\[(.*?)\\]', path).groups()[0])
         if self.KpixEnable[index].value() != varValue.value:
-            self.KpixEnable[index].set(varValue.value, write=True)
+            with self._root.updateGroup():
+                self.KpixEnable[index].set(varValue.value, write=True)
+
 
     def __init__(self, numKpix, **kwargs):
         super().__init__(**kwargs)
+
+#        self.forceCheckEach = True
 
         self.add(pr.RemoteVariable(
             name = 'RawDataMode',
