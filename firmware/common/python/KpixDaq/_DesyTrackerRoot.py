@@ -24,61 +24,64 @@ class DesyTrackerRoot(pyrogue.Root):
         self.sim = sim
 
         if hwEmu:
-            self.srp = pyrogue.interfaces.simulation.MemEmulate()
-            self.dataStream = rogue.interfaces.stream.Master()
-            self.cmd = rogue.interfaces.stream.Master()
+            srp = pyrogue.interfaces.simulation.MemEmulate()
+            dataStream = rogue.interfaces.stream.Master()
+            cmd = rogue.interfaces.stream.Master()
+
+            self.addInterface(srp)
+            self.addInterface(dataStream)
+            self.addInterface(cmd)
 
         else:
             if sim:
-                self.dest0 = rogue.interfaces.stream.TcpClient('localhost', 9000)
-                self.dest1 = rogue.interfaces.stream.TcpClient('localhost', 9002)
+                dest0 = rogue.interfaces.stream.TcpClient('localhost', 9000)
+                dest1 = rogue.interfaces.stream.TcpClient('localhost', 9002)
+
+                self.addInterface(dest0)
+                self.addInterface(dest1)
 
             else:
-                self.udp = pyrogue.protocols.UdpRssiPack( host=ip, port=8192, packVer=2 )
-                self.dest0 = self.udp.application(dest=0)
-                self.dest1 = self.udp.application(dest=1)
+                udp = pyrogue.protocols.UdpRssiPack( host=ip, port=8192, packVer=2 )
+                dest0 = udp.application(dest=0)
+                dest1 = udp.application(dest=1)
                 if ethDebug:
-                    self.dest2 = self.udp.application(dest=2)
-                    self.dest3 = self.udp.application(dest=3)
+                    dest2 = udp.application(dest=2)
+                    dest3 = udp.application(dest=3)
 
-            self.srp = rogue.protocols.srp.SrpV3()
-            self.cmd = rogue.interfaces.stream.Master()
+                self.addInterface(udp)
+
+            srp = rogue.protocols.srp.SrpV3()
+            cmd = rogue.interfaces.stream.Master()
+
+            self.addInterface(srp)
+            self.addInterface(cmd)
 
             dataWriter = pyrogue.utilities.fileio.LegacyStreamWriter(name='DataWriter')
 
-            self.srp == self.dest0
-            self.dest1 >> dataWriter.getDataChannel()
-            self.dest1 << self.cmd
+            srp == dest0
+            dest1 >> dataWriter.getDataChannel()
+            dest1 << cmd
 
             # Connect update stream
             self >> dataWriter.getYamlChannel()
 
             if dataDebug:
                 fp = KpixDaq.KpixStreamInfo()
-                self.dest1 >> fp
+                dest1 >> fp
 
             self.add(dataWriter)
             self.add(KpixDaq.DesyTrackerRunControl())
 
-        self.add(KpixDaq.DesyTracker(memBase=self.srp, cmd=self.cmd, offset=0, ethDebug=ethDebug, sim=sim, enabled=True, expand=True))
+        self.add(KpixDaq.DesyTracker(memBase=srp, cmd=cmd, offset=0, ethDebug=ethDebug, sim=sim, enabled=True, expand=True))
 
         if ethDebug:
-            self.add(self.udp)
-            self.add(pyrogue.utilities.prbs.PrbsTx(stream=self.dest2))
-            self.add(pyrogue.utilities.prbs.PrbsRx(stream=self.dest2))
+            self.add(udp)
+            self.add(pyrogue.utilities.prbs.PrbsTx(stream=dest2))
+            self.add(pyrogue.utilities.prbs.PrbsRx(stream=dest2))
 
-            self.add(pyrogue.utilities.prbs.PrbsTx(name='PrbsTxLoopback', stream=self.dest3))
-            self.add(pyrogue.utilities.prbs.PrbsRx(name='PrbsRxLoopback', stream=self.dest3))
+            self.add(pyrogue.utilities.prbs.PrbsTx(name='PrbsTxLoopback', stream=dest3))
+            self.add(pyrogue.utilities.prbs.PrbsRx(name='PrbsRxLoopback', stream=dest3))
 
-
-    def stop(self):
-        if hasattr(self, 'udp'):
-            self.udp._rssi._stop()
-        elif hasattr(self, 'dest0'):
-            # sim mode
-            self.dest0.close()
-            self.dest1.close()
-        super().stop()
 
 class DesyTrackerRootArgparser(argparse.ArgumentParser):
     def __init__(self):
