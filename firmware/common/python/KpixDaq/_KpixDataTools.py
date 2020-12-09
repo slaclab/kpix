@@ -199,7 +199,7 @@ class KpixRunAnalyzer(rogue.interfaces.stream.Slave):
         if frame.getChannel() == 0:
             self.parsedData.append(parseFrame(ba))
         else:
-            print(f'Got YAML Frame')
+            print('Got YAML Frame')
 
 
     def process(self):
