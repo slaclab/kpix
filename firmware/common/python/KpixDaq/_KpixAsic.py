@@ -216,13 +216,13 @@ class KpixLocal(pr.Device):
                 0x7: '3',
                 0xf: '4'}))
 
-    def _setDict(self, d, writeEach, modes, incGroups, excGroups):
+    def _setDict(self, d, writeEach, modes, incGroups, excGroups, keys):
         # Awful hack to ignore dict set of variables that don't exist
         # This allows KpixAsic variables to appear in config file for
         # the local kpix.
         variables = self.variables
         filtD = {k: v for k, v in d.items() if k in variables}
-        super()._setDict(filtD, writeEach, modes, incGroups, excGroups)
+        super()._setDict(filtD, writeEach, modes, incGroups, excGroups, keys)
 
 
 class KpixAsic(KpixLocal):
