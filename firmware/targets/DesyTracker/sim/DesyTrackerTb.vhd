@@ -95,7 +95,7 @@ architecture sim of DesyTrackerTb is
 begin
 
    -- component instantiation
-   U_DesyTracker : entity work.DesyTracker
+   U_DesyTracker : entity kpix.DesyTracker
       generic map (
          TPD_G        => TPD_G,
          SIMULATION_G => true,
